@@ -1,0 +1,5 @@
+.env
+backend/data/*.sqlite
+backend/data/*.sqlite-*
+backups/
+.DS_Store

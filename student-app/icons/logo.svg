@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Moshaver | مشاور">
+<rect x="4" y="4" width="56" height="56" rx="16" fill="#173A5B"/>
+<path d="M16 19.5c6-2 11.3-.5 16 4v22c-4.7-4.5-10-6-16-4V19.5Z" fill="none" stroke="#F7F9F6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M48 19.5c-6-2-11.3-.5-16 4v22c4.7-4.5 10-6 16-4V19.5Z" fill="none" stroke="#F7F9F6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M20 15h24a7 7 0 0 1 7 7v13a7 7 0 0 1-7 7h-3l-5 5" fill="none" stroke="#1DBAA7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="m38 29 3 3 6-7" fill="none" stroke="#1DBAA7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

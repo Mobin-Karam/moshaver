@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 2,
+  "plans": [
+    {
+      "planDate": "2026-08-20",
+      "jalaliId": "1405-05-29",
+      "dayLabel": "پنج‌شنبه",
+      "persianDate": "۲۹ مرداد ۱۴۰۵",
+      "title": "نمونه برنامه روزانه",
+      "published": false,
+      "tasks": [
+        {
+          "start": "07:00",
+          "end": "08:10",
+          "type": "study",
+          "subject": "روان‌شناسی",
+          "title": "مطالعه فعال",
+          "pages": "۸ تا ۲۱",
+          "testCount": 0,
+          "note": "مطالعه → بستن کتاب → بازیابی"
+        },
+        {
+          "start": "08:30",
+          "end": "09:15",
+          "type": "test",
+          "subject": "روان‌شناسی",
+          "title": "تست آموزشی",
+          "pages": "۸ تا ۲۱",
+          "testCount": 15,
+          "note": "غلط و نزده را تحلیل کن"
+        }
+      ]
+    },
+    {
+      "planDate": "2026-08-21",
+      "jalaliId": "1405-05-30",
+      "dayLabel": "جمعه",
+      "persianDate": "۳۰ مرداد ۱۴۰۵",
+      "title": "روز آزمون نمونه",
+      "published": false,
+      "tasks": [
+        {
+          "start": "07:15",
+          "end": "07:45",
+          "type": "review",
+          "subject": "روان‌شناسی",
+          "title": "مرور قبل آزمون",
+          "pages": "۸ تا ۲۱",
+          "testCount": 0,
+          "note": "مطلب جدید نخوان"
+        },
+        {
+          "start": "08:00",
+          "end": "09:00",
+          "type": "exam",
+          "subject": "روان‌شناسی",
+          "title": "آزمون داخل Moshaver",
+          "pages": "۸ تا ۲۱",
+          "testCount": 2,
+          "note": "آزمون از بخش آزمون‌ها اجرا می‌شود"
+        }
+      ]
+    }
+  ],
+  "exams": [
+    {
+      "title": "نمونه آزمون زمان‌دار Moshaver",
+      "isoDate": "2026-08-21",
+      "persianDate": "۳۰ مرداد ۱۴۰۵",
+      "status": "upcoming",
+      "published": true,
+      "openAt": "2026-08-21T08:00:00+03:30",
+      "closeAt": "2026-08-21T10:00:00+03:30",
+      "durationMinutes": 60,
+      "maxAttempts": 1,
+      "instructions": "این آزمون یک تلاش دارد. بعد از شروع، تایمر ادامه پیدا می‌کند.",
+      "syllabus": [
+        {
+          "subject": "روان‌شناسی",
+          "description": "درس ۱ — صفحه ۸ تا ۲۱",
+          "required": true,
+          "track": "دوازدهم"
+        }
+      ],
+      "questions": [
+        {
+          "question": "این یک سؤال نمونه برای تست جریان JSON است. پاسخ نمونه کدام است؟",
+          "options": ["گزینه A", "گزینه B", "گزینه C", "گزینه D"],
+          "answer": "b",
+          "explanation": "در این فایل نمونه، گزینه B به‌عنوان پاسخ صحیح تعریف شده است."
+        },
+        {
+          "question": "سؤال نمونه دوم برای بررسی چهارگزینه‌ای؟",
+          "options": ["گزینه A", "گزینه B", "گزینه C", "گزینه D"],
+          "answer": "d",
+          "explanation": "در این نمونه، گزینه D پاسخ صحیح است."
+        }
+      ]
+    }
+  ]
+}

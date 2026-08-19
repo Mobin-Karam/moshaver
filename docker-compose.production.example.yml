@@ -1,0 +1,46 @@
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_PATH: /data/konkur.sqlite
+      SESSION_COOKIE_NAME: moshaver_session
+      COOKIE_SECURE: 1
+      COOKIE_SAMESITE: Strict
+      ALLOW_BEARER_AUTH: 0
+      CORS_ORIGINS: https://st.mahakaram.ir
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: CHANGE_ME
+      ADMIN_DISPLAY_NAME: مشاور
+      STUDENT_USERNAME: student
+      STUDENT_PASSWORD: CHANGE_ME
+      STUDENT_DISPLAY_NAME: "[اسم]"
+    volumes:
+      - moshaver_sqlite:/data
+    ports:
+      - "4000:4000"
+
+  student:
+    build: ./student-app
+    restart: unless-stopped
+    environment:
+      API_PROXY_TARGET: https://api.mahakaram.ir
+      STUDENT_URL: https://st.mahakaram.ir
+      ADMIN_URL: http://localhost:8081
+    ports:
+      - "8080:80"
+
+  admin:
+    build: ./admin-app
+    restart: unless-stopped
+    environment:
+      API_PROXY_TARGET: https://api.mahakaram.ir
+      STUDENT_URL: https://st.mahakaram.ir
+      ADMIN_URL: http://localhost:8081
+    ports:
+      - "8081:80"
+
+volumes:
+  moshaver_sqlite:

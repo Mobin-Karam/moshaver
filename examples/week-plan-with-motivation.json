@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "studentId": "student_sister",
+  "plans": [
+    {
+      "planDate": "2026-08-29",
+      "jalaliId": "1405-06-07",
+      "dayLabel": "جمعه",
+      "persianDate": "۷ شهریور ۱۴۰۵",
+      "title": "روز سبک بعد از آزمون",
+      "published": false,
+      "tasks": [
+        {
+          "start": "08:00",
+          "end": "08:45",
+          "type": "review",
+          "subject": "روان‌شناسی",
+          "title": "تحلیل نقاط ضعف آزمون",
+          "pages": "",
+          "testCount": 0,
+          "note": "فقط غلط و نزده‌ها را دسته‌بندی کن"
+        }
+      ],
+      "motivationText": "امروز قرار نیست همه‌چیز را تمام کنی؛ فقط برنامه همین امروز را با کیفیت انجام بده."
+    },
+    {
+      "planDate": "2026-08-30",
+      "jalaliId": "1405-06-08",
+      "dayLabel": "شنبه",
+      "persianDate": "۸ شهریور ۱۴۰۵",
+      "title": "شروع چرخه جدید",
+      "published": false,
+      "tasks": [
+        {
+          "start": "07:00",
+          "end": "08:00",
+          "type": "study",
+          "subject": "روان‌شناسی",
+          "title": "مطالعه مبحث جدید",
+          "pages": "۲۲ تا ۳۰",
+          "testCount": 0,
+          "note": "خواندن فعال و توضیح با زبان خودت"
+        },
+        {
+          "start": "08:15",
+          "end": "08:45",
+          "type": "test",
+          "subject": "روان‌شناسی",
+          "title": "تست آموزشی",
+          "pages": "",
+          "testCount": 15,
+          "note": "غلط و شک‌دار را تحلیل کن"
+        }
+      ],
+      "motivationText": "هر تستی که تحلیل می‌کنی، یک اشتباه کمتر در آزمون واقعی است."
+    },
+    {
+      "planDate": "2026-08-31",
+      "jalaliId": "1405-06-09",
+      "dayLabel": "یکشنبه",
+      "persianDate": "۹ شهریور ۱۴۰۵",
+      "title": "روز کلاس",
+      "published": false,
+      "tasks": [
+        {
+          "start": "07:30",
+          "end": "08:30",
+          "type": "study",
+          "subject": "جغرافیا ۲",
+          "title": "مطالعه هدفمند",
+          "pages": "۱۴ تا ۲۵",
+          "testCount": 0,
+          "note": "نقشه ذهنی کوتاه"
+        },
+        {
+          "start": "16:45",
+          "end": "18:15",
+          "type": "class",
+          "subject": "روان‌شناسی",
+          "title": "کلاس",
+          "pages": "",
+          "testCount": 0,
+          "note": "بعد کلاس نکات مهم را ثبت کن"
+        }
+      ],
+      "motivationText": "اگر یک بخش سخت بود، سرعت را کم کن؛ رها کردن تنها گزینه نیست."
+    },
+    {
+      "planDate": "2026-09-01",
+      "jalaliId": "",
+      "dayLabel": "دوشنبه",
+      "persianDate": "",
+      "title": "برنامه هفتگی نمونه",
+      "published": false,
+      "tasks": [
+        {
+          "start": "07:00",
+          "end": "08:00",
+          "type": "study",
+          "subject": "اقتصاد",
+          "title": "مطالعه فعال",
+          "pages": "",
+          "testCount": 0,
+          "note": "هدف را قبل از شروع مشخص کن"
+        },
+        {
+          "start": "08:15",
+          "end": "08:45",
+          "type": "test",
+          "subject": "اقتصاد",
+          "title": "تست آموزشی",
+          "pages": "",
+          "testCount": 15,
+          "note": "تحلیل غلط‌ها"
+        }
+      ],
+      "motivationText": "پیشرفت واقعی از تکرار روزهای معمولی ساخته می‌شود، نه فقط روزهای عالی."
+    },
+    {
+      "planDate": "2026-09-02",
+      "jalaliId": "",
+      "dayLabel": "سه‌شنبه",
+      "persianDate": "",
+      "title": "برنامه هفتگی نمونه",
+      "published": false,
+      "tasks": [
+        {
+          "start": "07:00",
+          "end": "08:00",
+          "type": "study",
+          "subject": "اقتصاد",
+          "title": "مطالعه فعال",
+          "pages": "",
+          "testCount": 0,
+          "note": "هدف را قبل از شروع مشخص کن"
+        },
+        {
+          "start": "08:15",
+          "end": "08:45",
+          "type": "test",
+          "subject": "اقتصاد",
+          "title": "تست آموزشی",
+          "pages": "",
+          "testCount": 15,
+          "note": "تحلیل غلط‌ها"
+        }
+      ],
+      "motivationText": "امروز با خودت رقابت کن؛ یک قدم بهتر از دیروز کافی است."
+    },
+    {
+      "planDate": "2026-09-03",
+      "jalaliId": "",
+      "dayLabel": "چهارشنبه",
+      "persianDate": "",
+      "title": "برنامه هفتگی نمونه",
+      "published": false,
+      "tasks": [
+        {
+          "start": "07:00",
+          "end": "08:00",
+          "type": "study",
+          "subject": "اقتصاد",
+          "title": "مطالعه فعال",
+          "pages": "",
+          "testCount": 0,
+          "note": "هدف را قبل از شروع مشخص کن"
+        },
+        {
+          "start": "08:15",
+          "end": "08:45",
+          "type": "test",
+          "subject": "اقتصاد",
+          "title": "تست آموزشی",
+          "pages": "",
+          "testCount": 15,
+          "note": "تحلیل غلط‌ها"
+        }
+      ],
+      "motivationText": "مرور کوتاه امروز می‌تواند ساعت‌ها دوباره‌خوانی فردا را کم کند."
+    },
+    {
+      "planDate": "2026-09-04",
+      "jalaliId": "",
+      "dayLabel": "پنجشنبه",
+      "persianDate": "",
+      "title": "برنامه هفتگی نمونه",
+      "published": false,
+      "tasks": [
+        {
+          "start": "07:00",
+          "end": "08:00",
+          "type": "study",
+          "subject": "اقتصاد",
+          "title": "مطالعه فعال",
+          "pages": "",
+          "testCount": 0,
+          "note": "هدف را قبل از شروع مشخص کن"
+        },
+        {
+          "start": "08:15",
+          "end": "08:45",
+          "type": "test",
+          "subject": "اقتصاد",
+          "title": "تست آموزشی",
+          "pages": "",
+          "testCount": 15,
+          "note": "تحلیل غلط‌ها"
+        }
+      ],
+      "motivationText": "هفته را با جمع‌بندی آرام تمام کن؛ چیزی که یاد گرفته‌ای ارزشمند است."
+    }
+  ],
+  "exams": [
+    {
+      "title": "آزمون هفتگی نمونه",
+      "persianDate": "۱۳ شهریور ۱۴۰۵",
+      "isoDate": "2026-09-04",
+      "note": "نمونه واردکردن آزمون همراه بودجه‌بندی",
+      "status": "upcoming",
+      "syllabus": [
+        {
+          "subject": "روان‌شناسی",
+          "description": "درس‌های ۱ و ۲",
+          "required": true,
+          "track": "دوازدهم"
+        },
+        {
+          "subject": "اقتصاد",
+          "description": "درس‌های ۱ تا ۳",
+          "required": true,
+          "track": "دهم"
+        },
+        {
+          "subject": "تاریخ ۲",
+          "description": "درس‌های ۱ تا ۴",
+          "required": true,
+          "track": "یازدهم"
+        }
+      ]
+    }
+  ]
+}

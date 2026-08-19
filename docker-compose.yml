@@ -1,0 +1,54 @@
+services:
+  backend:
+    build: ./backend
+    container_name: moshaver-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_PATH: /data/konkur.sqlite
+      CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080,http://localhost:8081,http://127.0.0.1:8081,https://st.mahakaram.ir
+      COOKIE_SECURE: 0
+      COOKIE_SAMESITE: Strict
+      ALLOW_BEARER_AUTH: 0
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: ChangeThisAdminPassword123!
+      ADMIN_DISPLAY_NAME: مشاور
+      STUDENT_USERNAME: student
+      STUDENT_PASSWORD: ChangeThisStudentPassword123!
+      STUDENT_DISPLAY_NAME: "[اسم]"
+    volumes:
+      - moshaver_sqlite:/data
+    ports:
+      - "4000:4000"
+
+  student:
+    build: ./student-app
+    container_name: moshaver-student
+    restart: unless-stopped
+    environment:
+      API_PROXY_TARGET: http://backend:4000
+      STUDENT_URL: http://localhost:8080
+      ADMIN_URL: http://localhost:8081
+      APP_RELEASE_NOTES: Moshaver | مشاور — Same-Origin API Proxy و رفع قطعی مشکل نشست ورود.
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  admin:
+    build: ./admin-app
+    container_name: moshaver-admin
+    restart: unless-stopped
+    environment:
+      API_PROXY_TARGET: http://backend:4000
+      STUDENT_URL: http://localhost:8080
+      ADMIN_URL: http://localhost:8081
+      APP_RELEASE_NOTES: Moshaver | مشاور — Same-Origin API Proxy و نشست پایدار پنل مشاور.
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+
+volumes:
+  moshaver_sqlite:

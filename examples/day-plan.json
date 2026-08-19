@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "studentId": "student_sister",
+  "plans": [
+    {
+      "planDate": "2026-08-29",
+      "jalaliId": "1405-06-07",
+      "dayLabel": "جمعه",
+      "persianDate": "۷ شهریور ۱۴۰۵",
+      "title": "روز سبک بعد از آزمون",
+      "published": false,
+      "tasks": [
+        {
+          "start": "08:00",
+          "end": "08:45",
+          "type": "review",
+          "subject": "روان‌شناسی",
+          "title": "تحلیل نقاط ضعف آزمون",
+          "pages": "",
+          "testCount": 0,
+          "note": "فقط غلط و نزده‌ها را دسته‌بندی کن"
+        },
+        {
+          "start": "09:00",
+          "end": "09:40",
+          "type": "study",
+          "subject": "تاریخ ۲",
+          "title": "مرور فعال درس ۱",
+          "pages": "۱ تا ۱۲",
+          "testCount": 0,
+          "note": "در پایان ۵ نکته از حفظ بنویس"
+        }
+      ],
+      "motivationText": "امروز قرار نیست همه‌چیز را تمام کنی؛ فقط برنامه همین امروز را با کیفیت انجام بده."
+    }
+  ],
+  "exams": []
+}

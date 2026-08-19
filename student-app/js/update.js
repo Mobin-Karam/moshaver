@@ -1,0 +1,16 @@
+(function(global){
+  'use strict';
+  var registration=null,waitingWorker=null,pendingVersion='',pendingNotes='',busyTimer=null;
+  function id(x){return document.getElementById(x);}
+  function localVersion(){try{return localStorage.getItem('moshaver_student_installed_version')||((global.APP_CONFIG&&global.APP_CONFIG.APP_VERSION)||'');}catch(e){return (global.APP_CONFIG&&global.APP_CONFIG.APP_VERSION)||'';}}
+  function setLocalVersion(v){try{if(v)localStorage.setItem('moshaver_student_installed_version',v);}catch(e){}}
+  function busy(){return !!(global.KP_RUNTIME&&global.KP_RUNTIME.isBusy&&global.KP_RUNTIME.isBusy());}
+  function refreshBusyState(){var b=busy(),btn=id('applyUpdateBtn'),hint=id('updateBusyHint');if(btn){btn.disabled=b;btn.innerHTML=b?'بعد از پایان فعالیت به‌روزرسانی می‌شود':'به‌روزرسانی برنامه';}if(hint)hint.className=b?'busy-hint':'busy-hint hidden';if(!b&&busyTimer){clearInterval(busyTimer);busyTimer=null;}}
+  function show(){var m=id('updateModal'),bd=id('modalBackdrop'),notes=id('updateNotes');if(!m||!bd)return;m.className='modal update-modal';bd.className='modal-backdrop';if(notes){notes.textContent=pendingNotes||'';notes.className=pendingNotes?'release-note':'release-note hidden';}refreshBusyState();if(busy()&&!busyTimer)busyTimer=setInterval(refreshBusyState,1000);}
+  function hide(){var m=id('updateModal'),bd=id('modalBackdrop');if(m)m.className='modal update-modal hidden';if(bd)bd.className='modal-backdrop hidden';}
+  function apply(){if(busy()){refreshBusyState();return;}if(global.KP_RUNTIME&&global.KP_RUNTIME.stopForUpdate)global.KP_RUNTIME.stopForUpdate();setLocalVersion(pendingVersion);if(waitingWorker){waitingWorker.postMessage({type:'SKIP_WAITING'});}else{location.href=location.pathname+'?updated='+encodeURIComponent(pendingVersion);}}
+  function wire(){if(id('applyUpdateBtn'))id('applyUpdateBtn').onclick=apply;if(id('laterUpdateBtn'))id('laterUpdateBtn').onclick=hide;}
+  function checkVersion(){var x=new XMLHttpRequest();x.open('GET','./version.json?t='+new Date().getTime(),true);x.onreadystatechange=function(){if(x.readyState!==4||x.status<200||x.status>=300)return;try{var data=JSON.parse(x.responseText||'{}'),v=data.version||'',installed=localVersion();pendingNotes=data.notes||'';if(!installed&&v){setLocalVersion(v);return;}if(v&&installed&&v!==installed){pendingVersion=v;if(registration)registration.update();show();}}catch(e){}};x.send();}
+  function init(){wire();if(!('serviceWorker' in navigator)){checkVersion();setInterval(checkVersion,90000);return;}navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(function(reg){registration=reg;if(reg.waiting){waitingWorker=reg.waiting;pendingVersion=pendingVersion||'new';show();}reg.addEventListener('updatefound',function(){var w=reg.installing;if(!w)return;w.addEventListener('statechange',function(){if(w.state==='installed'&&navigator.serviceWorker.controller){waitingWorker=w;show();}});});setTimeout(function(){reg.update();},1000);checkVersion();setInterval(checkVersion,90000);}).catch(function(){checkVersion();});navigator.serviceWorker.addEventListener('controllerchange',function(){if(pendingVersion)setLocalVersion(pendingVersion);location.reload();});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})(window);
