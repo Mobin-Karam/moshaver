@@ -2,6 +2,52 @@
 
 A lightweight academic-advisor system with a low-end-Android-friendly Student PWA, a laptop-oriented Advisor/Admin console, and a separate Node.js + SQLite backend.
 
+# 📱 Moshaver v2 Student App Preview
+
+The new Moshaver student experience is designed for low-end Android devices with a fast PWA/Tauri-ready architecture.
+
+## Mobile Screens
+
+<div align="center">
+
+<table>
+<tr>
+
+<td align="center">
+<img src="docs/releases/01.png" width="180">
+<br>
+Student Dashboard
+</td>
+
+<td align="center">
+<img src="docs/releases/02.png" width="180">
+<br>
+Daily Plan
+</td>
+
+<td align="center">
+<img src="docs/releases/03.png" width="180">
+<br>
+Exam System
+</td>
+
+<td align="center">
+<img src="docs/releases/04.png" width="180">
+<br>
+Advisor Chat
+</td>
+
+<td align="center">
+<img src="docs/releases/05.png" width="180">
+<br>
+Student Profile
+</td>
+
+</tr>
+</table>
+
+</div>
+
 ## v1.4.2 focused update
 
 This release changes only the requested Student/Admin chat presentation, Student Shamsi date presentation, daily-task text readability and daily plan motivation text. Existing working auth, exams, inline exams, planner, SSE and notifications are kept intact.
