@@ -1,0 +1,13 @@
+export { AuditLog } from "./audit-log.entity";
+export { ChatMessage } from "./chat-message.entity";
+export { ExamAttempt } from "./exam-attempt.entity";
+export { Exam } from "./exam.entity";
+export { Mistake } from "./mistake.entity";
+export { Notification } from "./notification.entity";
+export { Plan } from "./plan.entity";
+export { Question } from "./question.entity";
+export { Session } from "./session.entity";
+export { Student } from "./student.entity";
+export { Task } from "./task.entity";
+export { TopicMastery } from "./topic-mastery.entity";
+export { User } from "./user.entity";

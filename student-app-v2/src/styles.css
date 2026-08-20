@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: #f7f9f6;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  font-family: Vazirmatn, Tahoma, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.surface {
+  border: 1px solid rgb(32 48 64 / 0.1);
+  border-radius: 8px;
+  background: white;
+}
+
+.metric {
+  border-radius: 8px;
+  background: rgb(79 143 122 / 0.12);
+  padding: 12px;
+}

@@ -1,54 +1,52 @@
 services:
-  backend:
-    build: ./backend
-    container_name: moshaver-backend
+  backend-v2:
+    build: ./backend-v2
+    container_name: moshaver-backend-v2
     restart: unless-stopped
     environment:
       NODE_ENV: production
       PORT: 4000
-      DATABASE_PATH: /data/konkur.sqlite
-      CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080,http://localhost:8081,http://127.0.0.1:8081,https://st.mahakaram.ir
+      DATABASE_TYPE: sqlite
+      DATABASE_PATH: /data/moshaver-v2.sqlite
+      CORS_ORIGINS: http://localhost:1420,http://127.0.0.1:1420,http://localhost:8080,http://127.0.0.1:8080,http://localhost:8081,http://127.0.0.1:8081,https://st.mahakaram.ir,https://admin.mahakaram.ir
       COOKIE_SECURE: 0
-      COOKIE_SAMESITE: Strict
-      ALLOW_BEARER_AUTH: 0
-      ADMIN_USERNAME: admin
-      ADMIN_PASSWORD: ChangeThisAdminPassword123!
-      ADMIN_DISPLAY_NAME: مشاور
-      STUDENT_USERNAME: student
-      STUDENT_PASSWORD: ChangeThisStudentPassword123!
-      STUDENT_DISPLAY_NAME: "[اسم]"
+      COOKIE_SAMESITE: lax
+      SESSION_TTL_HOURS: 168
+    command: sh -c "node dist/database/seeds/seed.js && node dist/main.js"
     volumes:
-      - moshaver_sqlite:/data
+      - moshaver_v2_sqlite:/data
     ports:
       - "4000:4000"
 
-  student:
-    build: ./student-app
-    container_name: moshaver-student
+  student-v2:
+    build:
+      context: .
+      dockerfile: student-app-v2/Dockerfile
+      args:
+        VITE_API_URL: /api/v2
+    container_name: moshaver-student-v2
     restart: unless-stopped
     environment:
-      API_PROXY_TARGET: http://backend:4000
-      STUDENT_URL: http://localhost:8080
-      ADMIN_URL: http://localhost:8081
-      APP_RELEASE_NOTES: Moshaver | مشاور — Same-Origin API Proxy و رفع قطعی مشکل نشست ورود.
+      API_PROXY_TARGET: http://backend-v2:4000
     ports:
       - "8080:80"
     depends_on:
-      - backend
+      - backend-v2
 
-  admin:
-    build: ./admin-app
-    container_name: moshaver-admin
+  admin-v2:
+    build:
+      context: .
+      dockerfile: admin-v2/Dockerfile
+      args:
+        VITE_API_URL: /api/v2
+    container_name: moshaver-admin-v2
     restart: unless-stopped
     environment:
-      API_PROXY_TARGET: http://backend:4000
-      STUDENT_URL: http://localhost:8080
-      ADMIN_URL: http://localhost:8081
-      APP_RELEASE_NOTES: Moshaver | مشاور — Same-Origin API Proxy و نشست پایدار پنل مشاور.
+      API_PROXY_TARGET: http://backend-v2:4000
     ports:
       - "8081:80"
     depends_on:
-      - backend
+      - backend-v2
 
 volumes:
-  moshaver_sqlite:
+  moshaver_v2_sqlite:

@@ -15,8 +15,44 @@ export class ApiError extends Error {
 }
 
 const CSRF_KEY = "moshaver_admin_csrf";
+const DEV_BACKEND_KEY = "moshaver_admin_backend";
 const defaultBase = "/api/v1";
-export const apiBaseUrl = (import.meta.env.VITE_API_URL as string | undefined) || defaultBase;
+
+export const backendTargets = {
+  local: "http://localhost:4000",
+  remote: "https://api.mahakaram.ir",
+} as const;
+
+export type BackendTarget = keyof typeof backendTargets;
+
+function isBackendTarget(value: string | null): value is BackendTarget {
+  return value === "local" || value === "remote";
+}
+
+export function getSelectedBackend(): BackendTarget | null {
+  if (!import.meta.env.DEV || typeof window === "undefined") return null;
+  const saved = window.localStorage.getItem(DEV_BACKEND_KEY);
+  return isBackendTarget(saved) ? saved : null;
+}
+
+export function setSelectedBackend(target: BackendTarget | null) {
+  if (!import.meta.env.DEV || typeof window === "undefined") return;
+  if (target) window.localStorage.setItem(DEV_BACKEND_KEY, target);
+  else window.localStorage.removeItem(DEV_BACKEND_KEY);
+  document.cookie = `${DEV_BACKEND_KEY}=${target ?? ""}; Path=/; SameSite=Lax; Max-Age=${target ? 31536000 : 0}`;
+}
+
+export function getApiBaseUrl() {
+  return (import.meta.env.VITE_API_URL as string | undefined) || defaultBase;
+}
+
+export function getBackendTargetUrl() {
+  const selected = getSelectedBackend();
+  if (selected) return `${backendTargets[selected]}${defaultBase}`;
+  return getApiBaseUrl();
+}
+
+export const apiBaseUrl = getApiBaseUrl();
 
 function csrf() {
   return sessionStorage.getItem(CSRF_KEY) || "";
@@ -46,7 +82,7 @@ export async function request<T>(method: string, path: string, body?: unknown, o
   if (isMutating(method) && token) headers.set("X-CSRF-Token", token);
 
   try {
-    const response = await fetch(`${apiBaseUrl}${path}`, {
+    const response = await fetch(`${getApiBaseUrl()}${path}`, {
       method,
       headers,
       credentials: "include",
@@ -82,7 +118,7 @@ export const api = {
   delete: <T>(path: string) => request<T>("DELETE", path),
   setCsrf,
   openEvents(onEvent: (type: string, data: Record<string, unknown>) => void, onState?: (state: "open" | "reconnecting") => void) {
-    const source = new EventSource(`${apiBaseUrl}/events`, { withCredentials: true });
+    const source = new EventSource(`${getApiBaseUrl()}/events`, { withCredentials: true });
     const names = ["chat.message.created", "chat.messages.read", "presence.changed", "study.started", "study.finished", "quiz.completed", "report.submitted", "recovery.requested", "issue.created", "plan.published", "plan.updated", "advisor.comment.created", "notification.created", "review.created", "exam.retry_requested", "exam.retry_reviewed", "exam.updated"];
     names.forEach((name) => source.addEventListener(name, (event) => onEvent(name, JSON.parse((event as MessageEvent).data || "{}") as Record<string, unknown>)));
     source.onopen = () => onState?.("open");

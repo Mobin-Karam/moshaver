@@ -1,4 +1,4 @@
-export type Role = "admin" | "student";
+export type Role = "admin" | "student" | "ADMIN" | "STUDENT";
 
 export interface User {
   id: string;
@@ -24,19 +24,24 @@ export interface Student {
 
 export interface PlanTask {
   id: string;
-  start: string;
-  end: string;
+  start?: string;
+  end?: string;
+  startTime?: string;
+  endTime?: string;
   type: string;
   subject?: string;
   title?: string;
   pages?: string;
   testCount?: number;
+  duration?: number;
   note?: string;
   examId?: string | null;
+  completedAt?: string | null;
 }
 
 export interface Plan {
   id: string;
+  date?: string;
   planDate: string;
   persianDate?: string;
   title?: string;

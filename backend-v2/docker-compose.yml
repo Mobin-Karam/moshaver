@@ -1,0 +1,18 @@
+services:
+  backend-v2:
+    build: .
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_TYPE: sqlite
+      DATABASE_PATH: /data/moshaver-v2.sqlite
+      CORS_ORIGINS: http://localhost:1420,http://127.0.0.1:1420,http://localhost:5173,http://127.0.0.1:5173,https://st.mahakaram.ir,https://admin.mahakaram.ir
+      COOKIE_SECURE: 0
+      COOKIE_SAMESITE: lax
+    volumes:
+      - sqlite-data:/data
+    ports:
+      - "4000:4000"
+
+volumes:
+  sqlite-data:

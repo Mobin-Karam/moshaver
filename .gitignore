@@ -4,6 +4,7 @@ node_modules/
 # Build output
 dist/
 build/
+target/
 *.tsbuildinfo
 admin-v2/tailwind.config.js
 admin-v2/tailwind.config.d.ts
@@ -18,8 +19,9 @@ admin-v2/vitest.config.d.ts
 !.env.example
 
 # Runtime data and backups
-backend/data/*.sqlite
-backend/data/*.sqlite-*
+**/data/*.sqlite
+**/data/*.sqlite-*
+backup/
 backups/
 
 # Logs and OS/editor files

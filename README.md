@@ -77,10 +77,10 @@ moshaver-fullstack-v1.4.2/
 │   └── moshaver-summer-plan-1405-28mordad-to-10mehr.json
 ├── tests/
 ├── scripts/
-├── JSON_IMPORT_GUIDE.md
-├── RUNFLARE_DEPLOY.md
-├── SECURITY.md
-└── VERSION_ROADMAP.md
+└── docs/
+    ├── README.md
+    ├── reference/
+    └── releases/
 ```
 
 ## Run locally
@@ -138,7 +138,7 @@ SQLite
 Student PWA
 ```
 
-See `JSON_IMPORT_GUIDE.md` and `examples/week-plan-and-exam-v2.json`.
+See `docs/reference/JSON_IMPORT_GUIDE.md` and `examples/week-plan-and-exam-v2.json`.
 
 ## Existing summer plan
 
@@ -205,4 +205,8 @@ COOKIE_SAMESITE=Strict
 ALLOW_BEARER_AUTH=0
 ```
 
-See `RUNFLARE_DEPLOY.md` for deployment order.
+See `docs/reference/RUNFLARE_DEPLOY.md` for deployment order.
+
+## Current audit and runbook
+
+Use `docs/README.md` as the documentation dashboard and `docs/REPO_AUDIT_AND_RUNBOOK.md` as the operational runbook.

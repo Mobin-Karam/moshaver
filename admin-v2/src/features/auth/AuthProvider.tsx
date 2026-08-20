@@ -12,7 +12,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const restore = useCallback(async () => {
     setStatus("checking");
     try {
-      const me = await api.get<User>("/auth/me");
+      const me = normalizeUser(await api.get<User>("/auth/me"));
       if (me.role !== "admin") throw new Error("این حساب مدیر نیست.");
       setUser(me);
       setStatus("authenticated");
@@ -31,12 +31,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     status,
     async login(username, password) {
       const data = await api.post<{ user: User; csrfToken?: string }>("/auth/login", { username, password });
-      if (data.user.role !== "admin") {
+      const normalizedUser = normalizeUser(data.user);
+      if (normalizedUser.role !== "admin") {
         await api.post("/auth/logout", {});
         throw new Error("این حساب مدیر نیست.");
       }
       api.setCsrf(data.csrfToken);
-      setUser(data.user);
+      setUser(normalizedUser);
       setStatus("authenticated");
     },
     async logout() {
@@ -54,6 +55,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }), [status, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+function normalizeUser(user: User): User {
+  return { ...user, role: user.role.toLowerCase() as User["role"] };
 }
 
 export function useAuth() {
