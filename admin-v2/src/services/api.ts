@@ -119,7 +119,7 @@ export const api = {
   setCsrf,
   openEvents(onEvent: (type: string, data: Record<string, unknown>) => void, onState?: (state: "open" | "reconnecting") => void) {
     const source = new EventSource(`${getApiBaseUrl()}/events`, { withCredentials: true });
-    const names = ["chat.message.created", "chat.messages.read", "presence.changed", "study.started", "study.finished", "quiz.completed", "report.submitted", "recovery.requested", "issue.created", "plan.published", "plan.updated", "advisor.comment.created", "notification.created", "review.created", "exam.retry_requested", "exam.retry_reviewed", "exam.updated"];
+    const names = ["chat.message", "chat.message.created", "chat.messages.read", "presence.changed", "study.started", "study.finished", "quiz.completed", "report.submitted", "recovery.requested", "issue.created", "plan.published", "plan.updated", "advisor.comment.created", "notification.created", "review.created", "exam.retry_requested", "exam.retry_reviewed", "exam.updated"];
     names.forEach((name) => source.addEventListener(name, (event) => onEvent(name, JSON.parse((event as MessageEvent).data || "{}") as Record<string, unknown>)));
     source.onopen = () => onState?.("open");
     source.onerror = () => onState?.("reconnecting");

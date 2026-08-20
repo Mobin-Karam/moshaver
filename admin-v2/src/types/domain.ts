@@ -12,8 +12,12 @@ export interface User {
 export interface Student {
   id: string;
   name: string;
+  user?: { id: string; username?: string; role?: Role };
   grade?: string;
   major?: string;
+  targetUniversity?: string;
+  targetField?: string;
+  targetRank?: string;
   daily_capacity?: string;
   dailyCapacity?: string;
   target_major?: string;

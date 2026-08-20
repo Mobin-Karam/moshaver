@@ -1,25 +1,28 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Send } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { Badge, Button, Card, EmptyState, Input } from "../../components/ui";
+import { CheckCheck, MessageCircle, RefreshCw, Search, Send } from "lucide-react";
+import { KeyboardEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Badge, Card, EmptyState, Textarea } from "../../components/ui";
 import { api } from "../../services/api";
 import type { ChatMessage, Conversation } from "../../types/domain";
 
 export function ChatPage() {
   const [conversationId, setConversationId] = useState("");
   const [text, setText] = useState("");
+  const [search, setSearch] = useState("");
   const qc = useQueryClient();
-  const conversations = useQuery({ queryKey: ["chat-conversations"], queryFn: () => api.get<Conversation[]>("/admin/chat/conversations"), refetchInterval: 30_000 });
-  const active = useMemo(() => (conversations.data ?? []).find((c) => c.id === conversationId) ?? conversations.data?.[0], [conversationId, conversations.data]);
-  const messages = useQuery({ queryKey: ["chat-messages", active?.id], enabled: !!active?.id, queryFn: () => api.get<ChatMessage[]>(`/chat/conversations/${active?.id}/messages`), refetchInterval: 20_000 });
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const conversations = useQuery({ queryKey: ["chat-conversations"], queryFn: () => api.get<Conversation[]>("/admin/chat/conversations"), refetchInterval: 15_000 });
+  const filtered = useMemo(() => (conversations.data ?? []).filter((item) => (item.student?.name || "").includes(search.trim())), [conversations.data, search]);
+  const active = useMemo(() => filtered.find((c) => c.id === conversationId) ?? filtered[0] ?? conversations.data?.[0], [conversationId, conversations.data, filtered]);
+  const messages = useQuery({ queryKey: ["chat-messages", active?.id], enabled: !!active?.id, queryFn: () => api.get<ChatMessage[]>(`/chat/conversations/${active?.id}/messages`), refetchInterval: 10_000 });
   const send = useMutation({
     mutationFn: () => {
       if (!active?.id) throw new Error("گفتگویی انتخاب نشده است.");
-      return api.post<ChatMessage>(`/chat/conversations/${active.id}/messages`, { text });
+      return api.post<ChatMessage>(`/chat/conversations/${active.id}/messages`, { text: text.trim() });
     },
-    onSuccess: () => {
+    onSuccess: (message) => {
       setText("");
-      qc.invalidateQueries({ queryKey: ["chat-messages", active?.id] });
+      qc.setQueryData<ChatMessage[]>(["chat-messages", active?.id], (current = []) => [...current, message]);
       qc.invalidateQueries({ queryKey: ["chat-conversations"] });
     },
   });
@@ -35,8 +38,90 @@ export function ChatPage() {
   }, [active?.id, qc]);
 
   useEffect(() => {
-    if (active?.id) setConversationId(active.id);
-  }, [active?.id]);
+    if (active?.id && !conversationId) setConversationId(active.id);
+  }, [active?.id, conversationId]);
 
-  return <div className="grid gap-5"><div><h2 className="text-2xl font-black">گفتگو</h2><p className="text-slate-500">SSE موجود حفظ شده و برای همگام‌سازی گفتگو استفاده می‌شود.</p></div><section className="grid min-h-[640px] gap-4 lg:grid-cols-[320px_1fr]"><Card className="overflow-hidden p-0"><div className="border-b p-3 font-bold">دانش‌آموزان</div><div className="max-h-[590px] overflow-auto">{(conversations.data ?? []).map((c) => <button key={c.id} onClick={() => setConversationId(c.id)} className={`flex w-full items-center justify-between border-b p-3 text-right hover:bg-slate-50 ${active?.id === c.id ? "bg-teal-50" : ""}`}><span><strong className="block">{c.student?.name || "دانش‌آموز"}</strong><small className="text-slate-500">{c.lastMessage?.text || "بدون پیام"}</small></span>{c.unread ? <Badge tone="red">{c.unread}</Badge> : null}</button>)}</div></Card><Card className="flex flex-col p-0"><div className="border-b p-4"><strong>{active?.student?.name || "گفتگو"}</strong><p className="text-xs text-slate-500">{active?.presence?.online ? "آنلاین" : "آفلاین"}</p></div><div className="flex-1 space-y-3 overflow-auto bg-slate-50 p-4">{messages.data?.length ? messages.data.map((m) => <div key={m.id} className={`flex ${m.senderRole === "admin" ? "justify-start" : "justify-end"}`}><div className={`max-w-[72%] rounded-lg p-3 text-sm ${m.senderRole === "admin" ? "bg-brand text-white" : "bg-white text-ink"}`}><p>{m.text}</p><small className="opacity-70">{m.createdAt}</small></div></div>) : <EmptyState title="پیامی ثبت نشده است." />}</div><form className="flex gap-2 border-t p-3" onSubmit={(e) => { e.preventDefault(); if (text.trim()) send.mutate(); }}><Input value={text} onChange={(e) => setText(e.target.value)} placeholder="پیام..." /><Button disabled={!text.trim() || send.isPending}><Send size={16} />ارسال</Button></form></Card></section></div>;
+  useLayoutEffect(() => {
+    const node = scrollRef.current;
+    if (node) node.scrollTop = node.scrollHeight;
+  }, [messages.data?.length, active?.id]);
+
+  function submit() {
+    if (text.trim() && !send.isPending) send.mutate();
+  }
+
+  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      submit();
+    }
+  }
+
+  return (
+    <div className="grid h-[calc(100vh-132px)] min-h-[620px] gap-4 overflow-hidden">
+      <section className="grid min-h-0 gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <Card className="flex min-h-0 flex-col overflow-hidden p-0">
+          <div className="border-b p-3">
+            <div className="flex items-center gap-2">
+              <MessageCircle size={18} />
+              <strong>گفتگوها</strong>
+              {conversations.isFetching ? <RefreshCw className="mr-auto animate-spin text-slate-400" size={15} /> : null}
+            </div>
+            <label className="mt-3 flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3">
+              <Search size={16} className="text-slate-400" />
+              <input className="min-w-0 flex-1 bg-transparent text-sm outline-none" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="جستجوی دانش‌آموز" />
+            </label>
+          </div>
+          <div className="min-h-0 flex-1 overflow-auto">
+            {filtered.length ? filtered.map((c) => (
+              <button key={c.id} onClick={() => setConversationId(c.id)} className={`flex w-full items-center gap-3 border-b p-3 text-right hover:bg-slate-50 ${active?.id === c.id ? "bg-teal-50" : ""}`}>
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white">{(c.student?.name || "د").slice(0, 1)}</span>
+                <span className="min-w-0 flex-1">
+                  <strong className="block truncate">{c.student?.name || "دانش‌آموز"}</strong>
+                  <small className="block truncate text-slate-500">{c.lastMessage?.text || "بدون پیام"}</small>
+                </span>
+                {c.unread ? <Badge tone="red">{c.unread}</Badge> : null}
+              </button>
+            )) : <EmptyState title="گفتگویی پیدا نشد." />}
+          </div>
+        </Card>
+
+        <Card className="flex min-h-0 flex-col overflow-hidden p-0">
+          <div className="flex h-16 shrink-0 items-center justify-between border-b bg-white px-4">
+            <div>
+              <strong className="block">{active?.student?.name || "گفتگو"}</strong>
+              <span className="text-xs text-slate-500">{active?.presence?.online ? "آنلاین" : "آماده پاسخگویی"}</span>
+            </div>
+            <CheckCheck size={18} className="text-slate-400" />
+          </div>
+          <div ref={scrollRef} className="min-h-0 flex-1 space-y-2 overflow-auto bg-[#efeae2] p-4">
+            {messages.isLoading ? <EmptyState title="در حال دریافت پیام‌ها..." /> : null}
+            {messages.data?.length ? messages.data.map((message) => <Bubble key={message.id} message={message} mine={String(message.senderRole).toLowerCase() === "admin"} />) : !messages.isLoading ? <EmptyState title="پیامی ثبت نشده است." /> : null}
+          </div>
+          <form className="grid shrink-0 grid-cols-[1fr_44px] gap-2 border-t bg-white p-3" onSubmit={(event) => { event.preventDefault(); submit(); }}>
+            <Textarea className="max-h-28 min-h-11 resize-none py-2" rows={1} value={text} onChange={(event) => setText(event.target.value)} onKeyDown={onKeyDown} placeholder="پیام..." />
+            <button className="grid size-11 place-items-center rounded-md bg-brand text-white disabled:opacity-50" disabled={!text.trim() || send.isPending} aria-label="ارسال">
+              <Send size={18} />
+            </button>
+          </form>
+        </Card>
+      </section>
+    </div>
+  );
+}
+
+function Bubble({ message, mine }: { message: ChatMessage; mine: boolean }) {
+  return (
+    <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+      <div className={`max-w-[76%] rounded-lg px-3 py-2 text-sm shadow-sm ${mine ? "bg-[#d9fdd3] text-ink" : "bg-white text-ink"}`}>
+        <p className="whitespace-pre-wrap leading-7">{message.text}</p>
+        <span className="mt-1 block text-left text-[11px] text-slate-400" dir="ltr">{formatTime(message.createdAt)}</span>
+      </div>
+    </div>
+  );
+}
+
+function formatTime(value?: string) {
+  if (!value) return "";
+  return new Intl.DateTimeFormat("fa-IR", { hour: "2-digit", minute: "2-digit" }).format(new Date(value));
 }

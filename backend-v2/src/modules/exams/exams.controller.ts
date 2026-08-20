@@ -14,7 +14,7 @@ export class ExamsController {
   @Get("student/exams")
   @Roles(UserRole.STUDENT)
   listForStudent() {
-    return this.exams.list().then(ok);
+    return this.exams.list(false).then(ok);
   }
 
   @Post("student/exams/:id/start")
@@ -25,8 +25,8 @@ export class ExamsController {
 
   @Post("student/exams/:id/submit")
   @Roles(UserRole.STUDENT)
-  submit(@Param("id") id: string, @Body("score") score = 0) {
-    return this.exams.submit(id, Number(score)).then(ok);
+  submit(@Param("id") id: string, @Body("answers") answers: Array<{ questionId: string; selectedOption?: string | null }> = []) {
+    return this.exams.submit(id, answers).then(ok);
   }
 
   @Post("admin/exams")

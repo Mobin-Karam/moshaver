@@ -1,5 +1,5 @@
-import { Send, Wifi, WifiOff } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { CheckCheck, Send, Wifi, WifiOff } from 'lucide-react';
+import { KeyboardEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { apiClient } from '../../services/api-client';
 
 interface ChatMessage {
@@ -14,7 +14,7 @@ export function ChatPage() {
   const [text, setText] = useState('');
   const [status, setStatus] = useState<'loading' | 'ready' | 'sending' | 'error'>('loading');
   const [online, setOnline] = useState(navigator.onLine);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   async function loadMessages() {
     try {
@@ -58,13 +58,21 @@ export function ChatPage() {
     };
   }, []);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: 'end' });
+  useLayoutEffect(() => {
+    const node = scrollRef.current;
+    if (node) node.scrollTop = node.scrollHeight;
   }, [messages.length]);
 
+  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      void sendMessage();
+    }
+  }
+
   return (
-    <section className="flex min-h-[calc(100vh-164px)] flex-col overflow-hidden rounded-md border border-black/10 bg-[#efeae2]">
-      <div className="flex items-center justify-between border-b border-black/10 bg-white px-4 py-3">
+    <section className="flex h-[calc(100vh-164px)] min-h-[520px] flex-col overflow-hidden rounded-md border border-black/10 bg-[#efeae2]">
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-black/10 bg-white px-4 py-3">
         <div>
           <h1 className="text-base font-semibold">مشاور</h1>
           <p className="text-xs text-ink/60">{statusLabel(status)}</p>
@@ -74,26 +82,27 @@ export function ChatPage() {
         </span>
       </div>
 
-      <div className="flex-1 space-y-2 overflow-auto px-3 py-4">
+      <div ref={scrollRef} className="min-h-0 flex-1 space-y-2 overflow-auto px-3 py-4">
         {messages.length ? messages.map((message) => <Bubble key={message.id} message={message} />) : (
           <div className="mx-auto mt-8 max-w-xs rounded-md bg-white/90 px-3 py-2 text-center text-sm text-ink/60 shadow-sm">
             هنوز پیامی ثبت نشده است.
           </div>
         )}
-        <div ref={bottomRef} />
       </div>
 
       <form
-        className="grid grid-cols-[1fr_44px] gap-2 border-t border-black/10 bg-white p-2"
+        className="grid shrink-0 grid-cols-[1fr_44px] gap-2 border-t border-black/10 bg-white p-2"
         onSubmit={(event) => {
           event.preventDefault();
           void sendMessage();
         }}
       >
-        <input
-          className="h-11 rounded-md border border-black/10 bg-paper px-3 outline-none focus:border-ink"
+        <textarea
+          className="max-h-28 min-h-11 resize-none rounded-md border border-black/10 bg-paper px-3 py-2 outline-none focus:border-ink"
+          rows={1}
           value={text}
           onChange={(event) => setText(event.target.value)}
+          onKeyDown={onKeyDown}
           placeholder="پیام..."
         />
         <button className="grid size-11 place-items-center rounded-md bg-ink text-white disabled:opacity-50" disabled={!text.trim() || status === 'sending'} aria-label="ارسال">
@@ -110,7 +119,7 @@ function Bubble({ message }: { message: ChatMessage }) {
     <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[78%] rounded-md px-3 py-2 text-sm shadow-sm ${mine ? 'bg-[#d9fdd3]' : 'bg-white'}`}>
         <p className="whitespace-pre-wrap leading-7">{message.text}</p>
-        <span className="mt-1 block text-left text-[11px] text-ink/45" dir="ltr">{formatTime(message.createdAt)}</span>
+        <span className="mt-1 flex items-center justify-end gap-1 text-left text-[11px] text-ink/45" dir="ltr">{formatTime(message.createdAt)}{mine ? <CheckCheck size={13} /> : null}</span>
       </div>
     </div>
   );

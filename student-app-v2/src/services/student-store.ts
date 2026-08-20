@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 import { useMemo } from 'react';
 import {
+  createTaskCompletionPayload,
   currentAndNextTask,
   planMetrics,
   type ActiveStudySession,
   type ExamSummary,
   type StudentPlan,
   type StudentTask,
+  type TaskCompletionStatus,
   type SyncStatus,
 } from '@moshaver/student-core';
 import { apiClient } from './api-client';
@@ -86,7 +88,10 @@ interface StudentState {
   loadDashboard(): Promise<void>;
   loadPlan(date: string): Promise<void>;
   loadExams(): Promise<void>;
+  startTask(taskId: string): void;
+  finishTask(taskId: string, feedback?: { status?: TaskCompletionStatus; actualTests?: number; difficulty?: string; note?: string }): Promise<void>;
   completeTask(taskId: string): Promise<void>;
+  cancelFocus(): void;
 }
 
 const emptyPlan = (): StudentPlan => ({
@@ -200,24 +205,38 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       set({ exams: [] });
     }
   },
-  async completeTask(taskId) {
+  startTask(taskId) {
+    set({ activeSession: { id: `local-${Date.now()}`, taskId, startedAt: new Date().toISOString() } });
+  },
+  async finishTask(taskId, feedback) {
     const previousPlan = get().plan;
+    const task = previousPlan.tasks.find((item) => item.id === taskId);
+    if (!task) return;
+    const payload = createTaskCompletionPayload(task, feedback?.status || 'done', get().activeSession?.taskId === taskId ? get().activeSession?.startedAt : null);
+    const completion = {
+      ...payload,
+      actualTests: Number(feedback?.actualTests ?? payload.actualTests),
+      note: [feedback?.difficulty ? `سختی: ${feedback.difficulty}` : '', feedback?.note || ''].filter(Boolean).join(' | '),
+    };
     set((state) => ({
+      activeSession: null,
       plan: {
         ...state.plan,
-        tasks: state.plan.tasks.map((task) =>
-          task.id === taskId
-            ? { ...task, completion: { status: 'done', actualMinutes: plannedMinutesFromTask(task), actualTests: Number(task.testCount ?? 0) } }
-            : task,
-        ),
+        tasks: state.plan.tasks.map((item) => item.id === taskId ? { ...item, completion } : item),
       },
     }));
     try {
       await apiClient.request('POST', `/student/tasks/${taskId}/complete`);
       await get().loadDashboard();
     } catch (error) {
-      set({ plan: previousPlan, error: readableError(error), syncStatus: navigator.onLine ? 'failed' : 'offline' });
+      set({ plan: previousPlan, activeSession: null, error: readableError(error), syncStatus: navigator.onLine ? 'failed' : 'offline' });
     }
+  },
+  async completeTask(taskId) {
+    await get().finishTask(taskId);
+  },
+  cancelFocus() {
+    set({ activeSession: null });
   },
 }));
 
@@ -282,12 +301,6 @@ function formatTime(minutes: number) {
 function toMinutes(value: string) {
   const [hour = '0', minute = '0'] = value.split(':');
   return Number(hour) * 60 + Number(minute);
-}
-
-function plannedMinutesFromTask(task: StudentTask) {
-  const [startHour = '0', startMinute = '0'] = task.start.split(':');
-  const [endHour = '0', endMinute = '0'] = task.end.split(':');
-  return Math.max(0, Number(endHour) * 60 + Number(endMinute) - (Number(startHour) * 60 + Number(startMinute)));
 }
 
 function readableError(error: unknown) {
