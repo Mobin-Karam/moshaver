@@ -20,6 +20,7 @@ import { SyncModule } from "./modules/sync/sync.module";
 import { RealtimeModule } from "./modules/realtime/realtime.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
+import { ChatModule } from "./modules/chat/chat.module";
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { AnalyticsModule } from "./modules/analytics/analytics.module";
     RealtimeModule,
     NotificationsModule,
     AnalyticsModule,
+    ChatModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

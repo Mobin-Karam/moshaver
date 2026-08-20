@@ -42,6 +42,19 @@ export class ApiClient implements NetworkProvider {
     }
     return payload.data as TResponse;
   }
+
+  openEvents(onEvent: (type: string, data: Record<string, unknown>) => void) {
+    const source = new EventSource(`${this.baseUrl}/events`, { withCredentials: true });
+    source.addEventListener('message', (event) => {
+      try {
+        const payload = JSON.parse(event.data) as { type?: string; data?: Record<string, unknown> };
+        if (payload.type) onEvent(payload.type, payload.data ?? {});
+      } catch {
+        // Ignore malformed realtime frames and keep the chat usable with polling.
+      }
+    });
+    return source;
+  }
 }
 
 export const apiClient = new ApiClient();

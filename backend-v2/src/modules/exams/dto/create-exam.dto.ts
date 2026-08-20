@@ -2,14 +2,24 @@ import { IsArray, IsDateString, IsNumber, IsOptional, IsString, Min, ValidateNes
 import { Type } from "class-transformer";
 
 export class CreateQuestionDto {
+  @IsOptional()
   @IsString()
-  text!: string;
+  text?: string;
+
+  @IsOptional()
+  @IsString()
+  question?: string;
 
   @IsArray()
   options!: string[];
 
+  @IsOptional()
   @IsString()
-  correctAnswer!: string;
+  correctAnswer?: string;
+
+  @IsOptional()
+  @IsString()
+  correctOption?: string;
 
   @IsOptional()
   @IsString()
@@ -24,9 +34,15 @@ export class CreateExamDto {
   @IsString()
   subject?: string;
 
+  @IsOptional()
   @IsNumber()
   @Min(1)
-  duration!: number;
+  duration?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  durationMinutes?: number;
 
   @IsOptional()
   @IsNumber()
@@ -40,6 +56,25 @@ export class CreateExamDto {
   @IsOptional()
   @IsDateString()
   endTime?: string;
+
+  @IsOptional()
+  @IsDateString()
+  openAt?: string;
+
+  @IsOptional()
+  @IsDateString()
+  closeAt?: string;
+
+  @IsOptional()
+  @IsString()
+  isoDate?: string;
+
+  @IsOptional()
+  @IsString()
+  studentId?: string;
+
+  @IsOptional()
+  published?: boolean;
 
   @IsOptional()
   @IsArray()
