@@ -1,0 +1,13 @@
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { api } from "../services/api";
+import type { Student } from "../types/domain";
+
+export function useStudents() {
+  const [studentId, setStudentId] = useState("");
+  const query = useQuery({ queryKey: ["students"], queryFn: () => api.get<Student[]>("/admin/students") });
+  const students = query.data ?? [];
+  const selectedStudentId = studentId || students[0]?.id || "";
+  const selectedStudent = useMemo(() => students.find((student) => student.id === selectedStudentId) ?? null, [selectedStudentId, students]);
+  return { ...query, students, studentId: selectedStudentId, selectedStudent, setStudentId };
+}

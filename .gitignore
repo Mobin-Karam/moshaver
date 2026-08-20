@@ -1,5 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+admin-v2/tailwind.config.js
+admin-v2/tailwind.config.d.ts
+admin-v2/vite.config.js
+admin-v2/vite.config.d.ts
+admin-v2/vitest.config.js
+admin-v2/vitest.config.d.ts
+
+# Environment and local config
 .env
+.env.*
+!.env.example
+
+# Runtime data and backups
 backend/data/*.sqlite
 backend/data/*.sqlite-*
 backups/
+
+# Logs and OS/editor files
+*.log
 .DS_Store
+.idea/
+.vscode/
