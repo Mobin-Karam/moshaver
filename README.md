@@ -1,12 +1,162 @@
+در ادامه یک نسخه ساده‌تر، کاربرپسندتر و مناسب برای README پروژه آماده کردم. این نسخه برای کسی است که می‌خواهد بفهمد **این پروژه چیست، چه کاری انجام می‌دهد، چگونه اجرا می‌شود و چه امکاناتی دارد**.
+
+---
+
 # Moshaver | مشاور — v1.4.2
 
-A lightweight academic-advisor system with a low-end-Android-friendly Student PWA, a laptop-oriented Advisor/Admin console, and a separate Node.js + SQLite backend.
+# 🚀 Preview | پیش‌نمایش Moshaver
 
-# 📱 Moshaver v2 Student App Preview
+Moshaver یک سیستم کامل همراهی تحصیلی است که ارتباط بین دانش‌آموز و مشاور را ساده می‌کند.
 
-The new Moshaver student experience is designed for low-end Android devices with a fast PWA/Tauri-ready architecture.
+دانش‌آموز از طریق اپلیکیشن موبایل:
 
-## Mobile Screens
+- برنامه روزانه خود را مشاهده می‌کند
+- وظایف مطالعه را انجام می‌دهد
+- آزمون‌ها را شرکت می‌کند
+- نتیجه عملکرد خود را می‌بیند
+- با مشاور در ارتباط است
+
+مشاور از طریق پنل مدیریت:
+
+- برنامه می‌سازد
+- آزمون طراحی می‌کند
+- عملکرد دانش‌آموز را بررسی می‌کند
+- با دانش‌آموز گفتگو می‌کند
+- روند پیشرفت را مدیریت می‌کند
+
+
+---
+
+## 📱 Student App Preview
+
+اپلیکیشن دانش‌آموزی طراحی شده است برای:
+
+✅ موبایل‌های اندرویدی ضعیف  
+✅ اینترنت محدود  
+✅ سرعت بالا  
+✅ استفاده روزانه
+
+
+<div align="center">
+
+<table>
+
+<tr>
+
+<td align="center">
+<img src="docs/releases/01.png" width="180">
+
+<br>
+
+🏠 داشبورد روزانه
+
+<br>
+
+مشاهده برنامه امروز، درصد پیشرفت و هدف روز
+
+</td>
+
+
+<td align="center">
+<img src="docs/releases/02.png" width="180">
+
+<br>
+
+📚 برنامه مطالعه
+
+<br>
+
+مدیریت درس‌ها و وظایف روزانه
+
+</td>
+
+
+<td align="center">
+<img src="docs/releases/03.png" width="180">
+
+<br>
+
+📝 سیستم آزمون
+
+<br>
+
+شرکت در آزمون و مشاهده نتایج
+
+</td>
+
+
+<td align="center">
+<img src="docs/releases/04.png" width="180">
+
+<br>
+
+💬 چت مشاور
+
+<br>
+
+ارتباط مستقیم با مشاور
+
+</td>
+
+
+<td align="center">
+<img src="docs/releases/05.png" width="180">
+
+<br>
+
+👤 پروفایل
+
+<br>
+
+اطلاعات و وضعیت دانش‌آموز
+
+</td>
+
+
+</tr>
+
+</table>
+
+</div>
+
+
+---
+
+# 🎓 Student Experience Flow
+
+روند استفاده دانش‌آموز:
+
+
+سیستم مدیریت و مشاوره تحصیلی برای همراهی روزانه دانش‌آموز.
+
+Moshaver یک پلتفرم سبک و سریع است که شامل:
+
+* 📱 اپلیکیشن دانش‌آموزی (PWA) مناسب برای موبایل و اندرویدهای ضعیف
+* 💻 پنل مشاور/ادمین برای مدیریت برنامه، آزمون و ارتباط با دانش‌آموز
+* ⚙️ بک‌اند جداگانه با Node.js و SQLite
+
+هدف سیستم این است که مشاور بتواند:
+
+* برنامه روزانه و هفتگی بسازد
+* روند مطالعه دانش‌آموز را بررسی کند
+* آزمون طراحی کند
+* با دانش‌آموز ارتباط داشته باشد
+* عملکرد دانش‌آموز را تحلیل کند
+
+---
+
+# 📱 پیش‌نمایش اپلیکیشن دانش‌آموزی
+
+نسخه دانش‌آموزی Moshaver برای اجرا روی موبایل‌های ضعیف طراحی شده است.
+
+ویژگی‌های اصلی:
+
+* سرعت بالا
+* مصرف کم منابع
+* طراحی Mobile First
+* آماده برای توسعه آینده با Tauri
+
+## تصاویر محیط برنامه
 
 <div align="center">
 
@@ -16,31 +166,31 @@ The new Moshaver student experience is designed for low-end Android devices with
 <td align="center">
 <img src="docs/releases/01.png" width="180">
 <br>
-Student Dashboard
+داشبورد دانش‌آموز
 </td>
 
 <td align="center">
 <img src="docs/releases/02.png" width="180">
 <br>
-Daily Plan
+برنامه روزانه
 </td>
 
 <td align="center">
 <img src="docs/releases/03.png" width="180">
 <br>
-Exam System
+سیستم آزمون
 </td>
 
 <td align="center">
 <img src="docs/releases/04.png" width="180">
 <br>
-Advisor Chat
+چت با مشاور
 </td>
 
 <td align="center">
 <img src="docs/releases/05.png" width="180">
 <br>
-Student Profile
+پروفایل دانش‌آموز
 </td>
 
 </tr>
@@ -48,211 +198,472 @@ Student Profile
 
 </div>
 
-## v1.4.2 focused update
+---
 
-This release changes only the requested Student/Admin chat presentation, Student Shamsi date presentation, daily-task text readability and daily plan motivation text. Existing working auth, exams, inline exams, planner, SSE and notifications are kept intact.
+# آدرس‌های Production
 
-Daily plan JSON may include `motivationText`, and the Advisor can edit the same field from the Day Plan form.
+## اپلیکیشن دانش‌آموز
 
-## Production topology
-
-```text
-Student PWA  https://st.mahakaram.ir
-       │ same-origin /api/v1 proxy
-       ▼
-Backend API  https://api.mahakaram.ir/api/v1
-       ▲
-       │ local same-origin proxy
-Admin         http://localhost:8081
+```
+https://st.mahakaram.ir
 ```
 
-Student browser code and local Admin browser code intentionally use `/api/v1`; the Nginx/local proxy talks to `https://api.mahakaram.ir` server-side. This keeps HttpOnly cookie sessions reliable and avoids third-party-cookie/CORS problems.
+دانش‌آموز از این آدرس وارد سیستم می‌شود.
 
-## v1.4.2 — Admin, JSON and exam-delivery rebuild
+---
 
-This release preserves the working v1.3 security/session foundation and focuses on the sections that were unreliable or incomplete.
+## API Backend
 
-### Advisor/Admin
-
-- Fixed missing modal/import helpers that left multiple Admin controls non-functional.
-- Persistent login across page reloads; transient backend/network failures do not erase an otherwise valid browser session.
-- Same-origin local reverse proxy remains the required way to run Admin against production.
-- Day/week/month planner: create/edit day, create/edit/delete tasks, duplicate day, draft/publish and publish range.
-- JSON import schema v2 with file/drop/paste, preview, validation, conflict warnings, draft commit and direct publish.
-- **The student selected in Admin is authoritative for JSON imports**; copied JSON cannot silently write to another student account.
-- Timed exam manager with publish state, open/close time, duration, attempt limit, syllabus and question editor.
-- Pending exam retry requests can be approved or rejected from Admin.
-- Redesigned chat: conversation search, presence, quick replies, grouped messages, read receipts and SSE updates.
-- Advisor notification center + Advisor Inbox for chat unread, task issues, recovery requests, overdue reviews and exam retry requests.
-- Custom stacked “Sonner-style” toasts without adding a frontend framework/library.
-
-### Student
-
-- Timed exams stay locked until `openAt`, close after the exam window, and normally allow one submitted attempt.
-- Active exam attempts resume rather than creating a second attempt.
-- Local answer draft is kept while an active exam is in progress; leaving the exam does not stop server time.
-- Student can request one more try after exhausting the allowed attempts; Advisor approval unlocks an extra attempt.
-- Exam countdown respects both quiz duration and the exam close time.
-- Better exam availability/readiness/attempt UI.
-- Better Advisor chat with quick prompts, grouped messages, read state and lightweight composer.
-- Notification center now keeps read/unread state, supports per-item read and “read all”.
-- Improved custom toast feedback.
-- Existing Focus/Today/study-session/offline/PWA behavior retained.
-
-### Backend/security retained and extended
-
-- HttpOnly cookie sessions; no authentication token in localStorage.
-- Stable CSRF token per session + one safe frontend CSRF refresh/retry.
-- Exact CORS allow-list, credential support and compatibility for `Cache-Control`/`Pragma` preflights.
-- Login throttling, versioned scrypt hashes and production fail-closed secrets.
-- Reliable/idempotent logout and wrong-role cleanup.
-- Shared persisted SSE event stream.
-- Server-authoritative study/report and quiz scoring data.
-- Additive SQLite migrations; existing `/data/konkur.sqlite` is supported.
-- New exam delivery fields and `exam_attempt_requests` are added without deleting existing plans/reports/chat data.
-
-## Repository
-
-```text
-moshaver-fullstack-v1.4.2/
-├── backend/
-├── student-app/
-├── admin-app/
-├── examples/
-│   ├── week-plan-and-exam-v2.json
-│   └── moshaver-summer-plan-1405-28mordad-to-10mehr.json
-├── tests/
-├── scripts/
-└── docs/
-    ├── README.md
-    ├── reference/
-    └── releases/
+```
+https://api.mahakaram.ir/api/v1
 ```
 
-## Run locally
+تمام اطلاعات:
 
-Requires Node.js 22.5+.
+* برنامه‌ها
+* آزمون‌ها
+* پیام‌ها
+* اعلان‌ها
 
-```bash
-cd moshaver-fullstack-v1.4.2
-chmod +x start-dev.sh
-./start-dev.sh
+از طریق این API مدیریت می‌شوند.
+
+---
+
+## پنل مشاور / Admin
+
+در محیط Production:
+
+```
+https://admin.mahakaram.ir
 ```
 
-Then:
+در محیط توسعه محلی:
 
-```text
-Student: http://localhost:8080
-Admin:   http://localhost:8081
-API:     http://localhost:4000/api/v1
-Health:  http://localhost:4000/health
 ```
-
-The local Student and Admin servers include same-origin reverse proxies. Do not replace the Admin helper with `python3 -m http.server` when using the production backend.
-
-## Run local Admin against production
-
-```bash
-cd admin-app
-chmod +x run-local-admin.sh
-./run-local-admin.sh
-```
-
-Open:
-
-```text
 http://localhost:8081
 ```
 
-The browser calls `http://localhost:8081/api/v1/...`; `local-server.js` proxies those requests to `https://api.mahakaram.ir/api/v1/...`.
+---
 
-## JSON planning and exams
+# معماری سیستم
 
-Use Admin’s student selector first, then open **Planner → JSON** or **Exams → JSON exam**.
+```
+                 دانش‌آموز
 
-```text
-JSON file / paste
-      ↓
-Preview + validation
-      ↓
-Selected student is enforced
-      ↓
-Draft or Publish
-      ↓
-SQLite
-      ↓
-Student PWA
+        https://st.mahakaram.ir
+
+                  │
+
+                  │ API
+
+                  ▼
+
+
+          Backend API
+
+ https://api.mahakaram.ir/api/v1
+
+
+                  ▲
+
+
+                  │
+
+
+              Admin Panel
+
+ https://admin.mahakaram.ir
+
 ```
 
-See `docs/reference/JSON_IMPORT_GUIDE.md` and `examples/week-plan-and-exam-v2.json`.
+---
 
-## Existing summer plan
+# امکانات اصلی سیستم
 
-The prepared summer schedule remains included as:
+## 👨‍🎓 امکانات دانش‌آموز
 
-```text
-examples/moshaver-summer-plan-1405-28mordad-to-10mehr.json
+### داشبورد روزانه
+
+دانش‌آموز می‌تواند:
+
+* برنامه امروز را ببیند
+* میزان پیشرفت خود را مشاهده کند
+* وظایف انجام شده را ثبت کند
+* انگیزه روزانه دریافت کند
+
+---
+
+### برنامه مطالعه
+
+پشتیبانی از:
+
+* برنامه روزانه
+* برنامه هفتگی
+* برنامه ماهانه
+
+هر فعالیت شامل:
+
+* ساعت شروع
+* عنوان درس
+* مدت مطالعه
+* تعداد تست
+* وضعیت انجام
+
+---
+
+### سیستم آزمون
+
+امکانات:
+
+* آزمون زمان‌دار
+* سوالات چهارگزینه‌ای
+* محدودیت تعداد تلاش
+* ادامه آزمون نیمه‌تمام
+* ارسال پاسخ
+* درخواست آزمون مجدد
+
+روند آزمون:
+
+```
+ساخت آزمون توسط مشاور
+
+        ↓
+
+انتشار
+
+        ↓
+
+فعال شدن در زمان مشخص
+
+        ↓
+
+شرکت دانش‌آموز
+
+        ↓
+
+ثبت نتیجه
 ```
 
-It can still be imported as draft, reviewed in Day/Week/Month, and then published.
+---
 
-## Exam lifecycle
+### چت با مشاور
 
-```text
-Admin creates/imports exam + questions
-        ↓
-Draft / Published
-        ↓
-Before openAt: locked
-        ↓
-openAt..closeAt: Start enabled
-        ↓
-One active run (resumable)
-        ↓
-Submit once
-        ↓
-Attempt limit reached
-        ↓
-Student requests another try
-        ↓
-Advisor approves/rejects
-        ↓
-Approved → one additional attempt
+سیستم چت شامل:
+
+* پیام متنی
+* نمایش وضعیت خوانده شدن
+* پاسخ سریع
+* بروزرسانی لحظه‌ای با SSE
+
+---
+
+### اعلان‌ها
+
+دانش‌آموز دریافت می‌کند:
+
+* تغییر برنامه
+* آزمون جدید
+* پیام مشاور
+* یادآوری‌ها
+
+---
+
+# 👨‍💻 امکانات پنل مشاور / Admin
+
+## مدیریت برنامه
+
+مشاور می‌تواند:
+
+* برنامه روزانه بسازد
+* برنامه هفتگی مدیریت کند
+* وظایف را اضافه یا حذف کند
+* برنامه را منتشر کند
+
+---
+
+## Import برنامه با JSON
+
+مشاور می‌تواند برنامه را از فایل JSON وارد کند.
+
+روند:
+
+```
+فایل JSON
+
+      ↓
+
+بررسی و اعتبارسنجی
+
+      ↓
+
+انتخاب دانش‌آموز
+
+      ↓
+
+Draft
+
+      ↓
+
+Publish
+
+      ↓
+
+نمایش برای دانش‌آموز
 ```
 
-Backend—not the frontend—enforces time availability and attempt limits.
+نکته:
 
-## Validation
+دانش‌آموز انتخاب شده در پنل Admin مرجع اصلی ثبت اطلاعات است.
 
-Run before deployment:
+---
+
+# مدیریت آزمون
+
+مشاور می‌تواند:
+
+* آزمون بسازد
+* سوال اضافه کند
+* زمان شروع تعیین کند
+* زمان پایان تعیین کند
+* تعداد دفعات شرکت را مشخص کند
+* درخواست آزمون مجدد را بررسی کند
+
+---
+
+# ساختار Repository
+
+```
+moshaver-fullstack-v1.4.2/
+
+├── backend/
+│
+├── student-app/
+│
+├── admin-app/
+│
+├── examples/
+│   ├── week-plan-and-exam-v2.json
+│   └── moshaver-summer-plan-1405-28mordad-to-10mehr.json
+│
+├── tests/
+│
+├── scripts/
+│
+└── docs/
+
+```
+
+---
+
+# اجرای پروژه در محیط توسعه
+
+نیازمندی:
+
+```
+Node.js 22.5+
+```
+
+اجرا:
+
+```bash
+cd moshaver-fullstack-v1.4.2
+
+chmod +x start-dev.sh
+
+./start-dev.sh
+```
+
+---
+
+بعد از اجرا:
+
+## Student
+
+```
+http://localhost:8080
+```
+
+## Admin
+
+```
+http://localhost:8081
+```
+
+## Backend API
+
+```
+http://localhost:4000/api/v1
+```
+
+## Health Check
+
+```
+http://localhost:4000/health
+```
+
+---
+
+# اجرای Admin محلی با Backend Production
+
+برای اتصال Admin محلی به API اصلی:
+
+```bash
+cd admin-app
+
+chmod +x run-local-admin.sh
+
+./run-local-admin.sh
+```
+
+سپس:
+
+```
+http://localhost:8081
+```
+
+باز کنید.
+
+Admin درخواست‌ها را از:
+
+```
+http://localhost:8081/api/v1
+```
+
+به:
+
+```
+https://api.mahakaram.ir/api/v1
+```
+
+ارسال می‌کند.
+
+---
+
+# نمونه برنامه JSON
+
+نمونه فایل‌ها:
+
+```
+examples/
+```
+
+شامل:
+
+```
+week-plan-and-exam-v2.json
+```
+
+و:
+
+```
+moshaver-summer-plan-1405-28mordad-to-10mehr.json
+```
+
+می‌باشد.
+
+---
+
+# امنیت سیستم
+
+سیستم شامل:
+
+* Session امن با Cookie HttpOnly
+* CSRF Protection
+* محدودسازی تلاش ورود
+* مدیریت نقش‌ها
+* CORS محدود شده
+* SSE امن برای ارتباط لحظه‌ای
+
+---
+
+# Database
+
+سیستم فعلی از SQLite استفاده می‌کند:
+
+```
+/data/konkur.sqlite
+```
+
+Migrationها به صورت افزایشی هستند.
+
+یعنی:
+
+* اطلاعات قبلی حذف نمی‌شوند
+* برنامه‌ها
+* گزارش‌ها
+* پیام‌ها
+
+حفظ می‌شوند.
+
+---
+
+# بررسی قبل از Deploy
+
+قبل از انتشار نسخه جدید:
 
 ```bash
 ./scripts/validate-pack.sh
 ```
 
-It checks syntax, frontend/API contracts, auth/CSRF/logout, CORS, timed exam gating, one-attempt/retry approval, JSON target enforcement, JSON exam questions, chat/SSE, sessions, activity validation and notification behavior.
+بررسی می‌کند:
 
-## Upgrade from v1.3.x
+* API
+* Login
+* Logout
+* Session
+* CSRF
+* CORS
+* آزمون‌ها
+* JSON Import
+* Chat
+* Notification
 
-Keep your persistent DB path:
+---
 
-```env
-DATABASE_PATH=/data/konkur.sqlite
+# مسیر توسعه آینده
+
+Moshaver آماده توسعه به نسخه‌های بعدی است:
+
+## v1.5
+
+* تحلیل بهتر آزمون
+* بانک سوال
+* گزارش عملکرد
+* تجربه بهتر دانش‌آموز
+
+## v2
+
+معماری جدید:
+
+* NestJS
+* Fastify
+* TypeORM
+* PostgreSQL
+* Tauri Mobile/Desktop App
+
+---
+
+# مستندات بیشتر
+
+مستندات اصلی:
+
+```
+docs/README.md
 ```
 
-Do **not** delete the DB. v1.4 runs additive schema migration at startup.
+راهنمای عملیات:
 
-For production cookie settings keep the same-origin proxy model and use:
-
-```env
-SESSION_COOKIE_NAME=moshaver_session
-COOKIE_SECURE=1
-COOKIE_SAMESITE=Strict
-ALLOW_BEARER_AUTH=0
+```
+docs/REPO_AUDIT_AND_RUNBOOK.md
 ```
 
-See `docs/reference/RUNFLARE_DEPLOY.md` for deployment order.
+راهنمای Deploy:
 
-## Current audit and runbook
+```
+docs/reference/RUNFLARE_DEPLOY.md
+```
 
-Use `docs/README.md` as the documentation dashboard and `docs/REPO_AUDIT_AND_RUNBOOK.md` as the operational runbook.
+---
+
+**Moshaver | مشاور**
+یک همراه تحصیلی دیجیتال برای برنامه‌ریزی، آزمون، ارتباط با مشاور و پیشرفت روزانه دانش‌آموز.
