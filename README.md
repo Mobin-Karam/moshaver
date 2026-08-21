@@ -1,4 +1,14 @@
-# Moshaver | مشاور — v1.4.2
+# 🎓 Moshaver | مشاور
+
+> سیستم هوشمند همراهی و مشاوره تحصیلی برای مدیریت برنامه مطالعه، آزمون، ارتباط با مشاور و تحلیل پیشرفت دانش‌آموز
+
+[![Version](https://img.shields.io/badge/version-v1.4.2-blue.svg)]()
+[![Node.js](https://img.shields.io/badge/Node.js-22.x-green.svg)]()
+[![Database](https://img.shields.io/badge/Database-SQLite-orange.svg)]()
+[![Frontend](https://img.shields.io/badge/Frontend-PWA-purple.svg)]()
+[![Security](https://img.shields.io/badge/Security-HttpOnly%20%7C%20CSRF-red.svg)]()
+[![Deployment](https://img.shields.io/badge/Deployment-Runflare-black.svg)]()
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-success.svg)]()
 
 سیستم مدیریت و مشاوره تحصیلی برای همراهی روزانه دانش‌آموز.
 
