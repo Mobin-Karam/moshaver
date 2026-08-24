@@ -1,0 +1,20 @@
+{
+	"hooks": {
+
+		"SessionStart": [
+			{
+				"type": "command",
+				"command": "./.github/hooks/before-audit.sh"
+			}
+		],
+
+
+		"SessionEnd": [
+			{
+				"type": "command",
+				"command": "./.github/hooks/after-audit.sh"
+			}
+		]
+
+	}
+}
