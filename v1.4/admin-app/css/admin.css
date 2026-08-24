@@ -9,6 +9,17 @@
   --warn: #f6b73c;
   --danger: #c84a4a;
   --ok: #268a63;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --font-sm: 0.875rem;
+  --font-md: 1rem;
+  --font-lg: 1.25rem;
 }
 * {
   box-sizing: border-box;
@@ -1980,4 +1991,79 @@ select:focus {
 .admin-chat-composer .btn {
   border-radius: 18px !important;
   min-width: 78px;
+}
+
+/* v1.4.3 — accessibility, low-end device, and modular admin shell refinements */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.skip-link {
+  position: fixed;
+  inset-block-start: 8px;
+  inset-inline-start: 8px;
+  z-index: 1000;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--navy);
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 120ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgba(29, 186, 167, 0.35);
+  outline-offset: 2px;
+}
+
+.btn:disabled,
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.api-state.syncing {
+  color: #775a11;
+  background: #fff7dc;
+  border-color: #f1dfa3;
+}
+
+.drop-zone[role="button"] {
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .btn,
+  .icon-btn,
+  .nav,
+  .mobile-menu,
+  .drop-zone[role="button"] {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

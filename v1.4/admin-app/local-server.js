@@ -126,7 +126,7 @@ function serve(req, res) {
   if (req.url.split('?')[0] === '/config.js') {
     var config = [
       '(function(global){',
-      "global.APP_CONFIG={API_BASE_URL:'/api/v1',APP_VERSION:'1.4.2',STUDENT_URL:'https://st.mahakaram.ir',ADMIN_URL:'http://localhost:"+port+"'};",
+      "global.APP_CONFIG={API_BASE_URL:'/api/v1',APP_VERSION:'1.4.3',STUDENT_URL:'https://st.mahakaram.ir',ADMIN_URL:'http://localhost:"+port+"'};",
       '})(window);'
     ].join('\n');
     res.statusCode = 200;

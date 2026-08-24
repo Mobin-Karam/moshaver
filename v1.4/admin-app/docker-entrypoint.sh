@@ -4,7 +4,7 @@ API_PROXY_TARGET="${API_PROXY_TARGET:-https://api.mahakaram.ir}"
 STUDENT_URL="${STUDENT_URL:-https://st.mahakaram.ir}"
 ADMIN_URL="${ADMIN_URL:-https://admin.mahakaram.ir}"
 NOTES="${APP_RELEASE_NOTES:-بازسازی پنل مشاور: برنامه‌ریز و JSON، آزمون و سؤال، درخواست تلاش مجدد، اعلان‌ها، گفت‌وگو و نشست پایدار.}"
-if [ -n "${APP_VERSION:-}" ]; then VERSION="$APP_VERSION"; elif [ -f /build-version ]; then VERSION="$(cat /build-version)"; else VERSION="1.4.2"; fi
+if [ -n "${APP_VERSION:-}" ]; then VERSION="$APP_VERSION"; elif [ -f /build-version ]; then VERSION="$(cat /build-version)"; else VERSION="1.4.3"; fi
 cat > /usr/share/nginx/html/config.js <<CFG
 window.APP_CONFIG = { API_BASE_URL: '/api/v1', APP_VERSION: '${VERSION}', STUDENT_URL: '${STUDENT_URL}', ADMIN_URL: '${ADMIN_URL}' };
 CFG
