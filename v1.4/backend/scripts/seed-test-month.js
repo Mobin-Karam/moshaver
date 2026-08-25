@@ -2,7 +2,7 @@
 
 var fs=require("node:fs"),path=require("node:path");
 var db=require("../src/db").db;
-var fixture=JSON.parse(fs.readFileSync(path.resolve(__dirname,"../../moshaver-30-day-all-task-types.json"),"utf8"));
+var fixture=JSON.parse(fs.readFileSync(path.resolve(__dirname,"../seed/moshaver-30-day-all-task-types.json"),"utf8"));
 var username=String(process.env.SEED_STUDENT_USERNAME||"").trim();
 var student=username?db.prepare("SELECT s.id,s.name FROM students s JOIN users u ON u.student_id=s.id WHERE u.username=? AND u.role='student' AND u.is_active=1 AND s.account_status<>'archived'").get(username):db.prepare("SELECT id,name FROM students WHERE account_status<>'archived' ORDER BY created_at LIMIT 1").get();
 if(!student)throw new Error("No active student found. Run npm run seed first or set SEED_STUDENT_USERNAME.");

@@ -81,6 +81,7 @@ for (var day = 0; day < 30; day++) {
 
 var bundle = { schemaVersion: 2, studentId: null, fixture: { name: "30-day-all-task-types", startDate: iso(0), endDate: iso(29), days: 30, taskTypes: ["study", "review", "test", "class", "prayer", "meal", "break", "exam"] }, plans: plans, exams: exams };
 fs.writeFileSync(path.join(root, "moshaver-30-day-all-task-types.json"), JSON.stringify(bundle, null, 2) + "\n");
+fs.writeFileSync(path.join(root, "backend", "seed", "moshaver-30-day-all-task-types.json"), JSON.stringify(bundle, null, 2) + "\n");
 fs.mkdirSync(path.join(root, "examples", "json"), { recursive: true });
 fs.writeFileSync(path.join(root, "examples", "json", "plan-day.example.json"), JSON.stringify({ schemaVersion: 2, studentId: null, plans: [plans[0]], exams: [] }, null, 2) + "\n");
 fs.writeFileSync(path.join(root, "examples", "json", "exam-with-questions.example.json"), JSON.stringify({ schemaVersion: 2, studentId: null, plans: [], exams: [exams[0]] }, null, 2) + "\n");

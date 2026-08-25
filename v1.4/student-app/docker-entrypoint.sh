@@ -2,9 +2,14 @@
 set -eu
 API_PROXY_TARGET="${API_PROXY_TARGET:-https://api.mahakaram.ir}"
 STUDENT_URL="${STUDENT_URL:-https://st.mahakaram.ir}"
-ADMIN_URL="${ADMIN_URL:-http://localhost:8081}"
+ADMIN_URL="${ADMIN_URL:-https://admin.mahakaram.ir}"
 NOTES="${APP_RELEASE_NOTES:-آزمون زمان‌دار یک‌تلاشه، درخواست تلاش مجدد، اعلان و گفت‌وگوی بهتر، برنامه‌های JSON و نشست پایدار.}"
 if [ -n "${APP_VERSION:-}" ]; then VERSION="$APP_VERSION"; elif [ -f /build-version ]; then VERSION="$(cat /build-version)"; else VERSION="1.6.0"; fi
+
+case "$API_PROXY_TARGET" in
+  http://*|https://*) API_PROXY_TARGET="${API_PROXY_TARGET%/}" ;;
+  *) echo "API_PROXY_TARGET must start with http:// or https://" >&2; exit 1 ;;
+esac
 
 # API_BASE_URL is intentionally same-origin. Do not point the browser directly
 # at api.mahakaram.ir; nginx proxies /api/v1 to the configured backend instead.
