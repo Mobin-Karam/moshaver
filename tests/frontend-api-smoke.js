@@ -2,6 +2,7 @@
 var fs = require("fs"),
   vm = require("vm"),
   path = require("path");
+var appRoot = path.resolve(__dirname, "../v1.4");
 function assert(ok, msg) {
   if (!ok) throw new Error(msg);
 }
@@ -82,6 +83,8 @@ function runApi(file, key) {
   };
   sandbox.window = sandbox;
   sandbox.APP_CONFIG = { API_BASE_URL: "/api/v1" };
+  var shared = path.join(path.dirname(file), "api-client.shared.js");
+  vm.runInNewContext(fs.readFileSync(shared, "utf8"), sandbox, { filename: shared });
   vm.runInNewContext(fs.readFileSync(file, "utf8"), sandbox, {
     filename: file,
   });
@@ -124,18 +127,18 @@ function runApi(file, key) {
   });
 }
 (async function () {
-  await runApi(path.join(__dirname, "../student-app/js/api.js"), "student");
-  await runApi(path.join(__dirname, "../admin-app/js/api.js"), "admin");
+  await runApi(path.join(appRoot, "student-app/js/api.js"), "student");
+  await runApi(path.join(appRoot, "admin-app/js/api.js"), "admin");
   var admin = fs.readFileSync(
-    path.join(__dirname, "../admin-app/js/admin.js"),
+    path.join(appRoot, "admin-app/js/admin.js"),
     "utf8",
   );
   assert(
-    /DOMContentLoaded',init/.test(admin) && /else init\(\)/.test(admin),
+    /DOMContentLoaded["'],\s*init/.test(admin) && /else\s+init\(\)/.test(admin),
     "admin init must execute",
   );
   var update = fs.readFileSync(
-    path.join(__dirname, "../admin-app/js/update.js"),
+    path.join(appRoot, "admin-app/js/update.js"),
     "utf8",
   );
   assert(

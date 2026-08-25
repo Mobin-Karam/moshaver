@@ -1,0 +1,11 @@
+(function(global){"use strict";
+function supported(){return "serviceWorker" in navigator&&"PushManager" in global&&"Notification" in global;}
+function request(method,path,body){return new Promise(function(resolve,reject){global.API.request(method,path,body,function(err,data){if(err)reject(err);else resolve(data);});});}
+function bytes(key){var p="=".repeat((4-key.length%4)%4),s=(key+p).replace(/-/g,"+").replace(/_/g,"/"),raw=atob(s),a=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)a[i]=raw.charCodeAt(i);return a;}
+async function status(){var sub=null;if(supported()){var reg=await navigator.serviceWorker.ready;sub=await reg.pushManager.getSubscription();}var remote=await request("GET","/push/status"+(sub?"?endpoint="+encodeURIComponent(sub.endpoint):""),null);return{supported:supported(),permission:supported()?Notification.permission:"unsupported",registered:!!sub&&!!remote.registered,serverConfigured:!!remote.serverConfigured,preferences:remote.preferences||{}};}
+async function enable(){if(!supported())throw new Error("این مرورگر اعلان سیستمی را پشتیبانی نمی‌کند.");var permission=Notification.permission;if(permission==="default")permission=await Notification.requestPermission();if(permission!=="granted")throw new Error(permission==="denied"?"اجازه اعلان در تنظیمات مرورگر مسدود شده است.":"اجازه اعلان داده نشد.");var cfg=await request("GET","/push/config",null);if(!cfg.supported||!cfg.vapidPublicKey)throw new Error("ارسال اعلان هنوز روی سرور تنظیم نشده است.");var reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes(cfg.vapidPublicKey)});await request("POST","/push/subscriptions",sub.toJSON());return status();}
+async function disable(){if(supported()){var reg=await navigator.serviceWorker.ready,sub=await reg.pushManager.getSubscription();if(sub){await request("DELETE","/push/subscriptions?endpoint="+encodeURIComponent(sub.endpoint),null);await sub.unsubscribe();}}return status();}
+function preferences(value){return request("PUT","/push/preferences",value);}
+function test(){return request("POST","/push/test",{});}
+global.PushClient={supported:supported,status:status,enable:enable,disable:disable,preferences:preferences,test:test};
+})(window);

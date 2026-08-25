@@ -1,0 +1,190 @@
+/* Moshaver Student UI v1.6.0 — Dark theme overrides */
+
+body.dark {
+  background: #101820;
+  color: #eef4f5;
+}
+
+body.dark .topbar,
+body.dark .bottom-nav,
+body.dark .metric-card,
+body.dark .review-card,
+body.dark .section-block,
+body.dark .exam-card,
+body.dark .menu-list,
+body.dark .menu-row,
+body.dark .modal,
+body.dark .next-strip {
+  background: #17232d;
+  border-color: #283741;
+  color: #edf3f4;
+}
+
+body.dark .timeline-card {
+  background: #15212a;
+  border-color: #2a3942;
+  color: #edf3f4;
+}
+
+body.dark .timeline-card.current {
+  background: #12342f;
+  border-color: #1dbaa7;
+}
+
+body.dark input,
+body.dark textarea,
+body.dark select {
+  background: #111b23;
+  color: #edf3f4;
+  border-color: #34424a;
+}
+
+body.dark .muted,
+body.dark .timeline-card p,
+body.dark .section-heading p {
+  color: #a6b1b7;
+}
+
+body.dark .exam-focus {
+  background: #2a251b;
+  border-color: #4f422b;
+}
+
+body.dark .menu-row {
+  border-color: #27353d;
+}
+
+body.dark .about-card {
+  color: #aeb7bd;
+}
+
+body.dark .toast-card,
+body.dark .chat-quick-actions {
+  background: #17232d;
+  border-color: #2c3c45;
+}
+
+body.dark .exam-mini-stats span,
+body.dark .exam-delivery-panel,
+body.dark .notification-item {
+  background: #15212a;
+  border-color: #2a3942;
+}
+
+body.dark .notification-item.unread {
+  background: #14322e;
+  border-color: #246457;
+}
+
+body.dark .notification-copy p {
+  color: #b4c0c5;
+}
+
+body.dark .timeline-card.exam-task-card {
+  background: #12312e;
+  border-color: #25695f;
+}
+
+body.dark .timeline-exam-btn {
+  background: #1dbaa7;
+  color: #092d29;
+}
+
+body.dark .daily-motivation {
+  background: #17262b;
+  border-color: #2d4144;
+}
+
+.dark .daily-motivation p {
+  color: #dce8e3;
+}
+
+.dark .shamsi-date-btn {
+  background: #17232d;
+  color: #e8efec;
+  border-color: #2c3c45;
+}
+
+.dark .chat-shell,
+.dark .chat-messages {
+  background-color: #162328;
+}
+
+.dark .telegram-chat-head,
+.dark .chat-composer,
+.dark .chat-quick-actions {
+  background: #17232d;
+}
+
+.dark .message-row.theirs .message-bubble {
+  background: #22333a;
+  color: #ecf3f0;
+}
+
+.dark .message-row.mine .message-bubble {
+  background: #17473f;
+  color: #eaf7f4;
+}
+
+body.dark .attempt-history-card,
+body.dark .review-question,
+body.dark .learning-summary-card,
+body.dark .learning-item,
+body.dark .mastery-buttons button {
+  background: #17232d;
+  border-color: #2c3c45;
+  color: #e8efec;
+}
+
+body.dark .attempt-review-stats > div,
+body.dark .review-option,
+body.dark .answer-explanation {
+  background: #15212a;
+  border-color: #2a3942;
+}
+
+body.dark .learning-item.due {
+  background: #2b281f;
+  border-color: #66562f;
+}
+
+body.dark .learning-item p,
+body.dark .learning-form-grid label {
+  color: #bdc8cc;
+}
+
+body.dark .answer-hint {
+  background: #30291b;
+  color: #dbc888;
+}
+
+body.dark .learning-location {
+  background: #18302d;
+  color: #a6c8c0;
+}
+
+body.dark .learning-summary-grid > article,
+body.dark .review-options > span {
+  background: #17232d;
+  border-color: #2c3c45;
+  color: #e8efec;
+}
+
+body.dark .attempt-review-stats > span {
+  background: #15212a;
+}
+
+body.dark .learning-patterns > span {
+  background: #18302d;
+  color: #a6c8c0;
+}
+
+body.dark .learning-patterns > .mistake-pattern {
+  background: #392326;
+  color: #e6b2b2;
+}
+
+body.dark .learning-due-card {
+  background: #28251d;
+  border-color: #5f5232;
+}

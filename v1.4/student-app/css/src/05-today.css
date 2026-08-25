@@ -1,0 +1,269 @@
+/* Moshaver Student UI v1.6.0 — Today dashboard, current activity, metrics and daily review */
+
+.now-card {
+  background: #173a5b;
+  color: #fff;
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 13px 32px rgba(23, 58, 91, 0.18);
+  overflow: hidden;
+  position: relative;
+}
+
+.now-card:after {
+  content: "";
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: rgba(29, 186, 167, 0.17);
+  left: -55px;
+  top: -60px;
+}
+
+.now-head {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.now-label {
+  font-size: var(--font-xs);
+  font-weight: 800;
+  background: #1dbaa7;
+  padding: 5px 10px;
+  border-radius: 20px;
+}
+
+.clock-label {
+  font-size: var(--font-xs);
+  color: #cbd8e4;
+  direction: ltr;
+}
+
+.empty-now {
+  text-align: center;
+  padding: 20px 5px 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.empty-now .hero-icon {
+  color: #7fd8cc;
+}
+
+.empty-now h3 {
+  font-size: var(--font-md);
+  margin: 9px 0 3px;
+}
+
+.empty-now p {
+  font-size: var(--font-xs);
+  color: #c5d0da;
+  margin: 0;
+}
+
+.task-type-line {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  margin-top: 15px;
+  position: relative;
+  z-index: 1;
+}
+
+.now-card .round-icon {
+  background: rgba(255, 255, 255, 0.13);
+  color: #9ff3e7;
+}
+
+.subject-label {
+  font-size: var(--font-xs);
+  color: #91e6da;
+}
+
+.now-card h3 {
+  font-size: var(--font-xl);
+  margin: 3px 0;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.meta-row span {
+  font-size: var(--font-xs);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.now-actions {
+  display: flex;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.now-card .btn.soft {
+  background: rgba(255, 255, 255, 0.11);
+  color: #fff;
+}
+
+.active-timer {
+  margin: 10px 0;
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 12px;
+  padding: 9px 11px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.active-timer span {
+  font-size: var(--font-xs);
+  color: #b9c9d5;
+}
+
+.active-timer strong {
+  direction: ltr;
+  font-size: var(--font-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.next-strip {
+  margin: 10px 0;
+  background: #fff;
+  border: 1px solid #e0e8e3;
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.next-strip span {
+  font-size: var(--font-xs);
+  background: #edf5f2;
+  color: #60726f;
+  padding: 4px 7px;
+  border-radius: 7px;
+}
+
+.next-strip strong {
+  font-size: var(--font-xs);
+  flex: 1;
+}
+
+.next-strip small {
+  direction: ltr;
+  color: #71808a;
+}
+
+.metric-grid {
+  display: flex;
+  gap: 8px;
+  margin: 11px 0;
+}
+
+.metric-card {
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #e2e9e4;
+  border-radius: 15px;
+  padding: 12px;
+}
+
+.metric-card > span {
+  font-size: var(--font-xs);
+  color: #74828c;
+  display: block;
+}
+
+.metric-card strong {
+  display: block;
+  font-size: var(--font-md);
+  margin: 6px 0 2px;
+}
+
+.metric-card small {
+  font-size: var(--font-xs);
+  color: #87939a;
+}
+
+.review-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid #eef2ef;
+}
+
+.review-item:first-child {
+  margin-top: 8px;
+}
+
+.review-item > div {
+  flex: 1;
+}
+
+.review-item strong {
+  font-size: var(--font-xs);
+  display: block;
+}
+
+.review-item small {
+  font-size: var(--font-xs);
+  color: #849099;
+}
+
+.review-item button {
+  border: 0;
+  background: #eaf7f4;
+  color: #13776d;
+  border-radius: 9px;
+  padding: 7px 9px;
+  font-size: var(--font-xs);
+  font-weight: 700;
+}
+
+.now-card h3 {
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.now-card .subject-label {
+  font-size: var(--font-xs);
+}
+
+.meta-row span {
+  font-size: var(--font-xs);
+}
+
+.metric-card > span,
+.metric-card small {
+  font-size: var(--font-xs);
+}
+
+.metric-card strong {
+  font-size: var(--font-lg);
+}
+
+.next-strip strong {
+  font-size: var(--font-sm);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.next-strip small {
+  font-size: var(--font-xs);
+}

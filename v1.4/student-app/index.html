@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#173A5B">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -10,7 +10,7 @@
   <title>Moshaver | مشاور</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./css/app.css?v=1.4.2">
+  <link rel="stylesheet" href="./css/app.css?v=1.6.0">
 </head>
 <body>
 <svg class="svg-sprite" aria-hidden="true" focusable="false">
@@ -46,7 +46,7 @@
 </svg>
 
 <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="false"></div>
-<div id="offlineBar" class="offline-bar hidden">آفلاین هستی؛ آخرین برنامه ذخیره‌شده نمایش داده می‌شود و تغییرات بعداً همگام می‌شوند.</div>
+<div id="offlineBar" class="offline-bar hidden" role="status" aria-live="polite">آفلاین هستی؛ آخرین برنامه ذخیره‌شده نمایش داده می‌شود و تغییرات بعداً همگام می‌شوند.</div>
 
 <section id="loginScreen" class="login-shell">
   <div class="login-card">
@@ -58,7 +58,7 @@
       <label>نام کاربری<input id="loginUsername" autocomplete="username" required></label>
       <label>رمز عبور<input id="loginPassword" type="password" autocomplete="current-password" required></label>
       <button class="btn primary full" type="submit">ورود به برنامه</button>
-      <div id="loginError" class="form-error hidden"></div>
+      <div id="loginError" class="form-error hidden" role="alert"></div>
     </form>
     <div class="login-foot"><svg class="icon"><use href="#i-cloud" xlink:href="#i-cloud"></use></svg> سبک، سریع و قابل استفاده روی گوشی‌های قدیمی</div>
   </div>
@@ -72,7 +72,7 @@
 
   <main class="main-content">
     <section id="view-today" class="view active">
-      <div class="hello-row"><div><div class="eyebrow" id="todayPersian">امروز</div><h2 id="helloName">سلام 👋</h2></div><div id="onlineDot" class="online-state">● آنلاین</div></div>
+      <div class="hello-row"><div><div class="eyebrow" id="todayPersian">امروز</div><h2 id="helloName">سلام 👋</h2></div><div id="onlineDot" class="online-state online" aria-live="polite">● آنلاین</div></div>
 
       <article id="motivationCard" class="daily-motivation hidden"><span class="motivation-mark">✦</span><div><small>پیام امروز</small><p id="motivationText"></p></div></article>
 
@@ -97,6 +97,8 @@
 
       <article id="reviewCard" class="review-card hidden"><div class="section-title"><div><span class="section-icon"><svg class="icon"><use href="#i-review" xlink:href="#i-review"></use></svg></span><div><h3>مرورهای امروز</h3><p>مرور کوتاه، قبل از فراموشی.</p></div></div><span id="reviewCount" class="count-pill">0</span></div><div id="reviewList" class="review-list"></div></article>
 
+      <article id="learningDueCard" class="review-card learning-due-card hidden"><div class="section-title"><div><span class="section-icon"><svg class="icon"><use href="#i-review" xlink:href="#i-review"></use></svg></span><div><h3>وقت مرور یادگیری‌هاست</h3><p>مواردی که خودت یا مشاور برای یادگیری دوباره ذخیره کرده‌اید.</p></div></div><span id="learningDueCount" class="count-pill">۰</span></div><div id="learningDueList" class="review-list"></div><button id="openLearningDue" class="btn soft full compact">رفتن به مرور هوشمند</button></article>
+
       <article id="examFocus" class="exam-focus hidden"><div><span class="eyebrow">آزمون بعدی</span><h3 id="examFocusTitle"></h3><p id="examFocusDate"></p></div><div class="readiness"><strong id="examReadiness">0%</strong><span>آمادگی</span></div></article>
 
       <section class="section-block">
@@ -114,35 +116,50 @@
 
     <section id="view-exams" class="view">
       <div class="page-title"><div><span class="eyebrow">هدف‌ها</span><h2>آزمون‌ها</h2></div></div>
+      <div class="exam-catalog-controls">
+        <label class="exam-search"><span class="sr-only">جستجوی آزمون</span><input id="examSearch" type="search" maxlength="80" placeholder="جستجو در آزمون‌ها…" autocomplete="off"></label>
+        <div class="exam-filter-row" role="group" aria-label="فیلتر آزمون‌ها">
+          <button class="active" type="button" data-exam-filter="all">همه</button>
+          <button type="button" data-exam-filter="upcoming">پیش رو</button>
+          <button type="button" data-exam-filter="available">قابل انجام</button>
+          <button type="button" data-exam-filter="finished">پایان‌یافته</button>
+        </div>
+        <div id="examCatalogStatus" class="exam-catalog-status" role="status" aria-live="polite"></div>
+      </div>
       <div id="examList" class="card-list"></div>
+      <nav id="examPager" class="exam-pager hidden" aria-label="صفحه‌بندی آزمون‌ها"><button id="examPrevPage" class="btn soft compact" type="button">صفحه قبل</button><span id="examPageText"></span><button id="examNextPage" class="btn soft compact" type="button">صفحه بعد</button></nav>
+      <section class="section-block exam-history-block"><div class="section-heading"><div><h3>تاریخچه آزمون و تمرین</h3><p>نتیجه هر تلاش، پاسخ‌ها، توضیح‌ها و یادداشت‌های مرور.</p></div><span id="examHistoryCount" class="count-pill">۰</span></div><div id="examHistoryList" class="attempt-history-list"></div></section>
     </section>
 
     <section id="view-chat" class="view chat-view">
-      <div class="chat-shell">
-        <div class="chat-context telegram-chat-head"><span class="round-icon"><svg class="icon"><use href="#i-advisor" xlink:href="#i-advisor"></use></svg></span><div class="chat-person-copy"><strong id="advisorName">مشاور</strong><small id="advisorPresence">○ در حال اتصال</small></div><span class="chat-secure">مشاوره تحصیلی</span></div>
-        <div id="chatMessages" class="chat-messages"><div class="empty-card">در حال دریافت گفت‌وگو…</div></div>
-        <div class="chat-quick-actions student-chat-quick"><button type="button" data-student-chat-quick="انجام شد ✅">انجام شد</button><button type="button" data-student-chat-quick="برنامه امروز برایم به‌هم خورد؛ لطفاً بررسی کنید.">برنامه به‌هم خورد</button><button type="button" data-student-chat-quick="یک سؤال درباره درس و برنامه دارم.">سؤال دارم</button></div><form id="chatForm" class="chat-composer"><textarea id="chatInput" rows="1" maxlength="3000" placeholder="پیامت را برای مشاور بنویس…"></textarea><button id="studentChatSend" class="send-btn" type="submit" aria-label="ارسال"><svg class="icon"><use href="#i-send" xlink:href="#i-send"></use></svg></button></form>
-      </div>
+      <div class="chat-workspace"><aside class="student-conversations"><div class="chat-list-title"><strong>گفتگوها</strong><button id="newGroupBtn" type="button">＋ گروه</button></div><input id="studentConversationSearch" type="search" placeholder="جستجوی گفتگو…"><div id="studentConversationList"></div><button id="studentConversationMore" class="btn soft full hidden" type="button">گفتگوهای بیشتر</button></aside><div class="chat-shell">
+        <div class="chat-context telegram-chat-head"><button id="studentChatBack" class="chat-mobile-back" type="button">‹</button><span class="round-icon"><svg class="icon"><use href="#i-advisor" xlink:href="#i-advisor"></use></svg></span><div class="chat-person-copy"><strong id="advisorName">مشاور</strong><small id="advisorPresence" class="chat-presence reconnecting">○ در حال اتصال</small></div><button id="groupInfoBtn" class="chat-secure hidden" type="button">اطلاعات گروه</button></div>
+        <div id="chatMessages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions text" aria-label="پیام‌های گفتگو"><div class="empty-card">در حال دریافت گفت‌وگو…</div></div>
+        <button id="studentChatJump" class="chat-jump-latest hidden" type="button" aria-label="رفتن به تازه‌ترین پیام‌ها">پیام‌های جدید ↓</button>
+        <div id="chatReplyBar" class="chat-reply-bar hidden"></div><div class="chat-quick-actions student-chat-quick"><button id="chatShareBtn" type="button">＋ اشتراک وضعیت</button><button id="chatFormatBtn" type="button">راهنمای قالب‌بندی</button><button type="button" data-student-chat-quick="انجام شد ✅">انجام شد</button></div><form id="chatForm" class="chat-composer"><textarea id="chatInput" rows="1" maxlength="3000" placeholder="پیام… Markdown و @نام‌کاربری پشتیبانی می‌شود" aria-label="پیام"></textarea><button id="studentChatSend" class="send-btn" type="submit" aria-label="ارسال"><svg class="icon"><use href="#i-send" xlink:href="#i-send"></use></svg></button></form>
+      </div></div>
     </section>
 
     <section id="view-progress" class="view">
       <div class="page-title"><div><span class="eyebrow">بازخورد واقعی</span><h2>پیشرفت من</h2></div></div>
+      <section class="section-block"><div class="section-heading"><div><h3>گزارش این هفته</h3><p>عددهای ساده و اقدام بعدی</p></div></div><div id="weeklyProgress" class="learning-summary-grid"></div><div id="topicPerformance" class="learning-patterns"></div></section>
       <section class="section-block"><div class="section-heading"><div><h3>درس‌ها</h3><p>وضعیت کلی براساس فعالیت واقعی</p></div></div><div id="subjectProgress" class="subject-list"></div></section>
       <section class="section-block"><div class="section-heading"><div><h3>دفتر اشتباهات</h3><p>علت خطا مهم‌تر از تعداد خطاست.</p></div></div><div id="mistakeSummary" class="mistake-summary"></div><div id="mistakeList" class="mistake-list"></div></section>
+      <section class="section-block learning-center"><div class="section-heading"><div><h3>سیستم یادگیری و مرور هوشمند</h3><p>مبحث‌هایی که باید دوباره یاد بگیری، با کتاب، فصل، درس، یادداشت و زمان مرور.</p></div><button id="newLearningItemBtn" class="text-btn">+ افزودن مورد</button></div><div id="learningSummary" class="learning-summary-grid"></div><div id="learningPatterns" class="learning-patterns"></div><div id="learningList" class="learning-list"></div></section>
     </section>
 
     <section id="view-more" class="view">
       <div class="page-title"><div><span class="eyebrow">مدیریت روز</span><h2>بیشتر</h2></div></div>
       <div class="menu-list">
         <button id="progressBtn" class="menu-row"><span class="round-icon"><svg class="icon"><use href="#i-chart" xlink:href="#i-chart"></use></svg></span><span><strong>پیشرفت و دفتر اشتباهات</strong><small>درس‌ها، خطاها و الگوی ضعف</small></span><b>‹</b></button>
-        <button id="reportBtn" class="menu-row"><span class="round-icon"><svg class="icon"><use href="#i-chart" xlink:href="#i-chart"></use></svg></span><span><strong>گزارش شبانه</strong><small>تمرکز، خستگی و نکته فردا</small></span><b>‹</b></button>
+        <button id="learningBtn" class="menu-row"><span class="round-icon"><svg class="icon"><use href="#i-review" xlink:href="#i-review"></use></svg></span><span><strong>مرور هوشمند و یادداشت‌ها</strong><small>اشتباهات، تاریخ مرور و نقاط ضعف</small></span><b>‹</b></button><button id="reportBtn" class="menu-row"><span class="round-icon"><svg class="icon"><use href="#i-chart" xlink:href="#i-chart"></use></svg></span><span><strong>گزارش شبانه</strong><small>تمرکز، خستگی و نکته فردا</small></span><b>‹</b></button>
         <button id="recoveryBtn" class="menu-row"><span class="round-icon warn"><svg class="icon"><use href="#i-alert" xlink:href="#i-alert"></use></svg></span><span><strong>برنامه امروز به‌هم خورد</strong><small>برای تصمیم مشاور ارسال کن</small></span><b>‹</b></button>
         <button id="notificationsMenuBtn" class="menu-row"><span class="round-icon"><svg class="icon"><use href="#i-bell" xlink:href="#i-bell"></use></svg></span><span><strong>پیام‌ها و اعلان‌ها</strong><small>تغییر برنامه و پیام مشاور</small></span><b>‹</b></button>
         <button id="passwordBtn" class="menu-row"><span class="round-icon"><svg class="icon"><use href="#i-lock" xlink:href="#i-lock"></use></svg></span><span><strong>امنیت حساب</strong><small>تغییر رمز عبور و بستن نشست‌های دیگر</small></span><b>‹</b></button>
         <button id="themeBtn" class="menu-row"><span class="round-icon"><svg class="icon"><use href="#i-more" xlink:href="#i-more"></use></svg></span><span><strong>حالت نمایش</strong><small id="themeLabel">روشن</small></span><b>‹</b></button>
         <button id="logoutBtn" class="menu-row danger"><span class="round-icon"><svg class="icon"><use href="#i-logout" xlink:href="#i-logout"></use></svg></span><span><strong>خروج</strong><small>خروج امن از حساب</small></span><b>‹</b></button>
       </div>
-      <div class="about-card"><img src="./icons/logo.svg" alt=""><div><strong>Moshaver | مشاور</strong><small>نسخه <span id="appVersion">1.4.2</span></small></div></div>
+      <div class="about-card"><img src="./icons/logo.svg" alt=""><div><strong>Moshaver | مشاور</strong><small>نسخه <span id="appVersion">1.6.0</span></small></div></div>
     </section>
   </main>
 
@@ -155,25 +172,33 @@
   </nav>
 </div>
 
-<section id="focusMode" class="focus-mode hidden" aria-live="polite">
+<section id="focusMode" class="focus-mode hidden">
   <div class="focus-brand"><img src="./icons/logo.svg" alt=""><span>Moshaver</span></div>
   <div class="focus-center"><span class="eyebrow">حالت تمرکز</span><h2 id="focusSubject">مطالعه</h2><p id="focusTitle"></p><strong id="focusTimer">00:00:00</strong><div id="focusGoal" class="focus-goal"></div></div>
-  <div class="focus-actions"><button id="focusBackBtn" class="btn ghost">بازگشت به برنامه</button><button id="focusFinishBtn" class="btn primary">پایان جلسه</button></div>
+  <label class="focus-tests">تست انجام‌شده <input id="focusTestsCompleted" type="number" min="0" inputmode="numeric" value="0"></label><div class="focus-actions"><button id="focusBackBtn" class="btn ghost">بازگشت به برنامه</button><button id="focusPauseBtn" class="btn soft">مکث</button><button id="focusFinishBtn" class="btn primary">پایان جلسه</button></div><div id="focusStatus" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 </section>
-<div id="modalBackdrop" class="modal-backdrop hidden"></div>
-<div id="taskModal" class="modal hidden"><button class="modal-close" data-close="taskModal"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><div id="taskModalBody"></div></div>
-<div id="issueModal" class="modal hidden"><button class="modal-close" data-close="issueModal"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><h3>چه مشکلی داشتی؟</h3><p class="muted">این گزارش مستقیم در صندوق مشاور دیده می‌شود.</p><div id="issueChoices" class="choice-grid"></div><textarea id="issueNote" rows="3" placeholder="اگر لازم است کوتاه توضیح بده..."></textarea><button id="submitIssueBtn" class="btn primary full">ارسال برای مشاور</button></div>
-<div id="reportModal" class="modal hidden"><button class="modal-close" data-close="reportModal"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><h3>گزارش شبانه</h3><p class="muted">کمتر از ۳۰ ثانیه.</p><div class="rating-row"><label>تمرکز <output id="focusOut">7</output><input id="focusInput" type="range" min="1" max="10" value="7"></label><label>خستگی <output id="fatigueOut">5</output><input id="fatigueInput" type="range" min="1" max="10" value="5"></label><label>انگیزه <output id="motivationOut">7</output><input id="motivationInput" type="range" min="1" max="10" value="7"></label></div><label class="block-label">بزرگ‌ترین مشکل امروز<textarea id="reportProblem" rows="2"></textarea></label><label class="block-label">نکته برای فردا<textarea id="reportTomorrow" rows="2"></textarea></label><button id="submitReportBtn" class="btn primary full">ثبت گزارش</button></div>
-<div id="recoveryModal" class="modal hidden"><button class="modal-close" data-close="recoveryModal"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><h3>روز به‌هم خورد؟</h3><p class="muted">لازم نیست همه کارها را به فردا منتقل کنی. مشاور تصمیم می‌گیرد.</p><select id="recoveryReason"><option>کلاس طول کشید</option><option>خستگی زیاد</option><option>شروع دیر</option><option>کار خانوادگی</option><option>تمرکز نداشتم</option><option>بیماری</option><option>سایر</option></select><textarea id="recoveryNote" rows="3" placeholder="چه چیزی انجام نشد؟"></textarea><button id="submitRecoveryBtn" class="btn primary full">ارسال برای بررسی</button></div>
-<div id="passwordModal" class="modal hidden"><button class="modal-close" data-close="passwordModal"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><h3>امنیت حساب</h3><p class="muted">با تغییر رمز، نشست‌های دیگر حساب بسته می‌شوند.</p><label class="block-label">رمز فعلی<input id="studentCurrentPassword" type="password" autocomplete="current-password"></label><label class="block-label">رمز جدید<input id="studentNewPassword" type="password" minlength="12" autocomplete="new-password"></label><label class="block-label">تکرار رمز جدید<input id="studentNewPassword2" type="password" minlength="12" autocomplete="new-password"></label><button id="studentSavePassword" class="btn primary full">تغییر رمز</button></div>
-<div id="notificationsModal" class="modal notifications-modal hidden"><button class="modal-close" data-close="notificationsModal"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><div class="notification-modal-head"><div><span class="eyebrow">NOTIFICATIONS</span><h3>پیام‌ها و اعلان‌ها</h3><p class="muted"><span id="notificationUnreadText">۰</span> اعلان خوانده‌نشده</p></div><button id="markAllNotifications" class="btn soft compact">خواندن همه</button></div><div id="notificationsList" class="notification-list"></div></div>
-<div id="examModal" class="modal hidden"><button class="modal-close" data-close="examModal"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><div id="examModalBody"></div></div>
-<div id="quizModal" class="modal quiz-modal hidden"><button class="modal-close" id="quizCloseBtn"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><div id="quizBody"></div></div>
-<div id="updateModal" class="modal update-modal hidden"><div class="update-graphic"><img src="./icons/logo.svg" alt=""></div><h3>نسخه جدید آماده است ✨</h3><p>نسخه تازه برنامه منتشر شده است.</p><div id="updateNotes" class="release-note hidden"></div><div id="updateBusyHint" class="busy-hint hidden">فعالیت فعلی را تمام کن؛ بعد می‌توانی با خیال راحت به‌روزرسانی کنی.</div><button id="applyUpdateBtn" class="btn primary full">به‌روزرسانی برنامه</button><button id="laterUpdateBtn" class="btn ghost full">بعداً</button></div>
+<div id="modalBackdrop" class="modal-backdrop hidden" aria-hidden="true"></div>
+<div id="taskModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="جزئیات فعالیت"><button class="modal-close" data-close="taskModal" type="button" aria-label="بستن"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><div id="taskModalBody"></div></div>
+<div id="issueModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="issueModalTitle"><button class="modal-close" data-close="issueModal" type="button" aria-label="بستن"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><h3 id="issueModalTitle">چه مشکلی داشتی؟</h3><p class="muted">این گزارش مستقیم در صندوق مشاور دیده می‌شود.</p><div id="issueChoices" class="choice-grid"></div><textarea id="issueNote" rows="3" placeholder="اگر لازم است کوتاه توضیح بده..."></textarea><button id="submitIssueBtn" class="btn primary full">ارسال برای مشاور</button></div>
+<div id="reportModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle"><button class="modal-close" data-close="reportModal" type="button" aria-label="بستن"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><h3 id="reportModalTitle">گزارش شبانه</h3><p class="muted">کمتر از ۳۰ ثانیه.</p><div class="rating-row"><label>تمرکز <output id="focusOut">7</output><input id="focusInput" type="range" min="1" max="10" value="7"></label><label>خستگی <output id="fatigueOut">5</output><input id="fatigueInput" type="range" min="1" max="10" value="5"></label><label>انگیزه <output id="motivationOut">7</output><input id="motivationInput" type="range" min="1" max="10" value="7"></label></div><label class="block-label">بزرگ‌ترین مشکل امروز<textarea id="reportProblem" rows="2"></textarea></label><label class="block-label">نکته برای فردا<textarea id="reportTomorrow" rows="2"></textarea></label><button id="submitReportBtn" class="btn primary full">ثبت گزارش</button></div>
+<div id="recoveryModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="recoveryModalTitle"><button class="modal-close" data-close="recoveryModal" type="button" aria-label="بستن"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><h3 id="recoveryModalTitle">روز به‌هم خورد؟</h3><p class="muted">لازم نیست همه کارها را به فردا منتقل کنی. مشاور تصمیم می‌گیرد.</p><select id="recoveryReason"><option>کلاس طول کشید</option><option>خستگی زیاد</option><option>شروع دیر</option><option>کار خانوادگی</option><option>تمرکز نداشتم</option><option>بیماری</option><option>سایر</option></select><textarea id="recoveryNote" rows="3" placeholder="چه چیزی انجام نشد؟"></textarea><button id="submitRecoveryBtn" class="btn primary full">ارسال برای بررسی</button></div>
+<div id="passwordModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="passwordModalTitle"><button class="modal-close" data-close="passwordModal" type="button" aria-label="بستن"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><h3 id="passwordModalTitle">امنیت حساب</h3><p class="muted">با تغییر رمز، نشست‌های دیگر حساب بسته می‌شوند.</p><label class="block-label">رمز فعلی<input id="studentCurrentPassword" type="password" autocomplete="current-password"></label><label class="block-label">رمز جدید<input id="studentNewPassword" type="password" minlength="12" autocomplete="new-password"></label><label class="block-label">تکرار رمز جدید<input id="studentNewPassword2" type="password" minlength="12" autocomplete="new-password"></label><button id="studentSavePassword" class="btn primary full">تغییر رمز</button></div>
+<div id="notificationsModal" class="modal notifications-modal hidden" role="dialog" aria-modal="true" aria-labelledby="notificationsModalTitle"><button class="modal-close" data-close="notificationsModal" type="button" aria-label="بستن"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><div class="notification-modal-head"><div><span class="eyebrow">NOTIFICATIONS</span><h3 id="notificationsModalTitle">پیام‌ها و اعلان‌ها</h3><p class="muted"><span id="notificationUnreadText">۰</span> اعلان خوانده‌نشده</p></div><button id="markAllNotifications" class="btn soft compact">خواندن همه</button></div><div class="notification-tools"><button class="btn soft compact active" data-notification-filter="all">همه</button><button class="btn soft compact" data-notification-filter="unread">خوانده‌نشده</button><button id="notificationSettingsBtn" class="btn ghost compact">تنظیمات</button></div><div id="notificationOfflineState" class="notification-offline hidden">آفلاین — اعلان‌های ذخیره‌شده نمایش داده می‌شوند.</div><div id="notificationsList" class="notification-list"></div><section id="notificationSettings" class="notification-settings hidden"><h4>تنظیمات اعلان</h4><p id="pushStatusText" class="muted">در حال بررسی…</p><button id="enablePushBtn" class="btn primary full">فعال‌کردن اعلان‌ها</button><button id="disablePushBtn" class="btn ghost full hidden">غیرفعال‌کردن این دستگاه</button><div class="notification-categories"><label><input type="checkbox" data-push-category="lessons" checked> درس‌های جدید</label><label><input type="checkbox" data-push-category="messages" checked> پیام‌های مشاور</label><label><input type="checkbox" data-push-category="exams" checked> یادآوری آزمون</label><label><input type="checkbox" data-push-category="announcements" checked> اطلاعیه‌های مهم</label></div><button id="testPushBtn" class="btn soft full">ارسال اعلان آزمایشی</button><p id="pushFallbackText" class="muted"></p></section></div>
+<div id="examModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="جزئیات آزمون"><button class="modal-close" data-close="examModal" type="button" aria-label="بستن"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><div id="examModalBody"></div></div>
+<div id="quizModal" class="modal quiz-modal hidden" role="dialog" aria-modal="true" aria-label="آزمون"><button class="modal-close" id="quizCloseBtn" type="button" aria-label="بستن"><svg class="icon"><use href="#i-close" xlink:href="#i-close"></use></svg></button><div id="quizBody"></div></div>
+<div id="updateModal" class="modal update-modal hidden" role="dialog" aria-modal="true" aria-labelledby="updateModalTitle"><div class="update-graphic"><img src="./icons/logo.svg" alt=""></div><h3 id="updateModalTitle">نسخه جدید آماده است ✨</h3><p>نسخه تازه برنامه منتشر شده است.</p><div id="updateNotes" class="release-note hidden"></div><div id="updateBusyHint" class="busy-hint hidden">فعالیت فعلی را تمام کن؛ بعد می‌توانی با خیال راحت به‌روزرسانی کنی.</div><button id="applyUpdateBtn" class="btn primary full">به‌روزرسانی برنامه</button><button id="laterUpdateBtn" class="btn ghost full">بعداً</button></div>
 
 <script src="./config.js"></script>
-<script src="./js/api.js?v=1.4.2"></script>
-<script src="./js/app.js?v=1.4.2"></script>
-<script src="./js/update.js?v=1.4.2"></script>
+<script src="./js/ui-utils.shared.js?v=1.6.0"></script>
+<script src="./js/api-client.shared.js?v=1.6.0"></script>
+<script src="./js/api.js?v=1.6.0"></script>
+<script src="./js/notification-store.js?v=1.6.0"></script>
+<script src="./js/push-client.js?v=1.6.0"></script>
+<script src="./js/notification-sync.js?v=1.6.0"></script>
+<script src="./js/notification-ui.js?v=1.6.0"></script>
+<script src="./js/chat-markdown.js?v=1.6.0"></script>
+<script src="./js/app.js?v=1.6.0"></script>
+<script src="./js/focus-controls.js?v=1.6.0"></script>
+<script src="./js/update.js?v=1.6.0"></script>
 </body>
 </html>

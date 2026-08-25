@@ -2,7 +2,7 @@
 const {spawn}=require('child_process');
 const fs=require('fs');
 const path=require('path');
-const root=path.resolve(__dirname,'../backend');
+const root=path.resolve(__dirname,'../v1.4/backend');
 const db=path.join('/tmp','moshaver-v140-'+process.pid+'.sqlite');
 try{fs.unlinkSync(db)}catch(e){}
 const port=4300+(process.pid%300);
@@ -19,7 +19,7 @@ function assert(v,m){if(!v)throw new Error(m)}
  const admin=new Client(),student=new Client();
  let r=await admin.req('POST','/auth/login',{username:'admin',password:'AdminTest12345!'});assert(r.status===200,'admin login '+r.status);
  r=await admin.req('GET','/auth/me');assert(r.status===200,'admin me #1');r=await admin.req('GET','/auth/me');assert(r.status===200,'admin me #2 reload persistence');
- let students=(await admin.req('GET','/admin/students')).data;assert(students&&students.length,'students');let sid=students[0].id;
+ let students=(await admin.req('GET','/admin/students')).data;assert(students&&students.items&&students.items.length,'students');let sid=students.items[0].id;
  await student.req('POST','/auth/login',{username:'maha',password:'StudentTest12345!'});
  // Future exam must stay locked until its openAt.
  let now=Date.now(),date=new Date(now).toISOString().slice(0,10),futureOpen=new Date(now+3600000).toISOString(),futureClose=new Date(now+7200000).toISOString();

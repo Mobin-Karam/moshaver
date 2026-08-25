@@ -1,0 +1,1 @@
+.realtime-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:18px}.realtime-summary>div{background:linear-gradient(145deg,#123b59,#126e82);color:#fff;border-radius:var(--admin-radius);padding:18px}.realtime-summary small{display:block;opacity:.75}.realtime-summary strong{display:block;font-size:2rem;margin-top:8px}

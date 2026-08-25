@@ -1,0 +1,30 @@
+"use strict";
+var http = require("http"), cp = require("child_process"), path = require("path"), fs = require("fs"), os = require("os");
+var DatabaseSync = require("node:sqlite").DatabaseSync;
+var root = path.resolve(__dirname, ".."), source = path.join(root, "data", "backup-test-" + process.pid + ".sqlite"), port = 4203;
+try { fs.unlinkSync(source); } catch (e) {}
+var child = cp.spawn(process.execPath, ["--experimental-sqlite", path.join(root, "src/server.js")], { cwd: root, env: Object.assign({}, process.env, { NODE_ENV:"test", PORT:String(port), DATABASE_PATH:source, CORS_ORIGINS:"http://localhost:8080,http://localhost:8081", ADMIN_USERNAME:"admin", ADMIN_PASSWORD:"BackupAdmin123!", STUDENT_USERNAME:"student", STUDENT_PASSWORD:"BackupStudent123!", COOKIE_SECURE:"0" }), stdio:["ignore","pipe","pipe"] });
+var done = false, started = false;
+function cleanup(code) { if (done) return; done=true; try{child.kill("SIGTERM");}catch(e){} setTimeout(function(){ ["","-wal","-shm"].forEach(function(x){try{fs.unlinkSync(source+x);}catch(e){}}); process.exit(code); },250); }
+function assert(ok,msg){if(!ok)throw new Error(msg);}
+function cookieFrom(res){var h=res.headers["set-cookie"];return h&&h.length?String(h[0]).split(";",1)[0]:"";}
+function request(method,url,body,auth){return new Promise(function(resolve,reject){var payload=body==null?null:Buffer.from(JSON.stringify(body)),headers={Accept:"application/json",Origin:"http://localhost:8081"};if(payload){headers["Content-Type"]="application/json";headers["Content-Length"]=payload.length;}if(auth&&auth.cookie)headers.Cookie=auth.cookie;if(auth&&auth.csrf)headers["X-CSRF-Token"]=auth.csrf;var req=http.request({host:"127.0.0.1",port:port,path:url,method:method,headers:headers},function(res){var chunks=[];res.on("data",function(c){chunks.push(c);});res.on("end",function(){var raw=Buffer.concat(chunks),json=null;try{json=JSON.parse(raw.toString("utf8"));}catch(e){}resolve({status:res.statusCode,headers:res.headers,raw:raw,json:json});});});req.on("error",reject);if(payload)req.write(payload);req.end();});}
+async function login(username,password,origin){var r=await request("POST","/api/v1/auth/login",{username:username,password:password});assert(r.status===200,"login");return{cookie:cookieFrom(r),csrf:r.json.data.csrfToken};}
+child.stdout.on("data",function(b){if(b.toString().indexOf("API started")>=0&&!started){started=true;run();}});child.stderr.on("data",function(b){process.stderr.write(b);});child.on("exit",function(code){if(!done)cleanup(code||1);});
+async function run(){try{
+  var admin=await login("admin","BackupAdmin123!"),student=await login("student","BackupStudent123!");
+  var meta=await request("GET","/api/v1/admin/system/database",null,admin);assert(meta.status===200&&meta.json.data.engine==="sqlite"&&meta.json.data.status==="healthy","metadata");assert(!JSON.stringify(meta.json).includes(source),"path leaked");
+  var realtime=await request("GET","/api/v1/admin/realtime/students",null,admin);assert(realtime.status===200&&Array.isArray(realtime.json.data.students)&&Array.isArray(realtime.json.data.timeline),"all-student realtime snapshot");assert(realtime.json.data.summary.total>=1,"realtime summary");
+  var unauth=await request("POST","/api/v1/admin/system/database-backup",{},null);assert(unauth.status===401,"unauth backup");
+  var forbidden=await request("POST","/api/v1/admin/system/database-backup",{},student);assert(forbidden.status===403,"student backup");
+  var first=await request("POST","/api/v1/admin/system/database-backup",{},admin);assert(first.status===200,"admin backup");assert(first.headers["content-type"]==="application/vnd.sqlite3","content type");assert(/attachment; filename="moshaver-backup-\d{8}-\d{6}\.sqlite"/.test(first.headers["content-disposition"]||""),"filename");
+  var downloaded=path.join(os.tmpdir(),"downloaded-backup-"+process.pid+".sqlite");fs.writeFileSync(downloaded,first.raw);var snapshot=new DatabaseSync(downloaded,{readOnly:true});assert(snapshot.prepare("PRAGMA quick_check").get().quick_check==="ok","backup opens");assert(snapshot.prepare("SELECT COUNT(*) AS n FROM students").get().n>=1,"expected record");snapshot.close();fs.unlinkSync(downloaded);
+  assert(fs.existsSync(source),"original database remains");var original=new DatabaseSync(source,{readOnly:true});assert(original.prepare("PRAGMA quick_check").get().quick_check==="ok","original remains healthy");assert(original.prepare("SELECT COUNT(*) AS n FROM students").get().n>=1,"original records remain");original.close();
+  var second=await request("POST","/api/v1/admin/system/database-backup",{},admin);assert(second.status===200&&second.raw.length>0,"repeated backup");
+  var live=await request("GET","/api/v1/admin/students?limit=1",null,admin);assert(live.status===200,"normal read after backups");
+  var sid=live.json.data.items[0].id,archived=await request("DELETE","/api/v1/admin/students/"+sid,null,admin);assert(archived.status===200,"archive");var archivedList=await request("GET","/api/v1/admin/students?status=archived",null,admin);assert(archivedList.json.data.items.some(function(x){return x.id===sid;}),"archive visible");var restored=await request("POST","/api/v1/admin/students/"+sid+"/restore",{},admin);assert(restored.status===200&&restored.json.data.restored,"restore");
+  await new Promise(function(r){setTimeout(r,100);});var tempDir=path.join(os.tmpdir(),"moshaver-backups"),left=fs.existsSync(tempDir)?fs.readdirSync(tempDir).filter(function(n){return /^snapshot-/.test(n);}):[];assert(left.length===0,"temporary cleanup");
+  var verify=new DatabaseSync(source,{readOnly:true});var audit=verify.prepare("SELECT COUNT(*) AS n FROM audit_logs WHERE action='database.backup.created'").get().n;verify.close();assert(audit===2,"backup audit");
+  console.log("BACKUP TEST PASSED: auth, snapshot integrity, realtime snapshot, archive restore, repeat, cleanup, audit");cleanup(0);
+}catch(e){console.error("BACKUP TEST FAILED:",e.stack||e);cleanup(1);}}
+setTimeout(function(){if(!started){console.error("BACKUP TEST FAILED: startup timeout");cleanup(1);}},15000);

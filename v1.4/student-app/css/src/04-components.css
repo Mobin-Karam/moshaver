@@ -1,0 +1,498 @@
+/* Moshaver Student UI v1.6.0 — Reusable buttons, cards, badges, headings, menus and toasts */
+
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #dfe8e3;
+  border-radius: 12px;
+  background: #fff;
+  color: #173a5b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  left: -5px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  background: #d84242;
+  color: #fff;
+  font-size: var(--font-base);
+  line-height: 18px;
+}
+
+.sync-pill {
+  height: 35px;
+  padding: 0 9px;
+  border-radius: 11px;
+  background: #eaf7f4;
+  color: #197a70;
+  font-size: var(--font-xs);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sync-pill .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.online-state {
+  font-size: var(--font-xs);
+  color: #1e8c67;
+  background: #e9f8ef;
+  border-radius: 20px;
+  padding: 7px 9px;
+}
+
+.round-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #eaf8f5;
+  color: #177e73;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.round-icon.warn {
+  background: #fff4e1;
+  color: #a9680a;
+}
+
+.btn {
+  border: 0;
+  border-radius: 13px;
+  min-height: 43px;
+  padding: 10px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: var(--font-base);
+}
+
+.btn.primary {
+  background: #1dbaa7;
+  color: #062f2a;
+}
+
+.btn.soft {
+  background: #edf5f2;
+  color: #173a5b;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: #5f6e78;
+}
+
+.btn.full {
+  width: 100%;
+}
+
+.btn.small {
+  min-height: 36px;
+  padding: 7px 11px;
+  font-size: var(--font-sm);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bar {
+  height: 5px;
+  background: #e7efeb;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 7px;
+}
+
+.bar i {
+  height: 100%;
+  display: block;
+  width: 0;
+  background: #1dbaa7;
+  border-radius: 6px;
+  transition: width 0.25s ease;
+}
+
+.review-card,
+.section-block,
+.exam-focus {
+  background: #fff;
+  border: 1px solid #e2e9e4;
+  border-radius: 17px;
+  padding: 14px;
+  margin-top: 11px;
+}
+
+.section-title,
+.section-title > div,
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-title > div {
+  gap: 9px;
+}
+
+.section-title h3,
+.section-heading h3 {
+  font-size: var(--font-base);
+  margin: 0;
+}
+
+.section-title p,
+.section-heading p {
+  font-size: var(--font-xs);
+  color: #80909a;
+  margin: 3px 0 0;
+}
+
+.section-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #ebf8f5;
+  color: #178276;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.count-pill {
+  font-size: var(--font-xs);
+  background: #173a5b;
+  color: #fff;
+  padding: 4px 7px;
+  border-radius: 8px;
+}
+
+.section-heading {
+  margin-bottom: 8px;
+}
+
+.text-btn {
+  border: 0;
+  background: transparent;
+  color: #a3660d;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.text-btn .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.empty-card {
+  padding: 22px;
+  text-align: center;
+  color: #89949b;
+  font-size: var(--font-xs);
+}
+
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu-list {
+  background: #fff;
+  border: 1px solid #e1e9e4;
+  border-radius: 17px;
+  overflow: hidden;
+}
+
+.menu-row {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #edf1ee;
+  background: #fff;
+  padding: 11px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: right;
+  color: #172536;
+}
+
+.menu-row:last-child {
+  border: 0;
+}
+
+.menu-row > span:nth-child(2) {
+  flex: 1;
+}
+
+.menu-row strong {
+  font-size: var(--font-xs);
+  display: block;
+}
+
+.menu-row small {
+  font-size: var(--font-xs);
+  color: #839098;
+}
+
+.menu-row > b {
+  font-size: var(--font-lg);
+  color: #95a0a7;
+}
+
+.menu-row.danger strong {
+  color: #a53838;
+}
+
+.about-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  margin: 18px 0;
+  color: #77848d;
+}
+
+.about-card img {
+  width: 38px;
+  height: 38px;
+}
+
+.about-card strong,
+.about-card small {
+  display: block;
+  font-size: var(--font-xs);
+}
+
+.toast {
+  position: fixed;
+  z-index: 90;
+  left: 16px;
+  right: 16px;
+  bottom: 88px;
+  max-width: 500px;
+  margin: auto;
+  background: #172536;
+  color: #fff;
+  border-radius: 13px;
+  padding: 11px 14px;
+  font-size: var(--font-xs);
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
+}
+
+.nav-badge {
+  position: absolute;
+  top: 4px;
+  left: calc(50% - 20px);
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.online-state.reconnecting {
+  color: #9a6a1d;
+}
+
+.online-state.online {
+  color: #157b65;
+}
+
+.online-state.offline {
+  color: #7d8a91;
+}
+
+.menu-row .round-icon {
+  flex: 0 0 auto;
+}
+
+.toast-stack {
+  position: fixed;
+  z-index: 300;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast-card {
+  width: min(440px, 100%);
+  pointer-events: auto;
+  background: #fff;
+  border: 1px solid var(--line, #e2e9e3);
+  box-shadow: 0 14px 42px rgba(23, 58, 91, 0.18);
+  border-radius: 16px;
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 9px;
+  animation: toastIn 0.2s ease;
+}
+
+.toast-card.leaving {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: 0.2s;
+}
+
+.toast-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: #e5f5ef;
+  color: #147464;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-icon .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.toast-card.error .toast-icon {
+  background: #fff0f0;
+  color: #9e3c3c;
+}
+
+.toast-card strong {
+  font-size: var(--font-xs);
+}
+
+.toast-card p {
+  font-size: var(--font-xs);
+  line-height: 1.65;
+  color: var(--muted, #71808a);
+  margin: 2px 0 0;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.auth-checking {
+  display: block !important;
+  background: #eef7f4 !important;
+  color: #327567 !important;
+  border-color: #d7ebe4 !important;
+}
+
+.btn.compact {
+  padding: 7px 9px !important;
+  font-size: var(--font-xs) !important;
+}
+
+.daily-motivation {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 12px 13px;
+  border: 1px solid #dbe9e3;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f4fbf8 0%, #ffffff 100%);
+  box-shadow: 0 5px 18px rgba(23, 58, 91, 0.04);
+}
+
+.daily-motivation.compact {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+}
+
+.motivation-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  background: #173a5b;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+  font-size: var(--font-md);
+}
+
+.daily-motivation > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.daily-motivation small {
+  display: block;
+  font-size: var(--font-xs);
+  font-weight: 800;
+  color: #1a8b7f;
+  margin-bottom: 3px;
+}
+
+.daily-motivation p {
+  margin: 0;
+  font-size: var(--font-sm);
+  line-height: 1.85;
+  font-weight: 700;
+  color: #2c3e47;
+  overflow-wrap: anywhere;
+}
+
+.online-state {
+  font-size: var(--font-xs);
+}
+
+.section-title h3,
+.section-heading h3 {
+  font-size: var(--font-md);
+}
+
+.section-title p,
+.section-heading p {
+  font-size: var(--font-xs);
+  line-height: 1.6;
+}
+
+.section-block {
+  padding: 14px 13px;
+  border-radius: 18px;
+}
+
+.section-block,
+.review-card,
+.exam-card,
+.learning-item,
+.attempt-history-card,
+.review-question {
+  overflow-wrap: anywhere;
+}

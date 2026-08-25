@@ -46,7 +46,7 @@ if (production) {
 
 module.exports = {
   appName: 'Moshaver | مشاور',
-  version: '1.4.2',
+  version: '1.6.0',
   nodeEnv: nodeEnv,
   production: production,
   port: intEnv('PORT', 4000),
@@ -69,5 +69,12 @@ module.exports = {
   loginWindowMinutes: intEnv('LOGIN_WINDOW_MINUTES', 15),
   loginMaxFailures: intEnv('LOGIN_MAX_FAILURES', 5),
   loginBlockMinutes: intEnv('LOGIN_BLOCK_MINUTES', 15),
-  eventRetentionHours: intEnv('EVENT_RETENTION_HOURS', 72)
+  eventRetentionHours: intEnv('EVENT_RETENTION_HOURS', 72),
+  chatMaxGroupMembers: intEnv('CHAT_MAX_GROUP_MEMBERS', 100),
+  chatGroupCreatesPerHour: intEnv('CHAT_GROUP_CREATES_PER_HOUR', 10),
+  chatMaxGroupName: intEnv('CHAT_MAX_GROUP_NAME', 80),
+  chatMaxGroupDescription: intEnv('CHAT_MAX_GROUP_DESCRIPTION', 500),
+  vapidSubject: process.env.VAPID_SUBJECT || '',
+  vapidPublicKey: process.env.VAPID_PUBLIC_KEY || '',
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY || ''
 };
