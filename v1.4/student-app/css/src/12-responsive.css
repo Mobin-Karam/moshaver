@@ -1,0 +1,174 @@
+/* Moshaver Student UI v1.6.0 — Responsive, small-screen and reduced-motion rules */
+
+@media (min-width: 700px) {
+  .main-content {
+    padding-top: 24px;
+  }
+  .bottom-nav {
+    width: 540px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 12px;
+    border: 1px solid #dfe7e2;
+    border-radius: 18px;
+    box-shadow: 0 10px 35px rgba(23, 58, 91, 0.12);
+  }
+  .modal {
+    max-width: 600px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: 20px;
+    border-radius: 22px;
+    width: calc(100% - 36px);
+  }
+  .quiz-modal {
+    max-width: 650px;
+    top: 5vh;
+    bottom: auto;
+  }
+  .metric-card {
+    padding: 14px;
+  }
+  .now-card {
+    padding: 22px;
+  }
+}
+
+@media (max-width: 360px) {
+  .main-content {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .metric-grid {
+    gap: 5px;
+  }
+  .metric-card {
+    padding: 9px;
+  }
+  .metric-card strong {
+    font-size: var(--font-base);
+  }
+  .sync-pill span {
+    display: none;
+  }
+  .topbar {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .brand-row strong {
+    font-size: var(--font-xs);
+  }
+  .now-card h3 {
+    font-size: var(--font-lg);
+  }
+  .timeline-time {
+    width: 40px;
+    flex-basis: 40px;
+  }
+  .nav-item {
+    font-size: var(--font-xs);
+  }
+}
+
+
+
+@media (max-width: 420px) {
+  .chat-view.active {
+    padding: 0;
+  }
+  .chat-shell {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+  .chat-secure {
+    display: none;
+  }
+  .message-bubble {
+    max-width: 86%;
+  }
+  .message-bubble p {
+    font-size: var(--font-base);
+  }
+  .timeline-card h4 {
+    font-size: var(--font-xs);
+  }
+  .timeline-card p {
+    font-size: var(--font-xs);
+  }
+  .daily-motivation p {
+    font-size: var(--font-xs);
+  }
+
+  .focus-center > strong {
+    font-size: 38px;
+  }
+  .focus-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .learning-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .attempt-review-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .learning-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .learning-form-grid .span-2 {
+    grid-column: auto;
+  }
+  .mastery-buttons {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .mastery-buttons button {
+    padding: 8px 2px;
+    font-size: var(--font-xs);
+  }
+  .mastery-buttons button small {
+    font-size: var(--font-xs);
+  }
+  .review-question {
+    padding: 10px;
+  }
+  .attempt-history-card {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .now-actions,
+  .task-actions,
+  .review-learning-actions,
+  .learning-item-actions,
+  .learning-actions {
+    align-items: stretch;
+  }
+  .now-actions .btn,
+  .task-actions .btn {
+    min-width: 0;
+  }
+  .page-title,
+  .hello-row {
+    gap: 10px;
+  }
+  .page-title > *,
+  .hello-row > * {
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -4,7 +4,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=4000
-ENV DATABASE_PATH=/data/konkur.sqlite
+ENV DATABASE_PATH=/data/moshaver.sqlite
 ENV NODE_NO_WARNINGS=1
 
 COPY package*.json ./

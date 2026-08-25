@@ -6,3 +6,4 @@ find . -type f -name '*.js' -not -path './node_modules/*' -print | sort | while 
   printf 'PASS %s\n' "$file"
 done
 node scripts/validate-static.js
+node scripts/build-css.mjs --check

@@ -1,0 +1,265 @@
+/* Moshaver Student UI v1.6.0 — Timeline, schedule navigation and Shamsi date controls */
+
+.timeline {
+  position: relative;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 10px;
+  position: relative;
+  padding: 7px 0;
+}
+
+.timeline-time {
+  width: 48px;
+  flex: 0 0 48px;
+  text-align: left;
+  direction: ltr;
+  color: #6f7d87;
+  font-size: var(--font-xs);
+  padding-top: 13px;
+}
+
+.timeline-card {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #e4ebe6;
+  border-radius: 14px;
+  padding: 10px 11px;
+  background: #fbfcfb;
+  position: relative;
+}
+
+.timeline-card.current {
+  border-color: #1dbaa7;
+  background: #effaf8;
+}
+
+.timeline-card.done {
+  opacity: 0.65;
+  background: #f0f5f1;
+}
+
+.timeline-card.overdue {
+  border-color: #efce98;
+}
+
+.timeline-card h4 {
+  font-size: var(--font-xs);
+  margin: 0 0 4px;
+}
+
+.timeline-card p {
+  font-size: var(--font-xs);
+  color: #77858e;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-main {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.timeline-main .round-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.timeline-main .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.status-chip {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  font-size: var(--font-xs);
+  border-radius: 7px;
+  padding: 3px 5px;
+  background: #edf2ef;
+  color: #6d7b74;
+}
+
+.timeline-card.current .status-chip {
+  background: #1dbaa7;
+  color: #062f2a;
+}
+
+.timeline-card.done .status-chip {
+  background: #dcece2;
+  color: #397152;
+}
+
+.timeline-card.overdue .status-chip {
+  background: #fff0d6;
+  color: #9e6212;
+}
+
+.date-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.date-controls input {
+  flex: 1;
+  margin: 0;
+}
+
+.nav-date {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #dfe7e2;
+  background: #fff;
+  border-radius: 11px;
+  font-size: var(--font-2xl);
+  color: #173a5b;
+}
+
+.timeline-exam-btn {
+  margin: 9px 0 1px 0;
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  border-radius: 12px;
+  background: #173a5b;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: inherit;
+  font-size: var(--font-xs);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.timeline-exam-btn .icon {
+  width: 17px;
+  height: 17px;
+}
+
+.timeline-exam-btn:active {
+  transform: translateY(1px);
+}
+
+.timeline-item {
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.timeline-time {
+  width: 45px;
+  flex-basis: 45px;
+  font-size: var(--font-xs);
+  padding-top: 15px;
+}
+
+.timeline-card {
+  padding: 10px 11px;
+}
+
+.timeline-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.status-chip {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: var(--font-xs);
+  padding: 3px 6px;
+}
+
+.task-kind {
+  font-size: var(--font-xs);
+  color: #87949b;
+}
+
+.timeline-main {
+  align-items: flex-start;
+}
+
+.timeline-main > .timeline-copy {
+  min-width: 0;
+  flex: 1;
+  padding-top: 1px;
+}
+
+.timeline-card h4 {
+  font-size: var(--font-sm);
+  line-height: 1.65;
+  margin: 0 0 4px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.timeline-card p {
+  font-size: var(--font-xs);
+  line-height: 1.7;
+  margin: 0;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  color: #6e7d86;
+}
+
+.timeline-main .round-icon {
+  margin-top: 1px;
+}
+
+.shamsi-controls {
+  position: relative;
+}
+
+.shamsi-date-btn {
+  flex: 1;
+  height: 46px;
+  border: 1px solid #dfe7e2;
+  background: #fff;
+  border-radius: 12px;
+  color: #173a5b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.shamsi-date-btn strong {
+  font-size: var(--font-sm);
+}
+
+.shamsi-date-btn small {
+  font-size: var(--font-xs);
+  color: #7a878f;
+  margin-top: 2px;
+}
+
+.native-date-picker {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0.001 !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  left: 50%;
+  top: 50%;
+}

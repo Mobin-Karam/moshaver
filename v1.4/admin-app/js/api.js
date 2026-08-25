@@ -21,6 +21,10 @@
       "exam.retry_requested",
       "exam.retry_reviewed",
       "exam.updated",
+      "learning.created",
+      "learning.reviewed",
+      "attempt.reviewed",
+      "screen.viewed",
     ],
   });
 })(window);

@@ -9,10 +9,20 @@ function serializeEvent(row) {
 }
 
 function matches(client, row) {
+  if (row.audience_user_id) return client.userId === row.audience_user_id;
   if (row.audience_role === 'all') return true;
   if (row.audience_role === 'admin') return client.role === 'admin';
   if (row.audience_role === 'student') return client.role === 'student' && client.studentId === row.student_id;
   return false;
+}
+
+function emitUser(db, userId, type, payload, now) {
+  var createdAt = now(), json = JSON.stringify(payload || {});
+  var result = db.prepare('INSERT INTO realtime_events (audience_role,student_id,event_type,payload_json,created_at,audience_user_id) VALUES (?,?,?,?,?,?)')
+    .run('all', null, type, json, createdAt, userId);
+  var row = { id:Number(result.lastInsertRowid), audience_role:'all', student_id:null, audience_user_id:userId, event_type:type, payload_json:json, created_at:createdAt };
+  clients.slice().forEach(function(client) { if (matches(client,row)) try { client.res.write(serializeEvent(row)); } catch (e) { remove(client); } });
+  return row.id;
 }
 
 function emit(db, audienceRole, studentId, type, payload, now) {
@@ -46,8 +56,8 @@ function stream(db, req, res, user) {
   var lastId = Number(req.headers['last-event-id'] || 0);
   if (lastId > 0) {
     var rows;
-    if (user.role === 'admin') rows = db.prepare("SELECT * FROM realtime_events WHERE id>? AND audience_role IN ('admin','all') ORDER BY id LIMIT 200").all(lastId);
-    else rows = db.prepare("SELECT * FROM realtime_events WHERE id>? AND (audience_role='all' OR (audience_role='student' AND student_id=?)) ORDER BY id LIMIT 200").all(lastId,user.student_id);
+    if (user.role === 'admin') rows = db.prepare("SELECT * FROM realtime_events WHERE id>? AND ((audience_user_id=?) OR (audience_user_id IS NULL AND audience_role IN ('admin','all'))) ORDER BY id LIMIT 200").all(lastId,user.id);
+    else rows = db.prepare("SELECT * FROM realtime_events WHERE id>? AND ((audience_user_id=?) OR (audience_user_id IS NULL AND (audience_role='all' OR (audience_role='student' AND student_id=?)))) ORDER BY id LIMIT 200").all(lastId,user.id,user.student_id);
     rows.forEach(function(row){ res.write(serializeEvent(row)); });
   }
 
@@ -65,4 +75,4 @@ function cleanup(db, olderThanIso) {
 function count() { return clients.length; }
 function closeAll(){clients.slice().forEach(function(c){try{c.res.end();}catch(e){}remove(c);});}
 
-module.exports = { emit:emit, stream:stream, cleanup:cleanup, count:count, closeAll:closeAll };
+module.exports = { emit:emit, emitUser:emitUser, stream:stream, cleanup:cleanup, count:count, closeAll:closeAll };

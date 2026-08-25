@@ -1,7 +1,10 @@
 (function(global){
   global.APP_CONFIG={
     API_BASE_URL:'/api/v1',
-    APP_VERSION:'1.4.3',
+    API_SERVER_URL:'/api-server/v1',
+    API_LOCAL_URL:'/api-local/v1',
+    DEFAULT_API_SOURCE:'server',
+    APP_VERSION:'1.6.0',
     STUDENT_URL:'https://st.mahakaram.ir',
     ADMIN_URL:'http://localhost:8081'
   };

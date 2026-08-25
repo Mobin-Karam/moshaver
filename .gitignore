@@ -26,6 +26,10 @@ backups/
 
 # Logs and OS/editor files
 *.log
+.run/
+.agent-state/
+graphify-out/
+**/graphify-out/
 .DS_Store
 .idea/
 .vscode/

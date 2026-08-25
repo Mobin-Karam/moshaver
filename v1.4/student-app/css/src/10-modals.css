@@ -1,0 +1,259 @@
+/* Moshaver Student UI v1.6.0 — Dialogs, reports, recovery, notifications and modal content */
+
+.modal-backdrop {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
+  background: rgba(9, 24, 37, 0.54);
+}
+
+.modal {
+  position: fixed;
+  z-index: 61;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  padding: 24px 18px 24px;
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: #f1f4f2;
+  color: #53636d;
+  border-radius: 11px;
+}
+
+.modal h3 {
+  margin: 4px 0 5px;
+  font-size: var(--font-lg);
+}
+
+.modal textarea,
+.modal select {
+  width: 100%;
+  border: 1px solid #dfe7e2;
+  border-radius: 12px;
+  padding: 10px;
+  background: #fbfcfb;
+  margin: 8px 0;
+}
+
+.task-modal-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 13px;
+}
+
+.task-detail-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.task-detail-grid span {
+  background: #f1f5f3;
+  padding: 7px 9px;
+  border-radius: 9px;
+  font-size: var(--font-xs);
+}
+
+.task-actions {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.task-actions .btn {
+  flex: 1;
+}
+
+.advisor-comment {
+  background: #eaf7f4;
+  border-right: 3px solid #1dbaa7;
+  border-radius: 10px;
+  padding: 9px;
+  margin-top: 8px;
+  font-size: var(--font-xs);
+  line-height: 1.7;
+}
+
+.choice-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 12px 0;
+}
+
+.choice-btn {
+  border: 1px solid #dfe7e2;
+  background: #f8faf8;
+  border-radius: 12px;
+  padding: 9px 10px;
+  font-size: var(--font-xs);
+}
+
+.choice-btn.active {
+  border-color: #1dbaa7;
+  background: #eaf8f5;
+  color: #13776d;
+  font-weight: 800;
+}
+
+.rating-row label {
+  display: block;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  padding: 8px 0;
+}
+
+.rating-row output {
+  float: left;
+  background: #173a5b;
+  color: #fff;
+  border-radius: 8px;
+  padding: 2px 7px;
+}
+
+.rating-row input {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.notification-item {
+  padding: 11px 0;
+  border-bottom: 1px solid #eef2ef;
+}
+
+.notification-item strong {
+  display: block;
+  font-size: var(--font-xs);
+}
+
+.notification-item p {
+  font-size: var(--font-xs);
+  color: #6d7c85;
+  line-height: 1.7;
+  margin: 4px 0;
+}
+
+.notification-item small {
+  font-size: var(--font-xs);
+  color: #9aa3a8;
+}
+
+.update-modal {
+  text-align: center;
+}
+
+.update-graphic img {
+  width: 66px;
+  height: 66px;
+}
+
+.release-note {
+  background: #f1f6f3;
+  border-radius: 12px;
+  padding: 10px;
+  font-size: var(--font-xs);
+  line-height: 1.7;
+  margin: 10px 0;
+}
+
+.busy-hint {
+  background: #fff3d8;
+  color: #8b6118;
+  padding: 8px;
+  border-radius: 10px;
+  font-size: var(--font-xs);
+  margin: 8px 0;
+}
+
+.notification-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.notification-list {
+  display: grid;
+  gap: 7px;
+  max-height: 58vh;
+  overflow: auto;
+}
+
+.notification-item {
+  width: 100%;
+  border: 1px solid #e5ece8;
+  background: #fbfdfc;
+  border-radius: 13px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  gap: 8px;
+  text-align: right;
+  font-family: inherit;
+  color: inherit;
+}
+
+.notification-item.unread {
+  background: #eef8f4;
+  border-color: #cfe9df;
+}
+
+.notification-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c4d0cc;
+  margin-top: 5px;
+}
+
+.notification-item.unread .notification-dot {
+  background: #1dbaa7;
+  box-shadow: 0 0 0 4px rgba(29, 186, 167, 0.1);
+}
+
+.notification-copy {
+  min-width: 0;
+}
+
+.notification-copy strong {
+  display: block;
+  font-size: var(--font-xs);
+}
+
+.notification-copy p {
+  font-size: var(--font-xs);
+  line-height: 1.65;
+  margin: 3px 0;
+  color: #53666e;
+}
+
+.notification-copy small {
+  font-size: var(--font-xs);
+  color: #85939a;
+  direction: ltr;
+}
+
+.notification-item > b {
+  font-size: var(--font-xs);
+  background: #173a5b;
+  color: #fff;
+  border-radius: 999px;
+  padding: 3px 6px;
+  height: max-content;
+}

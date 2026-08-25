@@ -1,0 +1,18 @@
+{
+  "version": "1.6.0",
+  "output": "css/app.css",
+  "sources": [
+    "css/src/01-tokens.css",
+    "css/src/02-base.css",
+    "css/src/03-layout.css",
+    "css/src/04-components.css",
+    "css/src/05-today.css",
+    "css/src/06-schedule.css",
+    "css/src/07-exams.css",
+    "css/src/08-chat.css",
+    "css/src/09-learning.css",
+    "css/src/10-modals.css",
+    "css/src/11-dark.css",
+    "css/src/12-responsive.css"
+  ]
+}

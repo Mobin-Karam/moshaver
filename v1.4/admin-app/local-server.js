@@ -26,7 +26,9 @@ var URLCtor = require('url').URL;
 var ROOT = __dirname;
 var args = process.argv.slice(2);
 var port = 8081;
-var target = 'https://api.mahakaram.ir';
+var serverTarget = 'https://api.mahakaram.ir';
+var localTarget = 'http://127.0.0.1:4000';
+var target = serverTarget;
 var mode = 'production';
 
 args.forEach(function(arg) {
@@ -37,9 +39,6 @@ args.forEach(function(arg) {
     if (isFinite(n) && n > 0 && n < 65536) port = n;
   }
 });
-
-var targetUrl = new URLCtor(target);
-var transport = targetUrl.protocol === 'https:' ? https : http;
 
 var MIME = {
   '.html':'text/html; charset=utf-8',
@@ -79,8 +78,10 @@ function rewriteSetCookie(value) {
   });
 }
 
-function proxy(req, res) {
-  var upstreamPath = req.url;
+function proxy(req, res, selectedTarget, prefix) {
+  var targetUrl = new URLCtor(selectedTarget);
+  var transport = targetUrl.protocol === 'https:' ? https : http;
+  var upstreamPath = prefix ? req.url.replace(prefix, '/api') : req.url;
   var headers = {};
   Object.keys(req.headers || {}).forEach(function(k) { headers[k] = req.headers[k]; });
   headers.host = targetUrl.host;
@@ -121,12 +122,15 @@ function proxy(req, res) {
 }
 
 function serve(req, res) {
-  if (req.url.indexOf('/api/v1/') === 0 || req.url === '/api/v1') return proxy(req, res);
+  var pathname=req.url.split('?')[0];
+  if (pathname.indexOf('/api-server/v1/') === 0 || pathname === '/api-server/v1') return proxy(req,res,serverTarget,'/api-server');
+  if (pathname.indexOf('/api-local/v1/') === 0 || pathname === '/api-local/v1') return proxy(req,res,localTarget,'/api-local');
+  if (pathname.indexOf('/api/v1/') === 0 || pathname === '/api/v1') return proxy(req,res,target,'');
 
   if (req.url.split('?')[0] === '/config.js') {
     var config = [
       '(function(global){',
-      "global.APP_CONFIG={API_BASE_URL:'/api/v1',APP_VERSION:'1.4.3',STUDENT_URL:'https://st.mahakaram.ir',ADMIN_URL:'http://localhost:"+port+"'};",
+      "global.APP_CONFIG={API_BASE_URL:'/api/v1',API_SERVER_URL:'/api-server/v1',API_LOCAL_URL:'/api-local/v1',DEFAULT_API_SOURCE:'"+(mode==='local'?'local':'server')+"',APP_VERSION:'1.6.0',STUDENT_URL:'https://st.mahakaram.ir',ADMIN_URL:'http://localhost:"+port+"'};",
       '})(window);'
     ].join('\n');
     res.statusCode = 200;
@@ -150,12 +154,18 @@ function serve(req, res) {
 var server = http.createServer(serve);
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;
+server.on('error', function(error) {
+  if (error && error.code === 'EADDRINUSE') { console.log('Moshaver Admin is already available on http://localhost:' + port + '.'); process.exit(0); }
+  console.error('Local Admin server failed:', error.message); process.exit(1);
+});
 server.listen(port, '127.0.0.1', function() {
   console.log('');
   console.log('Moshaver | مشاور — Local Admin');
   console.log('Mode:    ' + mode);
   console.log('Admin:   http://localhost:' + port);
   console.log('API via: http://localhost:' + port + '/api/v1 -> ' + target);
+  console.log('Select:  /api-server/v1 -> ' + serverTarget);
+  console.log('         /api-local/v1  -> ' + localTarget);
   console.log('');
   console.log('Press Ctrl+C to stop.');
 });

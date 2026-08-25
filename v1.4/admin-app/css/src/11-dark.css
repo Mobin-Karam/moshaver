@@ -1,0 +1,1 @@
+@media(prefers-color-scheme:dark){:root{--admin-bg:#091822;--admin-surface:#102735;--admin-ink:#edf7fa;--admin-muted:#aac1cc;--admin-border:#294657;--admin-shadow:0 12px 35px rgba(0,0,0,.28)}html{color-scheme:dark}.panel,.realtime-student-card,.live-context-card,.realtime-toolbar input,.realtime-toolbar select{background:var(--admin-surface);color:var(--admin-ink)}}

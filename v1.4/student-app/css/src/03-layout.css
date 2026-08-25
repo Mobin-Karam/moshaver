@@ -1,0 +1,293 @@
+/* Moshaver Student UI v1.6.0 — Application shell, login, top bar, views, navigation and focus mode */
+
+.icon,
+.nav-icon,
+.hero-icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.login-shell {
+  min-height: 100vh;
+  padding: 24px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #eef8f4 0, #f8faf7 48%, #eef3f7 100%);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border: 1px solid #e4ebe6;
+  border-radius: 24px;
+  padding: 28px 22px;
+  box-shadow: 0 18px 60px rgba(23, 58, 91, 0.09);
+  text-align: center;
+}
+
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: block;
+}
+
+.brand-logo.large {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  margin: 0 auto 14px;
+}
+
+.login-card h1 {
+  font-size: var(--font-2xl);
+  margin: 8px 0;
+}
+
+.login-card p {
+  font-size: var(--font-base);
+  margin: 0 0 22px;
+}
+
+.login-foot {
+  margin-top: 20px;
+  padding-top: 17px;
+  border-top: 1px solid #edf1ee;
+  color: #7a878f;
+  font-size: var(--font-xs);
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-foot .icon {
+  width: 17px;
+  height: 17px;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+.topbar {
+  height: 66px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(247, 249, 246, 0.97);
+  border-bottom: 1px solid #e1e8e3;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-row > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-row strong {
+  font-size: var(--font-base);
+}
+
+.brand-row small {
+  font-size: var(--font-xs);
+  color: #74818a;
+  margin-top: 2px;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.main-content {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 17px 14px 95px;
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+.hello-row,
+.page-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 13px;
+}
+
+.hello-row h2,
+.page-title h2 {
+  margin: 3px 0 0;
+  font-size: var(--font-2xl);
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  background: #fff;
+  border-top: 1px solid #dfe7e2;
+  z-index: 30;
+  display: flex;
+  align-items: stretch;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: #87929a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: var(--font-xs);
+}
+
+.nav-item.active {
+  color: #173a5b;
+  font-weight: 800;
+}
+
+.nav-item.active .nav-icon {
+  color: #1dbaa7;
+}
+
+.nav-icon {
+  width: 23px;
+  height: 23px;
+}
+
+.offline-bar {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #a56b17;
+  color: #fff;
+  padding: 7px 12px;
+  font-size: var(--font-xs);
+  text-align: center;
+}
+
+.offline-bar:not(.hidden) + .login-shell,
+.offline-bar:not(.hidden) ~ .app .topbar {
+  margin-top: 30px;
+}
+
+.bottom-nav .nav-item {
+  position: relative;
+}
+
+.focus-mode {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  background: #f7f9f6;
+  color: #172536;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 18px 24px;
+}
+
+.focus-mode.hidden {
+  display: none;
+}
+
+.focus-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-xs);
+  font-weight: 800;
+}
+
+.focus-brand img {
+  width: 32px;
+  height: 32px;
+}
+
+.focus-center {
+  margin: auto 0;
+  text-align: center;
+}
+
+.focus-center h2 {
+  font-size: var(--font-3xl);
+  margin: 8px 0 4px;
+}
+
+.focus-center p {
+  font-size: var(--font-xs);
+  color: #667780;
+  margin: 0 auto 22px;
+  max-width: 420px;
+}
+
+.focus-center > strong {
+  font-size: 44px;
+  direction: ltr;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+  color: #173a5b;
+  display: block;
+}
+
+.focus-goal {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.focus-goal span {
+  background: #eaf3ef;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: var(--font-xs);
+}
+
+.focus-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 8px;
+  max-width: 520px;
+  width: 100%;
+  margin: 0 auto;
+}
+.focus-tests { display:flex; align-items:center; justify-content:center; gap:10px; color:var(--muted); }
+.focus-tests input { width:88px; text-align:center; font:inherit; font-weight:800; }
+
+.view.active {
+  width: 100%;
+}

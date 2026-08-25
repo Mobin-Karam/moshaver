@@ -2,6 +2,7 @@
   "use strict";
   var state = global.MoshaverAdminState.create();
   var AUTH_SIGNAL_KEY = "moshaver_admin_auth_signal";
+  var API_SOURCE_KEY = "moshaver_admin_api_source";
   var UI = global.MoshaverUI,
     Dates = global.MoshaverAdminDates,
     Modal = global.MoshaverAdminModal,
@@ -79,6 +80,9 @@
     el: el,
     esc: esc,
     toast: toast,
+    fa: fa,
+    openModal: openModal,
+    closeModal: closeModal,
     loadStudents: loadStudents,
     switchView: switchView,
     selectConversationForStudent: selectConversationForStudent,
@@ -111,7 +115,8 @@
     newSubject = SubjectsView.createSubject;
   var loadSystem = SystemView.load,
     loadSessions = SystemView.loadSessions,
-    openChangePassword = SystemView.openChangePassword;
+    openChangePassword = SystemView.openChangePassword,
+    downloadBackup = SystemView.downloadBackup;
   function showLogin(message) {
     el("loginScreen").className = "login-screen";
     el("app").className = "admin-shell hidden";
@@ -248,13 +253,30 @@
     if (name === "subjects") loadSubjects();
     if (name === "system") loadSystem();
   }
-  function loadStudents(done) {
-    api("GET", "/admin/students", null, function (err, data) {
+  function loadStudents(done, offset, append) {
+    offset = Math.max(0, Number(offset || 0));
+    if (append && state.studentPrefetch && state.studentPrefetch.length) {
+      state.students = state.students.concat(state.studentPrefetch.splice(0, 15));
+      if (state.studentDirectoryPage) state.studentDirectoryPage.hasMore = state.studentPrefetch.length > 0 || state.studentDirectoryPage.serverHasMore;
+      done && done();
+      return;
+    }
+    if (append) offset = state.studentFetchedCount || offset;
+    var status = el("studentFilter") && el("studentFilter").value === "archived" ? "&status=archived" : "";
+    var search = el("studentSearch") ? String(el("studentSearch").value || "").trim() : "";
+    var loadSeq = ++state.studentLoadSeq;
+    api("GET", "/admin/students?limit=30&offset=" + offset + status + (search ? "&search=" + encodeURIComponent(search) : ""), null, function (err, data) {
+      if (loadSeq !== state.studentLoadSeq) return;
       if (err) {
         toast(err.message);
         return;
       }
-      state.students = data || [];
+      var items = data && data.items ? data.items : data || [];
+      state.studentFetchedCount = offset + items.length;
+      if (append) state.students = state.students.concat(items.slice(0, 15));
+      else { state.students = items.slice(0, 15); state.studentPrefetch = items.slice(15); }
+      if (append && items.length > 15) state.studentPrefetch = state.studentPrefetch.concat(items.slice(15));
+      state.studentDirectoryPage = data && data.items ? { total:data.total, limit:data.limit, offset:data.offset, serverHasMore:data.hasMore, hasMore:state.studentPrefetch.length>0||data.hasMore } : { total:state.students.length, limit:state.students.length, offset:0, serverHasMore:false, hasMore:false };
       var sel = el("studentSelect"),
         h = "";
       for (var i = 0; i < state.students.length; i++)
@@ -263,6 +285,7 @@
           esc(state.students[i].id) +
           '">' +
           esc(state.students[i].name) +
+          (Number(state.students[i].active) === 1 ? "" : " — غیرفعال") +
           "</option>";
       sel.innerHTML = h;
       if (!state.studentId && state.students.length)
@@ -278,6 +301,7 @@
   }
   function loadDashboard() {
     if (!state.studentId) return;
+    api("GET", "/admin/attention?limit=30", null, function (attentionErr, attention) { if (!attentionErr) renderAttention(attention || []); });
     api(
       "GET",
       "/admin/students/" + state.studentId + "/overview",
@@ -304,6 +328,12 @@
         );
       },
     );
+  }
+  function renderAttention(rows) {
+    var box = el("attentionList"); if (!box) return; var h = "";
+    for (var i = 0; i < rows.length; i++) { var x = rows[i], reasons = (x.reasons || []).map(function (r) { return r.label + ": " + faNum(r.value); }).join(" • "); h += '<button class="attention-student-row ' + esc(x.severity || "yellow") + '" data-attention-student="' + esc(x.id) + '"><span class="attention-dot"></span><span><strong>' + esc(x.name) + '</strong><small>' + esc(reasons) + '</small></span><b>باز کردن پرونده</b></button>'; }
+    box.innerHTML = h || '<div class="empty-admin">فعلاً مورد فوری وجود ندارد.</div>';
+    var buttons = qa("[data-attention-student]", box); for (i = 0; i < buttons.length; i++) buttons[i].onclick = function () { state.studentId = this.getAttribute("data-attention-student"); el("studentSelect").value = state.studentId; switchView("students"); };
   }
   function openAdminNotifications() {
     if (!state.studentId) return;
@@ -612,12 +642,13 @@
     if (state.liveClock) clearInterval(state.liveClock);
     state.liveTimer = null;
     state.liveClock = null;
+    if (realtimeRefreshTimer) clearTimeout(realtimeRefreshTimer);
+    realtimeRefreshTimer = null;
   }
   function loadLive() {
-    if (!state.studentId) return;
     api(
       "GET",
-      "/admin/live?studentId=" + state.studentId,
+      "/admin/realtime/students?limit=100",
       null,
       function (err, data) {
         if (err) return;
@@ -626,11 +657,18 @@
       },
     );
   }
+  var realtimeRefreshTimer = null;
+  function scheduleRealtimeRefresh() {
+    if (!q(".view.active") || q(".view.active").id !== "view-live") return;
+    if (realtimeRefreshTimer) clearTimeout(realtimeRefreshTimer);
+    realtimeRefreshTimer = setTimeout(function () { realtimeRefreshTimer=null; loadLive(); }, 800);
+  }
   function renderLive() {
     var d = state.live || {},
       p = d.presence || {},
       ss = d.activeSession,
       s = d.student || {};
+    if (d.students) return renderRealtimeSnapshot(d);
     el("liveDot").className = "live-dot " + (p.online ? "online" : "");
     var hero =
       '<div class="live-hero"><div class="live-status"><span class="pulse ' +
@@ -655,6 +693,18 @@
       "</small></div></div>";
     el("liveHero").innerHTML = hero;
     renderLiveTimer();
+    if (el("liveContext")) {
+      var progress = d.planProgress || {}, learning = d.learning || {}, current = d.currentTask || {}, last = d.lastAttempt || {}, recent = d.activity && d.activity.length ? d.activity[0] : null;
+      var total = Number(progress.total || 0), completed = Number(progress.done || 0), partial = Number(progress.partial || 0);
+      var pct = total ? Math.round(((completed + partial * 0.5) * 100) / total) : 0;
+      el("liveContext").innerHTML =
+        '<article class="live-context-card"><small>فعالیت فعلی</small><strong>' + esc(current.title || (ss && ss.title) || (recent && recent.eventType === 'screen.viewed' && recent.metadata && recent.metadata.viewLabel) || (p.online ? "داخل اپ" : "آفلاین")) + '</strong><span>' + esc(current.subject || (ss && ss.subject) || p.deviceLabel || "") + '</span></article>' +
+        '<article class="live-context-card"><small>پیشرفت برنامه امروز</small><strong>' + fa(pct) + '%</strong><span>' + fa(completed) + ' کامل • ' + fa(partial) + ' نیمه‌کاره از ' + fa(total) + '</span></article>' +
+        '<article class="live-context-card"><small>مطالعه ثبت‌شده امروز</small><strong>' + fa((d.todayStudy && d.todayStudy.minutes) || 0) + ' دقیقه</strong><span>' + fa((d.todayStudy && d.todayStudy.sessions) || 0) + ' جلسه تمام‌شده</span></article>' +
+        '<article class="live-context-card"><small>یادگیری نیازمند توجه</small><strong>' + fa(learning.dueItems || 0) + ' مرور</strong><span>' + fa(learning.pendingItems || 0) + ' مورد فعال • تسلط ' + fa(Math.round(learning.averageMastery || 0)) + '/۵</span></article>' +
+        '<article class="live-context-card"><small>آخرین آزمون</small><strong>' + (last.id ? fa(last.percent || 0) + '%' : '—') + '</strong><span>' + esc(last.title || 'هنوز آزمونی ثبت نشده') + '</span></article>' +
+        '<article class="live-context-card"><small>آخرین حضور</small><strong>' + (p.online ? 'آنلاین' : 'آفلاین') + '</strong><span>' + esc(p.lastSeenAt ? shortDateTime(p.lastSeenAt) : 'بدون سابقه') + '</span></article>';
+    }
     var h = "",
       acts = d.activity || [];
     for (var i = 0; i < acts.length; i++) {
@@ -706,7 +756,18 @@
         };
       };
   }
+  function renderRealtimeSnapshot(d) {
+    var summary=d.summary||{}, search=String((el("realtimeSearch")&&el("realtimeSearch").value)||"").trim().toLowerCase(), filter=(el("realtimeFilter")&&el("realtimeFilter").value)||"all";
+    el("liveDot").className="live-dot "+(summary.online?"online":"");
+    el("liveHero").innerHTML='<div class="realtime-summary"><div><small>آنلاین</small><strong>'+fa(summary.online||0)+'</strong></div><div><small>در حال مطالعه</small><strong>'+fa(summary.studying||0)+'</strong></div><div><small>توقف</small><strong>'+fa(summary.paused||0)+'</strong></div><div><small>آزمون</small><strong>'+fa(summary.takingExam||0)+'</strong></div><div><small>نیازمند توجه</small><strong>'+fa(summary.attention||0)+'</strong></div></div>';
+    var list=(d.students||[]).filter(function(x){var attention=x.dueReviews>=3||(x.lastExamPercent!=null&&x.lastExamPercent<50);return (!search||String(x.name||"").toLowerCase().indexOf(search)>=0)&& (filter==="all"||filter==="online"&&x.presence&&x.presence.online||filter==="attention"&&attention||x.state===filter);}), h="";
+    list.forEach(function(x){var attention=x.dueReviews>=3||(x.lastExamPercent!=null&&x.lastExamPercent<50),ss=x.activeSession||{};h+='<article class="realtime-student-card '+esc(x.freshness)+'"><div class="realtime-card-head"><span class="pulse '+(x.presence&&x.presence.online?'':'offline')+'"></span><div><strong>'+esc(x.name)+'</strong><small>'+esc(x.grade||x.major||'')+'</small></div><b class="status-chip">'+esc({studying:'مطالعه',paused:'توقف',taking_exam:'آزمون',online:'آنلاین',offline:'آفلاین'}[x.state]||x.state)+'</b></div><p>'+esc(ss.title||x.currentView||'بدون فعالیت جاری')+'</p><div class="realtime-metrics"><span>'+fa(x.remainingTasks)+' کار باقی‌مانده</span><span>'+fa(x.dueReviews)+' مرور</span><span>'+(x.lastExamPercent==null?'—':fa(x.lastExamPercent)+'%')+' آزمون</span></div>'+(ss.startedAt?'<strong class="live-elapsed" data-live-started="'+esc(ss.startedAt)+'">00:00:00</strong>':'')+'<div class="head-actions"><button class="mini-btn" data-live-open="'+esc(x.id)+'">پرونده</button><button class="mini-btn" data-live-message="'+esc(x.id)+'">پیام</button>'+(attention?'<span class="status-chip warn">توجه</span>':'')+'</div></article>';});
+    el("liveContext").innerHTML=h||'<div class="empty-admin">دانش‌آموزی با این فیلتر پیدا نشد.</div>';
+    var timeline="";(d.timeline||[]).slice(0,60).forEach(function(a){timeline+='<div class="activity-row"><span class="activity-dot"></span><div><strong>'+esc(a.studentName)+' — '+esc(activityLabel(a.eventType))+'</strong><p>'+esc(activityMeta(a))+'</p><time>'+esc(shortDateTime(a.createdAt))+'</time></div></div>';});el("activityFeed").innerHTML=timeline||'<div class="empty-admin">رویدادی ثبت نشده.</div>';
+    qa("[data-live-open]").forEach(function(b){b.onclick=function(){state.studentId=this.getAttribute("data-live-open");switchView("students");loadStudentEditor();};});qa("[data-live-message]").forEach(function(b){b.onclick=function(){state.studentId=this.getAttribute("data-live-message");switchView("chat");setTimeout(function(){selectConversationForStudent(state.studentId);},80);};});renderLiveTimer();
+  }
   function renderLiveTimer() {
+    qa("[data-live-started]").forEach(function(node){var sec=Math.max(0,Math.floor((Date.now()-new Date(node.getAttribute("data-live-started")).getTime())/1000));node.textContent=("0"+Math.floor(sec/3600)).slice(-2)+":"+("0"+Math.floor((sec%3600)/60)).slice(-2)+":"+("0"+(sec%60)).slice(-2);});
     if (!state.live || !state.live.activeSession || !el("liveTimerText"))
       return;
     var sec = Math.max(
@@ -741,6 +802,10 @@
       "quiz.completed": "پایان آزمونک",
       "report.submitted": "گزارش شبانه",
       "recovery.requested": "درخواست ریکاوری",
+      "learning.created": "افزودن مورد یادگیری",
+      "learning.reviewed": "مرور هوشمند انجام شد",
+      "attempt.reviewed": "بازبینی پاسخ‌های آزمون",
+      "screen.viewed": "مشاهده بخش برنامه",
     };
     return map[t] || t;
   }
@@ -749,6 +814,7 @@
     if (m.actualMinutes) return fa(m.actualMinutes) + " دقیقه";
     if (m.percent != null) return fa(m.percent) + "٪";
     if (m.issueType) return m.issueType;
+    if (m.viewLabel) return m.viewLabel;
     return a.entityType || "";
   }
   function plannerRange() {
@@ -1130,19 +1196,25 @@
         "</option>";
     return h;
   }
-  function taskExamOptions(selected) {
+  function taskExamOptions(selected, search) {
     var h = '<option value="">— بدون آزمون مرتبط —</option>';
+    var term = String(search || "").trim().toLowerCase(), shown = 0;
     for (var i = 0; i < state.exams.length; i++) {
       var e = state.exams[i];
+      var label = (e.persianDate || e.isoDate) + " — " + e.title;
+      if (term && label.toLowerCase().indexOf(term) < 0 && e.id !== selected) continue;
+      if (shown >= 12 && e.id !== selected) continue;
+      shown++;
       h +=
         '<option value="' +
         esc(e.id) +
         '"' +
         (selected === e.id ? " selected" : "") +
         ">" +
-        esc((e.persianDate || e.isoDate) + " — " + e.title) +
+        esc(label) +
         "</option>";
     }
+    if (!shown) h += '<option value="" disabled>نتیجه‌ای پیدا نشد</option>';
     return h;
   }
   function syncTaskExamField(selected) {
@@ -1213,11 +1285,14 @@
         esc(t.pages || "") +
         '"></label><label>تعداد تست<input id="tfTests" type="number" min="0" value="' +
         esc(t.testCount || 0) +
-        '"></label><label id="tfExamWrap" class="span-2 hidden">آزمون مرتبط<select id="tfExamId"></select><small class="field-hint">اگر نوع فعالیت exam است، آزمونی را انتخاب کن تا دانش‌آموز همان آزمون را مستقیم از برنامه باز کند.</small></label><label class="span-2">یادداشت<textarea id="tfNote" rows="3">' +
+        '"></label><label id="tfExamWrap" class="span-2 hidden">آزمون مرتبط<input id="tfExamSearch" type="search" autocomplete="off" placeholder="جست‌وجو با نام یا تاریخ آزمون"><select id="tfExamId" size="6" class="task-exam-picker"></select><small class="field-hint">حداکثر ۱۲ نتیجه نمایش داده می‌شود. نام یا تاریخ را جست‌وجو کن و آزمون را انتخاب کن.</small></label><label class="span-2">یادداشت<textarea id="tfNote" rows="3">' +
         esc(t.note || "") +
         '</textarea></label></div><button id="saveTaskForm" class="btn primary full" style="margin-top:12px">ذخیره فعالیت</button>',
     );
     syncTaskExamField(t.examId || "");
+    el("tfExamSearch").oninput = function () {
+      el("tfExamId").innerHTML = taskExamOptions(el("tfExamId").value || t.examId || "", this.value);
+    };
     el("tfType").onchange = function () {
       syncTaskExamField(t.examId || "");
     };
@@ -1559,45 +1634,52 @@
             esc(x.question_text || x.question || "") +
             "</strong><small>پاسخ صحیح: " +
             esc(String(x.correct_option || "").toUpperCase()) +
-            '</small></div><button class="action-icon danger" data-del-exam-question="' +
+            '</small></div><div class="question-row-actions"><button class="mini-btn" data-edit-exam-question="' +
+            x.id +
+            '">ویرایش</button><button class="action-icon danger" data-del-exam-question="' +
             x.id +
             '">' +
             icon("trash") +
-            "</button></div>";
+            "</button></div></div>";
         }
         h +=
           (rows && rows.length
             ? ""
             : '<div class="empty-admin">هنوز سؤالی ثبت نشده.</div>') +
-          '</div><hr><div class="question-builder"><label>صورت سؤال<textarea id="eqQuestion" rows="3"></textarea></label><div class="form-grid"><label>گزینه A<input id="eqA"></label><label>گزینه B<input id="eqB"></label><label>گزینه C<input id="eqC"></label><label>گزینه D<input id="eqD"></label><label>پاسخ صحیح<select id="eqCorrect"><option value="a">A</option><option value="b">B</option><option value="c">C</option><option value="d">D</option></select></label></div><label>توضیح پاسخ<textarea id="eqExplanation" rows="2"></textarea></label><button id="addExamQuestion" class="btn primary full">افزودن سؤال</button></div>';
+          '</div><hr><div class="question-builder"><label>صورت سؤال<textarea id="eqQuestion" rows="3"></textarea></label><div class="form-grid"><label>گزینه A<input id="eqA"></label><label>گزینه B<input id="eqB"></label><label>گزینه C<input id="eqC"></label><label>گزینه D<input id="eqD"></label><label>پاسخ صحیح<select id="eqCorrect"><option value="a">A</option><option value="b">B</option><option value="c">C</option><option value="d">D</option></select></label><label>کتاب<input id="eqBook"></label><label>فصل<input id="eqChapter"></label><label>درس<input id="eqLesson"></label><label>مبحث<input id="eqTopic"></label></div><label>توضیح پاسخ<textarea id="eqExplanation" rows="2"></textarea></label><label>هینت مرور آینده<textarea id="eqHint" rows="2"></textarea></label><button id="addExamQuestion" class="btn primary full">افزودن سؤال</button></div>';
         openModal(h);
         el("addExamQuestion").onclick = function () {
-          var btn = this,
-            body = {
-              question: el("eqQuestion").value,
-              options: [
-                el("eqA").value,
-                el("eqB").value,
-                el("eqC").value,
-                el("eqD").value,
-              ],
-              correctOption: el("eqCorrect").value,
-              explanation: el("eqExplanation").value,
-              sortOrder: (rows || []).length + 1,
-            };
-          setButtonBusy(btn, true, "در حال افزودن…");
-          api(
-            "POST",
-            "/admin/exams/" + e.id + "/questions",
-            body,
-            function (er) {
-              setButtonBusy(btn, false);
-              if (er) return toast(er.message, "error");
-              toast("سؤال اضافه شد");
-              openExamQuestions(e);
-              loadExams();
-            },
-          );
+          var btn = this, editId = btn.getAttribute("data-edit-id"), editRow = null;
+          for (var ri = 0; ri < (rows || []).length; ri++) if (String(rows[ri].id) === String(editId || "")) editRow = rows[ri];
+          var body = {
+            question: el("eqQuestion").value,
+            options: [el("eqA").value, el("eqB").value, el("eqC").value, el("eqD").value],
+            correctOption: el("eqCorrect").value,
+            explanation: el("eqExplanation").value,
+            book: el("eqBook").value,
+            chapter: el("eqChapter").value,
+            lesson: el("eqLesson").value,
+            topic: el("eqTopic").value,
+            hint: el("eqHint").value,
+            sortOrder: editRow ? Number(editRow.sort_order || 1) : (rows || []).length + 1,
+          };
+          setButtonBusy(btn, true, editId ? "در حال ذخیره…" : "در حال افزودن…");
+          api(editId ? "PATCH" : "POST", editId ? "/admin/questions/" + encodeURIComponent(editId) : "/admin/exams/" + e.id + "/questions", body, function (er) {
+            setButtonBusy(btn, false);
+            if (er) return toast(er.message, "error");
+            toast(editId ? "سؤال ویرایش شد" : "سؤال اضافه شد");
+            openExamQuestions(e);
+            loadExams();
+          });
+        };
+        var edits = qa("[data-edit-exam-question]");
+        for (i = 0; i < edits.length; i++) edits[i].onclick = function () {
+          var qid = this.getAttribute("data-edit-exam-question"), row = null;
+          for (var j = 0; j < (rows || []).length; j++) if (String(rows[j].id) === String(qid)) row = rows[j];
+          if (!row) return;
+          el("eqQuestion").value = row.question_text || ""; el("eqA").value = row.option_a || ""; el("eqB").value = row.option_b || ""; el("eqC").value = row.option_c || ""; el("eqD").value = row.option_d || "";
+          el("eqCorrect").value = row.correct_option || "a"; el("eqExplanation").value = row.explanation || ""; el("eqBook").value = row.book || ""; el("eqChapter").value = row.chapter || ""; el("eqLesson").value = row.lesson || ""; el("eqTopic").value = row.topic || ""; el("eqHint").value = row.hint || "";
+          el("addExamQuestion").setAttribute("data-edit-id", qid); el("addExamQuestion").textContent = "ذخیره تغییرات سؤال"; el("eqQuestion").focus();
         };
         var ds = qa("[data-del-exam-question]");
         for (i = 0; i < ds.length; i++)
@@ -1737,36 +1819,44 @@
             esc(data[i].question_text) +
             "</strong><p>پاسخ: " +
             esc(data[i].correct_option) +
-            '</p></div><button class="action-icon danger" data-del-question="' +
+            '</p></div><div class="question-row-actions"><button class="mini-btn" data-edit-question="' +
+            data[i].id +
+            '">ویرایش</button><button class="action-icon danger" data-del-question="' +
             data[i].id +
             '">' +
             icon("trash") +
-            "</button></div>";
+            "</button></div></div>";
         h +=
-          '<hr><label>صورت سؤال<textarea id="newQuestion" rows="3"></textarea></label><div class="form-grid"><label>گزینه ۱<input id="optA"></label><label>گزینه ۲<input id="optB"></label><label>گزینه ۳<input id="optC"></label><label>گزینه ۴<input id="optD"></label><label>پاسخ<select id="correctOpt"><option value="a">۱</option><option value="b">۲</option><option value="c">۳</option><option value="d">۴</option></select></label></div><button id="addQuestion" class="btn primary full">افزودن سؤال</button>';
+          '<hr><label>صورت سؤال<textarea id="newQuestion" rows="3"></textarea></label><div class="form-grid"><label>گزینه ۱<input id="optA"></label><label>گزینه ۲<input id="optB"></label><label>گزینه ۳<input id="optC"></label><label>گزینه ۴<input id="optD"></label><label>پاسخ<select id="correctOpt"><option value="a">۱</option><option value="b">۲</option><option value="c">۳</option><option value="d">۴</option></select></label><label>کتاب<input id="qBook"></label><label>فصل<input id="qChapter"></label><label>درس<input id="qLesson"></label><label>مبحث<input id="qTopic"></label></div><label>توضیح پاسخ<textarea id="qExplanation" rows="2"></textarea></label><label>هینت مرور آینده<textarea id="qHint" rows="2"></textarea></label><button id="addQuestion" class="btn primary full">افزودن سؤال</button>';
         openModal(h);
         el("addQuestion").onclick = function () {
-          api(
-            "POST",
-            "/admin/quizzes/" + id + "/questions",
-            {
-              question: el("newQuestion").value,
-              options: [
-                el("optA").value,
-                el("optB").value,
-                el("optC").value,
-                el("optD").value,
-              ],
-              correctOption: el("correctOpt").value,
-              explanation: "",
-              sortOrder: data.length + 1,
-            },
-            function (er) {
-              if (er) return toast(er.message);
-              closeModal();
-              openQuestions(id);
-            },
-          );
+          var btn = this, editId = btn.getAttribute("data-edit-id"), editRow = null;
+          for (var ri = 0; ri < data.length; ri++) if (String(data[ri].id) === String(editId || "")) editRow = data[ri];
+          var body = {
+            question: el("newQuestion").value,
+            options: [el("optA").value, el("optB").value, el("optC").value, el("optD").value],
+            correctOption: el("correctOpt").value,
+            explanation: el("qExplanation").value,
+            book: el("qBook").value, chapter: el("qChapter").value, lesson: el("qLesson").value, topic: el("qTopic").value, hint: el("qHint").value,
+            sortOrder: editRow ? Number(editRow.sort_order || 1) : data.length + 1,
+          };
+          setButtonBusy(btn, true, editId ? "در حال ذخیره…" : "در حال افزودن…");
+          api(editId ? "PATCH" : "POST", editId ? "/admin/questions/" + encodeURIComponent(editId) : "/admin/quizzes/" + id + "/questions", body, function (er) {
+            setButtonBusy(btn, false);
+            if (er) return toast(er.message);
+            toast(editId ? "سؤال ویرایش شد" : "سؤال اضافه شد");
+            closeModal();
+            openQuestions(id);
+          });
+        };
+        var edits = qa("[data-edit-question]");
+        for (i = 0; i < edits.length; i++) edits[i].onclick = function () {
+          var qid = this.getAttribute("data-edit-question"), row = null;
+          for (var j = 0; j < data.length; j++) if (String(data[j].id) === String(qid)) row = data[j];
+          if (!row) return;
+          el("newQuestion").value = row.question_text || ""; el("optA").value = row.option_a || ""; el("optB").value = row.option_b || ""; el("optC").value = row.option_c || ""; el("optD").value = row.option_d || "";
+          el("correctOpt").value = row.correct_option || "a"; el("qExplanation").value = row.explanation || ""; el("qBook").value = row.book || ""; el("qChapter").value = row.chapter || ""; el("qLesson").value = row.lesson || ""; el("qTopic").value = row.topic || ""; el("qHint").value = row.hint || "";
+          el("addQuestion").setAttribute("data-edit-id", qid); el("addQuestion").textContent = "ذخیره تغییرات سؤال"; el("newQuestion").focus();
         };
         var ds = qa("[data-del-question]");
         for (i = 0; i < ds.length; i++)
@@ -1782,25 +1872,68 @@
     );
   }
   function updateChatBadge() {
-    var n = 0;
-    for (var i = 0; i < state.conversations.length; i++)
-      n += Number(state.conversations[i].unread || 0);
+    var n = Number(state.chatUnreadTotal || 0);
     var b = el("chatUnreadBadge");
     if (!b) return;
     b.textContent = fa(n);
     b.className = n ? "nav-badge" : "nav-badge hidden";
   }
   function loadChatList(done) {
-    api("GET", "/admin/chat/conversations", null, function (err, data) {
+    var search = el("conversationSearch") ? String(el("conversationSearch").value || "").trim() : "";
+    var visibleTarget = search ? 15 : Math.max(15, state.conversations.length || 0), requestLimit = Math.min(100, Math.max(30, visibleTarget + 15));
+    var loadSeq = ++state.conversationLoadSeq;
+    state.conversationLoading = true;
+    api("GET", "/admin/chat/conversations?limit=" + requestLimit + "&offset=0" + (search ? "&search=" + encodeURIComponent(search) : ""), null, function (err, data) {
+      if (loadSeq !== state.conversationLoadSeq) return;
+      state.conversationLoading = false;
       if (err) return toast(err.message);
-      state.conversations = data || [];
+      var rows = data.items || [], cut = Math.min(visibleTarget, rows.length);
+      state.conversations = rows.slice(0, cut);
+      state.conversationPrefetch = rows.slice(cut);
+      state.conversationOffset = rows.length;
+      state.conversationHasMore = !!data.hasMore;
+      state.chatUnreadTotal = Number(data.totalUnread || 0);
       renderConversationList();
       updateChatBadge();
       if (!state.chatConversationId && state.studentId)
         selectConversationForStudent(state.studentId);
-      else if (state.chatConversationId)
+      else if (state.chatConversationId && !state.chatMessages.length)
         loadChatMessages(state.chatConversationId);
-      done && done();
+      api("GET", "/chat/conversations?limit=30" + (search ? "&search=" + encodeURIComponent(search) : ""), null, function (groupErr, groupData) {
+        if (!groupErr) {
+          var groups = (groupData.items || []).filter(function (x) { return x.type === "group"; }).map(function (x) {
+            x.isGroup = true; x.student = { id: "", name: x.title || "گروه", grade: "" }; x.presence = {}; return x;
+          });
+          state.conversations = state.conversations.filter(function (x) { return !x.isGroup; }).concat(groups);
+          state.chatUnreadTotal += groups.reduce(function (n, x) { return n + Number(x.unread || 0); }, 0);
+          renderConversationList(); updateChatBadge();
+        }
+        done && done();
+      });
+    });
+  }
+  function loadMoreConversations() {
+    if (state.conversationLoading) return;
+    if (state.conversationPrefetch.length) {
+      state.conversations = state.conversations.concat(state.conversationPrefetch.splice(0, 15));
+      renderConversationList();
+      return;
+    }
+    if (!state.conversationHasMore) return;
+    state.conversationLoading = true;
+    var loadSeq = ++state.conversationLoadSeq;
+    var search = el("conversationSearch") ? String(el("conversationSearch").value || "").trim() : "";
+    api("GET", "/admin/chat/conversations?limit=15&offset=" + state.conversationOffset + (search ? "&search=" + encodeURIComponent(search) : ""), null, function (err, data) {
+      if (loadSeq !== state.conversationLoadSeq) return;
+      state.conversationLoading = false;
+      if (err) return toast(err.message, "error");
+      var rows = data.items || [];
+      state.conversations = state.conversations.concat(rows);
+      state.conversationOffset += rows.length;
+      state.conversationHasMore = !!data.hasMore;
+      state.chatUnreadTotal = Number(data.totalUnread || state.chatUnreadTotal || 0);
+      renderConversationList();
+      updateChatBadge();
     });
   }
   function renderConversationList() {
@@ -1826,7 +1959,9 @@
         esc(c.student.name) +
         "</strong><small>" +
         (last ? esc(last.text) : "هنوز پیامی نیست") +
-        '</small></span><span class="conversation-meta"><i class="presence-mini ' +
+        '</small></span><span class="conversation-meta">' +
+        (last && last.createdAt ? '<small class="conversation-time">' + fa(chatClock(last.createdAt)) + '</small>' : '') +
+        '<i class="presence-mini ' +
         (p.online ? "online" : "") +
         '"></i>' +
         (c.unread ? "<b>" + fa(c.unread) + "</b>" : "") +
@@ -1846,7 +1981,18 @@
         return selectConversation(state.conversations[i].id);
   }
   function selectConversation(id) {
+    if(state.chatConversationId&&el("adminChatInput"))localStorage.setItem("moshaver_admin_chat_draft:"+state.chatConversationId,el("adminChatInput").value||"");
+    var changed = id !== state.chatConversationId;
     state.chatConversationId = id;
+    if(el("adminChatInput")){el("adminChatInput").value=localStorage.getItem("moshaver_admin_chat_draft:"+id)||"";autoGrow(el("adminChatInput"));}
+    if (changed) {
+      state.chatMessages = [];
+      state.chatPrefetch = [];
+      state.chatBefore = null;
+      state.chatHasMore = false;
+    }
+    var shell = q(".chat-admin-shell");
+    if (shell) shell.classList.add("thread-open");
     renderConversationList();
     loadChatMessages(id);
   }
@@ -1860,25 +2006,28 @@
     if (!id) return;
     api(
       "GET",
-      "/chat/conversations/" + encodeURIComponent(id) + "/messages?limit=120",
+      "/chat/conversations/" + encodeURIComponent(id) + "/messages?limit=30",
       null,
       function (err, data) {
         if (err) return toast(err.message, "error");
-        state.chatMessages = data.messages || [];
+        var rows = data.messages || [], cut = Math.max(0, rows.length - 15);
+        state.chatPrefetch = rows.slice(0, cut);
+        state.chatMessages = rows.slice(cut);
+        state.chatBefore = data.nextBeforeMessageId || null;
+        state.chatHasMore = !!data.hasMore;
         var c = currentConversation();
         el("chatEmpty").className = "chat-empty hidden";
         el("chatActive").className = "";
         if (c) {
+          if(el("adminGroupInfo"))el("adminGroupInfo").className=c.isGroup?"mini-btn":"mini-btn hidden";
           el("chatStudentName").textContent = c.student.name;
           el("chatStudentAvatar").textContent = (c.student.name || "?").charAt(
             0,
           );
           var p = c.presence || {};
-          el("chatStudentPresence").textContent = p.online
-            ? "● آنلاین"
-            : "آخرین فعالیت: " + (p.lastSeenAt || "نامشخص");
+          el("chatStudentPresence").textContent = c.isGroup ? (fa(c.memberCount || 0) + " عضو • گروه") : (p.online ? "● آنلاین" : "آخرین فعالیت: " + (p.lastSeenAt || "نامشخص"));
         }
-        renderAdminChatMessages();
+        renderAdminChatMessages(true);
         if (data.unread) markChatRead();
       },
     );
@@ -1900,12 +2049,81 @@
     if (day === shift(t, -1)) return "دیروز";
     return day;
   }
-  function renderAdminChatMessages() {
+  function adminChatNearBottom(box) {
+    return !box || box.scrollHeight - box.scrollTop - box.clientHeight < 112;
+  }
+  function compareAdminChatMessage(a, b) {
+    var x = String(a.createdAt || "") + "\u0000" + String(a.id || ""), y = String(b.createdAt || "") + "\u0000" + String(b.id || "");
+    return x < y ? -1 : x > y ? 1 : 0;
+  }
+  function binaryInsertAdminMessage(list, item) {
+    return UI.binaryInsertUnique(list, item, compareAdminChatMessage);
+  }
+  function loadOlderAdminChat() {
+    if (state.chatLoadingOlder || !state.chatConversationId) return;
+    if (state.chatPrefetch.length) {
+      var chunk = state.chatPrefetch.splice(Math.max(0, state.chatPrefetch.length - 15), 15);
+      state.chatMessages = chunk.concat(state.chatMessages);
+      renderAdminChatMessages(false);
+      return;
+    }
+    if (!state.chatHasMore || !state.chatBefore) return;
+    state.chatLoadingOlder = true;
+    api("GET", "/chat/conversations/" + encodeURIComponent(state.chatConversationId) + "/messages?limit=15&beforeMessageId=" + encodeURIComponent(state.chatBefore), null, function (err, data) {
+      state.chatLoadingOlder = false;
+      if (err) return toast(err.message, "error");
+      state.chatBefore = data.nextBeforeMessageId || state.chatBefore;
+      state.chatHasMore = !!data.hasMore;
+      state.chatMessages = (data.messages || []).concat(state.chatMessages);
+      renderAdminChatMessages(false);
+    });
+  }
+  function applyAdminReadReceipt(data) {
+    if (!data || data.readerRole !== "student" || data.conversationId !== state.chatConversationId) return;
+    for (var i = 0; i < state.chatMessages.length; i++) {
+      var m = state.chatMessages[i];
+      if (m.senderRole === "admin" && (!data.readAt || m.createdAt <= data.readAt)) m.seen = true;
+    }
+    renderAdminChatMessages(false);
+  }
+  function refreshAdminLatestMessages() {
+    if (!state.chatConversationId) return;
+    api("GET", "/chat/conversations/" + encodeURIComponent(state.chatConversationId) + "/messages?limit=15", null, function (err, data) {
+      if (err) return;
+      var rows = data.messages || [], changed = false;
+      for (var i = 0; i < rows.length; i++) if (binaryInsertAdminMessage(state.chatMessages, rows[i])) changed = true;
+      if (changed) renderAdminChatMessages(false);
+      if (data.unread) markChatRead();
+    });
+  }
+  function syncAdminChatJump() {
+    var box = el("adminChatMessages"), jump = el("adminChatJump");
+    if (!box || !jump) return;
+    jump.className = adminChatNearBottom(box) ? "chat-jump-latest hidden" : "chat-jump-latest";
+  }
+  function scrollAdminChatBottom() {
+    var box = el("adminChatMessages");
+    if (!box) return;
+    box.scrollTop = box.scrollHeight;
+    syncAdminChatJump();
+  }
+  function adminChatBody(m) {
+    if (m.deletedAt) return '<p class="deleted-message">پیام حذف شده</p>';
+    var p=m.payload||{};
+    if(m.type&&m.type!=='text'&&m.type!=='system'){
+      var title={study_state:'📚 وضعیت مطالعه',exam_result:'📊 نتیجه آزمون',study_time:'⏱ زمان مطالعه',current_activity:'📖 فعالیت فعلی',learning_item:'🔁 مورد یادگیری'}[m.type]||'اشتراک';
+      return '<div class="chat-share-card"><strong>'+title+'</strong>'+(p.title?'<b>'+esc(p.title)+'</b>':'')+(p.percent!=null?'<span>نمره '+fa(p.percent)+'٪</span>':'')+(p.studyMinutes!=null?'<span>مطالعه '+fa(p.studyMinutes)+' دقیقه</span>':'')+(p.totalMinutes!=null?'<span>مجموع '+fa(p.totalMinutes)+' دقیقه</span>':'')+(p.subject?'<span>'+esc(p.subject)+'</span>':'')+'</div>';
+    }
+    if(m.type==='system')return '<p class="system-message">'+esc(m.text)+'</p>';
+    return '<div class="chat-markdown">'+global.MoshaverChatMarkdown.render(m.text||'')+'</div>';
+  }
+  function renderAdminChatMessages(forceBottom) {
+    var box = el("adminChatMessages"), stick = forceBottom || adminChatNearBottom(box), oldHeight = box.scrollHeight, oldTop = box.scrollTop;
     var h = "",
       lastDay = "";
     for (var i = 0; i < state.chatMessages.length; i++) {
       var m = state.chatMessages[i],
-        mine = m.senderRole === "admin",
+        mine = !!(state.me && m.senderUserId === state.me.id),
         day = String(m.createdAt || "").slice(0, 10);
       if (day !== lastDay) {
         lastDay = day;
@@ -1917,16 +2135,21 @@
       h +=
         '<div class="admin-chat-message ' +
         (mine ? "mine" : "theirs") +
-        '"><div>' +
-        esc(m.deletedAt ? "پیام حذف شده" : m.text) +
+        '" data-admin-message="'+esc(m.id)+'"><div class="admin-message-bubble">' +
+        (!mine&&currentConversation()&&currentConversation().isGroup?'<small class="message-sender">'+esc(m.senderName||'عضو')+'</small>':'')+
+        adminChatBody(m) +
         "</div><small>" +
         esc(chatClock(m.createdAt)) +
         (mine ? (m.seen ? " • ✓✓ دیده شد" : " • ✓ ارسال شد") : "") +
-        "</small></div>";
+        "</small><div class=\"message-actions\"><button data-admin-reply=\""+esc(m.id)+"\">پاسخ</button><button data-admin-react=\""+esc(m.id)+"\">❤️</button>"+(mine&&!m.deletedAt?"<button data-admin-edit=\""+esc(m.id)+"\">ویرایش</button><button data-admin-delete=\""+esc(m.id)+"\">حذف</button>":"")+"</div></div>";
     }
-    el("adminChatMessages").innerHTML =
-      h || '<div class="chat-day-empty">هنوز پیامی ردوبدل نشده.</div>';
-    el("adminChatMessages").scrollTop = el("adminChatMessages").scrollHeight;
+    box.innerHTML = h || '<div class="chat-day-empty">هنوز پیامی ردوبدل نشده.</div>';
+    bindAdminMessageActions();
+    if (stick) scrollAdminChatBottom();
+    else {
+      box.scrollTop = oldTop + (box.scrollHeight - oldHeight);
+      syncAdminChatJump();
+    }
   }
   function sendAdminChat() {
     var id = state.chatConversationId,
@@ -1936,22 +2159,28 @@
     state.chatSending = true;
     var btn = el("adminChatSend");
     setButtonBusy(btn, true, "در حال ارسال…");
+    var edit = state.chatEditing, path = edit ? "/chat/messages/" + encodeURIComponent(edit.id) : "/chat/conversations/" + encodeURIComponent(id) + "/messages", body={text:text};
+    if(state.chatReplyTo)body.replyToId=state.chatReplyTo.id;
     api(
-      "POST",
-      "/chat/conversations/" + encodeURIComponent(id) + "/messages",
-      { text: text },
+      edit ? "PATCH" : "POST",
+      path,
+      body,
       function (err, msg) {
         state.chatSending = false;
         setButtonBusy(btn, false);
-        if (err) return toast(err.message, "error");
+        if (err) { localStorage.setItem("moshaver_admin_chat_draft:"+id,text); return toast(err.message+" — پیش‌نویس حفظ شد.", "error"); }
         input.value = "";
+        localStorage.removeItem("moshaver_admin_chat_draft:"+id);
         autoGrow(input);
-        state.chatMessages.push(msg);
-        renderAdminChatMessages();
+        if(edit){for(var i=0;i<state.chatMessages.length;i++)if(state.chatMessages[i].id===msg.id)state.chatMessages[i]=msg;}else state.chatMessages.push(msg);
+        state.chatEditing=null;state.chatReplyTo=null;
+        renderAdminChatMessages(true);
         loadChatList();
       },
     );
   }
+  function adminFindMessage(id){for(var i=0;i<state.chatMessages.length;i++)if(state.chatMessages[i].id===id)return state.chatMessages[i];return null;}
+  function bindAdminMessageActions(){var input=el("adminChatInput");qa("[data-admin-reply]").forEach(function(b){b.onclick=function(){state.chatReplyTo=adminFindMessage(this.getAttribute("data-admin-reply"));state.chatEditing=null;input.placeholder="پاسخ به "+(state.chatReplyTo.senderName||"پیام")+"…";input.focus();};});qa("[data-admin-edit]").forEach(function(b){b.onclick=function(){state.chatEditing=adminFindMessage(this.getAttribute("data-admin-edit"));state.chatReplyTo=null;input.value=state.chatEditing.text||"";input.placeholder="ویرایش پیام…";input.focus();};});qa("[data-admin-delete]").forEach(function(b){b.onclick=function(){var id=this.getAttribute("data-admin-delete");if(!confirm("پیام حذف شود؟"))return;api("DELETE","/chat/messages/"+encodeURIComponent(id),null,function(err,d){if(err)return toast(err.message,"error");var m=adminFindMessage(id);if(m)m.deletedAt=d.deletedAt;renderAdminChatMessages(false);});};});qa("[data-admin-react]").forEach(function(b){b.onclick=function(){var id=this.getAttribute("data-admin-react");api("POST","/chat/messages/"+encodeURIComponent(id)+"/reactions",{emoji:"❤️"},function(err,rows){if(err)return toast(err.message,"error");var m=adminFindMessage(id);if(m)m.reactions=rows;renderAdminChatMessages(false);});};});}
   function markChatRead() {
     if (!state.chatConversationId) return;
     api(
@@ -1961,15 +2190,24 @@
         "/read",
       {},
       function (err) {
-        if (!err) loadChatList();
+        if (!err) {
+          var c = currentConversation();
+          if (c) {
+            state.chatUnreadTotal = Math.max(0, Number(state.chatUnreadTotal || 0) - Number(c.unread || 0));
+            c.unread = 0;
+          }
+          renderConversationList();
+          updateChatBadge();
+          loadChatList();
+        }
       },
     );
   }
   function startChatPolling() {
     stopChatPolling();
     state.chatPoll = setInterval(function () {
-      if (state.chatConversationId) loadChatMessages(state.chatConversationId);
-      else loadChatList();
+      loadChatList();
+      refreshAdminLatestMessages();
     }, 20000);
   }
   function stopChatPolling() {
@@ -1981,23 +2219,17 @@
     state.eventSource = API.openEvents(
       function (type, data) {
         if (type === "chat.message.created") {
-          loadChatList();
           if (state.chatConversationId === data.conversationId) {
-            loadChatMessages(state.chatConversationId);
+            if (binaryInsertAdminMessage(state.chatMessages, data)) renderAdminChatMessages(false);
             if (data.senderRole === "student") markChatRead();
           } else if (data.senderRole === "student")
             toast("پیام جدید دانش‌آموز");
+          loadChatList();
         } else if (type === "chat.messages.read") {
-          if (state.chatConversationId === data.conversationId)
-            loadChatMessages(state.chatConversationId);
+          applyAdminReadReceipt(data);
         } else if (type === "presence.changed") {
           loadChatList();
-          if (
-            q(".view.active") &&
-            q(".view.active").id === "view-live" &&
-            data.studentId === state.studentId
-          )
-            loadLive();
+          scheduleRealtimeRefresh();
         } else if (type === "exam.retry_requested") {
           if (data.studentId === state.studentId) {
             toast("درخواست تلاش مجدد آزمون دریافت شد");
@@ -2005,9 +2237,8 @@
             loadDashboard();
           }
         } else {
+          scheduleRealtimeRefresh();
           if (data.studentId === state.studentId) {
-            if (q(".view.active") && q(".view.active").id === "view-live")
-              loadLive();
             if (q(".view.active") && q(".view.active").id === "view-dashboard")
               loadDashboard();
             if (
@@ -2197,6 +2428,17 @@
       },
     );
   }
+  function downloadAdminExport() {
+    if (!state.studentId) return toast("ابتدا دانش‌آموز را انتخاب کنید.", "error");
+    var range = plannerRange();
+    api("GET", "/admin/export/json?studentId=" + encodeURIComponent(state.studentId) + "&from=" + encodeURIComponent(range.from) + "&to=" + encodeURIComponent(range.to), null, function (err, data) {
+      if (err) return toast(err.message, "error");
+      var a=document.createElement("a"), blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+      a.href=URL.createObjectURL(blob);a.download="moshaver-export-"+range.from+"-"+range.to+".json";a.click();
+      setTimeout(function(){URL.revokeObjectURL(a.href);},500);
+      toast("خروجی JSON بازه دریافت شد.");
+    });
+  }
   function readJsonFile(file) {
     var r = new FileReader();
     r.onload = function () {
@@ -2204,7 +2446,9 @@
     };
     r.readAsText(file);
   }
+  function openAdminGroupInfo(){var c=currentConversation();if(!c||!c.isGroup)return;api("GET","/chat/conversations/"+encodeURIComponent(c.id),null,function(err,d){if(err)return toast(err.message,"error");api("GET","/chat/groups/"+encodeURIComponent(c.id)+"/members?limit=50",null,function(er,rows){if(er)return toast(er.message,"error");var h='<span class="eyebrow">GROUP INFO</span><h2>'+esc(d.title)+'</h2><p>'+esc(d.description||'بدون توضیحات')+'</p><div class="group-member-list">'+rows.map(function(x){return '<div><strong>'+esc(x.name)+'</strong><small>@'+esc(x.username)+' • '+esc(x.role)+'</small></div>';}).join('')+'</div><p class="muted">نقش شما: '+esc(d.myRole)+' • '+fa(d.memberCount)+' عضو</p>';openModal(h);});});}
   function bind() {
+    if(!el("adminGroupInfo")){var info=document.createElement("button");info.id="adminGroupInfo";info.type="button";info.className="mini-btn hidden";info.textContent="اطلاعات گروه";el("chatMarkRead").parentNode.insertBefore(info,el("chatMarkRead"));info.onclick=openAdminGroupInfo;}
     el("loginForm").onsubmit = function (e) {
       e.preventDefault();
       if (state.authStatus === "logging-in") return;
@@ -2256,6 +2500,10 @@
         },
         { suppressAuthFailure: true },
       );
+    };
+    if (el("apiSource")) el("apiSource").onchange = function () {
+      cancelStartupAuth(); disconnectEvents(); API.abortAll(); API.clearAuth();
+      applyApiSource(this.value, true); state.authStatus="anonymous"; showLogin(); checkSelectedApi();
     };
     var ns = qa(".nav[data-view]");
     for (var i = 0; i < ns.length; i++)
@@ -2318,14 +2566,22 @@
     el("refreshDashboard").onclick = loadDashboard;
     el("adminNotificationBtn").onclick = openAdminNotifications;
     el("refreshLive").onclick = loadLive;
+    if (el("realtimeSearch")) el("realtimeSearch").oninput = renderLive;
+    if (el("realtimeFilter")) el("realtimeFilter").onchange = renderLive;
+    if (el("downloadBackupBtn")) el("downloadBackupBtn").onclick = downloadBackup;
     el("refreshChat").onclick = loadChatList;
     el("chatMarkRead").onclick = markChatRead;
     el("adminChatForm").onsubmit = function (e) {
       e.preventDefault();
       sendAdminChat();
     };
-    if (el("conversationSearch"))
-      el("conversationSearch").oninput = renderConversationList;
+    if (el("conversationSearch")) {
+      var chatSearchTimer = null;
+      el("conversationSearch").oninput = function () {
+        clearTimeout(chatSearchTimer);
+        chatSearchTimer = setTimeout(function () { loadChatList(); }, 220);
+      };
+    }
     var cq = qa("[data-chat-quick]");
     for (i = 0; i < cq.length; i++)
       cq[i].onclick = function () {
@@ -2335,15 +2591,28 @@
       };
     el("adminChatInput").oninput = function () {
       autoGrow(this);
+      if(state.chatConversationId)localStorage.setItem("moshaver_admin_chat_draft:"+state.chatConversationId,this.value||"");
     };
     el("adminChatInput").onkeydown = function (e) {
-      if (e.key === "Enter" && !e.shiftKey) {
+      if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
         e.preventDefault();
         sendAdminChat();
       }
     };
+    el("adminChatMessages").onscroll = function () { syncAdminChatJump(); if (this.scrollTop < 80) loadOlderAdminChat(); };
+    el("adminChatMessages").onclick = function (e) { if (e.target.closest("button")) return; var row=e.target.closest("[data-admin-message]"); if(!row)return; qa(".admin-chat-message.actions-open",this).forEach(function(x){if(x!==row)x.classList.remove("actions-open");}); row.classList.toggle("actions-open"); };
+    el("conversationList").onscroll = function () { if (this.scrollHeight - this.scrollTop - this.clientHeight < 160) loadMoreConversations(); };
+    el("adminChatJump").onclick = scrollAdminChatBottom;
+    el("chatBackToList").onclick = function () {
+      var shell = q(".chat-admin-shell");
+      if (shell) shell.classList.remove("thread-open");
+    };
     el("quickImport").onclick = openImport;
     el("importJsonBtn").onclick = openImport;
+    if (!el("exportJsonBtn")) {
+      var exportButton=document.createElement("button");exportButton.id="exportJsonBtn";exportButton.type="button";exportButton.className="btn soft";exportButton.textContent="خروجی JSON";
+      el("importJsonBtn").parentNode.insertBefore(exportButton,el("importJsonBtn"));exportButton.onclick=downloadAdminExport;
+    }
     el("createPlanBtn").onclick = function () {
       openPlanForm(state.plannerDate || today());
     };
@@ -2396,6 +2665,7 @@
     el("examJsonBtn").onclick = openImport;
     el("newQuizBtn").onclick = openQuizForm;
     el("messageStudentBtn").onclick = sendMessage;
+    StudentsView.bindPage();
     el("newSubjectBtn").onclick = newSubject;
     el("changePasswordBtn").onclick = openChangePassword;
     el("previewImport").onclick = previewImport;
@@ -2432,6 +2702,21 @@
       sb.classList.toggle("open", open);
       this.setAttribute("aria-expanded", open ? "true" : "false");
     };
+  }
+  function apiSourceConfig(source) {
+    var cfg=global.APP_CONFIG||{},local=source==="local";
+    return { source:local?"local":"server", base:local?(cfg.API_LOCAL_URL||"/api-local/v1"):(cfg.API_SERVER_URL||cfg.API_BASE_URL||"/api/v1") };
+  }
+  function applyApiSource(source, persist) {
+    var selected=apiSourceConfig(source),picker=el("apiSource"),status=el("apiSourceStatus");
+    API.setBase(selected.base); if(picker)picker.value=selected.source;
+    if(status){status.className="api-source-status "+selected.source;status.textContent=selected.source==="local"?"مسیر فعال: بک‌اند محلی (127.0.0.1:4000)":"مسیر فعال: API سرور";}
+    if(persist)try{localStorage.setItem(API_SOURCE_KEY,selected.source);}catch(e){}
+    return selected;
+  }
+  function checkSelectedApi() {
+    var status=el("apiSourceStatus"); if(status)status.textContent="در حال بررسی اتصال…";
+    API.request("GET","/health",null,function(err,data){var selected=el("apiSource")&&el("apiSource").value;if(status){status.className="api-source-status "+selected;status.textContent=err?"این بک‌اند در دسترس نیست.":"اتصال برقرار است • نسخه "+esc((data&&data.version)||"—");}},{suppressAuthFailure:true});
   }
   function bootAfterMe() {
     if (state.authStatus !== "authenticated" || !state.me) return;
@@ -2551,10 +2836,12 @@
   function init() {
     Modal.bind();
     Connectivity.syncFromBrowser();
+    var initial=(global.APP_CONFIG&&global.APP_CONFIG.DEFAULT_API_SOURCE)||"server";try{initial=localStorage.getItem(API_SOURCE_KEY)||initial;}catch(e){}
+    applyApiSource(initial,false);
     bind();
     API.setAuthFailureHandler(handleAuthFailure);
     el("versionText").textContent =
-      (global.APP_CONFIG && global.APP_CONFIG.APP_VERSION) || "1.4.2";
+      (global.APP_CONFIG && global.APP_CONFIG.APP_VERSION) || "1.6.0";
     document.addEventListener("visibilitychange", function () {
       if (!document.hidden) syncAdminVisible();
     });

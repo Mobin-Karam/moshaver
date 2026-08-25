@@ -126,7 +126,7 @@ function serve(req, res) {
   if (req.url.split('?')[0] === '/config.js') {
     var config = [
       '(function(global){',
-      "global.APP_CONFIG={API_BASE_URL:'/api/v1',APP_VERSION:'1.4.2',STUDENT_URL:'http://localhost:"+port+"',ADMIN_URL:'http://localhost:8081'};",
+      "global.APP_CONFIG={API_BASE_URL:'/api/v1',APP_VERSION:'1.6.0',STUDENT_URL:'http://localhost:"+port+"',ADMIN_URL:'http://localhost:8081'};",
       '})(window);'
     ].join('\n');
     res.statusCode = 200;
@@ -150,6 +150,10 @@ function serve(req, res) {
 var server = http.createServer(serve);
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;
+server.on('error', function(error) {
+  if (error && error.code === 'EADDRINUSE') { console.log('Moshaver Student is already available on http://localhost:' + port + '.'); process.exit(0); }
+  console.error('Local Student server failed:', error.message); process.exit(1);
+});
 server.listen(port, '127.0.0.1', function() {
   console.log('');
   console.log('Moshaver | مشاور — Local Student');

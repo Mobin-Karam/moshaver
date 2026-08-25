@@ -11,6 +11,28 @@
     var openModal = deps.openModal;
     var closeModal = deps.closeModal;
 
+    function loadHealth() {
+      api("GET", "/admin/system/database", null, function (err, data) {
+        if (err || !el("systemHealthGrid")) return;
+        function size(n) { n=Number(n||0); return n<1048576?Math.round(n/1024)+" KB":(n/1048576).toFixed(1)+" MB"; }
+        el("systemHealthGrid").innerHTML =
+          '<article class="live-context-card"><small>پایگاه داده</small><strong>'+esc(data.status==="healthy"?"سالم":"نیازمند بررسی")+'</strong><span>'+esc(data.engine||"sqlite")+' • '+size(data.sizeBytes)+'</span></article>'+
+          '<article class="live-context-card"><small>نسخه سرویس</small><strong>'+esc(data.version||"—")+'</strong><span>'+esc(data.environment||"—")+'</span></article>'+
+          '<article class="live-context-card"><small>نشست‌های فعال</small><strong>'+fa(data.activeSessions||0)+'</strong><span>'+fa(data.realtimeConnections||0)+' اتصال زنده</span></article>'+
+          '<article class="live-context-card"><small>آخرین پشتیبان</small><strong>'+esc(data.lastBackupAt?new Date(data.lastBackupAt).toLocaleString("fa-IR"):"هنوز ساخته نشده")+'</strong><span>زمان کارکرد '+fa(Math.round(Number(data.uptimeSeconds||0)/60))+' دقیقه</span></article>';
+      });
+    }
+
+    function downloadBackup() {
+      var button=el("downloadBackupBtn"), status=el("backupStatus"), xhr=new XMLHttpRequest();
+      button.disabled=true; status.textContent="در حال ساخت snapshot امن…";
+      xhr.open("POST", global.API.base()+"/admin/system/database-backup", true); xhr.responseType="blob"; xhr.withCredentials=true;
+      xhr.setRequestHeader("Content-Type","application/json"); xhr.setRequestHeader("X-CSRF-Token",global.API.csrf());
+      xhr.onload=function(){ button.disabled=false; if(xhr.status!==200){status.textContent="ساخت پشتیبان ناموفق بود.";return toast("دانلود پشتیبان ناموفق بود","error");}
+        var disposition=xhr.getResponseHeader("Content-Disposition")||"",match=/filename="([^"]+)"/.exec(disposition),name=match?match[1]:"moshaver-backup.sqlite",url=URL.createObjectURL(xhr.response),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);status.textContent="پشتیبان سالم دانلود شد: "+name;toast("پشتیبان پایگاه داده دانلود شد");loadHealth(); };
+      xhr.onerror=function(){button.disabled=false;status.textContent="ارتباط با سرور قطع شد.";toast("دانلود پشتیبان ناموفق بود","error");}; xhr.send("{}");
+    }
+
     function loadSessions() {
       api("GET", "/auth/sessions", null, function (err, data) {
         if (err) return;
@@ -94,6 +116,7 @@
         }
       });
       loadSessions();
+      loadHealth();
     }
 
     function openChangePassword() {
@@ -122,6 +145,7 @@
       load: load,
       loadSessions: loadSessions,
       openChangePassword: openChangePassword,
+      downloadBackup: downloadBackup,
     };
   }
 

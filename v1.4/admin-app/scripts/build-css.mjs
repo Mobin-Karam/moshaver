@@ -1,0 +1,5 @@
+import {readFile,writeFile} from "node:fs/promises";import {dirname,resolve} from "node:path";import {fileURLToPath} from "node:url";
+const root=resolve(dirname(fileURLToPath(import.meta.url)),".."),files=["01-tokens.css","02-base.css","03-shell.css","04-components.css","05-dashboard.css","06-students.css","07-system.css","08-chat.css","11-dark.css","12-responsive.css"],chunks=[];
+for(const file of files)chunks.push(await readFile(resolve(root,"css","src",file),"utf8"));
+const output="/* GENERATED FILE — edit css/src/*.css and run node scripts/build-css.mjs */\n\n"+chunks.join("\n"),target=resolve(root,"css","app.css");
+if(process.argv.includes("--check")){let current="";try{current=await readFile(target,"utf8");}catch(e){}if(current!==output){console.error("css/app.css is stale; run node scripts/build-css.mjs");process.exitCode=1;}else console.log("PASS generated admin CSS is current");}else{await writeFile(target,output,"utf8");console.log("Built css/app.css from "+files.length+" source files.");}
