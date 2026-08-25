@@ -2291,6 +2291,36 @@ button:disabled {
   font-size: 1rem !important;
 }
 
+.chat-reply-bar {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 12px;
+  border-top: 1px solid var(--line);
+  background: var(--surface-soft, #f4f8f6);
+  color: var(--muted);
+  font-size: var(--font-xs);
+}
+
+.chat-reply-bar.hidden { display: none; }
+.chat-reply-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-reply-bar button { flex: 0 0 auto; border: 0; background: transparent; color: var(--danger); font-size: 20px; cursor: pointer; }
+
+.message-reply-preview {
+  margin-bottom: 6px;
+  padding: 5px 8px;
+  overflow: hidden;
+  border-inline-start: 3px solid currentColor;
+  border-radius: 6px;
+  background: rgba(255,255,255,.28);
+  opacity: .82;
+  font-size: var(--font-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .chat-mobile-back {
   display: none;
   width: 38px;
@@ -2465,7 +2495,7 @@ button:disabled {
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-rows: 62px minmax(0, 1fr) auto auto;
+  grid-template-rows: 62px minmax(0, 1fr) auto auto auto;
   overflow: hidden;
 }
 
@@ -2633,7 +2663,7 @@ button:disabled {
   }
 
   .chat-thread #chatActive {
-    grid-template-rows: 58px minmax(0, 1fr) auto auto;
+    grid-template-rows: 58px minmax(0, 1fr) auto auto auto;
   }
 
   .chat-thread-head {

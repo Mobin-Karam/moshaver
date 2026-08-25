@@ -356,6 +356,18 @@
   line-height: 1.55;
 }
 
+.chat-composer textarea:focus,
+.admin-chat-composer textarea:focus {
+  outline: 2px solid rgba(29, 186, 167, .22);
+  outline-offset: 1px;
+}
+
+.chat-composer button:disabled,
+.send-btn:disabled {
+  cursor: wait;
+  opacity: .55;
+}
+
 .send-btn {
   width: 44px;
   height: 44px;

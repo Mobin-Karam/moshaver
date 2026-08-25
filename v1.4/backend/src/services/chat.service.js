@@ -140,7 +140,7 @@ function createChatService(deps) {
         presence: getPresence(student.id),
       };
     });
-    var unread = db.prepare("SELECT COUNT(*) AS n FROM chat_messages m LEFT JOIN chat_reads r ON r.conversation_id=m.conversation_id AND r.user_id=? WHERE m.sender_user_id<>? AND m.deleted_at IS NULL AND m.created_at>COALESCE(r.last_read_at,'0000-01-01T00:00:00.000Z')").get(adminUser.id, adminUser.id).n;
+    var unread = db.prepare("SELECT COUNT(*) AS n FROM chat_messages m JOIN chat_conversations c ON c.id=m.conversation_id LEFT JOIN chat_reads r ON r.conversation_id=m.conversation_id AND r.user_id=? WHERE c.type='direct' AND m.sender_user_id<>? AND m.deleted_at IS NULL AND m.created_at>COALESCE(r.last_read_at,'0000-01-01T00:00:00.000Z')").get(adminUser.id, adminUser.id).n;
     return { items: items, total: Number(total || 0), totalUnread: Number(unread || 0), limit: n, offset: skip, hasMore: hasMore, nextOffset: hasMore ? skip + items.length : null };
   }
 

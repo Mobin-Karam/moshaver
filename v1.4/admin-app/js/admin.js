@@ -1900,6 +1900,7 @@
       else if (state.chatConversationId && !state.chatMessages.length)
         loadChatMessages(state.chatConversationId);
       api("GET", "/chat/conversations?limit=30" + (search ? "&search=" + encodeURIComponent(search) : ""), null, function (groupErr, groupData) {
+        if (loadSeq !== state.conversationLoadSeq) return;
         if (!groupErr) {
           var groups = (groupData.items || []).filter(function (x) { return x.type === "group"; }).map(function (x) {
             x.isGroup = true; x.student = { id: "", name: x.title || "گروه", grade: "" }; x.presence = {}; return x;
@@ -1986,10 +1987,13 @@
     state.chatConversationId = id;
     if(el("adminChatInput")){el("adminChatInput").value=localStorage.getItem("moshaver_admin_chat_draft:"+id)||"";autoGrow(el("adminChatInput"));}
     if (changed) {
+      state.chatLoadSeq++;
       state.chatMessages = [];
       state.chatPrefetch = [];
       state.chatBefore = null;
       state.chatHasMore = false;
+      state.chatLoadingOlder = false;
+      clearAdminChatAction();
     }
     var shell = q(".chat-admin-shell");
     if (shell) shell.classList.add("thread-open");
@@ -2004,11 +2008,13 @@
   }
   function loadChatMessages(id) {
     if (!id) return;
+    var loadSeq = state.chatLoadSeq;
     api(
       "GET",
       "/chat/conversations/" + encodeURIComponent(id) + "/messages?limit=30",
       null,
       function (err, data) {
+        if (loadSeq !== state.chatLoadSeq || id !== state.chatConversationId) return;
         if (err) return toast(err.message, "error");
         var rows = data.messages || [], cut = Math.max(0, rows.length - 15);
         state.chatPrefetch = rows.slice(0, cut);
@@ -2061,21 +2067,23 @@
   }
   function loadOlderAdminChat() {
     if (state.chatLoadingOlder || !state.chatConversationId) return;
+    var conversationId = state.chatConversationId, loadSeq = state.chatLoadSeq;
     if (state.chatPrefetch.length) {
       var chunk = state.chatPrefetch.splice(Math.max(0, state.chatPrefetch.length - 15), 15);
       state.chatMessages = chunk.concat(state.chatMessages);
-      renderAdminChatMessages(false);
+      renderAdminChatMessages(false, true);
       return;
     }
     if (!state.chatHasMore || !state.chatBefore) return;
     state.chatLoadingOlder = true;
-    api("GET", "/chat/conversations/" + encodeURIComponent(state.chatConversationId) + "/messages?limit=15&beforeMessageId=" + encodeURIComponent(state.chatBefore), null, function (err, data) {
+    api("GET", "/chat/conversations/" + encodeURIComponent(conversationId) + "/messages?limit=15&beforeMessageId=" + encodeURIComponent(state.chatBefore), null, function (err, data) {
+      if (loadSeq !== state.chatLoadSeq || conversationId !== state.chatConversationId) return;
       state.chatLoadingOlder = false;
       if (err) return toast(err.message, "error");
       state.chatBefore = data.nextBeforeMessageId || state.chatBefore;
       state.chatHasMore = !!data.hasMore;
       state.chatMessages = (data.messages || []).concat(state.chatMessages);
-      renderAdminChatMessages(false);
+      renderAdminChatMessages(false, true);
     });
   }
   function applyAdminReadReceipt(data) {
@@ -2088,7 +2096,9 @@
   }
   function refreshAdminLatestMessages() {
     if (!state.chatConversationId) return;
-    api("GET", "/chat/conversations/" + encodeURIComponent(state.chatConversationId) + "/messages?limit=15", null, function (err, data) {
+    var conversationId = state.chatConversationId, loadSeq = state.chatLoadSeq;
+    api("GET", "/chat/conversations/" + encodeURIComponent(conversationId) + "/messages?limit=15", null, function (err, data) {
+      if (loadSeq !== state.chatLoadSeq || conversationId !== state.chatConversationId) return;
       if (err) return;
       var rows = data.messages || [], changed = false;
       for (var i = 0; i < rows.length; i++) if (binaryInsertAdminMessage(state.chatMessages, rows[i])) changed = true;
@@ -2117,7 +2127,7 @@
     if(m.type==='system')return '<p class="system-message">'+esc(m.text)+'</p>';
     return '<div class="chat-markdown">'+global.MoshaverChatMarkdown.render(m.text||'')+'</div>';
   }
-  function renderAdminChatMessages(forceBottom) {
+  function renderAdminChatMessages(forceBottom, preserveHistoryAnchor) {
     var box = el("adminChatMessages"), stick = forceBottom || adminChatNearBottom(box), oldHeight = box.scrollHeight, oldTop = box.scrollTop;
     var h = "",
       lastDay = "";
@@ -2132,12 +2142,17 @@
           esc(chatDayLabel(day)) +
           "</span></div>";
       }
+      var reply = "";
+      if (m.replyToId) {
+        var referenced = adminFindMessage(m.replyToId);
+        reply = '<div class="message-reply-preview">↩ ' + esc(referenced ? (referenced.senderName || "") + ": " + (referenced.text || "پیام") : "پیام قبلی") + "</div>";
+      }
       h +=
         '<div class="admin-chat-message ' +
         (mine ? "mine" : "theirs") +
         '" data-admin-message="'+esc(m.id)+'"><div class="admin-message-bubble">' +
         (!mine&&currentConversation()&&currentConversation().isGroup?'<small class="message-sender">'+esc(m.senderName||'عضو')+'</small>':'')+
-        adminChatBody(m) +
+        reply + adminChatBody(m) +
         "</div><small>" +
         esc(chatClock(m.createdAt)) +
         (mine ? (m.seen ? " • ✓✓ دیده شد" : " • ✓ ارسال شد") : "") +
@@ -2147,7 +2162,7 @@
     bindAdminMessageActions();
     if (stick) scrollAdminChatBottom();
     else {
-      box.scrollTop = oldTop + (box.scrollHeight - oldHeight);
+      box.scrollTop = preserveHistoryAnchor ? oldTop + (box.scrollHeight - oldHeight) : oldTop;
       syncAdminChatJump();
     }
   }
@@ -2169,29 +2184,35 @@
         state.chatSending = false;
         setButtonBusy(btn, false);
         if (err) { localStorage.setItem("moshaver_admin_chat_draft:"+id,text); return toast(err.message+" — پیش‌نویس حفظ شد.", "error"); }
+        if (id !== state.chatConversationId) return;
         input.value = "";
         localStorage.removeItem("moshaver_admin_chat_draft:"+id);
         autoGrow(input);
-        if(edit){for(var i=0;i<state.chatMessages.length;i++)if(state.chatMessages[i].id===msg.id)state.chatMessages[i]=msg;}else state.chatMessages.push(msg);
-        state.chatEditing=null;state.chatReplyTo=null;
+        if(edit){for(var i=0;i<state.chatMessages.length;i++)if(state.chatMessages[i].id===msg.id)state.chatMessages[i]=msg;}else binaryInsertAdminMessage(state.chatMessages,msg);
+        clearAdminChatAction();
         renderAdminChatMessages(true);
         loadChatList();
       },
     );
   }
   function adminFindMessage(id){for(var i=0;i<state.chatMessages.length;i++)if(state.chatMessages[i].id===id)return state.chatMessages[i];return null;}
-  function bindAdminMessageActions(){var input=el("adminChatInput");qa("[data-admin-reply]").forEach(function(b){b.onclick=function(){state.chatReplyTo=adminFindMessage(this.getAttribute("data-admin-reply"));state.chatEditing=null;input.placeholder="پاسخ به "+(state.chatReplyTo.senderName||"پیام")+"…";input.focus();};});qa("[data-admin-edit]").forEach(function(b){b.onclick=function(){state.chatEditing=adminFindMessage(this.getAttribute("data-admin-edit"));state.chatReplyTo=null;input.value=state.chatEditing.text||"";input.placeholder="ویرایش پیام…";input.focus();};});qa("[data-admin-delete]").forEach(function(b){b.onclick=function(){var id=this.getAttribute("data-admin-delete");if(!confirm("پیام حذف شود؟"))return;api("DELETE","/chat/messages/"+encodeURIComponent(id),null,function(err,d){if(err)return toast(err.message,"error");var m=adminFindMessage(id);if(m)m.deletedAt=d.deletedAt;renderAdminChatMessages(false);});};});qa("[data-admin-react]").forEach(function(b){b.onclick=function(){var id=this.getAttribute("data-admin-react");api("POST","/chat/messages/"+encodeURIComponent(id)+"/reactions",{emoji:"❤️"},function(err,rows){if(err)return toast(err.message,"error");var m=adminFindMessage(id);if(m)m.reactions=rows;renderAdminChatMessages(false);});};});}
+  function ensureAdminChatActionBar(){var bar=el("adminChatActionBar");if(bar)return bar;bar=document.createElement("div");bar.id="adminChatActionBar";bar.className="chat-reply-bar hidden";el("adminChatForm").parentNode.insertBefore(bar,el("adminChatForm"));return bar;}
+  function showAdminChatAction(label){var bar=ensureAdminChatActionBar();bar.innerHTML='<span>'+esc(label)+'</span><button id="cancelAdminChatAction" type="button" aria-label="لغو">×</button>';bar.className="chat-reply-bar";el("cancelAdminChatAction").onclick=clearAdminChatAction;}
+  function clearAdminChatAction(){state.chatEditing=null;state.chatReplyTo=null;var input=el("adminChatInput"),bar=ensureAdminChatActionBar();if(input)input.placeholder="پیام کوتاه، مشخص و مرتبط با برنامه...";bar.className="chat-reply-bar hidden";}
+  function bindAdminMessageActions(){var input=el("adminChatInput");qa("[data-admin-reply]").forEach(function(b){b.onclick=function(){state.chatReplyTo=adminFindMessage(this.getAttribute("data-admin-reply"));state.chatEditing=null;showAdminChatAction("پاسخ به "+(state.chatReplyTo.senderName||"پیام")+": "+String(state.chatReplyTo.text||"پیام ساختاریافته").slice(0,80));input.focus();};});qa("[data-admin-edit]").forEach(function(b){b.onclick=function(){state.chatEditing=adminFindMessage(this.getAttribute("data-admin-edit"));state.chatReplyTo=null;input.value=state.chatEditing.text||"";autoGrow(input);showAdminChatAction("ویرایش پیام");input.focus();};});qa("[data-admin-delete]").forEach(function(b){b.onclick=function(){var id=this.getAttribute("data-admin-delete");if(!confirm("پیام حذف شود؟"))return;api("DELETE","/chat/messages/"+encodeURIComponent(id),null,function(err,d){if(err)return toast(err.message,"error");var m=adminFindMessage(id);if(m)m.deletedAt=d.deletedAt;renderAdminChatMessages(false);});};});qa("[data-admin-react]").forEach(function(b){b.onclick=function(){var id=this.getAttribute("data-admin-react");api("POST","/chat/messages/"+encodeURIComponent(id)+"/reactions",{emoji:"❤️"},function(err,rows){if(err)return toast(err.message,"error");var m=adminFindMessage(id);if(m)m.reactions=rows;renderAdminChatMessages(false);});};});}
   function markChatRead() {
     if (!state.chatConversationId) return;
+    var conversationId = state.chatConversationId;
     api(
       "POST",
       "/chat/conversations/" +
-        encodeURIComponent(state.chatConversationId) +
+        encodeURIComponent(conversationId) +
         "/read",
       {},
       function (err) {
         if (!err) {
-          var c = currentConversation();
+          var c = null;
+          for (var i = 0; i < state.conversations.length; i++) if (state.conversations[i].id === conversationId) c = state.conversations[i];
           if (c) {
             state.chatUnreadTotal = Math.max(0, Number(state.chatUnreadTotal || 0) - Number(c.unread || 0));
             c.unread = 0;

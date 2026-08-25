@@ -36,6 +36,7 @@
       chatBefore: null,
       chatHasMore: false,
       chatLoadingOlder: false,
+      chatLoadSeq: 0,
       chatPoll: null,
       authEpoch: 0,
       startupAuthRequest: null,
@@ -78,6 +79,7 @@
     state.chatBefore = null;
     state.chatHasMore = false;
     state.chatLoadingOlder = false;
+    state.chatLoadSeq = 0;
     state.chatSending = false;
     state.chatReplyTo = null;
     state.chatEditing = null;
