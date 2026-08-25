@@ -8,6 +8,7 @@ ENV DATABASE_PATH=/data/moshaver.sqlite
 ENV NODE_NO_WARNINGS=1
 
 COPY package*.json ./
+RUN npm ci --omit=dev --no-audit --no-fund
 COPY src ./src
 COPY seed ./seed
 COPY scripts ./scripts

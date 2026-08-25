@@ -99,6 +99,7 @@ function registerPlansRoutes(router, deps) {
           result.data.studentId,
           "برنامه به‌روزرسانی شد",
           "برنامه " + result.data.planDate + " توسط مشاور منتشر شد.",
+          { type: "lesson", url: "/schedule?date=" + encodeURIComponent(result.data.planDate) },
         );
         emitStudent(result.data.studentId, "plan.published", {
           planId: result.data.planId,
@@ -205,6 +206,7 @@ function registerPlansRoutes(router, deps) {
           sid,
           "برنامه منتشر شد",
           "برنامه جدید برای بازه " + from + " تا " + to + " آماده است.",
+          { type: "lesson", url: "/schedule?date=" + encodeURIComponent(from) },
         );
         emitStudent(sid, "plan.published", {
           from: from,

@@ -79,15 +79,11 @@ function registerRecoveryRoutes(router, deps) {
         "UPDATE recovery_requests SET status=?,updated_at=? WHERE id=?",
       ).run(status, now(), rr.id);
       if (status === "resolved")
-        db.prepare(
-          "INSERT INTO notifications (id,student_id,title,body,is_read,created_at) VALUES (?,?,?,?,0,?)",
-        ).run(
-          security.id("notification"),
+        notifyStudent(
           rr.student_id,
           "برنامه ریکاوری بررسی شد",
-          str(body.message, 1000) ||
-            "مشاور درخواستت را بررسی کرد؛ برنامه جدید را ببین.",
-          now(),
+          str(body.message, 1000) || "مشاور درخواستت را بررسی کرد؛ برنامه جدید را ببین.",
+          { type: "announcement", url: "/schedule" },
         );
       audit(user, "update", "recovery_request", rr.id, { status: status });
       ok(res, { id: rr.id, status: status });

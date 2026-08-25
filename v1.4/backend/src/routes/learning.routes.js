@@ -64,7 +64,7 @@ function registerLearningRoutes(router, deps) {
     var result = learning.create(match[1], body);
     if (!result.error) {
       audit(user, "create", "learning_item", result.data.id, { studentId: match[1], dueDate: result.data.dueDate });
-      notifyStudent(match[1], "مرور جدید", result.data.title || "یک مورد جدید برای مرور ثبت شد");
+      notifyStudent(match[1], "مرور جدید", result.data.title || "یک مورد جدید برای مرور ثبت شد", { type: "lesson", url: "/lessons/" + result.data.id });
       emitStudent(match[1], "learning.updated", { action: "created", itemId: result.data.id, dueDate: result.data.dueDate });
     }
     handleResult(res, result, 201);

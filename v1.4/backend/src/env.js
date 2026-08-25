@@ -73,5 +73,8 @@ module.exports = {
   chatMaxGroupMembers: intEnv('CHAT_MAX_GROUP_MEMBERS', 100),
   chatGroupCreatesPerHour: intEnv('CHAT_GROUP_CREATES_PER_HOUR', 10),
   chatMaxGroupName: intEnv('CHAT_MAX_GROUP_NAME', 80),
-  chatMaxGroupDescription: intEnv('CHAT_MAX_GROUP_DESCRIPTION', 500)
+  chatMaxGroupDescription: intEnv('CHAT_MAX_GROUP_DESCRIPTION', 500),
+  vapidSubject: process.env.VAPID_SUBJECT || '',
+  vapidPublicKey: process.env.VAPID_PUBLIC_KEY || '',
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY || ''
 };

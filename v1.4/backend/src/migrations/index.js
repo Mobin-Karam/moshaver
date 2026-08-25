@@ -7,6 +7,8 @@ var migrations = [
   require("./004_student_first_release"),
   require("./005_study_pause"),
   require("./006_group_chat"),
+  require("./007_web_push"),
+  require("./008_user_notifications"),
 ];
 
 function appliedVersions(db) {

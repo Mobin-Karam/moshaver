@@ -190,6 +190,7 @@ function createExamsService(deps) {
         .all(exam.id),
     };
     if (access) {
+      item.readiness = examReadiness(studentId, exam.id);
       item.delivery = {
         questionCount: access.questionCount,
         attemptsUsed: access.attemptsUsed,
@@ -228,6 +229,12 @@ function createExamsService(deps) {
     return Object.prototype.hasOwnProperty.call(map, status) ? map[status] : 0;
   }
 
+  function examReadiness(studentId, examId) {
+    var rows = db.prepare("SELECT COALESCE(sp.status,'unread') AS status FROM exam_syllabus es LEFT JOIN syllabus_progress sp ON sp.syllabus_id=es.id AND sp.student_id=? WHERE es.exam_id=?").all(studentId, examId);
+    if (!rows.length) return 0;
+    return Math.round(rows.reduce(function (total, row) { return total + syllabusWeight(row.status); }, 0) / rows.length);
+  }
+
   function getExamProgress(studentId, examId) {
     var exam = db
       .prepare("SELECT * FROM exams WHERE id=? AND (student_id=? OR student_id IS NULL)")
@@ -261,8 +268,47 @@ function createExamsService(deps) {
     return mapped;
   }
 
-  function studentExams(studentId) {
-    return getExams(studentId, false);
+  function studentExamGroup(item) {
+    var reason = item && item.delivery ? item.delivery.reason : "";
+    if (reason === "ready" || reason === "resume") return "available";
+    if (reason === "not_open" || reason === "no_questions" || reason === "not_published") return "upcoming";
+    return "finished";
+  }
+
+  function studentExams(studentId, options) {
+    options = options || {};
+    var page = Math.max(1, Number(options.page) || 1);
+    var pageSize = Math.min(10, Math.max(1, Number(options.limit) || 10));
+    var filter = ["all", "upcoming", "available", "finished"].indexOf(options.filter) >= 0 ? options.filter : "all";
+    var search = String(options.search || "").trim().toLowerCase().slice(0, 80);
+    var items = getExams(studentId, false).filter(function (item) {
+      if (filter !== "all" && studentExamGroup(item) !== filter) return false;
+      if (!search) return true;
+      var syllabus = (item.syllabus || []).map(function (row) { return row.subject + " " + row.description; }).join(" ");
+      return (item.title + " " + item.note + " " + item.instructions + " " + syllabus).toLowerCase().indexOf(search) >= 0;
+    });
+    items.sort(function (a, b) {
+      var order = { available: 0, upcoming: 1, finished: 2 };
+      var ag = studentExamGroup(a), bg = studentExamGroup(b);
+      if (order[ag] !== order[bg]) return order[ag] - order[bg];
+      var dateOrder = String(a.openAt || a.isoDate).localeCompare(String(b.openAt || b.isoDate));
+      return ag === "finished" ? -dateOrder : dateOrder;
+    });
+    var total = items.length;
+    var totalPages = Math.max(1, Math.ceil(total / pageSize));
+    if (page > totalPages) page = totalPages;
+    var start = (page - 1) * pageSize;
+    return {
+      items: items.slice(start, start + pageSize),
+      page: page,
+      pageSize: pageSize,
+      total: total,
+      totalPages: totalPages,
+      hasNext: page < totalPages,
+      hasPrevious: page > 1,
+      filter: filter,
+      search: search,
+    };
   }
 
   function studentProgress(studentId, examId) {
@@ -875,6 +921,7 @@ function createExamsService(deps) {
       status === "approved"
         ? "برای آزمون «" + (exam ? exam.title : "") + "» یک تلاش اضافه تا ۲۴ ساعت فعال شد."
         : str(body.advisorNote, 1000) || "درخواست شما تأیید نشد.",
+      { type: "exam", url: "/exams/" + request.exam_id },
     );
     return {
       data: {
