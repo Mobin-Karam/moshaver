@@ -13,12 +13,20 @@ async function loginCookie(username,password,origin){return new Promise(function
 child.stdout.on('data',function(b){var s=b.toString();if(s.indexOf('API started')>=0&&!started){started=true;run();}});child.stderr.on('data',function(b){process.stderr.write(b);});child.on('exit',function(c){if(!done)cleanup(c||1);});
 async function run(){try{
  var admin=await loginCookie('admin','GroupAdmin123!','http://localhost:8081'),owner=await loginCookie('student','GroupStudent123!','http://localhost:8080');
+ var directList=await request('GET','/api/v1/chat/conversations?limit=15',null,owner,'http://localhost:8080'),directId=directList.json.data.items[0].id;
+ var directSend=await request('POST','/api/v1/chat/conversations/'+directId+'/messages',{text:'پیام مستقیم برای اعلان مشاور'},owner,'http://localhost:8080');assert(directSend.status===201,'student direct message');
+ var adminNotifications=await request('GET','/api/v1/notifications?limit=15',null,admin,'http://localhost:8081');assert(adminNotifications.status===200&&adminNotifications.json.data.items.some(function(x){return x.type==='message';}),'admin receives persistent direct-message notification');
+ var adminReadAll=await request('PUT','/api/v1/notifications/read-all',{},admin,'http://localhost:8081');assert(adminReadAll.status===200&&adminReadAll.json.data.updated>=1,'admin can mark notifications read');
  var made=await request('POST','/api/v1/admin/students',{name:'عضو دوم',username:'member2',password:'MemberSecond123!'},admin,'http://localhost:8081');assert(made.status===201,'create second student '+made.text);
  var second=await loginCookie('member2','MemberSecond123!','http://localhost:8080');
  var create=await request('POST','/api/v1/chat/groups',{title:'گروه آزمون امنیت',description:'توضیح گروه',memberIds:[second.user.id]},owner,'http://localhost:8080');assert(create.status===201,'create group '+create.text);var gid=create.json.data.id;
  var adminDenied=await request('GET','/api/v1/chat/conversations/'+gid,null,admin,'http://localhost:8081');assert(adminDenied.status===404,'non-member cannot inspect group');
  await assertNoSseEvent(admin,'chat.message.created',function(){return request('POST','/api/v1/chat/conversations/'+gid+'/messages',{text:'پیام فقط برای اعضا'},owner,'http://localhost:8080');});
  var send=await request('POST','/api/v1/chat/conversations/'+gid+'/messages',{text:'**سلام** @member2\n\n| درس | زمان |\n| --- | --- |\n| ریاضی | ۶۰ |'},owner,'http://localhost:8080');assert(send.status===201,'group send '+send.text);var mid=send.json.data.id;
+ var beforeMute=await request('GET','/api/v1/notifications?limit=50',null,second,'http://localhost:8080'),beforeMuteCount=beforeMute.json.data.items.length;
+ var mute=await request('PATCH','/api/v1/chat/conversations/'+gid+'/mute',{muted:true},second,'http://localhost:8080');assert(mute.status===200&&mute.json.data.muted,'member can mute group');
+ await request('POST','/api/v1/chat/conversations/'+gid+'/messages',{text:'@member2 اعلان بی صدا'},owner,'http://localhost:8080');
+ var afterMute=await request('GET','/api/v1/notifications?limit=50',null,second,'http://localhost:8080');assert(afterMute.json.data.items.length===beforeMuteCount,'muted group suppresses mention notification');
  var history=await request('GET','/api/v1/chat/conversations/'+gid+'/messages?limit=15',null,second,'http://localhost:8080');assert(history.status===200&&history.json.data.messages.some(function(x){return x.id===mid;}),'member reads messages');
  var react=await request('POST','/api/v1/chat/messages/'+mid+'/reactions',{emoji:'❤️'},second,'http://localhost:8080');assert(react.status===201&&react.json.data[0].count===1,'reaction');
  var reply=await request('POST','/api/v1/chat/conversations/'+gid+'/messages',{text:'پاسخ امن',replyToId:mid},second,'http://localhost:8080');assert(reply.status===201&&reply.json.data.replyToId===mid,'reply');

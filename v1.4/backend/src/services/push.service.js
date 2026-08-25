@@ -17,9 +17,8 @@ function createPushService(deps) {
     return Number(row[key]) === 1;
   }
 
-  async function sendToStudent(studentId, notification) {
-    if (!enabled || !studentId || !notification) return { sent: 0, removed: 0 };
-    var rows = db.prepare("SELECT ps.* FROM push_subscriptions ps JOIN users u ON u.id=ps.user_id WHERE u.student_id=? AND u.is_active=1").all(studentId);
+  async function sendRows(rows, notification) {
+    if (!enabled || !notification) return { sent: 0, removed: 0 };
     var sent = 0, removed = 0;
     await Promise.all(rows.map(async function (sub) {
       if (!categoryAllowed(sub.user_id, notification.type)) return;
@@ -43,7 +42,17 @@ function createPushService(deps) {
     return { sent: sent, removed: removed };
   }
 
-  return { enabled: enabled, publicKey: env.vapidPublicKey || "", sendToStudent: sendToStudent };
+  function sendToUser(userId, notification) {
+    if (!userId) return Promise.resolve({ sent: 0, removed: 0 });
+    return sendRows(db.prepare("SELECT ps.* FROM push_subscriptions ps JOIN users u ON u.id=ps.user_id WHERE u.id=? AND u.is_active=1").all(userId), notification);
+  }
+
+  function sendToStudent(studentId, notification) {
+    if (!studentId) return Promise.resolve({ sent: 0, removed: 0 });
+    return sendRows(db.prepare("SELECT ps.* FROM push_subscriptions ps JOIN users u ON u.id=ps.user_id WHERE u.student_id=? AND u.is_active=1").all(studentId), notification);
+  }
+
+  return { enabled: enabled, publicKey: env.vapidPublicKey || "", sendToStudent: sendToStudent, sendToUser: sendToUser };
 }
 
 module.exports = createPushService;

@@ -116,14 +116,25 @@
 
     <section id="view-exams" class="view">
       <div class="page-title"><div><span class="eyebrow">هدف‌ها</span><h2>آزمون‌ها</h2></div></div>
+      <div class="exam-catalog-controls">
+        <label class="exam-search"><span class="sr-only">جستجوی آزمون</span><input id="examSearch" type="search" maxlength="80" placeholder="جستجو در آزمون‌ها…" autocomplete="off"></label>
+        <div class="exam-filter-row" role="group" aria-label="فیلتر آزمون‌ها">
+          <button class="active" type="button" data-exam-filter="all">همه</button>
+          <button type="button" data-exam-filter="upcoming">پیش رو</button>
+          <button type="button" data-exam-filter="available">قابل انجام</button>
+          <button type="button" data-exam-filter="finished">پایان‌یافته</button>
+        </div>
+        <div id="examCatalogStatus" class="exam-catalog-status" role="status" aria-live="polite"></div>
+      </div>
       <div id="examList" class="card-list"></div>
+      <nav id="examPager" class="exam-pager hidden" aria-label="صفحه‌بندی آزمون‌ها"><button id="examPrevPage" class="btn soft compact" type="button">صفحه قبل</button><span id="examPageText"></span><button id="examNextPage" class="btn soft compact" type="button">صفحه بعد</button></nav>
       <section class="section-block exam-history-block"><div class="section-heading"><div><h3>تاریخچه آزمون و تمرین</h3><p>نتیجه هر تلاش، پاسخ‌ها، توضیح‌ها و یادداشت‌های مرور.</p></div><span id="examHistoryCount" class="count-pill">۰</span></div><div id="examHistoryList" class="attempt-history-list"></div></section>
     </section>
 
     <section id="view-chat" class="view chat-view">
-      <div class="chat-workspace"><aside class="student-conversations"><div class="chat-list-title"><strong>گفتگوها</strong><button id="newGroupBtn" type="button">＋ گروه</button></div><input id="studentConversationSearch" type="search" placeholder="جستجوی گفتگو…"><div id="studentConversationList"></div></aside><div class="chat-shell">
+      <div class="chat-workspace"><aside class="student-conversations"><div class="chat-list-title"><strong>گفتگوها</strong><button id="newGroupBtn" type="button">＋ گروه</button></div><input id="studentConversationSearch" type="search" placeholder="جستجوی گفتگو…"><div id="studentConversationList"></div><button id="studentConversationMore" class="btn soft full hidden" type="button">گفتگوهای بیشتر</button></aside><div class="chat-shell">
         <div class="chat-context telegram-chat-head"><button id="studentChatBack" class="chat-mobile-back" type="button">‹</button><span class="round-icon"><svg class="icon"><use href="#i-advisor" xlink:href="#i-advisor"></use></svg></span><div class="chat-person-copy"><strong id="advisorName">مشاور</strong><small id="advisorPresence" class="chat-presence reconnecting">○ در حال اتصال</small></div><button id="groupInfoBtn" class="chat-secure hidden" type="button">اطلاعات گروه</button></div>
-        <div id="chatMessages" class="chat-messages"><div class="empty-card">در حال دریافت گفت‌وگو…</div></div>
+        <div id="chatMessages" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions text" aria-label="پیام‌های گفتگو"><div class="empty-card">در حال دریافت گفت‌وگو…</div></div>
         <button id="studentChatJump" class="chat-jump-latest hidden" type="button" aria-label="رفتن به تازه‌ترین پیام‌ها">پیام‌های جدید ↓</button>
         <div id="chatReplyBar" class="chat-reply-bar hidden"></div><div class="chat-quick-actions student-chat-quick"><button id="chatShareBtn" type="button">＋ اشتراک وضعیت</button><button id="chatFormatBtn" type="button">راهنمای قالب‌بندی</button><button type="button" data-student-chat-quick="انجام شد ✅">انجام شد</button></div><form id="chatForm" class="chat-composer"><textarea id="chatInput" rows="1" maxlength="3000" placeholder="پیام… Markdown و @نام‌کاربری پشتیبانی می‌شود" aria-label="پیام"></textarea><button id="studentChatSend" class="send-btn" type="submit" aria-label="ارسال"><svg class="icon"><use href="#i-send" xlink:href="#i-send"></use></svg></button></form>
       </div></div>

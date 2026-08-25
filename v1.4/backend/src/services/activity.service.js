@@ -71,14 +71,30 @@ function createActivityService(deps) {
         url: str(options.url || "/", 500),
         data: options.data || {},
       };
+      var target = db.prepare("SELECT id FROM users WHERE student_id=? AND role='student' AND is_active=1 LIMIT 1").get(studentId);
       db.prepare(
-        "INSERT INTO notifications (id,student_id,title,body,is_read,created_at,type,url,data_json) VALUES (?,?,?,?,0,?,?,?,?)",
-      ).run(id, studentId, item.title, item.body, timestamp, item.type, item.url, JSON.stringify(item.data));
+        "INSERT INTO notifications (id,student_id,user_id,title,body,is_read,created_at,type,url,data_json) VALUES (?,?,?,?,?,0,?,?,?,?)",
+      ).run(id, studentId, target ? target.id : null, item.title, item.body, timestamp, item.type, item.url, JSON.stringify(item.data));
       emitStudent(studentId, "notification.created", item);
       if (pushService) pushService.sendToStudent(studentId, item).catch(function (error) { console.error("push dispatch failed:", error.message); });
     } catch (e) {
       console.error("notification insert failed:", e.message);
     }
+  }
+
+  function notifyUser(userId, title, body, options) {
+    var user = db.prepare("SELECT id,role,student_id FROM users WHERE id=? AND is_active=1").get(userId);
+    if (!user) return;
+    if (user.role === "student" && user.student_id) return notifyStudent(user.student_id, title, body, options);
+    try {
+      var id = security.id("notification"), timestamp = now();
+      options = options || {};
+      var item = { id:id, title:str(title,160), body:str(body,1000), isRead:false, createdAt:timestamp, type:str(options.type||"announcement",40), url:str(options.url||"/",500), data:options.data||{} };
+      db.prepare("INSERT INTO notifications (id,student_id,user_id,title,body,is_read,created_at,type,url,data_json) VALUES (?,NULL,?,?,?,0,?,?,?,?)")
+        .run(id,user.id,item.title,item.body,timestamp,item.type,item.url,JSON.stringify(item.data));
+      realtime.emitUser(db,user.id,"notification.created",item,now);
+      if(pushService)pushService.sendToUser(user.id,item).catch(function(error){console.error("push dispatch failed:",error.message);});
+    } catch(e) { console.error("notification insert failed:",e.message); }
   }
 
   function getPresence(studentId) {
@@ -181,6 +197,7 @@ function createActivityService(deps) {
     emitStudent: emitStudent,
     recordActivity: recordActivity,
     notifyStudent: notifyStudent,
+    notifyUser: notifyUser,
     touchPresence: touchPresence,
     getPresence: getPresence,
     activeStudySession: activeStudySession,

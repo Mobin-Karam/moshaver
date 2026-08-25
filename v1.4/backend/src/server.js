@@ -666,7 +666,8 @@ registerChatRoutes(router, {
   adminChatList: chatService.adminChatList,
   emitConversation: groupChatService.emitToMembers,
   emitUser: function(userId,type,payload){return realtime.emitUser(db,userId,type,payload,now);},
-  notifyUser: function(userId,title,body){var u=db.prepare("SELECT student_id FROM users WHERE id=?").get(userId);if(u&&u.student_id)activityService.notifyStudent(u.student_id,title,body);},
+  notifyUser: activityService.notifyUser,
+  notifyAdmins: function(title,body,options){db.prepare("SELECT id FROM users WHERE role='admin' AND is_active=1").all().forEach(function(admin){activityService.notifyUser(admin.id,title,body,options);});},
 });
 
 registerGroupChatRoutes(router, {
@@ -674,7 +675,7 @@ registerGroupChatRoutes(router, {
   bucketAllow:bucketAllow,groups:groupChatService,env:env,realtime:realtime,
   canUseConversation:chatService.canUseConversation,getOrCreateConversation:chatService.getOrCreateConversation,
   conversationUnread:chatService.conversationUnread,todayIso:todayIso,iranDayBounds:iranDayBounds,
-  notifyUser:function(userId,title,body){var u=db.prepare("SELECT student_id FROM users WHERE id=?").get(userId);if(u&&u.student_id)activityService.notifyStudent(u.student_id,title,body);}
+  notifyUser:activityService.notifyUser
 });
 
 registerReportsRoutes(router, {

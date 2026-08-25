@@ -245,7 +245,13 @@ function registerExamsRoutes(router, deps) {
     /^\/api\/v1\/exams$/,
     ["student"],
     function (req, res, match, body, user) {
-      ok(res, exams.studentExams(user.student_id));
+      var q = query(req);
+      ok(res, exams.studentExams(user.student_id, {
+        page: q.page,
+        limit: q.limit,
+        filter: str(q.filter, 30),
+        search: str(q.search, 80),
+      }));
     },
   );
 

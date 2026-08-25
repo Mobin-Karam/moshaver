@@ -336,7 +336,7 @@
     var buttons = qa("[data-attention-student]", box); for (i = 0; i < buttons.length; i++) buttons[i].onclick = function () { state.studentId = this.getAttribute("data-attention-student"); el("studentSelect").value = state.studentId; switchView("students"); };
   }
   function openAdminNotifications() {
-    if (!state.studentId) return;
+    if (!state.studentId) return openAdminPersistentNotifications();
     api(
       "GET",
       "/admin/advisor-inbox?studentId=" + encodeURIComponent(state.studentId),
@@ -424,6 +424,7 @@
               : '<div class="empty-admin">اعلان جدیدی برای پیگیری وجود ندارد.</div>') +
             '</div><div class="modal-actions"><button id="openDashboardFromNotifications" class="btn soft">باز کردن صندوق مشاور</button></div>';
           openModal(h);
+          prependAdminPersistentNotifications();
           var bs = qa("[data-inbox-action]", el("genericModalBody"));
           for (i = 0; i < bs.length; i++) bs[i].onclick = handleInboxAction;
           el("openDashboardFromNotifications").onclick = function () {
@@ -434,6 +435,17 @@
       },
     );
   }
+  function renderAdminPersistentNotifications(rows) {
+    if (!rows || !rows.length) return '<div class="empty-admin">اعلان شخصی جدیدی نداری.</div>';
+    return rows.map(function(n){return '<button class="advisor-notification-item '+(n.isRead?'':'unread')+'" data-admin-notification="'+esc(n.id)+'" data-notification-url="'+esc(n.url||'/')+'"><strong>'+esc(n.title)+'</strong><small>'+esc(n.body||'')+'</small></button>';}).join('');
+  }
+  function bindAdminPersistentNotifications(root) {
+    qa('[data-admin-notification]',root).forEach(function(button){button.onclick=function(){var id=this.getAttribute('data-admin-notification'),url=this.getAttribute('data-notification-url');api('PUT','/notifications/'+encodeURIComponent(id)+'/read',{},function(){button.classList.remove('unread');});if(url&&url.indexOf('/messages')===0){var conversationId=url.split('/')[2]||'';closeModal();switchView('chat');loadChatList(function(){if(conversationId)selectConversation(conversationId);});}};});
+    var all=el('markAllAdminNotifications');if(all)all.onclick=function(){api('PUT','/notifications/read-all',{},function(err){if(err)return toast(err.message,'error');qa('[data-admin-notification]',root).forEach(function(x){x.classList.remove('unread');});toast('همه اعلان‌ها خوانده شد');});};
+    var pushButton=el('enableAdminPush');if(pushButton&&global.AdminPushClient){global.AdminPushClient.status().then(function(status){pushButton.textContent=status.registered?'اعلان دستگاه فعال است':'فعال‌سازی اعلان دستگاه';pushButton.disabled=!!status.registered;}).catch(function(){});pushButton.onclick=function(){var button=this;button.disabled=true;global.AdminPushClient.enable().then(function(){button.textContent='اعلان دستگاه فعال است';toast('اعلان‌های مشاور فعال شد');}).catch(function(error){button.disabled=false;toast(error.message,'error');});};}
+  }
+  function prependAdminPersistentNotifications(){api('GET','/notifications?limit=30',null,function(err,data){if(err)return;var root=el('genericModalBody'),list=root&&q('.advisor-notification-list',root);if(!list)return;var section=document.createElement('section');section.className='admin-persistent-notifications';section.innerHTML='<div class="section-heading"><strong>اعلان‌های شخصی من</strong><span><button id="enableAdminPush" class="mini-btn" type="button">فعال‌سازی اعلان دستگاه</button><button id="markAllAdminNotifications" class="mini-btn" type="button">خواندن همه</button></span></div>'+renderAdminPersistentNotifications(data.items||[]);list.parentNode.insertBefore(section,list);bindAdminPersistentNotifications(section);});}
+  function openAdminPersistentNotifications(){api('GET','/notifications?limit=30',null,function(err,data){if(err)return toast(err.message,'error');openModal('<span class="eyebrow">NOTIFICATIONS</span><h2>اعلان‌های مشاور</h2><section class="admin-persistent-notifications"><div class="section-heading"><strong>اعلان‌های شخصی من</strong><span><button id="enableAdminPush" class="mini-btn" type="button">فعال‌سازی اعلان دستگاه</button><button id="markAllAdminNotifications" class="mini-btn" type="button">خواندن همه</button></span></div>'+renderAdminPersistentNotifications(data.items||[])+'</section>');bindAdminPersistentNotifications(el('genericModalBody'));});}
   function renderDashboard() {
     var o = state.overview || {},
       m = o.todayMetrics || {},
@@ -448,6 +460,7 @@
       if (state.conversations[ci].student.id === state.studentId)
         chatN = Number(state.conversations[ci].unread || 0);
     var totalInbox = issueN + recoveryN + reviewN + missedN + retryN + chatN;
+    state.adminAttentionCount=totalInbox;
     el("inboxCount").textContent = fa(totalInbox);
     if (el("adminNotificationBadge")) {
       el("adminNotificationBadge").textContent = fa(totalInbox);
@@ -455,6 +468,7 @@
         ? "top-notification-badge"
         : "top-notification-badge hidden";
     }
+    api("GET","/notifications?limit=50&unread=1",null,function(err,data){if(err)return;state.adminPersistentUnread=(data.items||[]).length;var total=Number(state.adminAttentionCount||0)+state.adminPersistentUnread,badge=el("adminNotificationBadge");if(badge){badge.textContent=fa(total);badge.className=total?"top-notification-badge":"top-notification-badge hidden";}});
     el("dashboardStats").innerHTML =
       '<article class="stat-card"><span>اجرای امروز</span><strong>' +
       fa((m.doneTasks || 0) + (m.partialTasks || 0)) +
@@ -1906,6 +1920,8 @@
             x.isGroup = true; x.student = { id: "", name: x.title || "گروه", grade: "" }; x.presence = {}; return x;
           });
           state.conversations = state.conversations.filter(function (x) { return !x.isGroup; }).concat(groups);
+          state.groupConversationOffset = groups.length;
+          state.groupConversationHasMore = !!groupData.hasMore;
           state.chatUnreadTotal += groups.reduce(function (n, x) { return n + Number(x.unread || 0); }, 0);
           renderConversationList(); updateChatBadge();
         }
@@ -1920,7 +1936,21 @@
       renderConversationList();
       return;
     }
-    if (!state.conversationHasMore) return;
+    if (!state.conversationHasMore) {
+      if (!state.groupConversationHasMore) return;
+      state.conversationLoading = true;
+      var groupSearch = el("conversationSearch") ? String(el("conversationSearch").value || "").trim() : "";
+      api("GET", "/chat/conversations?limit=15&offset="+Number(state.groupConversationOffset||0)+(groupSearch?"&search="+encodeURIComponent(groupSearch):""), null, function(groupErr,groupData){
+        state.conversationLoading=false;
+        if(groupErr)return toast(groupErr.message,"error");
+        var incoming=(groupData.items||[]).filter(function(x){return x.type==="group";}).map(function(x){x.isGroup=true;x.student={id:"",name:x.title||"گروه",grade:""};x.presence={};return x;});
+        var known={};state.conversations.forEach(function(x){known[x.id]=true;});incoming.forEach(function(x){if(!known[x.id])state.conversations.push(x);});
+        state.groupConversationOffset=Number(state.groupConversationOffset||0)+incoming.length;
+        state.groupConversationHasMore=!!groupData.hasMore;
+        renderConversationList();
+      });
+      return;
+    }
     state.conversationLoading = true;
     var loadSeq = ++state.conversationLoadSeq;
     var search = el("conversationSearch") ? String(el("conversationSearch").value || "").trim() : "";
@@ -2094,6 +2124,17 @@
     }
     renderAdminChatMessages(false);
   }
+  function applyAdminMessageEvent(type, data) {
+    if (!data || data.conversationId !== state.chatConversationId) return false;
+    var message = adminFindMessage(data.id || data.messageId);
+    if (!message) return false;
+    if (type === "chat.message.edited") { message.text = data.text; message.editedAt = data.editedAt; }
+    else if (type === "chat.message.deleted") { message.text = ""; message.deletedAt = data.deletedAt; }
+    else if (type === "chat.reaction.updated") message.reactions = data.reactions || [];
+    else return false;
+    renderAdminChatMessages(false);
+    return true;
+  }
   function refreshAdminLatestMessages() {
     if (!state.chatConversationId) return;
     var conversationId = state.chatConversationId, loadSeq = state.chatLoadSeq;
@@ -2156,7 +2197,7 @@
         "</div><small>" +
         esc(chatClock(m.createdAt)) +
         (mine ? (m.seen ? " • ✓✓ دیده شد" : " • ✓ ارسال شد") : "") +
-        "</small><div class=\"message-actions\"><button data-admin-reply=\""+esc(m.id)+"\">پاسخ</button><button data-admin-react=\""+esc(m.id)+"\">❤️</button>"+(mine&&!m.deletedAt?"<button data-admin-edit=\""+esc(m.id)+"\">ویرایش</button><button data-admin-delete=\""+esc(m.id)+"\">حذف</button>":"")+"</div></div>";
+        "</small><div class=\"message-reactions\">"+(m.reactions||[]).map(function(r){return '<span>'+esc(r.emoji)+' '+fa(r.count)+'</span>';}).join('')+"</div><div class=\"message-actions\"><button data-admin-reply=\""+esc(m.id)+"\">پاسخ</button><button data-admin-react=\""+esc(m.id)+"\">❤️</button>"+(mine&&!m.deletedAt?"<button data-admin-edit=\""+esc(m.id)+"\">ویرایش</button><button data-admin-delete=\""+esc(m.id)+"\">حذف</button>":"")+"</div></div>";
     }
     box.innerHTML = h || '<div class="chat-day-empty">هنوز پیامی ردوبدل نشده.</div>';
     bindAdminMessageActions();
@@ -2248,6 +2289,17 @@
           loadChatList();
         } else if (type === "chat.messages.read") {
           applyAdminReadReceipt(data);
+        } else if (type === "chat.message.edited" || type === "chat.message.deleted" || type === "chat.reaction.updated") {
+          applyAdminMessageEvent(type, data);
+        } else if (type === "chat.conversation.created" || type === "chat.conversation.updated" || type === "chat.member.added" || type === "chat.member.removed" || type === "chat.member.updated") {
+          loadChatList();
+        } else if (type === "chat.mention.created") {
+          var mentioned = null;
+          for (var ci=0;ci<state.conversations.length;ci++) if(state.conversations[ci].id===data.conversationId) mentioned=state.conversations[ci];
+          if (!(mentioned && mentioned.muted)) toast((data.senderName ? data.senderName+" " : "")+"شما را در گفتگو نام برد");
+        } else if (type === "notification.created") {
+          state.adminPersistentUnread=Number(state.adminPersistentUnread||0)+1;var badge=el("adminNotificationBadge"),value=Number(state.adminAttentionCount||0)+state.adminPersistentUnread;
+          if(badge){badge.textContent=fa(value);badge.className="top-notification-badge";}if(!data||data.type!=="message")toast(data&&data.title?data.title:"اعلان جدید");
         } else if (type === "presence.changed") {
           loadChatList();
           scheduleRealtimeRefresh();
@@ -2880,6 +2932,7 @@
         });
       else syncAdminVisible();
     });
+    if("serviceWorker" in navigator)navigator.serviceWorker.addEventListener("message",function(event){if(event.data&&event.data.type==="NOTIFICATION_CLICK"){var url=event.data.url||'',conversationId=url.split('/')[2]||'';switchView("chat");loadChatList(function(){if(conversationId)selectConversation(conversationId);});}if(event.data&&event.data.type==="PUSH_SUBSCRIPTION_CHANGED"&&global.AdminPushClient&&global.Notification&&Notification.permission==="granted")global.AdminPushClient.enable().catch(function(){});});
     if (hasPendingAdminLogout()) {
       state.authStatus = "logging-out";
       flushPendingAdminLogout(function (err) {

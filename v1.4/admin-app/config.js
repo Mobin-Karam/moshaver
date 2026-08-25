@@ -4,7 +4,7 @@
     API_SERVER_URL:'/api-server/v1',
     API_LOCAL_URL:'/api-local/v1',
     DEFAULT_API_SOURCE:'server',
-    APP_VERSION:'1.6.0',
+    APP_VERSION:'1.6.2',
     STUDENT_URL:'https://st.mahakaram.ir',
     ADMIN_URL:'http://localhost:8081'
   };
