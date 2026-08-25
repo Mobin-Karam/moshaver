@@ -146,7 +146,7 @@ function registerChatRoutes(router, deps) {
         deps.emitConversation(c.id,"chat.message.created",item,user.id);
       } else if (user.role === "admin") {
         emitStudent(c.student_id, "chat.message.created", item);
-        notifyStudent(c.student_id, "پیام جدید از مشاور", text.slice(0, 180));
+        notifyStudent(c.student_id, "پیام جدید از مشاور", text.slice(0, 180), { type: "message", url: "/messages/" + c.id });
       } else emitAdmin(c.student_id, "chat.message.created", item);
       audit(user, "CHAT_MESSAGE_SENT", "chat_message", id, {
         conversationId: c.id,

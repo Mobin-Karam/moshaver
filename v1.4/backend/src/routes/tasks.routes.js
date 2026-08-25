@@ -158,6 +158,7 @@ function registerTasksRoutes(router, deps) {
           issue.student_id,
           "پاسخ مشاور",
           str(body.advisorNote, 1000),
+          { type: "message", url: "/schedule" },
         );
       audit(user, "update", "task_issue", issue.id, { status: status });
       ok(res, { id: issue.id, status: status });
@@ -187,7 +188,7 @@ function registerTasksRoutes(router, deps) {
         now(),
       );
       if (body.visibleToStudent !== false) {
-        notifyStudent(sid, "پیام مشاور", text);
+        notifyStudent(sid, "پیام مشاور", text, { type: "message", url: taskId ? "/schedule?task=" + encodeURIComponent(taskId) : "/messages" });
         emitStudent(sid, "advisor.comment.created", {
           id: id,
           taskId: taskId,

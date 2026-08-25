@@ -7,6 +7,7 @@ function createActivityService(deps) {
   var now = deps.now;
   var str = deps.str;
   var safeJsonParse = deps.safeJsonParse;
+  var pushService = deps.pushService;
 
   function emitAdmin(studentId, type, payload) {
     try {
@@ -54,22 +55,27 @@ function createActivityService(deps) {
     }
   }
 
-  function notifyStudent(studentId, title, body) {
+  function notifyStudent(studentId, title, body, options) {
     if (!studentId) return;
     try {
       var id = security.id("notification");
       var timestamp = now();
+      options = options || {};
       var item = {
         id: id,
         title: str(title, 160),
         body: str(body, 1000),
         isRead: false,
         createdAt: timestamp,
+        type: str(options.type || "announcement", 40),
+        url: str(options.url || "/", 500),
+        data: options.data || {},
       };
       db.prepare(
-        "INSERT INTO notifications (id,student_id,title,body,is_read,created_at) VALUES (?,?,?,?,0,?)",
-      ).run(id, studentId, item.title, item.body, timestamp);
+        "INSERT INTO notifications (id,student_id,title,body,is_read,created_at,type,url,data_json) VALUES (?,?,?,?,0,?,?,?,?)",
+      ).run(id, studentId, item.title, item.body, timestamp, item.type, item.url, JSON.stringify(item.data));
       emitStudent(studentId, "notification.created", item);
+      if (pushService) pushService.sendToStudent(studentId, item).catch(function (error) { console.error("push dispatch failed:", error.message); });
     } catch (e) {
       console.error("notification insert failed:", e.message);
     }

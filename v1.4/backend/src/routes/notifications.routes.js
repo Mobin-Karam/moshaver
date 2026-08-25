@@ -1,50 +1,16 @@
 "use strict";
 
 function registerNotificationsRoutes(router, deps) {
-  var db = deps.db;
-  var ok = deps.ok;
-
-  router.add(
-    "GET",
-    /^\/api\/v1\/notifications$/,
-    ["student"],
-    function (req, res, match, body, user) {
-      ok(
-        res,
-        db
-          .prepare(
-            "SELECT id,title,body,is_read AS isRead,created_at AS createdAt FROM notifications WHERE student_id=? ORDER BY created_at DESC LIMIT 50",
-          )
-          .all(user.student_id),
-      );
-    },
-  );
-
-  router.add(
-    "PUT",
-    /^\/api\/v1\/notifications\/([^/]+)\/read$/,
-    ["student"],
-    function (req, res, match, body, user) {
-      db.prepare(
-        "UPDATE notifications SET is_read=1 WHERE id=? AND student_id=?",
-      ).run(match[1], user.student_id);
-      ok(res, { id: match[1], isRead: true });
-    },
-  );
-
-  router.add(
-    "PUT",
-    /^\/api\/v1\/notifications\/read-all$/,
-    ["student"],
-    function (req, res, match, body, user) {
-      var r = db
-        .prepare(
-          "UPDATE notifications SET is_read=1 WHERE student_id=? AND is_read=0",
-        )
-        .run(user.student_id);
-      ok(res, { updated: r.changes });
-    },
-  );
+  var db=deps.db,ok=deps.ok,fail=deps.fail,security=deps.security,realtime=deps.realtime,now=deps.now,str=deps.str,push=deps.pushService;
+  function map(row){var data={};try{data=JSON.parse(row.dataJson||"{}");}catch(e){}return{id:row.id,title:row.title,body:row.body,isRead:!!row.isRead,createdAt:row.createdAt,type:row.type||"announcement",url:row.url||"/",data:data};}
+  router.add("GET",/^\/api\/v1\/notifications$/, ["student"], function(req,res,m,b,user){var u=new URL(req.url,"http://localhost"),limit=Math.min(50,Math.max(1,Number(u.searchParams.get("limit"))||15)),before=str(u.searchParams.get("before")||"",100),unread=u.searchParams.get("unread")==="1",args=[user.student_id],where="student_id=?";if(before){var parts=before.split("|");where+=" AND (created_at<? OR (created_at=? AND id<?))";args.push(parts[0],parts[0],parts[1]||"");}if(unread)where+=" AND is_read=0";var stmt=db.prepare("SELECT id,title,body,is_read AS isRead,created_at AS createdAt,type,url,data_json AS dataJson FROM notifications WHERE "+where+" ORDER BY created_at DESC,id DESC LIMIT ?"),rows=stmt.all.apply(stmt,args.concat([limit+1])),more=rows.length>limit;if(more)rows.length=limit;var last=rows[rows.length-1];ok(res,{items:rows.map(map),hasMore:more,nextCursor:more&&last?last.createdAt+"|"+last.id:null});});
+  router.add("PUT",/^\/api\/v1\/notifications\/([^/]+)\/read$/, ["student"], function(req,res,m,b,user){var r=db.prepare("UPDATE notifications SET is_read=1 WHERE id=? AND student_id=?").run(m[1],user.student_id);if(!r.changes)return fail(res,404,"NOT_FOUND","اعلان پیدا نشد.");ok(res,{id:m[1],isRead:true});});
+  router.add("PUT",/^\/api\/v1\/notifications\/read-all$/, ["student"], function(req,res,m,b,user){var r=db.prepare("UPDATE notifications SET is_read=1 WHERE student_id=? AND is_read=0").run(user.student_id);ok(res,{updated:r.changes});});
+  router.add("GET",/^\/api\/v1\/push\/config$/, ["student"], function(req,res){ok(res,{supported:push.enabled,vapidPublicKey:push.publicKey});});
+  router.add("GET",/^\/api\/v1\/push\/status$/, ["student"], function(req,res,m,b,user){var endpoint=str(new URL(req.url,"http://localhost").searchParams.get("endpoint")||"",2048),count=endpoint?db.prepare("SELECT COUNT(*) n FROM push_subscriptions WHERE user_id=? AND endpoint=?").get(user.id,endpoint).n:0,p=db.prepare("SELECT lessons,messages,exams,announcements FROM notification_preferences WHERE user_id=?").get(user.id)||{lessons:1,messages:1,exams:1,announcements:1};ok(res,{serverConfigured:push.enabled,registered:Number(count)>0,preferences:{lessons:!!p.lessons,messages:!!p.messages,exams:!!p.exams,announcements:!!p.announcements}});});
+  router.add("POST",/^\/api\/v1\/push\/subscriptions$/, ["student"], function(req,res,m,b,user){var endpoint=str(b.endpoint,2048),keys=b.keys||{},p256dh=str(keys.p256dh,512),auth=str(keys.auth,256);if(!endpoint||!/^https:\/\//.test(endpoint)||!p256dh||!auth)return fail(res,400,"INVALID_SUBSCRIPTION","اشتراک اعلان معتبر نیست.");var timestamp=now(),existing=db.prepare("SELECT id FROM push_subscriptions WHERE endpoint=?").get(endpoint),id=existing?existing.id:security.id("push");db.prepare("INSERT INTO push_subscriptions(id,user_id,endpoint,p256dh,auth,user_agent,created_at,updated_at,failure_count) VALUES(?,?,?,?,?,?,?,?,0) ON CONFLICT(endpoint) DO UPDATE SET user_id=excluded.user_id,p256dh=excluded.p256dh,auth=excluded.auth,user_agent=excluded.user_agent,updated_at=excluded.updated_at,failure_count=0").run(id,user.id,endpoint,p256dh,auth,str(deps.userAgent(req),300),timestamp,timestamp);ok(res,{id:id,registered:true},existing?200:201);});
+  router.add("DELETE",/^\/api\/v1\/push\/subscriptions$/, ["student"], function(req,res,m,b,user){var endpoint=str(new URL(req.url,"http://localhost").searchParams.get("endpoint")||"",2048),r=endpoint?db.prepare("DELETE FROM push_subscriptions WHERE user_id=? AND endpoint=?").run(user.id,endpoint):db.prepare("DELETE FROM push_subscriptions WHERE user_id=?").run(user.id);ok(res,{removed:r.changes});});
+  router.add("PUT",/^\/api\/v1\/push\/preferences$/, ["student"], function(req,res,m,b,user){function bit(k){return b[k]===false?0:1;}var timestamp=now();db.prepare("INSERT INTO notification_preferences(user_id,lessons,messages,exams,announcements,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET lessons=excluded.lessons,messages=excluded.messages,exams=excluded.exams,announcements=excluded.announcements,updated_at=excluded.updated_at").run(user.id,bit("lessons"),bit("messages"),bit("exams"),bit("announcements"),timestamp);ok(res,{saved:true});});
+  router.add("POST",/^\/api\/v1\/push\/test$/, ["student"], function(req,res,m,b,user){var id=security.id("notification"),timestamp=now(),item={id:id,title:"اعلان آزمایشی مشاور",body:"اعلان‌های این دستگاه به‌درستی فعال هستند.",isRead:false,createdAt:timestamp,type:"announcement",url:"/"};db.prepare("INSERT INTO notifications(id,student_id,title,body,is_read,created_at,type,url,data_json) VALUES (?,?,?,?,0,?,?,?,?)").run(id,user.student_id,item.title,item.body,timestamp,item.type,item.url,"{}");realtime.emit(db,"student",user.student_id,"notification.created",item,now);return push.sendToStudent(user.student_id,item).then(function(result){ok(res,{notification:item,push:result});});});
 }
-
-module.exports = registerNotificationsRoutes;
+module.exports=registerNotificationsRoutes;

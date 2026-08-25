@@ -38,6 +38,7 @@ var createLearningService = require("./services/learning.service");
 var createPlansService = require("./services/plans.service");
 var createStudentDashboardService = require("./services/student-dashboard.service");
 var createDatabaseBackupService = require("./services/database-backup.service");
+var createPushService = require("./services/push.service");
 
 var realtime = require("./realtime");
 var router = new Router();
@@ -389,6 +390,7 @@ function getReport(studentId, date) {
   );
 }
 
+var pushService = createPushService({ db: db, env: env, now: now });
 var activityService = createActivityService({
   db: db,
   security: security,
@@ -396,6 +398,7 @@ var activityService = createActivityService({
   now: now,
   str: str,
   safeJsonParse: safeJsonParse,
+  pushService: pushService,
 });
 
 function safeJsonParse(value, fallback) {
@@ -582,6 +585,13 @@ registerRealtimeRoutes(router, {
 registerNotificationsRoutes(router, {
   db: db,
   ok: ok,
+  fail: fail,
+  security: security,
+  realtime: realtime,
+  now: now,
+  str: str,
+  userAgent: userAgent,
+  pushService: pushService,
 });
 
 registerSubjectsRoutes(router, {

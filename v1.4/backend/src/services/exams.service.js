@@ -875,6 +875,7 @@ function createExamsService(deps) {
       status === "approved"
         ? "برای آزمون «" + (exam ? exam.title : "") + "» یک تلاش اضافه تا ۲۴ ساعت فعال شد."
         : str(body.advisorNote, 1000) || "درخواست شما تأیید نشد.",
+      { type: "exam", url: "/exams/" + request.exam_id },
     );
     return {
       data: {
