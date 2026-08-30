@@ -428,6 +428,11 @@ function createPlansService(deps) {
     if (!task) {
       return { error: { status: 404, code: "NOT_FOUND", message: "فعالیت پیدا نشد." } };
     }
+    var nextStart = Object.prototype.hasOwnProperty.call(body, "start") ? str(body.start, 5) : task.start_time;
+    var nextEnd = Object.prototype.hasOwnProperty.call(body, "end") ? str(body.end, 5) : task.end_time;
+    if (!timeValid(nextStart) || !timeValid(nextEnd) || nextEnd <= nextStart) {
+      return { error: { status: 400, code: "VALIDATION", message: "زمان پایان باید بعد از زمان شروع باشد." } };
+    }
     if (Object.prototype.hasOwnProperty.call(body, "type") && TASK_TYPES.indexOf(str(body.type, 50)) < 0) {
       return { error: { status: 400, code: "VALIDATION", message: "نوع فعالیت معتبر نیست." } };
     }

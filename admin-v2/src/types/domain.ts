@@ -67,7 +67,12 @@ export interface Exam {
   maxAttempts?: number;
   published?: boolean;
   syllabus?: Array<{ id: string; subject: string; description: string }>;
-  delivery?: { reason?: string; attemptsUsed?: number; allowedAttempts?: number; questionCount?: number };
+  delivery?: {
+    reason?: string;
+    attemptsUsed?: number;
+    allowedAttempts?: number;
+    questionCount?: number;
+  };
 }
 
 export interface Conversation {

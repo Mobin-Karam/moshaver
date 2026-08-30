@@ -153,7 +153,7 @@ function registerPlansRoutes(router, deps) {
     /^\/api\/v1\/admin\/plans\/([^/]+)\/tasks$/,
     ["admin"],
     function (req, res, match, body, user) {
-      if (!timeValid(body.start) || !timeValid(body.end))
+      if (!timeValid(body.start) || !timeValid(body.end) || body.end <= body.start)
         return fail(res, 400, "VALIDATION", "زمان شروع و پایان معتبر لازم است.");
       var result = plans.createAdminTask(match[1], body);
       if (result.error)

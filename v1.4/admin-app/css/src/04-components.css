@@ -1705,6 +1705,24 @@ select:focus {
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 12px;
 }
+.exam-management-panel { padding: 0; overflow: hidden; }
+.exam-management-toolbar { display:grid;grid-template-columns:minmax(220px,1fr) 180px 180px auto;gap:8px;padding:14px;border-bottom:1px solid var(--line); }
+.exam-management-toolbar input,.exam-management-toolbar select,.exam-bulk-bar select { min-height:40px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 10px; }
+.exam-bulk-bar { display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-height:50px;padding:8px 14px;background:#f7faf8;border-bottom:1px solid var(--line); }
+.exam-bulk-bar strong { margin-inline-end:auto;font-size:9px;color:var(--navy); }
+.exam-bulk-bar:not(.active) button,.exam-bulk-bar:not(.active) select { opacity:.48;pointer-events:none; }
+.exam-table-wrap { width:100%;overflow:auto; }
+.exam-management-table { width:100%;border-collapse:collapse;min-width:1050px; }
+.exam-management-table th { position:sticky;top:0;background:#f4f7f5;color:var(--muted);font-size:8px;text-align:right;padding:10px;border-bottom:1px solid var(--line);white-space:nowrap; }
+.exam-management-table td { padding:11px 10px;border-bottom:1px solid #edf1ee;font-size:9px;vertical-align:middle; }
+.exam-management-table tr.selected td { background:#f0fbf8; }
+.exam-management-table td strong,.exam-management-table td small { display:block; }
+.exam-management-table td small { color:var(--muted);font-size:7px;line-height:1.6;max-width:230px; }
+.exam-management-table input[type="checkbox"],.question-selection-bar input[type="checkbox"],.question-admin-row>input[type="checkbox"] { width:17px;height:17px;accent-color:var(--teal); }
+.exam-row-menu { display:flex;gap:5px;flex-wrap:wrap;min-width:260px; }
+.exam-state { white-space:nowrap;font-weight:700;color:var(--navy); }
+.question-selection-bar { display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#f6f9f7;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:10px 0; }
+.question-selection-bar label { display:flex;align-items:center;gap:6px;margin-inline-end:auto; }
 .exam-admin-card {
   background: #fff;
   border: 1px solid var(--line);
@@ -1820,6 +1838,7 @@ select:focus {
   .exam-admin-metrics {
     grid-template-columns: 1fr 1fr;
   }
+  .exam-management-toolbar { grid-template-columns:1fr; }
   .retry-request-row {
     align-items: flex-start;
     flex-direction: column;

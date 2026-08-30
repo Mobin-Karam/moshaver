@@ -57,15 +57,15 @@ function createStudentDashboardService(deps) {
   function topicPerformance(studentId, limit) {
     var n = Math.min(100, Math.max(1, Number(limit || 40)));
     return db.prepare(`SELECT COALESCE(NULLIF(q.subject,''),'بدون درس') AS subject,
-      COALESCE(NULLIF(qq.topic,''),NULLIF(qq.lesson,''),NULLIF(qq.chapter,''),'بدون مبحث') AS topic,
+      COALESCE(NULLIF(qa.topic,''),NULLIF(qa.lesson,''),NULLIF(qa.chapter,''),NULLIF(qq.topic,''),NULLIF(qq.lesson,''),NULLIF(qq.chapter,''),'بدون مبحث') AS topic,
       COUNT(DISTINCT a.id) AS attempts,COUNT(qa.id) AS answered,
       SUM(CASE WHEN qa.is_correct=1 THEN 1 ELSE 0 END) AS correct,
       SUM(CASE WHEN qa.is_correct=0 AND qa.selected_option IS NOT NULL THEN 1 ELSE 0 END) AS wrong,
       SUM(CASE WHEN qa.selected_option IS NULL THEN 1 ELSE 0 END) AS blank,
       ROUND(100.0*SUM(CASE WHEN qa.is_correct=1 THEN 1 ELSE 0 END)/NULLIF(COUNT(qa.id),0),1) AS accuracy,
       MAX(a.submitted_at) AS lastAttemptAt
-      FROM quiz_answers qa JOIN quiz_attempts a ON a.id=qa.attempt_id JOIN quiz_questions qq ON qq.id=qa.question_id JOIN quizzes q ON q.id=a.quiz_id
-      WHERE a.student_id=? GROUP BY subject,topic ORDER BY accuracy ASC,answered DESC LIMIT ?`).all(studentId, n).map(function (x) {
+      FROM quiz_answers qa JOIN quiz_attempts a ON a.id=qa.attempt_id LEFT JOIN quiz_questions qq ON qq.id=qa.question_id JOIN quizzes q ON q.id=a.quiz_id
+      WHERE a.student_id=? GROUP BY 1,2 ORDER BY accuracy ASC,answered DESC LIMIT ?`).all(studentId, n).map(function (x) {
         var accuracy = Number(x.accuracy || 0), answered = Number(x.answered || 0), status = "Not Enough Data";
         if (answered >= 5) status = accuracy >= 80 ? "Strong" : accuracy >= 65 ? "Improving" : accuracy >= 50 ? "Unstable" : "Weak";
         x.attempts = Number(x.attempts || 0); x.answered = answered; x.correct = Number(x.correct || 0); x.wrong = Number(x.wrong || 0); x.blank = Number(x.blank || 0); x.accuracy = accuracy; x.status = status;
