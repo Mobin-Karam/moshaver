@@ -4,11 +4,13 @@ import { useState } from "react";
 import { Button, Card, EmptyState, Field, Input, Select, Textarea } from "../../components/ui";
 import { api } from "../../services/api";
 import type { Exam } from "../../types/domain";
+import { useModal } from "../../components/modal";
 
 export function QuestionsPage() {
   const [examId, setExamId] = useState("");
   const [form, setForm] = useState({ question: "", options: ["", "", "", ""], correctOption: "a", explanation: "" });
   const qc = useQueryClient();
+  const modal = useModal();
   const exams = useQuery({ queryKey: ["exams-all"], queryFn: () => api.get<Exam[]>("/admin/exams") });
   const questions = useQuery({ queryKey: ["exam-questions", examId], enabled: !!examId, queryFn: () => api.get<unknown[]>(`/admin/exams/${examId}/questions`) });
   const add = useMutation({ mutationFn: () => api.post(`/admin/exams/${examId}/questions`, form), onSuccess: () => { setForm({ question: "", options: ["", "", "", ""], correctOption: "a", explanation: "" }); qc.invalidateQueries({ queryKey: ["exam-questions", examId] }); } });
@@ -43,7 +45,7 @@ export function QuestionsPage() {
             <div className="grid gap-3">
               {(questions.data as QuestionView[]).map((question, index) => (
                 <article key={question.id || index} className="rounded-md border border-slate-200 p-3">
-                  <div className="flex items-center justify-between"><strong>سؤال {index + 1}</strong>{question.id ? <Button className="h-8 px-2" variant="danger" onClick={() => window.confirm("سؤال حذف شود؟") && remove.mutate(question.id!)}><Trash2 size={14} /></Button> : null}</div>
+                  <div className="flex items-center justify-between"><strong>سؤال {index + 1}</strong>{question.id ? <Button className="h-8 px-2" variant="danger" onClick={() => void modal.confirm({ title: "حذف سؤال؟", description: "این سؤال از آزمون حذف می‌شود.", tone: "danger", confirmLabel: "حذف" }).then((confirmed) => confirmed && remove.mutate(question.id!))}><Trash2 size={14} /></Button> : null}</div>
                   <p className="mt-2 text-sm leading-7">{question.question || question.text}</p>
                   <div className="mt-3 grid gap-2">
                     {(question.options || []).map((option, optionIndex) => {

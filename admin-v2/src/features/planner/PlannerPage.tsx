@@ -7,6 +7,7 @@ import { useStudents } from "../../hooks/useStudents";
 import { api } from "../../services/api";
 import { addDays, fa, todayIso } from "../../lib/utils";
 import type { Plan, PlanTask } from "../../types/domain";
+import { useModal } from "../../components/modal";
 
 type DraftTask = {
   type: string;
@@ -32,6 +33,7 @@ const emptyTask = (): DraftTask => ({
 
 export function PlannerPage() {
   const students = useStudents();
+  const modal = useModal();
   const [date, setDate] = useState(todayIso());
   const [json, setJson] = useState("");
   const [replacePlans, setReplacePlans] = useState(false);
@@ -99,7 +101,7 @@ export function PlannerPage() {
                     <Badge tone={plan.published ? "green" : "amber"}>{plan.published ? "منتشر" : "پیش‌نویس"}</Badge>
                   </div>
                   <div className="mt-3 grid gap-2">
-                    {plan.tasks?.map((task) => <TaskRow key={task.id} task={task} onDelete={() => window.confirm("فعالیت حذف شود؟") && deleteTask.mutate(task.id)} />)}
+                    {plan.tasks?.map((task) => <TaskRow key={task.id} task={task} onDelete={() => void modal.confirm({ title: "حذف فعالیت؟", description: "این فعالیت از برنامه دانش‌آموز حذف می‌شود.", tone: "danger", confirmLabel: "حذف" }).then((confirmed) => confirmed && deleteTask.mutate(task.id))} />)}
                   </div>
                 </article>
               ))}

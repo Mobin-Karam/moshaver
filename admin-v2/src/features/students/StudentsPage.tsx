@@ -6,6 +6,7 @@ import { Card, EmptyState, Field, Input, Button } from "../../components/ui";
 import { useStudents } from "../../hooks/useStudents";
 import { api } from "../../services/api";
 import type { Student } from "../../types/domain";
+import { useModal } from "../../components/modal";
 
 type StudentForm = {
   name: string;
@@ -25,6 +26,7 @@ export function StudentsPage() {
   const [form, setForm] = useState<StudentForm>(emptyForm());
   const { students } = useStudents();
   const qc = useQueryClient();
+  const modal = useModal();
   const create = useMutation({ mutationFn: (body: StudentForm) => api.post<Student>("/admin/students", cleanPayload(body, true)), onSuccess: (student) => { qc.invalidateQueries({ queryKey: ["students"] }); setSelectedId(student.id); setForm(fromStudent(student)); } });
   const update = useMutation({ mutationFn: () => api.patch<Student>(`/admin/students/${selectedId}`, cleanPayload(form, false)), onSuccess: (student) => { qc.invalidateQueries({ queryKey: ["students"] }); setForm(fromStudent(student)); } });
   const remove = useMutation({ mutationFn: () => api.delete(`/admin/students/${selectedId}`), onSuccess: () => { qc.invalidateQueries({ queryKey: ["students"] }); setSelectedId(""); setForm(emptyForm()); } });
@@ -103,7 +105,7 @@ export function StudentsPage() {
             </div>
             <div className="grid gap-2 md:grid-cols-2">
               <Button disabled={!form.name.trim() || !form.username.trim() || create.isPending || update.isPending} onClick={() => selectedId ? update.mutate() : create.mutate(form)}><Save size={16} />{selectedId ? "ذخیره تغییرات" : "ساخت دانش‌آموز"}</Button>
-              <Button variant="danger" disabled={!selectedId || remove.isPending} onClick={() => window.confirm("دانش‌آموز حذف شود؟") && remove.mutate()}><Trash2 size={16} />حذف</Button>
+              <Button variant="danger" disabled={!selectedId || remove.isPending} onClick={() => void modal.confirm({ title: "بایگانی دانش‌آموز؟", description: "حساب غیرفعال می‌شود اما تاریخچه برای بازیابی حفظ خواهد شد.", tone: "danger", confirmLabel: "بایگانی" }).then((confirmed) => confirmed && remove.mutate())}><Trash2 size={16} />حذف</Button>
             </div>
             {selectedId ? <div className="grid gap-2 border-t pt-3 md:grid-cols-2"><Button variant="soft" disabled={form.password.length < 8 || resetPassword.isPending} onClick={() => resetPassword.mutate()}><KeyRound size={16} />تغییر رمز</Button><Button variant="soft" disabled={lifecycle.isPending} onClick={() => lifecycle.mutate("force-logout")}><LogOut size={16} />خروج اجباری</Button>{selected?.account_status === "archived" ? <Button onClick={() => lifecycle.mutate("restore")}><ArchiveRestore size={16} />بازیابی حساب</Button> : <Button variant="soft" onClick={() => lifecycle.mutate(selected?.account_status === "inactive" || selected?.active === false ? "activate" : "deactivate")}><Power size={16} />{selected?.account_status === "inactive" || selected?.active === false ? "فعال‌سازی" : "غیرفعال‌سازی"}</Button>}</div> : null}
           </div>

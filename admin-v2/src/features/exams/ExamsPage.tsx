@@ -2,18 +2,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Check, FileQuestion, Plus, Trash2, X } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { z } from "zod";
 import { StudentPicker } from "../../components/StudentPicker";
 import { Badge, Button, Card, EmptyState, Field, Input, Textarea } from "../../components/ui";
 import { useStudents } from "../../hooks/useStudents";
 import { api } from "../../services/api";
 import type { Exam } from "../../types/domain";
+import { useModal } from "../../components/modal";
 
 const schema = z.object({ title: z.string().min(1), persianDate: z.string().min(1), isoDate: z.string().min(10), durationMinutes: z.coerce.number().min(1), instructions: z.string().optional() });
 type Form = z.infer<typeof schema>;
 
 export function ExamsPage() {
   const students = useStudents();
+  const modal = useModal();
   const qc = useQueryClient();
   const exams = useQuery({ queryKey: ["exams", students.studentId], enabled: !!students.studentId, queryFn: () => api.get<Exam[]>(`/admin/exams?studentId=${students.studentId}`) });
   const retryRequests = useQuery({ queryKey: ["exam-retry", students.studentId], enabled: !!students.studentId, queryFn: () => api.get<RetryRequest[]>(`/admin/exam-attempt-requests?studentId=${students.studentId}&status=pending`) });
@@ -70,8 +73,8 @@ export function ExamsPage() {
                     <Metric label="سؤال" value={exam.delivery?.questionCount || 0} />
                     <Metric label="تلاش" value={exam.maxAttempts || 1} />
                   </div>
-                  <div className="mt-3 flex gap-2"><Button className="h-8 flex-1 px-2 text-xs" variant="soft" onClick={() => update.mutate({ id: exam.id, body: { published: !exam.published } })}>{exam.published ? "پیش‌نویس کردن" : "انتشار"}</Button><Button className="h-8 px-2" variant="danger" onClick={() => window.confirm("آزمون حذف شود؟") && remove.mutate(exam.id)}><Trash2 size={14} /></Button></div>
-                  <div className="mt-3 border-t pt-3"><div className="mb-2 flex items-center justify-between"><strong className="text-xs">بودجه‌بندی</strong><button className="text-xs text-brand" onClick={() => { const subject = window.prompt("نام درس"); const description = subject ? window.prompt("توضیح بودجه") : null; if (subject && description) addSyllabus.mutate({ examId: exam.id, subject, description }); }}>+ افزودن</button></div>{exam.syllabus?.map((item) => <div key={item.id} className="mb-1 flex justify-between rounded bg-white p-2 text-xs"><span>{item.subject}: {item.description}</span><button className="text-rose-700" onClick={() => deleteSyllabus.mutate(item.id)}>حذف</button></div>)}</div>
+                  <div className="mt-3 flex gap-2"><Button className="h-8 flex-1 px-2 text-xs" variant="soft" onClick={() => update.mutate({ id: exam.id, body: { published: !exam.published } })}>{exam.published ? "پیش‌نویس کردن" : "انتشار"}</Button><Button className="h-8 px-2" variant="danger" onClick={() => void modal.confirm({ title: "حذف آزمون؟", description: `آزمون «${exam.title}» و داده‌های وابسته حذف می‌شوند.`, tone: "danger", confirmLabel: "حذف" }).then((confirmed) => confirmed && remove.mutate(exam.id))}><Trash2 size={14} /></Button></div>
+                  <div className="mt-3 border-t pt-3"><div className="mb-2 flex items-center justify-between"><strong className="text-xs">بودجه‌بندی</strong><button className="text-xs text-brand" onClick={() => modal.open({ title: "افزودن بودجه‌بندی", description: exam.title, content: <SyllabusForm onCancel={modal.close} onSubmit={(subject, description) => { addSyllabus.mutate({ examId: exam.id, subject, description }); modal.close(); }} /> })}>+ افزودن</button></div>{exam.syllabus?.map((item) => <div key={item.id} className="mb-1 flex justify-between rounded bg-white p-2 text-xs"><span>{item.subject}: {item.description}</span><button className="text-rose-700" onClick={() => deleteSyllabus.mutate(item.id)}>حذف</button></div>)}</div>
                 </article>
               ))}
             </div>
@@ -83,6 +86,11 @@ export function ExamsPage() {
 }
 
 type RetryRequest = { id: string; examTitle?: string; reason?: string };
+
+function SyllabusForm({ onSubmit, onCancel }: { onSubmit: (subject: string, description: string) => void; onCancel: () => void }) {
+  const [subject, setSubject] = useState(""); const [description, setDescription] = useState("");
+  return <form className="grid gap-3" onSubmit={(event) => { event.preventDefault(); if (subject.trim() && description.trim()) onSubmit(subject.trim(), description.trim()); }}><Field label="نام درس"><Input autoFocus value={subject} onChange={(event) => setSubject(event.target.value)} /></Field><Field label="توضیح بودجه"><Textarea value={description} onChange={(event) => setDescription(event.target.value)} /></Field><div className="flex justify-end gap-2"><Button type="button" variant="soft" onClick={onCancel}>انصراف</Button><Button disabled={!subject.trim() || !description.trim()}>افزودن</Button></div></form>;
+}
 
 function Metric({ label, value }: { label: string; value: string | number }) {
   return <div className="rounded-md bg-white p-2"><span className="block text-slate-500">{label}</span><strong className="mt-1 block text-sm">{value}</strong></div>;
