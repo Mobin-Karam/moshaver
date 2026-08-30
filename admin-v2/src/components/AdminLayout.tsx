@@ -1,17 +1,21 @@
-import { Bell, BookOpenCheck, CalendarDays, GraduationCap, LayoutDashboard, LogOut, MessageSquare, Settings, UsersRound } from "lucide-react";
+import { Activity, Bell, BookOpen, BookOpenCheck, CalendarDays, Database, GraduationCap, LayoutDashboard, LogOut, MessageSquare, Settings, UsersRound } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { Button } from "./ui";
 import { useAuth } from "../features/auth/AuthProvider";
 
 const nav = [
   ["", "داشبورد", LayoutDashboard],
+  ["live", "فعالیت زنده", Activity],
   ["students", "دانش‌آموزان", UsersRound],
   ["planner", "برنامه‌ریز", CalendarDays],
   ["exams", "آزمون‌ها", BookOpenCheck],
   ["questions", "بانک سؤال", GraduationCap],
+  ["quizzes", "آزمونک‌ها", BookOpenCheck],
   ["chat", "گفتگو", MessageSquare],
   ["notifications", "اعلان‌ها", Bell],
   ["reports", "گزارش‌ها", LayoutDashboard],
+  ["subjects", "درس‌ها", BookOpen],
+  ["system", "سیستم", Database],
   ["settings", "تنظیمات", Settings],
 ] as const;
 
@@ -28,6 +32,7 @@ export function AdminLayout() {
           <div><strong>{auth.user?.displayName || auth.user?.display_name || "مشاور"}</strong><p className="text-xs text-slate-500">نقش: مدیر</p></div>
           <Button variant="soft" onClick={() => void auth.logout()}><LogOut size={16} />خروج</Button>
         </header>
+        <nav className="sticky top-16 z-10 flex gap-1 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 lg:hidden">{nav.map(([to, label, Icon]) => <NavLink key={to} to={`/admin/${to}`} end={to === ""} className={({ isActive }) => `flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold ${isActive ? "bg-teal-50 text-brand" : "text-slate-600"}`}><Icon size={16} />{label}</NavLink>)}</nav>
         <main className="mx-auto max-w-7xl p-4 md:p-6"><Outlet /></main>
       </div>
     </div>

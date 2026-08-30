@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, ListChecks } from "lucide-react";
+import { CheckCircle2, ListChecks, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button, Card, EmptyState, Field, Input, Select, Textarea } from "../../components/ui";
 import { api } from "../../services/api";
@@ -12,6 +12,7 @@ export function QuestionsPage() {
   const exams = useQuery({ queryKey: ["exams-all"], queryFn: () => api.get<Exam[]>("/admin/exams") });
   const questions = useQuery({ queryKey: ["exam-questions", examId], enabled: !!examId, queryFn: () => api.get<unknown[]>(`/admin/exams/${examId}/questions`) });
   const add = useMutation({ mutationFn: () => api.post(`/admin/exams/${examId}/questions`, form), onSuccess: () => { setForm({ question: "", options: ["", "", "", ""], correctOption: "a", explanation: "" }); qc.invalidateQueries({ queryKey: ["exam-questions", examId] }); } });
+  const remove = useMutation({ mutationFn: (id: string) => api.delete(`/admin/exams/${examId}/questions/${id}`), onSuccess: () => qc.invalidateQueries({ queryKey: ["exam-questions", examId] }) });
   return (
     <div className="grid gap-5">
       <div>
@@ -42,7 +43,7 @@ export function QuestionsPage() {
             <div className="grid gap-3">
               {(questions.data as QuestionView[]).map((question, index) => (
                 <article key={question.id || index} className="rounded-md border border-slate-200 p-3">
-                  <strong className="block">سؤال {index + 1}</strong>
+                  <div className="flex items-center justify-between"><strong>سؤال {index + 1}</strong>{question.id ? <Button className="h-8 px-2" variant="danger" onClick={() => window.confirm("سؤال حذف شود؟") && remove.mutate(question.id!)}><Trash2 size={14} /></Button> : null}</div>
                   <p className="mt-2 text-sm leading-7">{question.question || question.text}</p>
                   <div className="mt-3 grid gap-2">
                     {(question.options || []).map((option, optionIndex) => {

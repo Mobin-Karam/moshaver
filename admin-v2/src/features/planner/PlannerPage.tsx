@@ -34,6 +34,8 @@ export function PlannerPage() {
   const students = useStudents();
   const [date, setDate] = useState(todayIso());
   const [json, setJson] = useState("");
+  const [replacePlans, setReplacePlans] = useState(false);
+  const [replaceExams, setReplaceExams] = useState(false);
   const [tasks, setTasks] = useState<DraftTask[]>([emptyTask()]);
   const qc = useQueryClient();
   const from = date;
@@ -52,8 +54,9 @@ export function PlannerPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["plans"] }),
   });
   const preview = useMutation({ mutationFn: () => api.post<Record<string, unknown>>("/admin/import/preview", { studentId: students.studentId, data: JSON.parse(json) }) });
-  const commit = useMutation({ mutationFn: (publishImported: boolean) => api.post<Record<string, unknown>>("/admin/import/commit", { studentId: students.studentId, data: JSON.parse(json), publishImported }), onSuccess: () => qc.invalidateQueries({ queryKey: ["plans"] }) });
+  const commit = useMutation({ mutationFn: (publishImported: boolean) => api.post<Record<string, unknown>>("/admin/import/commit", { studentId: students.studentId, data: JSON.parse(json), publishImported, replaceExistingPlans: replacePlans, replaceExistingExams: replaceExams, sourceName: `Admin v2 ${new Date().toISOString()}` }), onSuccess: () => qc.invalidateQueries({ queryKey: ["plans"] }) });
   const publishRange = useMutation({ mutationFn: (published: boolean) => api.post<{ updated: number }>("/admin/plans/publish-range", { studentId: students.studentId, from, to, published }), onSuccess: () => qc.invalidateQueries({ queryKey: ["plans"] }) });
+  const deleteTask = useMutation({ mutationFn: (id: string) => api.delete(`/admin/tasks/${id}`), onSuccess: () => qc.invalidateQueries({ queryKey: ["plans"] }) });
 
   return (
     <div className="grid gap-5">
@@ -96,7 +99,7 @@ export function PlannerPage() {
                     <Badge tone={plan.published ? "green" : "amber"}>{plan.published ? "منتشر" : "پیش‌نویس"}</Badge>
                   </div>
                   <div className="mt-3 grid gap-2">
-                    {plan.tasks?.map((task) => <TaskRow key={task.id} task={task} />)}
+                    {plan.tasks?.map((task) => <TaskRow key={task.id} task={task} onDelete={() => window.confirm("فعالیت حذف شود؟") && deleteTask.mutate(task.id)} />)}
                   </div>
                 </article>
               ))}
@@ -149,6 +152,8 @@ export function PlannerPage() {
             <Button onClick={() => commit.mutate(false)} disabled={!preview.data || commit.isPending}>ثبت پیش‌نویس</Button>
             <Button onClick={() => commit.mutate(true)} disabled={!preview.data || commit.isPending}>ثبت و انتشار</Button>
           </div>
+          <div className="flex flex-wrap gap-4 text-sm"><label><input type="checkbox" checked={replacePlans} onChange={(e) => setReplacePlans(e.target.checked)} /> جایگزینی امن برنامه‌های موجود</label><label><input type="checkbox" checked={replaceExams} onChange={(e) => setReplaceExams(e.target.checked)} /> جایگزینی آزمون‌های همنام/هم‌تاریخ</label></div>
+          <div className="flex flex-wrap gap-2"><Button variant="ghost" onClick={() => void loadJson(`/admin/import/template?studentId=${encodeURIComponent(students.studentId)}`, "moshaver-template.json")}>دانلود قالب</Button><Button variant="ghost" onClick={() => void loadJson(`/admin/export/json?studentId=${encodeURIComponent(students.studentId)}&from=${from}&to=${to}`, `moshaver-export-${from}-${to}.json`)}>خروجی بازه</Button></div>
           {preview.data ? <pre className="max-h-72 overflow-auto rounded-md bg-slate-950 p-3 text-left text-xs text-slate-100" dir="ltr">{JSON.stringify(preview.data, null, 2)}</pre> : null}
         </div>
       </Card>
@@ -158,20 +163,27 @@ export function PlannerPage() {
   function updateTask(index: number, patch: Partial<DraftTask>) {
     setTasks((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item));
   }
+
+  async function loadJson(path: string, filename: string) {
+    const data = await api.get<Record<string, unknown>>(path);
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+    const anchor = document.createElement("a"); anchor.href = url; anchor.download = filename; anchor.click(); URL.revokeObjectURL(url);
+  }
 }
 
 function Metric({ label, value }: { label: string; value: number }) {
   return <Card className="p-3"><span className="text-xs text-slate-500">{label}</span><strong className="mt-1 block text-xl">{fa(value)}</strong></Card>;
 }
 
-function TaskRow({ task }: { task: PlanTask }) {
+function TaskRow({ task, onDelete }: { task: PlanTask; onDelete: () => void }) {
   const start = task.startTime || task.start || "--:--";
   const end = task.endTime || task.end || "--:--";
   return (
-    <div className="grid gap-2 rounded-md bg-slate-50 p-3 text-sm md:grid-cols-[90px_1fr_auto] md:items-center">
+    <div className="grid gap-2 rounded-md bg-slate-50 p-3 text-sm md:grid-cols-[90px_1fr_auto_auto] md:items-center">
       <span className="font-mono text-xs text-slate-500">{start} - {end}</span>
       <span><strong>{[task.subject, task.title].filter(Boolean).join(" - ") || "فعالیت"}</strong>{task.note ? <small className="block text-slate-500">{task.note}</small> : null}</span>
       <span className="text-xs text-slate-500">{fa(task.duration || minutes(start, end))} دقیقه | {fa(task.testCount || 0)} تست</span>
+      <button className="text-xs text-rose-700" onClick={onDelete}>حذف</button>
     </div>
   );
 }

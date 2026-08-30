@@ -153,8 +153,36 @@ export async function request<T>(
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
+  put: <T>(path: string, body?: unknown) => request<T>("PUT", path, body),
   patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
   delete: <T>(path: string) => request<T>("DELETE", path),
+  async download(path: string) {
+    const response = await fetch(`${getApiBaseUrl()}${path}`, {
+      method: "POST",
+      credentials: "include",
+      headers: csrf() ? { "X-CSRF-Token": csrf() } : undefined,
+    });
+    if (!response.ok) throw new ApiError(response.status, "دریافت فایل پشتیبان انجام نشد.");
+    return {
+      blob: await response.blob(),
+      filename: response.headers.get("content-disposition")?.match(/filename="?([^";]+)"?/)?.[1] || "moshaver-backup.sqlite",
+    };
+  },
+  async uploadBinary<T>(path: string, body: Blob) {
+    const response = await fetch(`${getApiBaseUrl()}${path}`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/vnd.sqlite3",
+        ...(csrf() ? { "X-CSRF-Token": csrf() } : {}),
+      },
+      body,
+    });
+    const payload = (await response.json().catch(() => null)) as ApiEnvelope<T> | null;
+    if (response.ok && payload?.ok) return payload.data;
+    const error = payload && "error" in payload ? payload.error : undefined;
+    throw new ApiError(response.status, error?.message || "بارگذاری فایل انجام نشد.", error?.code, error?.details);
+  },
   setCsrf,
   openEvents(
     onEvent: (type: string, data: Record<string, unknown>) => void,

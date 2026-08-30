@@ -5,6 +5,8 @@ import { Badge, Card, EmptyState, Textarea } from "../../components/ui";
 import { api } from "../../services/api";
 import type { ChatMessage, Conversation } from "../../types/domain";
 
+type MessagePage = { messages: ChatMessage[]; hasMore?: boolean; nextBeforeMessageId?: string; unread?: number };
+
 export function ChatPage() {
   const [conversationId, setConversationId] = useState("");
   const [text, setText] = useState("");
@@ -14,7 +16,8 @@ export function ChatPage() {
   const conversations = useQuery({ queryKey: ["chat-conversations"], queryFn: () => api.get<Conversation[]>("/admin/chat/conversations"), refetchInterval: 15_000 });
   const filtered = useMemo(() => (conversations.data ?? []).filter((item) => (item.student?.name || "").includes(search.trim())), [conversations.data, search]);
   const active = useMemo(() => filtered.find((c) => c.id === conversationId) ?? filtered[0] ?? conversations.data?.[0], [conversationId, conversations.data, filtered]);
-  const messages = useQuery({ queryKey: ["chat-messages", active?.id], enabled: !!active?.id, queryFn: () => api.get<ChatMessage[]>(`/chat/conversations/${active?.id}/messages`), refetchInterval: 10_000 });
+  const messages = useQuery({ queryKey: ["chat-messages", active?.id], enabled: !!active?.id, queryFn: () => api.get<MessagePage>(`/chat/conversations/${active?.id}/messages?limit=100`), refetchInterval: 10_000 });
+  const markRead = useMutation({ mutationFn: () => api.post(`/chat/conversations/${active?.id}/read`, {}), onSuccess: () => { qc.invalidateQueries({ queryKey: ["chat-conversations"] }); qc.invalidateQueries({ queryKey: ["chat-messages", active?.id] }); } });
   const send = useMutation({
     mutationFn: () => {
       if (!active?.id) throw new Error("گفتگویی انتخاب نشده است.");
@@ -22,7 +25,7 @@ export function ChatPage() {
     },
     onSuccess: (message) => {
       setText("");
-      qc.setQueryData<ChatMessage[]>(["chat-messages", active?.id], (current = []) => [...current, message]);
+      qc.setQueryData<MessagePage>(["chat-messages", active?.id], (current) => ({ ...(current || { messages: [] }), messages: [...(current?.messages || []), message] }));
       qc.invalidateQueries({ queryKey: ["chat-conversations"] });
     },
   });
@@ -44,7 +47,7 @@ export function ChatPage() {
   useLayoutEffect(() => {
     const node = scrollRef.current;
     if (node) node.scrollTop = node.scrollHeight;
-  }, [messages.data?.length, active?.id]);
+  }, [messages.data?.messages.length, active?.id]);
 
   function submit() {
     if (text.trim() && !send.isPending) send.mutate();
@@ -92,13 +95,14 @@ export function ChatPage() {
               <strong className="block">{active?.student?.name || "گفتگو"}</strong>
               <span className="text-xs text-slate-500">{active?.presence?.online ? "آنلاین" : "آماده پاسخگویی"}</span>
             </div>
-            <CheckCheck size={18} className="text-slate-400" />
+            <button type="button" className="flex items-center gap-2 text-xs text-slate-500" onClick={() => markRead.mutate()} disabled={!active?.id || markRead.isPending}><CheckCheck size={18} />خوانده شد</button>
           </div>
           <div ref={scrollRef} className="min-h-0 flex-1 space-y-2 overflow-auto bg-[#efeae2] p-4">
             {messages.isLoading ? <EmptyState title="در حال دریافت پیام‌ها..." /> : null}
-            {messages.data?.length ? messages.data.map((message) => <Bubble key={message.id} message={message} mine={String(message.senderRole).toLowerCase() === "admin"} />) : !messages.isLoading ? <EmptyState title="پیامی ثبت نشده است." /> : null}
+            {messages.data?.messages.length ? messages.data.messages.map((message) => <Bubble key={message.id} message={message} mine={String(message.senderRole).toLowerCase() === "admin"} />) : !messages.isLoading ? <EmptyState title="پیامی ثبت نشده است." /> : null}
           </div>
-          <form className="grid shrink-0 grid-cols-[1fr_44px] gap-2 border-t bg-white p-3" onSubmit={(event) => { event.preventDefault(); submit(); }}>
+          <div className="flex gap-2 overflow-x-auto border-t bg-white px-3 pt-2">{["برنامه امروزت را انجام دادی؟", "اگر بخشی از برنامه سخت بود، بگو تا اصلاحش کنم.", "نتیجه آزمون را برایم بفرست."].map((item) => <button key={item} type="button" className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs" onClick={() => setText(item)}>{item}</button>)}</div>
+          <form className="grid shrink-0 grid-cols-[1fr_44px] gap-2 bg-white p-3" onSubmit={(event) => { event.preventDefault(); submit(); }}>
             <Textarea className="max-h-28 min-h-11 resize-none py-2" rows={1} value={text} onChange={(event) => setText(event.target.value)} onKeyDown={onKeyDown} placeholder="پیام..." />
             <button className="grid size-11 place-items-center rounded-md bg-brand text-white disabled:opacity-50" disabled={!text.trim() || send.isPending} aria-label="ارسال">
               <Send size={18} />

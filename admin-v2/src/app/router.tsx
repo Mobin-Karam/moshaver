@@ -11,6 +11,10 @@ import { ChatPage } from "../features/chat/ChatPage";
 import { NotificationsPage } from "../features/notifications/NotificationsPage";
 import { ReportsPage } from "../features/reports/ReportsPage";
 import { SettingsPage } from "../features/settings/SettingsPage";
+import { LivePage } from "../features/live/LivePage";
+import { SubjectsPage } from "../features/subjects/SubjectsPage";
+import { SystemPage } from "../features/system/SystemPage";
+import { QuizzesPage } from "../features/quizzes/QuizzesPage";
 
 function ProtectedRoute() {
   const auth = useAuth();
@@ -28,13 +32,17 @@ export const router = createBrowserRouter([
       element: <AdminLayout />,
       children: [
         { index: true, element: <DashboardPage /> },
+        { path: "live", element: <LivePage /> },
         { path: "students", element: <StudentsPage /> },
         { path: "planner", element: <PlannerPage /> },
         { path: "exams", element: <ExamsPage /> },
         { path: "questions", element: <QuestionsPage /> },
+        { path: "quizzes", element: <QuizzesPage /> },
         { path: "chat", element: <ChatPage /> },
         { path: "notifications", element: <NotificationsPage /> },
         { path: "reports", element: <ReportsPage /> },
+        { path: "subjects", element: <SubjectsPage /> },
+        { path: "system", element: <SystemPage /> },
         { path: "settings", element: <SettingsPage /> },
       ],
     }],

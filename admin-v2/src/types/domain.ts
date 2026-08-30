@@ -13,6 +13,7 @@ export interface Student {
   id: string;
   name: string;
   user?: { id: string; username?: string; role?: Role };
+  username?: string;
   grade?: string;
   major?: string;
   targetUniversity?: string;
@@ -24,6 +25,13 @@ export interface Student {
   target_city?: string;
   rank_goal?: string;
   active?: number | boolean;
+  account_status?: "active" | "inactive" | "archived";
+  account_active?: number | boolean;
+  last_seen_at?: string;
+  attempt_count?: number;
+  average_percent?: number;
+  due_learning_count?: number;
+  today_study_minutes?: number;
 }
 
 export interface PlanTask {
