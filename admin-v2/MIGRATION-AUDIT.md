@@ -4,20 +4,30 @@ This document is the parity contract for retiring `v1.4/admin-app`. A row is com
 
 | v1.6 area | Required capability | v2 destination | Status |
 | --- | --- | --- | --- |
-| Authentication | cookie session, CSRF recovery, admin-role rejection, logout | auth provider/login/layout | Complete |
-| Dashboard | global counts, selected-student overview, attention inbox, unread chat | dashboard | Complete |
-| Live operations | presence, current task/session, plan progress, study totals, attempt, issues, reviews, event timeline, SSE refresh | live | Complete |
-| Chat | conversation search, thread, send, Enter/Shift+Enter, unread/read state, realtime refresh | chat | Complete |
-| Planner | day/week range, task creation, drafts, publication, JSON preview/commit | planner | Complete |
-| Import/export | safe preview, replacement switches, draft/publish commit, template and range export | planner | Complete |
-| Exams | create/edit/delete, search/filter, publish/status, retry review, syllabus, question management, JSON import/export | exams/questions | Complete |
-| Quiz bank | quiz CRUD and question CRUD | questions | Complete |
-| Reports | date/search/sort, study/test/focus/fatigue/motivation/problem presentation | reports | Complete |
-| Students | search/filter, create/edit, activate/deactivate/archive/restore, reset password, force logout, overview, learning, attempts, weekly/topics | students | Complete |
-| Subjects | global subject creation/order and per-student status/progress/mastery/note | subjects | Complete |
-| Notifications | durable inbox, unread filter, single/read-all, advisor inbox, SSE refresh | notifications | Complete |
-| System | health/database metadata, SQLite backup/restore, sessions, password, app releases, import history, audit history | system | Complete |
-| Deployment | same-origin `/api/v1`, development backend switch, production nginx fallback | shared API/Docker/nginx | Complete |
+| Authentication | cookie session, CSRF recovery, admin-role rejection, queued offline logout, session expiry, cross-tab sync, visibility refresh, backend health, logout | auth provider/login/layout | Behavior migrated and unit-tested |
+| Dashboard | global counts, selected-student overview, attention inbox, unread chat | dashboard | Re-audit required |
+| Live operations | presence, current task/session, plan progress, study totals, attempt, issues, reviews, event timeline, SSE refresh | live | Re-audit required |
+| Chat | conversation search, thread, send, Enter/Shift+Enter, unread/read state, realtime refresh | chat | Re-audit required |
+| Planner | day/week/month, task CRUD, drafts, publication, JSON preview/commit | planner | Re-audit required |
+| Import/export | safe preview, replacement switches, draft/publish commit, template and range export | planner | Re-audit required |
+| Exams | create/edit/delete, search/filter, bulk actions, publish/status, retry review, syllabus, question management, JSON import/export | exams/questions | Re-audit required |
+| Quiz bank | quiz CRUD and question CRUD | questions | Re-audit required |
+| Reports | date/search/sort, study/test/focus/fatigue/motivation/problem presentation | reports | Re-audit required |
+| Students | search/filter/sort/pagination, create/edit, activate/deactivate/archive/restore, reset password, force logout, overview, learning, attempts, weekly/topics | students | Re-audit required |
+| Subjects | global subject creation/order/edit and per-student status/progress/mastery/note | subjects | Re-audit required |
+| Notifications | durable inbox, unread filter, pagination, single/read-all, advisor inbox, SSE refresh, push preferences | notifications | Re-audit required |
+| System | health/database metadata, SQLite backup/restore, sessions, password, app releases, import history, audit history | system | Re-audit required |
+| Deployment | same-origin `/api/v1`, development backend switch, production nginx fallback | shared API/Docker/nginx | Re-audit required |
+
+## Authentication evidence
+
+- Startup `401` becomes anonymous; startup network failure remains in checking state and retries without deleting the possible cookie session.
+- Any later protected request returning `401` clears local auth through the shared API failure signal.
+- Wrong-role login logs the server session out; failed offline cleanup is queued in session storage.
+- Logout is immediate locally and queued for server completion after connectivity returns.
+- Login/logout events synchronize across tabs, and visible-page restoration refreshes sessions older than 15 seconds.
+- CSRF tokens remain session-scoped and mutating requests retain the one-time CSRF refresh/retry behavior.
+- Backend health/version is visible before login; development credentials and backend controls are development-only.
 
 ## Retirement gate
 

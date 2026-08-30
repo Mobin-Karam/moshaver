@@ -10,7 +10,7 @@ describe("LoginPage", () => {
   it("validates required fields", async () => {
     globalThis.fetch = vi.fn(async () => new Response(JSON.stringify({ ok: false, error: { message: "unauthorized" } }), { status: 401 })) as typeof fetch;
     render(<MemoryRouter><ToastProvider><AuthProvider><LoginPage /></AuthProvider></ToastProvider></MemoryRouter>);
-    await userEvent.click(screen.getByRole("button", { name: "ورود" }));
+    await userEvent.click(await screen.findByRole("button", { name: "ورود" }));
     expect(await screen.findByText("نام کاربری لازم است")).toBeInTheDocument();
     expect(screen.getByText("رمز عبور لازم است")).toBeInTheDocument();
   });

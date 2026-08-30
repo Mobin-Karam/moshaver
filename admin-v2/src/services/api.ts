@@ -27,6 +27,8 @@ export class ApiError extends Error {
 const CSRF_KEY = "moshaver_admin_csrf";
 const DEV_BACKEND_KEY = "moshaver_admin_backend";
 const defaultBase = "/api/v1";
+type AuthFailureListener = (error: ApiError) => void;
+const authFailureListeners = new Set<AuthFailureListener>();
 
 export const backendTargets = {
   local: "http://localhost:4000",
@@ -71,6 +73,11 @@ function csrf() {
 export function setCsrf(token?: string) {
   if (token) sessionStorage.setItem(CSRF_KEY, token);
   else sessionStorage.removeItem(CSRF_KEY);
+}
+
+export function onAuthFailure(listener: AuthFailureListener) {
+  authFailureListeners.add(listener);
+  return () => authFailureListeners.delete(listener);
 }
 
 function isMutating(method: string) {
@@ -140,7 +147,10 @@ export async function request<T>(
       await refreshCsrf();
       return request<T>(method, path, body, { ...options, noCsrfRetry: true });
     }
-    if (response.status === 401) setCsrf();
+    if (response.status === 401) {
+      setCsrf();
+      if (!options.suppressAuthFailure) authFailureListeners.forEach((listener) => listener(apiError));
+    }
     throw apiError;
   } catch (error) {
     if (error instanceof ApiError) throw error;
