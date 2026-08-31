@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Check, MoreHorizontal, Pencil, Plus, Trash2, X } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { CalendarClock, Check, History, MoreHorizontal, Pencil, Plus, RotateCcw, Trash2, X } from "lucide-react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { StudentPicker } from "../../shared/ui/StudentPicker";
 import { DataTransferWorkspace } from "../../shared/ui/data-transfer";
 import { DatePicker, DateTimePicker } from "../../shared/ui/date-picker";
@@ -20,38 +20,43 @@ import {
 import { useStudents } from "../../shared/hooks/useStudents";
 import { api } from "../../shared/api/api";
 import type { Exam } from "../../shared/types/domain";
-import { normalizePersianText } from "../../shared/lib/utils";
 import { notify } from "../../shared/ui/notifications";
+import { ExamAttempts } from "./ExamAttempts";
+import { examDraftError, examReadiness, makeExamDraft, matchesExam, type ExamDraft } from "./exam-model";
 
-type ExamDraft = {
-  title: string;
-  persianDate: string;
-  isoDate: string;
-  openAt: string;
-  closeAt: string;
-  durationMinutes: number;
-  maxAttempts: number;
-  status: NonNullable<Exam["status"]>;
-  published: boolean;
-  note: string;
-  instructions: string;
-};
 type RetryRequest = {
   id: string;
   examTitle?: string;
   reason?: string;
   message?: string;
   createdAt?: string;
+  created_at?: string;
+  status?: "pending" | "approved" | "rejected";
+  advisor_note?: string;
 };
 
 export function ExamsPage() {
   const students = useStudents(),
     modal = useModal(),
     qc = useQueryClient();
-  const [search, setSearch] = useState(""),
-    [status, setStatus] = useState("all"),
-    [visibility, setVisibility] = useState("all"),
+  const [params, setParams] = useSearchParams();
+  const studentParam = params.get("studentId") || "";
+  const searchParam = params.get("search") || "";
+  const statusParam = params.get("status") || "all";
+  const visibilityParam = params.get("visibility") || "all";
+  const [search, setSearch] = useState(params.get("search") || ""),
+    [status, setStatus] = useState(params.get("status") || "all"),
+    [visibility, setVisibility] = useState(params.get("visibility") || "all"),
     [selected, setSelected] = useState<string[]>([]);
+  const deferredSearch = useDeferredValue(search);
+  useEffect(() => { if (studentParam && studentParam !== students.studentId) students.setStudentId(studentParam); }, [studentParam, students.studentId, students.setStudentId]);
+  useEffect(() => {
+    setSearch(searchParam);
+    setStatus(statusParam);
+    setVisibility(visibilityParam);
+  }, [searchParam, statusParam, visibilityParam]);
+  useEffect(() => { if (!students.studentId) return; setParams((current) => { current.set("studentId", students.studentId); search ? current.set("search", search) : current.delete("search"); status !== "all" ? current.set("status", status) : current.delete("status"); visibility !== "all" ? current.set("visibility", visibility) : current.delete("visibility"); return current; }, { replace: true }); }, [students.studentId, search, status, visibility]);
+  useEffect(() => setSelected([]), [students.studentId]);
   const exams = useQuery({
     queryKey: ["exams", students.studentId],
     enabled: !!students.studentId,
@@ -74,42 +79,52 @@ export function ExamsPage() {
       id
         ? api.patch(`/admin/exams/${id}`, body)
         : api.post("/admin/exams", { ...body, studentId: students.studentId }),
-    onSuccess: refresh,
+    onSuccess: (_, variables) => { notify(variables.id ? "آزمون ویرایش شد." : "آزمون ساخته شد."); void refresh(); },
+    onError: (error) => notify(error instanceof Error ? error.message : "ذخیره آزمون ناموفق بود.", "error"),
   });
   const remove = useMutation({
     mutationFn: (id: string) => api.delete(`/admin/exams/${id}`),
-    onSuccess: refresh,
+    onSuccess: () => { notify("آزمون حذف شد."); void refresh(); },
+    onError: (error) => notify(error instanceof Error ? error.message : "حذف آزمون ناموفق بود.", "error"),
   });
   const review = useMutation({
     mutationFn: ({
       id,
-      status,
+      status, advisorNote,
     }: {
       id: string;
-      status: "approved" | "rejected";
-    }) => api.patch(`/admin/exam-attempt-requests/${id}`, { status }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["exam-retry"] }),
+      status: "approved" | "rejected"; advisorNote: string;
+    }) => api.patch(`/admin/exam-attempt-requests/${id}`, { status, advisorNote }),
+    onSuccess: (_, variables) => { notify(variables.status === "approved" ? "تلاش مجدد فعال شد." : "درخواست رد شد."); void qc.invalidateQueries({ queryKey: ["exam-retry"] }); },
+    onError: (error) => notify(error instanceof Error ? error.message : "ثبت تصمیم ناموفق بود.", "error"),
   });
   const addSyllabus = useMutation({
     mutationFn: ({ examId, data }: { examId: string; data: SyllabusDraft }) =>
       api.post(`/admin/exams/${examId}/syllabus`, data),
-    onSuccess: refresh,
+    onSuccess: () => { notify("بودجه‌بندی افزوده شد."); void refresh(); },
+    onError: (error) => notify(error instanceof Error ? error.message : "افزودن بودجه ناموفق بود.", "error"),
   });
   const deleteSyllabus = useMutation({
     mutationFn: (id: string) => api.delete(`/admin/syllabus/${id}`),
-    onSuccess: refresh,
+    onSuccess: () => { notify("بودجه‌بندی حذف شد."); void refresh(); },
+    onError: (error) => notify(error instanceof Error ? error.message : "حذف بودجه ناموفق بود.", "error"),
+  });
+  const togglePublish = useMutation({
+    mutationFn: ({ id, published }: { id: string; published: boolean }) => api.patch(`/admin/exams/${id}`, { published }),
+    onMutate: async ({ id, published }) => { await qc.cancelQueries({ queryKey: ["exams", students.studentId] }); const previous = qc.getQueryData<Exam[]>(["exams", students.studentId]); qc.setQueryData<Exam[]>(["exams", students.studentId], (items) => items?.map((item) => item.id === id ? { ...item, published } : item)); return { previous }; },
+    onError: (error, _, context) => { if (context?.previous) qc.setQueryData(["exams", students.studentId], context.previous); notify(error instanceof Error ? error.message : "تغییر انتشار ناموفق بود.", "error"); },
+    onSuccess: (_, variables) => notify(variables.published ? "آزمون منتشر شد." : "آزمون به پیش‌نویس برگشت."),
+    onSettled: () => void refresh(),
   });
   const filtered = useMemo(
     () =>
       (exams.data ?? []).filter(
         (exam) =>
-          (!search.trim() || normalizePersianText(`${exam.title} ${exam.isoDate} ${exam.persianDate || ""}`).toLocaleLowerCase("fa").includes(normalizePersianText(search).trim().toLocaleLowerCase("fa"))) &&
-          (status === "all" || exam.status === status) &&
-          (visibility === "all" ||
-            (visibility === "published") === !!exam.published),
+          matchesExam(exam, deferredSearch, status, visibility),
       ),
-    [exams.data, search, status, visibility],
+    [exams.data, deferredSearch, status, visibility],
   );
+  const pendingRetries = (retries.data ?? []).filter((request) => !request.status || request.status === "pending");
 
   function openEditor(exam?: Exam) {
     modal.open({
@@ -117,14 +132,18 @@ export function ExamsPage() {
       size: "lg",
       content: (
         <ExamForm
-          initial={examDraft(exam)}
-          busy={save.isPending}
+          initial={makeExamDraft(exam)}
           onCancel={modal.close}
-          onSubmit={(body) =>
-            void save.mutateAsync({ id: exam?.id, body }).then(modal.close)
-          }
+          onSubmit={async (body) => { await save.mutateAsync({ id: exam?.id, body }); modal.close(); }}
         />
       ),
+    });
+  }
+  function openRetryReview(request: RetryRequest, status: "approved" | "rejected") {
+    modal.open({
+      title: status === "approved" ? "تأیید تلاش مجدد" : "رد درخواست تلاش مجدد",
+      description: request.examTitle || "آزمون",
+      content: <RetryReviewForm status={status} initialNote={request.advisor_note || ""} onCancel={modal.close} onSubmit={async (advisorNote) => { await review.mutateAsync({ id: request.id, status, advisorNote }); modal.close(); }} />,
     });
   }
   function confirmRemove(exam: Exam) {
@@ -138,7 +157,9 @@ export function ExamsPage() {
       .then((ok) => ok && remove.mutate(exam.id));
   }
   async function bulk(action: "publish" | "draft" | "delete") {
-    const ids = [...selected];
+    const blocked = action === "publish" ? selected.filter((id) => !(exams.data || []).find((exam) => exam.id === id)?.delivery?.questionCount) : [];
+    const ids = selected.filter((id) => !blocked.includes(id));
+    if (blocked.length) notify(`${blocked.length} آزمون بدون سؤال منتشر نشد.`, "warning");
     if (!ids.length) return;
     const ok = await modal.confirm({
       title:
@@ -173,8 +194,8 @@ export function ExamsPage() {
             زمان‌بندی، وضعیت، انتشار، تلاش مجدد، بودجه و سؤال‌ها
           </p>
         </div>
-        <div className="flex w-full gap-2 md:w-auto">
-          <div className="min-w-60 flex-1">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex md:w-auto">
+          <div className="col-span-2 min-w-0 flex-1 sm:min-w-60">
             <StudentPicker
               students={students.students}
               value={students.studentId}
@@ -185,6 +206,9 @@ export function ExamsPage() {
             <Plus size={16} />
             آزمون
           </Button>
+          <Button variant="soft" disabled={!students.studentId} onClick={() => modal.open({ title: "سابقه و پاسخ‌های آزمون", size: "xl", content: <ExamAttempts studentId={students.studentId} /> })}>
+            <History size={16} /> سابقه
+          </Button>
           <Button
             variant="soft"
             disabled={!students.studentId}
@@ -194,11 +218,12 @@ export function ExamsPage() {
           </Button>
         </div>
       </header>
-      {retries.data?.length ? (
-        <Card>
-          <h3 className="mb-3 font-bold">درخواست‌های تلاش مجدد</h3>
+      {pendingRetries.length ? (
+        <Card className="border-amber-200 bg-amber-50/50">
+          <details open>
+          <summary className="cursor-pointer font-bold">{pendingRetries.length} درخواست تلاش مجدد در انتظار بررسی</summary>
           <div className="grid gap-2">
-            {retries.data.map((request) => (
+            {pendingRetries.map((request) => (
               <div
                 key={request.id}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3"
@@ -211,34 +236,14 @@ export function ExamsPage() {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    onClick={() =>
-                      void modal.confirm({ title: "تأیید تلاش مجدد؟" }).then(
-                        (ok) =>
-                          ok &&
-                          review.mutate({
-                            id: request.id,
-                            status: "approved",
-                          }),
-                      )
-                    }
+                    onClick={() => openRetryReview(request, "approved")}
                   >
                     <Check size={15} />
                     تأیید
                   </Button>
                   <Button
                     variant="danger"
-                    onClick={() =>
-                      void modal
-                        .confirm({ title: "رد درخواست؟", tone: "danger" })
-                        .then(
-                          (ok) =>
-                            ok &&
-                            review.mutate({
-                              id: request.id,
-                              status: "rejected",
-                            }),
-                        )
-                    }
+                    onClick={() => openRetryReview(request, "rejected")}
                   >
                     <X size={15} />
                     رد
@@ -247,9 +252,10 @@ export function ExamsPage() {
               </div>
             ))}
           </div>
+          </details>
         </Card>
       ) : null}
-      <Card>
+      <Card className="sticky top-16 z-10 shadow-sm">
         <div className="grid gap-2 md:grid-cols-[1fr_180px_180px]">
           <Input
             type="search"
@@ -272,6 +278,13 @@ export function ExamsPage() {
             <option value="published">منتشر</option>
             <option value="draft">پیش‌نویس</option>
           </Select>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+          <Badge tone="blue">{exams.data?.length || 0} کل</Badge>
+          <Badge tone="green">{(exams.data || []).filter((exam) => exam.published).length} منتشر</Badge>
+          <Badge tone="red">{(exams.data || []).filter((exam) => exam.published && !exam.delivery?.questionCount).length} بدون سؤال</Badge>
+          {pendingRetries.length ? <Badge tone="amber">{pendingRetries.length} درخواست</Badge> : null}
+          {(search || status !== "all" || visibility !== "all") ? <Button className="h-7 px-2 text-xs" variant="ghost" onClick={() => { setSearch(""); setStatus("all"); setVisibility("all"); }}><RotateCcw size={13} /> پاک‌کردن فیلترها</Button> : null}
         </div>
         {selected.length ? (
           <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md bg-slate-50 p-2 text-sm">
@@ -340,11 +353,11 @@ export function ExamsPage() {
                 onEdit={() => openEditor(exam)}
                 onDelete={() => confirmRemove(exam)}
                 onToggle={() =>
-                  save.mutate({
-                    id: exam.id,
-                    body: { ...examDraft(exam), published: !exam.published },
-                  })
+                  !exam.published && !exam.delivery?.questionCount
+                    ? notify("برای انتشار، ابتدا حداقل یک سؤال به آزمون اضافه کنید.", "warning")
+                    : togglePublish.mutate({ id: exam.id, published: !exam.published })
                 }
+                toggleBusy={togglePublish.isPending && togglePublish.variables?.id === exam.id}
                 onAddSyllabus={() =>
                   modal.open({
                     title: "افزودن بودجه‌بندی",
@@ -352,11 +365,10 @@ export function ExamsPage() {
                     content: (
                       <SyllabusForm
                         onCancel={modal.close}
-                        onSubmit={(data) =>
-                          void addSyllabus
-                            .mutateAsync({ examId: exam.id, data })
-                            .then(modal.close)
-                        }
+                        onSubmit={async (data) => {
+                          await addSyllabus.mutateAsync({ examId: exam.id, data });
+                          modal.close();
+                        }}
                       />
                     ),
                   })
@@ -385,6 +397,7 @@ function ExamCard({
   onEdit,
   onDelete,
   onToggle,
+  toggleBusy,
   onAddSyllabus,
   onDeleteSyllabus,
   studentId,
@@ -395,11 +408,13 @@ function ExamCard({
   onEdit: () => void;
   onDelete: () => void;
   onToggle: () => void;
+  toggleBusy: boolean;
   onAddSyllabus: () => void;
   onDeleteSyllabus: (id: string) => void;
   studentId: string;
 }) {
   const { formatDate, formatDateTime } = useLocale();
+  const readiness = examReadiness(exam);
   return (
     <article className="rounded-lg border border-slate-200 p-4">
       <div className="flex items-start gap-3">
@@ -415,9 +430,7 @@ function ExamCard({
             {exam.persianDate || formatDate(exam.isoDate)}
           </span>
         </div>
-        <Badge tone={exam.published ? "green" : "amber"}>
-          {exam.published ? "منتشر" : "پیش‌نویس"}
-        </Badge>
+        <Badge tone={readiness.tone}>{readiness.label}</Badge>
       </div>
       <div className="mt-3 grid grid-cols-4 gap-2 text-center text-xs">
         <Metric label="وضعیت" value={statusLabel(exam.status)} />
@@ -438,20 +451,22 @@ function ExamCard({
             سؤال‌ها
           </Button>
         </Link>
-        <Button className="h-8 px-2 text-xs" variant="ghost" onClick={onToggle}>
+        <Button className="h-8 px-2 text-xs" variant="ghost" loading={toggleBusy} onClick={onToggle}>
           {exam.published ? "پیش‌نویس" : "انتشار"}
         </Button>
         <Button className="h-8 px-2" variant="danger" onClick={onDelete}>
           <Trash2 size={14} />
         </Button>
       </div>
-      <div className="mt-3 border-t pt-3">
-        <div className="mb-2 flex justify-between">
-          <strong className="text-xs">بودجه‌بندی</strong>
-          <button className="text-xs text-brand" onClick={onAddSyllabus}>
+      {exam.published && !exam.delivery?.questionCount ? <p className="mt-3 rounded-md bg-rose-50 p-2 text-xs text-rose-700">این آزمون منتشر شده اما هیچ سؤالی ندارد؛ برای دانش‌آموز آماده نیست.</p> : null}
+      <details className="mt-3 border-t pt-3">
+        <summary className="flex cursor-pointer list-none justify-between">
+          <strong className="text-xs">بودجه‌بندی ({exam.syllabus?.length || 0})</strong>
+          <button type="button" className="text-xs text-brand" onClick={(event) => { event.preventDefault(); onAddSyllabus(); }}>
             + افزودن
           </button>
-        </div>
+        </summary>
+        <div className="mt-2">
         {exam.syllabus?.map((item) => (
           <div
             key={item.id}
@@ -469,28 +484,34 @@ function ExamCard({
             </button>
           </div>
         ))}
-      </div>
+        {!exam.syllabus?.length ? <p className="rounded bg-slate-50 p-2 text-xs text-slate-500">بودجه‌بندی ثبت نشده است.</p> : null}
+        </div>
+      </details>
     </article>
   );
 }
 function ExamForm({
   initial,
-  busy,
   onSubmit,
   onCancel,
 }: {
   initial: ExamDraft;
-  busy: boolean;
-  onSubmit: (data: ExamDraft) => void;
+  onSubmit: (data: ExamDraft) => Promise<void>;
   onCancel: () => void;
 }) {
   const [data, setData] = useState(initial);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const error = examDraftError(data);
   return (
     <form
       className="grid gap-3"
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit(data);
+        setSubmitted(true);
+        if (error) return;
+        setSubmitting(true);
+        void onSubmit({ ...data, title: data.title.trim(), note: data.note.trim(), instructions: data.instructions.trim() }).finally(() => setSubmitting(false));
       }}
     >
       <div className="grid gap-3 sm:grid-cols-2">
@@ -512,7 +533,7 @@ function ExamForm({
           <DatePicker
             required
             value={data.isoDate}
-            onChange={(isoDate) => setData({ ...data, isoDate })}
+            onChange={(isoDate) => setData({ ...data, isoDate, persianDate: persianDateForIso(isoDate), openAt: replaceIsoDay(data.openAt, isoDate), closeAt: replaceIsoDay(data.closeAt, isoDate) })}
           />
         </Field>
         <Field label="وضعیت">
@@ -590,11 +611,12 @@ function ExamForm({
           onChange={(e) => setData({ ...data, instructions: e.target.value })}
         />
       </Field>
+      {submitted && error ? <p role="alert" className="rounded-md bg-rose-50 p-2 text-sm text-rose-700">{error}</p> : null}
       <div className="flex justify-end gap-2">
         <Button type="button" variant="soft" onClick={onCancel}>
           انصراف
         </Button>
-        <Button loading={busy}>ذخیره آزمون</Button>
+        <Button loading={submitting}>ذخیره آزمون</Button>
       </div>
     </form>
   );
@@ -609,7 +631,7 @@ function SyllabusForm({
   onSubmit,
   onCancel,
 }: {
-  onSubmit: (data: SyllabusDraft) => void;
+  onSubmit: (data: SyllabusDraft) => Promise<void>;
   onCancel: () => void;
 }) {
   const [data, setData] = useState<SyllabusDraft>({
@@ -618,12 +640,15 @@ function SyllabusForm({
     track: "",
     required: true,
   });
+  const [submitting, setSubmitting] = useState(false);
   return (
     <form
       className="grid gap-3"
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit(data);
+        if (!data.subject.trim() || !data.description.trim()) return;
+        setSubmitting(true);
+        void onSubmit({ ...data, subject: data.subject.trim(), description: data.description.trim(), track: data.track.trim() }).finally(() => setSubmitting(false));
       }}
     >
       <Field label="درس">
@@ -659,7 +684,7 @@ function SyllabusForm({
         <Button type="button" variant="soft" onClick={onCancel}>
           انصراف
         </Button>
-        <Button>افزودن</Button>
+        <Button loading={submitting}>افزودن</Button>
       </div>
     </form>
   );
@@ -672,21 +697,25 @@ function Metric({ label, value }: { label: string; value: string | number }) {
     </div>
   );
 }
-function examDraft(exam?: Exam): ExamDraft {
-  const day = exam?.isoDate || new Date().toISOString().slice(0, 10);
-  return {
-    title: exam?.title || "",
-    persianDate: exam?.persianDate || "",
-    isoDate: day,
-    openAt: exam?.openAt || `${day}T08:00:00+03:30`,
-    closeAt: exam?.closeAt || `${day}T13:00:00+03:30`,
-    durationMinutes: exam?.durationMinutes || 120,
-    maxAttempts: exam?.maxAttempts || 1,
-    status: exam?.status || "upcoming",
-    published: exam?.published ?? false,
-    note: exam?.note || "",
-    instructions: exam?.instructions || "",
-  };
+function RetryReviewForm({ status, initialNote, onSubmit, onCancel }: { status: "approved" | "rejected"; initialNote: string; onSubmit: (note: string) => Promise<void>; onCancel: () => void }) {
+  const [note, setNote] = useState(initialNote);
+  const [submitting, setSubmitting] = useState(false);
+  const invalid = status === "rejected" && !note.trim();
+  return <form className="grid gap-3" onSubmit={(event) => { event.preventDefault(); if (invalid) return; setSubmitting(true); void onSubmit(note.trim()).finally(() => setSubmitting(false)); }}>
+    <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">{status === "approved" ? "با تأیید، دانش‌آموز می‌تواند یک تلاش تازه برای این آزمون آغاز کند." : "دلیل رد برای ثبت سابقه و اطلاع‌رسانی روشن لازم است."}</p>
+    <Field label={status === "approved" ? "یادداشت مشاور (اختیاری)" : "دلیل رد درخواست"} error={invalid ? "برای رد درخواست، دلیل را وارد کنید." : undefined}>
+      <Textarea autoFocus rows={4} maxLength={1200} value={note} onChange={(event) => setNote(event.target.value)} />
+    </Field>
+    <small className="text-left text-slate-400">{note.length.toLocaleString("fa-IR")} / ۱۲۰۰</small>
+    <div className="flex justify-end gap-2"><Button type="button" variant="soft" onClick={onCancel}>انصراف</Button><Button variant={status === "rejected" ? "danger" : "primary"} disabled={invalid} loading={submitting}>{status === "approved" ? "تأیید تلاش" : "رد درخواست"}</Button></div>
+  </form>;
+}
+function persianDateForIso(isoDate: string) {
+  if (!isoDate) return "";
+  return new Intl.DateTimeFormat("fa-IR-u-ca-persian", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(`${isoDate}T12:00:00`));
+}
+function replaceIsoDay(value: string, isoDate: string) {
+  return /^\d{4}-\d{2}-\d{2}/.test(value) ? value.replace(/^\d{4}-\d{2}-\d{2}/, isoDate) : value;
 }
 function statusLabel(status?: Exam["status"]) {
   return (
