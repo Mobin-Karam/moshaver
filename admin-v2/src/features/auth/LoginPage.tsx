@@ -6,7 +6,6 @@ import {
   EyeOff,
   LockKeyhole,
   RefreshCw,
-  Server,
   WifiOff,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -14,7 +13,8 @@ import { useForm } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { Button, Card, Field, Input } from "../../components/ui";
-import { api, getBackendTargetUrl, request } from "../../services/api";
+import { request } from "../../services/api";
+import { DevBackendSwitcher } from "../../components/DevBackendSwitcher";
 import { useAuth } from "./AuthProvider";
 
 const schema = z.object({
@@ -97,15 +97,9 @@ export function LoginPage() {
             <RefreshCw size={15} />
           </button>
         </div>
-        {import.meta.env.DEV ? (
-          <p
-            className="mb-4 flex items-center gap-2 rounded-md bg-slate-50 p-2 text-xs text-slate-500"
-            dir="ltr"
-          >
-            <Server size={14} />
-            {getBackendTargetUrl()}
-          </p>
-        ) : null}
+        <div className="mb-4 flex min-w-0 justify-end">
+          <DevBackendSwitcher />
+        </div>
         <form
           className="grid gap-4"
           onSubmit={handleSubmit(async (data) => {

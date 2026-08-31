@@ -16,6 +16,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { Button } from "./ui";
 import { useAuth } from "../features/auth/AuthProvider";
 import { useModal } from "./modal";
+import { DevBackendSwitcher } from "./DevBackendSwitcher";
 
 const nav = [
   ["", "داشبورد", LayoutDashboard],
@@ -60,31 +61,37 @@ export function AdminLayout() {
         </nav>
       </aside>
       <div className="lg:mr-64">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur">
-          <div>
-            <strong>
+        <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between gap-2 border-b border-slate-200 bg-white/90 px-3 py-2 backdrop-blur sm:px-4">
+          <div className="min-w-0">
+            <strong className="block truncate text-sm sm:text-base">
               {auth.user?.displayName || auth.user?.display_name || "مشاور"}
             </strong>
-            <p className="text-xs text-slate-500">نقش: مدیر</p>
+            <p className="hidden text-xs text-slate-500 sm:block">نقش: مدیر</p>
           </div>
-          <Button
-            variant="soft"
-            onClick={() =>
-              void modal
-                .confirm({
-                  title: "خروج از پنل؟",
-                  description: "نشست این دستگاه بسته می‌شود.",
-                  confirmLabel: "خروج",
-                  tone: "danger",
-                })
-                .then((confirmed) => {
-                  if (confirmed) void auth.logout();
-                })
-            }
-          >
-            <LogOut size={16} />
-            خروج
-          </Button>
+          <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+            <DevBackendSwitcher />
+            <Button
+              className="h-9 shrink-0 px-2 sm:px-3"
+              variant="soft"
+              title="خروج از پنل"
+              aria-label="خروج از پنل"
+              onClick={() =>
+                void modal
+                  .confirm({
+                    title: "خروج از پنل؟",
+                    description: "نشست این دستگاه بسته می‌شود.",
+                    confirmLabel: "خروج",
+                    tone: "danger",
+                  })
+                  .then((confirmed) => {
+                    if (confirmed) void auth.logout();
+                  })
+              }
+            >
+              <LogOut size={16} />
+              <span className="hidden sm:inline">خروج</span>
+            </Button>
+          </div>
         </header>
         <nav className="sticky top-16 z-10 flex gap-1 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 lg:hidden">
           {nav.map(([to, label, Icon]) => (

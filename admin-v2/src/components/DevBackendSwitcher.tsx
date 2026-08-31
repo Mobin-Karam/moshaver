@@ -29,13 +29,14 @@ export function DevBackendSwitcher() {
 
   return (
     <div
-      className="fixed bottom-4 left-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-md border border-slate-200 bg-white p-2 text-xs shadow-lg"
+      className="flex min-w-0 items-center gap-1 rounded-md border border-slate-200 bg-slate-50 p-1 text-xs sm:gap-1.5"
       dir="ltr"
+      title={`Backend: ${labelFor(selected)}`}
     >
-      <Server size={16} className="shrink-0 text-slate-500" />
+      <Server size={15} className="hidden shrink-0 text-slate-500 sm:block" />
       <Select
         aria-label="Backend server"
-        className="h-8 w-40 text-xs"
+        className="h-8 w-[7.25rem] border-0 bg-transparent px-1 text-[11px] sm:w-36 sm:text-xs"
         value={selected}
         onChange={(event) => {
           const next = event.target.value as BackendTarget | "";
@@ -49,11 +50,11 @@ export function DevBackendSwitcher() {
           </option>
         ))}
       </Select>
-      <span className="hidden max-w-64 truncate text-slate-500 md:block">
+      <span className="hidden max-w-52 truncate text-slate-500 2xl:block">
         {labelFor(selected)}
       </span>
       <Button
-        className="h-8 px-2"
+        className="h-8 shrink-0 px-2"
         variant="soft"
         title="Reload with selected backend"
         onClick={() => window.location.reload()}
