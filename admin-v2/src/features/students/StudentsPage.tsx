@@ -11,7 +11,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Card, EmptyState, Field, Input, Button } from "../../components/ui";
 import { useStudents } from "../../hooks/useStudents";
 import { api } from "../../services/api";
@@ -31,8 +31,11 @@ type StudentForm = {
 };
 
 export function StudentsPage() {
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
-  const [selectedId, setSelectedId] = useState("");
+  const [selectedId, setSelectedId] = useState(
+    () => searchParams.get("studentId") || "",
+  );
   const [form, setForm] = useState<StudentForm>(emptyForm());
   const { students } = useStudents();
   const qc = useQueryClient();

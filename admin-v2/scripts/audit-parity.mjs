@@ -8,7 +8,7 @@ const source = walk(src).map((file) => readFileSync(file, "utf8")).join("\n");
 const contracts = {
   auth: ["/auth/login", "/auth/logout", "/auth/me", "/auth/change-password", "/auth/sessions"],
   dashboard: ["/admin/students/${students.studentId}/overview", "/admin/advisor-inbox", "/admin/chat/conversations"],
-  live: ["/admin/live?studentId=", "api.openEvents"],
+  live: ["/admin/realtime/students?limit=100", "api.openEvents"],
   chat: ["/chat/conversations/${active.id}/messages", "/chat/conversations/${active?.id}/read"],
   planner: ["/admin/plans", "/admin/plans/publish-range", "/admin/tasks/${id}", "/admin/import/preview", "/admin/import/commit", "/admin/import/template", "/admin/export/json"],
   exams: ["/admin/exams", "/admin/exam-attempt-requests", "/admin/syllabus/${id}", "/admin/exams/${examId}/syllabus"],

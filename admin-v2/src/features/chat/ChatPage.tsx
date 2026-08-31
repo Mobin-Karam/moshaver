@@ -15,6 +15,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Badge, Card, EmptyState, Textarea } from "../../components/ui";
 import { api } from "../../services/api";
 import type { ChatMessage, Conversation } from "../../types/domain";
@@ -27,6 +28,8 @@ type MessagePage = {
 };
 
 export function ChatPage() {
+  const [searchParams] = useSearchParams();
+  const requestedStudentId = searchParams.get("studentId") || "";
   const [conversationId, setConversationId] = useState("");
   const [text, setText] = useState("");
   const [search, setSearch] = useState("");
@@ -47,9 +50,12 @@ export function ChatPage() {
   const active = useMemo(
     () =>
       filtered.find((c) => c.id === conversationId) ??
+      conversations.data?.find(
+        (c) => String(c.student?.id || "") === requestedStudentId,
+      ) ??
       filtered[0] ??
       conversations.data?.[0],
-    [conversationId, conversations.data, filtered],
+    [conversationId, conversations.data, filtered, requestedStudentId],
   );
   const messages = useQuery({
     queryKey: ["chat-messages", active?.id],
