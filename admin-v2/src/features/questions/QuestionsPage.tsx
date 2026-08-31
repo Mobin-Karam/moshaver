@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, ListChecks, Pencil, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { CheckCircle2, ListChecks, Pencil, Search, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Button,
@@ -14,35 +14,35 @@ import {
 import { api } from "../../services/api";
 import type { Exam } from "../../types/domain";
 import { useModal } from "../../components/modal";
+import { notify } from "../../components/toast";
+import { emptyQuestion, questionDraft, questionError, questionMatches, type QuestionView } from "./question-model";
+import { StudentPicker } from "../../components/StudentPicker";
+import { useStudents } from "../../hooks/useStudents";
 
 export function QuestionsPage() {
   const [params, setParams] = useSearchParams();
+  const students = useStudents();
   const [examId, setExamIdState] = useState(params.get("examId") || "");
   const [editingId, setEditingId] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
-  const emptyForm = () => ({
-    question: "",
-    options: ["", "", "", ""],
-    correctOption: "a",
-    explanation: "",
-    book: "",
-    chapter: "",
-    lesson: "",
-    topic: "",
-    hint: "",
-    sortOrder: 1,
-  });
-  const [form, setForm] = useState(emptyForm);
+  const [search, setSearch] = useState("");
+  const [form, setForm] = useState(emptyQuestion);
   const qc = useQueryClient();
   const modal = useModal();
+  useEffect(() => {
+    const studentId = params.get("studentId");
+    if (studentId) students.setStudentId(studentId);
+  }, [params.get("studentId")]);
+  useEffect(() => setExamIdState(params.get("examId") || ""), [params.get("examId")]);
   const exams = useQuery({
-    queryKey: ["exams-all"],
-    queryFn: () => api.get<Exam[]>("/admin/exams"),
+    queryKey: ["exams-all", students.studentId],
+    enabled: !!students.studentId,
+    queryFn: () => api.get<Exam[]>(`/admin/exams?studentId=${encodeURIComponent(students.studentId)}`),
   });
   const questions = useQuery({
     queryKey: ["exam-questions", examId],
     enabled: !!examId,
-    queryFn: () => api.get<unknown[]>(`/admin/exams/${examId}/questions`),
+    queryFn: () => api.get<QuestionView[]>(`/admin/exams/${examId}/questions`),
   });
   const add = useMutation({
     mutationFn: () =>
@@ -50,8 +50,9 @@ export function QuestionsPage() {
         ? api.patch(`/admin/questions/${editingId}`, form)
         : api.post(`/admin/exams/${examId}/questions`, form),
     onSuccess: () => {
-      setForm(emptyForm());
+      setForm(emptyQuestion());
       setEditingId("");
+      notify(editingId ? "سؤال ویرایش شد." : "سؤال افزوده شد.");
       qc.invalidateQueries({ queryKey: ["exam-questions", examId] });
     },
   });
@@ -61,6 +62,8 @@ export function QuestionsPage() {
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: ["exam-questions", examId] }),
   });
+  const visibleQuestions = (questions.data ?? []).filter((item) => questionMatches(item, search));
+  const validationError = questionError(form);
   return (
     <div className="grid gap-5">
       <div>
@@ -70,12 +73,16 @@ export function QuestionsPage() {
         </p>
       </div>
       <Card>
+        <div className="grid gap-3 md:grid-cols-2">
+        <Field label="دانش‌آموز">
+          <StudentPicker students={students.students} value={students.studentId} onChange={(studentId) => { students.setStudentId(studentId); setExamIdState(""); setParams((current) => { current.set("studentId", studentId); current.delete("examId"); return current; }); }} />
+        </Field>
         <Field label="آزمون">
           <Select
             value={examId}
             onChange={(e) => {
               setExamIdState(e.target.value);
-              setParams(e.target.value ? { examId: e.target.value } : {});
+              setParams((current) => { e.target.value ? current.set("examId", e.target.value) : current.delete("examId"); current.set("studentId", students.studentId); return current; });
               setSelected([]);
             }}
           >
@@ -87,6 +94,7 @@ export function QuestionsPage() {
             ))}
           </Select>
         </Field>
+        </div>
       </Card>
       <section className="grid gap-4 lg:grid-cols-[420px_minmax(0,1fr)]">
         <Card>
@@ -100,7 +108,7 @@ export function QuestionsPage() {
                 variant="ghost"
                 onClick={() => {
                   setEditingId("");
-                  setForm(emptyForm());
+                  setForm(emptyQuestion());
                 }}
               >
                 انصراف
@@ -202,8 +210,7 @@ export function QuestionsPage() {
               disabled={
                 !examId ||
                 add.isPending ||
-                !form.question.trim() ||
-                form.options.some((x) => !x.trim())
+                !!validationError
               }
               onClick={() => add.mutate()}
             >
@@ -216,7 +223,7 @@ export function QuestionsPage() {
             <ListChecks size={18} />
             <h3 className="font-bold">سؤال‌های آزمون</h3>
             <span className="mr-auto text-xs text-slate-500">
-              {questions.data?.length || 0} سؤال
+              {visibleQuestions.length} از {questions.data?.length || 0} سؤال
             </span>
             {selected.length ? (
               <Button
@@ -231,12 +238,14 @@ export function QuestionsPage() {
                     })
                     .then(async (ok) => {
                       if (!ok) return;
-                      await Promise.allSettled(
+                      const results = await Promise.allSettled(
                         selected.map((id) =>
                           api.delete(`/admin/exams/${examId}/questions/${id}`),
                         ),
                       );
-                      setSelected([]);
+                      const failed = selected.filter((_, index) => results[index]?.status === "rejected");
+                      setSelected(failed);
+                      failed.length ? notify(`${failed.length} سؤال حذف نشد و همچنان انتخاب است.`, "warning") : notify("سؤال‌های انتخاب‌شده حذف شدند.");
                       void qc.invalidateQueries({
                         queryKey: ["exam-questions", examId],
                       });
@@ -247,9 +256,14 @@ export function QuestionsPage() {
               </Button>
             ) : null}
           </div>
-          {questions.data?.length ? (
+          {examId ? <div className="relative mb-3"><Search className="absolute right-3 top-2.5 text-slate-400" size={16} /><Input className="pr-9" type="search" placeholder="جست‌وجو در متن، مبحث یا گزینه‌ها…" value={search} onChange={(event) => setSearch(event.target.value)} /></div> : null}
+          {questions.isLoading ? (
+            <div className="grid gap-2" aria-label="در حال دریافت سؤال‌ها">{[1, 2, 3].map((item) => <div key={item} className="h-24 animate-pulse rounded-md bg-slate-100" />)}</div>
+          ) : questions.isError ? (
+            <EmptyState title="دریافت سؤال‌ها ناموفق بود؛ اتصال را بررسی و دوباره تلاش کنید." />
+          ) : visibleQuestions.length ? (
             <div className="grid gap-3">
-              {(questions.data as QuestionView[]).map((question, index) => (
+              {visibleQuestions.map((question, index) => (
                 <article
                   key={question.id || index}
                   className="rounded-md border border-slate-200 p-3"
@@ -377,50 +391,6 @@ export function QuestionsPage() {
 
   function editQuestion(question: QuestionView, index: number) {
     setEditingId(question.id || "");
-    setForm({
-      question:
-        question.question || question.question_text || question.text || "",
-      options: question.options || [
-        question.option_a || "",
-        question.option_b || "",
-        question.option_c || "",
-        question.option_d || "",
-      ],
-      correctOption:
-        question.correctOption ||
-        question.correct_option ||
-        question.correctAnswer ||
-        "a",
-      explanation: question.explanation || "",
-      book: question.book || "",
-      chapter: question.chapter || "",
-      lesson: question.lesson || "",
-      topic: question.topic || "",
-      hint: question.hint || "",
-      sortOrder: question.sort_order || index + 1,
-    });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setForm(questionDraft(question, index));
   }
 }
-
-type QuestionView = {
-  id?: string;
-  text?: string;
-  question?: string;
-  question_text?: string;
-  options?: string[];
-  option_a?: string;
-  option_b?: string;
-  option_c?: string;
-  option_d?: string;
-  correctAnswer?: string;
-  correctOption?: string;
-  correct_option?: string;
-  explanation?: string;
-  book?: string;
-  chapter?: string;
-  lesson?: string;
-  topic?: string;
-  hint?: string;
-  sort_order?: number;
-};

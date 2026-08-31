@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Power, Save } from "lucide-react";
+import { CheckCircle2, Pencil, Power, Save, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Badge,
@@ -13,6 +13,8 @@ import {
 } from "../../components/ui";
 import { api } from "../../services/api";
 import { useModal } from "../../components/modal";
+import { notify } from "../../components/toast";
+import { emptyQuestion, questionDraft, questionError, questionMatches, type QuestionView } from "../questions/question-model";
 
 type Quiz = {
   id: string;
@@ -21,32 +23,22 @@ type Quiz = {
   duration_minutes?: number;
   active?: number | boolean;
   exam_id?: string;
+  exam_title?: string;
+  question_count?: number;
 };
-type Question = {
-  id: string;
-  question_text?: string;
-  question?: string;
-  option_a?: string;
-  option_b?: string;
-  option_c?: string;
-  option_d?: string;
-  correct_option?: string;
-};
+type Question = QuestionView & { id: string };
 
 export function QuizzesPage() {
   const qc = useQueryClient();
   const [quizId, setQuizId] = useState("");
+  const [editingQuestionId, setEditingQuestionId] = useState("");
+  const [search, setSearch] = useState("");
   const [quiz, setQuiz] = useState({
     title: "",
     subject: "",
     durationMinutes: 20,
   });
-  const [question, setQuestion] = useState({
-    question: "",
-    options: ["", "", "", ""],
-    correctOption: "a",
-    explanation: "",
-  });
+  const [question, setQuestion] = useState(emptyQuestion);
   const modal = useModal();
   const quizzes = useQuery({
     queryKey: ["quizzes"],
@@ -86,17 +78,16 @@ export function QuizzesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["quizzes"] }),
   });
   const add = useMutation({
-    mutationFn: () => api.post(`/admin/quizzes/${quizId}/questions`, question),
+    mutationFn: () => editingQuestionId ? api.patch(`/admin/questions/${editingQuestionId}`, question) : api.post(`/admin/quizzes/${quizId}/questions`, question),
     onSuccess: () => {
-      setQuestion({
-        question: "",
-        options: ["", "", "", ""],
-        correctOption: "a",
-        explanation: "",
-      });
+      notify(editingQuestionId ? "سؤال آزمونک ویرایش شد." : "سؤال آزمونک افزوده شد.");
+      setQuestion(emptyQuestion());
+      setEditingQuestionId("");
       qc.invalidateQueries({ queryKey: ["quiz-questions", quizId] });
     },
   });
+  const visibleQuestions = (questions.data ?? []).filter((item) => questionMatches(item, search));
+  const validationError = questionError(question);
   const remove = useMutation({
     mutationFn: (id: string) => api.delete(`/admin/questions/${id}`),
     onSuccess: () =>
@@ -122,7 +113,11 @@ export function QuizzesPage() {
           >
             آزمونک جدید
           </Button>
-          {quizzes.data?.length ? (
+          {quizzes.isLoading ? (
+            <div className="grid gap-2">{[1,2,3].map((item) => <div key={item} className="h-16 animate-pulse rounded-md bg-slate-100" />)}</div>
+          ) : quizzes.isError ? (
+            <EmptyState title="دریافت آزمونک‌ها ناموفق بود." />
+          ) : quizzes.data?.length ? (
             <div className="grid gap-2">
               {quizzes.data.map((item) => (
                 <button
@@ -137,6 +132,7 @@ export function QuizzesPage() {
                       {item.active ? "فعال" : "غیرفعال"}
                     </Badge>
                   </span>
+                  <span className="mt-1 block text-xs text-slate-400">{item.question_count || 0} سؤال{item.exam_title ? ` • ${item.exam_title}` : ""}</span>
                 </button>
               ))}
             </div>
@@ -211,7 +207,7 @@ export function QuizzesPage() {
           {quizId ? (
             <section className="grid gap-4 xl:grid-cols-[380px_1fr]">
               <Card>
-                <h3 className="mb-3 font-bold">سؤال جدید</h3>
+                <div className="mb-3 flex items-center justify-between"><h3 className="font-bold">{editingQuestionId ? "ویرایش سؤال" : "سؤال جدید"}</h3>{editingQuestionId ? <Button className="h-8" variant="ghost" onClick={() => { setEditingQuestionId(""); setQuestion(emptyQuestion()); }}>انصراف</Button> : null}</div>
                 <div className="grid gap-2">
                   <Field label="صورت سؤال">
                     <Textarea
@@ -256,25 +252,25 @@ export function QuizzesPage() {
                   <Button
                     loading={add.isPending}
                     disabled={
-                      !question.question ||
-                      question.options.some((x) => !x) ||
+                      !!validationError ||
                       add.isPending
                     }
                     onClick={() => add.mutate()}
                   >
-                    افزودن سؤال
+                    {editingQuestionId ? "ذخیره تغییرات" : "افزودن سؤال"}
                   </Button>
                 </div>
               </Card>
               <Card>
-                <h3 className="mb-3 font-bold">سؤال‌ها</h3>
-                {questions.data?.length ? (
+                <div className="mb-3 flex items-center justify-between"><h3 className="font-bold">سؤال‌ها</h3><Badge tone="blue">{visibleQuestions.length} سؤال</Badge></div>
+                <div className="relative mb-3"><Search className="absolute right-3 top-2.5 text-slate-400" size={16} /><Input className="pr-9" type="search" placeholder="جست‌وجوی سؤال…" value={search} onChange={(event) => setSearch(event.target.value)} /></div>
+                {questions.isLoading ? <div className="grid gap-2">{[1,2,3].map((item) => <div key={item} className="h-20 animate-pulse rounded-md bg-slate-100" />)}</div> : questions.isError ? <EmptyState title="دریافت سؤال‌ها ناموفق بود." /> : visibleQuestions.length ? (
                   <div className="grid gap-2">
-                    {questions.data.map((item, index) => (
+                    {visibleQuestions.map((item, index) => (
                       <article key={item.id} className="rounded-md border p-3">
                         <div className="flex justify-between">
                           <strong>سؤال {index + 1}</strong>
-                          <Button
+                          <div className="flex gap-1"><Button className="h-8 px-2" variant="ghost" onClick={() => { setEditingQuestionId(item.id); setQuestion(questionDraft(item, index)); }}><Pencil size={14} /></Button><Button
                             variant="danger"
                             className="h-8 px-2"
                             onClick={() =>
@@ -294,6 +290,7 @@ export function QuizzesPage() {
                           >
                             حذف
                           </Button>
+                          </div>
                         </div>
                         <p className="mt-2 text-sm">
                           {item.question_text || item.question}

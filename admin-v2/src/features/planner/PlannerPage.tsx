@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { StudentPicker } from "../../components/StudentPicker";
 import { DataTransferWorkspace } from "../../components/data-transfer";
 import { DatePicker } from "../../components/date-picker";
@@ -611,6 +611,7 @@ export function PlannerPage() {
               drawer.plan.tasks.length,
             )}
             exams={exams.data ?? []}
+            studentId={students.studentId}
             busy={saveTask.isPending}
             onCancel={() => setDrawer(null)}
             onSubmit={(body) =>
@@ -1284,12 +1285,14 @@ function PlanForm({
 function TaskForm({
   initial,
   exams,
+  studentId,
   busy,
   onSubmit,
   onCancel,
 }: {
   initial: TaskDraft;
   exams: Exam[];
+  studentId: string;
   busy: boolean;
   onSubmit: (data: TaskDraft) => void;
   onCancel: () => void;
@@ -1374,6 +1377,7 @@ function TaskForm({
           />
         </Field>
         {data.type === "exam" ? (
+          <div className="grid gap-1">
           <Field label="آزمون مرتبط">
             <Select
               value={data.examId}
@@ -1387,6 +1391,8 @@ function TaskForm({
               ))}
             </Select>
           </Field>
+          {data.examId ? <Link className="text-xs font-bold text-brand hover:underline" to={`/admin/questions?examId=${encodeURIComponent(data.examId)}&studentId=${encodeURIComponent(studentId)}`}>بازکردن بانک سؤال این آزمون</Link> : null}
+          </div>
         ) : null}
       </div>
       <Field label="یادداشت">

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Check, Pencil, Plus, Trash2, X } from "lucide-react";
+import { CalendarClock, Check, MoreHorizontal, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { StudentPicker } from "../../components/StudentPicker";
@@ -20,6 +20,8 @@ import {
 import { useStudents } from "../../hooks/useStudents";
 import { api } from "../../services/api";
 import type { Exam } from "../../types/domain";
+import { normalizePersianText } from "../../lib/utils";
+import { notify } from "../../components/toast";
 
 type ExamDraft = {
   title: string;
@@ -101,10 +103,7 @@ export function ExamsPage() {
     () =>
       (exams.data ?? []).filter(
         (exam) =>
-          (!search.trim() ||
-            `${exam.title} ${exam.isoDate} ${exam.persianDate || ""}`
-              .toLowerCase()
-              .includes(search.trim().toLowerCase())) &&
+          (!search.trim() || normalizePersianText(`${exam.title} ${exam.isoDate} ${exam.persianDate || ""}`).toLocaleLowerCase("fa").includes(normalizePersianText(search).trim().toLocaleLowerCase("fa"))) &&
           (status === "all" || exam.status === status) &&
           (visibility === "all" ||
             (visibility === "published") === !!exam.published),
@@ -150,7 +149,7 @@ export function ExamsPage() {
       confirmLabel: action === "delete" ? "حذف همه" : "اعمال",
     });
     if (!ok) return;
-    await Promise.all(
+    const results = await Promise.allSettled(
       ids.map((id) =>
         action === "delete"
           ? api.delete(`/admin/exams/${id}`)
@@ -159,7 +158,9 @@ export function ExamsPage() {
             }),
       ),
     );
-    setSelected([]);
+    const failed = ids.filter((_, index) => results[index]?.status === "rejected");
+    setSelected(failed);
+    failed.length ? notify(`${failed.length} عملیات ناموفق ماند؛ موارد مربوطه همچنان انتخاب هستند.`, "warning") : notify("عملیات گروهی انجام شد.");
     void refresh();
   }
 
@@ -183,6 +184,13 @@ export function ExamsPage() {
           <Button disabled={!students.studentId} onClick={() => openEditor()}>
             <Plus size={16} />
             آزمون
+          </Button>
+          <Button
+            variant="soft"
+            disabled={!students.studentId}
+            onClick={() => modal.open({ title: "ورود و خروج داده آزمون‌ها", size: "xl", content: <DataTransferWorkspace studentId={students.studentId} scope="exams" title="انتقال کامل آزمون‌ها" description="آزمون‌ها را همراه سؤال، پاسخ، توضیح، بودجه‌بندی، زمان‌بندی و محدودیت تلاش بررسی و منتقل کنید." showExamReplacement onImported={() => void refresh()} /> })}
+          >
+            <MoreHorizontal size={16} /> بیشتر
           </Button>
         </div>
       </header>
@@ -292,14 +300,6 @@ export function ExamsPage() {
           </div>
         ) : null}
       </Card>
-      <DataTransferWorkspace
-        studentId={students.studentId}
-        scope="exams"
-        title="انتقال کامل آزمون‌ها"
-        description="آزمون‌ها را همراه سؤال، پاسخ، توضیح، بودجه‌بندی، زمان‌بندی و محدودیت تلاش بررسی و منتقل کنید."
-        showExamReplacement
-        onImported={() => void refresh()}
-      />
       <Card>
         <div className="mb-3 flex items-center justify-between">
           <label className="flex items-center gap-2 text-sm">
@@ -319,7 +319,11 @@ export function ExamsPage() {
           </label>
           <Badge tone="blue">{filtered.length} آزمون</Badge>
         </div>
-        {filtered.length ? (
+        {exams.isLoading ? (
+          <div className="grid gap-3 lg:grid-cols-2" aria-label="در حال دریافت آزمون‌ها">{[1,2,3,4].map((item) => <div key={item} className="h-48 animate-pulse rounded-lg bg-slate-100" />)}</div>
+        ) : exams.isError ? (
+          <EmptyState title="دریافت آزمون‌ها ناموفق بود؛ اتصال را بررسی و دوباره تلاش کنید." />
+        ) : filtered.length ? (
           <div className="grid gap-3 lg:grid-cols-2">
             {filtered.map((exam) => (
               <ExamCard
@@ -362,6 +366,7 @@ export function ExamsPage() {
                     .confirm({ title: "حذف بودجه‌بندی؟", tone: "danger" })
                     .then((ok) => ok && deleteSyllabus.mutate(id))
                 }
+                studentId={students.studentId}
               />
             ))}
           </div>
@@ -382,6 +387,7 @@ function ExamCard({
   onToggle,
   onAddSyllabus,
   onDeleteSyllabus,
+  studentId,
 }: {
   exam: Exam;
   checked: boolean;
@@ -391,6 +397,7 @@ function ExamCard({
   onToggle: () => void;
   onAddSyllabus: () => void;
   onDeleteSyllabus: (id: string) => void;
+  studentId: string;
 }) {
   const { formatDate, formatDateTime } = useLocale();
   return (
@@ -426,7 +433,7 @@ function ExamCard({
           <Pencil size={14} />
           ویرایش
         </Button>
-        <Link to={`/admin/questions?examId=${encodeURIComponent(exam.id)}`}>
+        <Link to={`/admin/questions?examId=${encodeURIComponent(exam.id)}&studentId=${encodeURIComponent(studentId)}`}>
           <Button className="h-8 px-2 text-xs" variant="soft">
             سؤال‌ها
           </Button>
