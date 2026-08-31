@@ -273,6 +273,8 @@ function createImportsValidation(deps) {
         options: {
           replaceExistingPlans: !!body.replaceExistingPlans,
           replaceExistingExams: !!body.replaceExistingExams,
+          skipExistingPlans: !!body.skipExistingPlans,
+          skipExistingExams: !!body.skipExistingExams,
           publishImported: !!body.publishImported,
           sourceName: str(body.sourceName, 200),
         },

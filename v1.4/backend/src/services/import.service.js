@@ -42,6 +42,8 @@ function createImportService(deps) {
     var createdTasks = 0;
     var createdExams = 0;
     var createdQuestions = 0;
+    var skippedPlans = 0;
+    var skippedExams = 0;
     var examRefMap = {};
     db.exec("BEGIN IMMEDIATE");
     try {
@@ -51,6 +53,13 @@ function createImportService(deps) {
           .get(studentId, exam.title, exam.isoDate);
         var examId;
         if (existing) {
+          if (opts.skipExistingExams) {
+            skippedExams++;
+            examId = existing.id;
+            if (exam.ref) examRefMap[exam.ref] = examId;
+            examRefMap[exam.isoDate + "|" + exam.title] = examId;
+            return;
+          }
           if (!opts.replaceExistingExams) throw new Error("EXAM_EXISTS:" + exam.title);
           examId = existing.id;
           db.prepare(
@@ -119,6 +128,10 @@ function createImportService(deps) {
           .prepare("SELECT id FROM plans WHERE student_id=? AND plan_date=?")
           .get(studentId, plan.planDate);
         if (existing) {
+          if (opts.skipExistingPlans) {
+            skippedPlans++;
+            return;
+          }
           if (!opts.replaceExistingPlans) throw new Error("PLAN_EXISTS:" + plan.planDate);
           var progress = db.prepare(
             "SELECT COUNT(*) AS n FROM tasks t WHERE t.plan_id=? AND (EXISTS(SELECT 1 FROM task_completions tc WHERE tc.task_id=t.id) OR EXISTS(SELECT 1 FROM study_sessions ss WHERE ss.task_id=t.id))",
@@ -214,6 +227,8 @@ function createImportService(deps) {
         tasks: createdTasks,
         exams: createdExams,
         questions: createdQuestions,
+        skippedPlans: skippedPlans,
+        skippedExams: skippedExams,
         published: !!opts.publishImported,
       });
       return {
@@ -223,6 +238,8 @@ function createImportService(deps) {
         tasks: createdTasks,
         exams: createdExams,
         questions: createdQuestions,
+        skippedPlans: skippedPlans,
+        skippedExams: skippedExams,
         published: !!opts.publishImported,
       };
     } catch (error) {

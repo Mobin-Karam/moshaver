@@ -4,13 +4,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Copy,
-  FileJson,
   Pencil,
   Plus,
   Trash2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { StudentPicker } from "../../components/StudentPicker";
+import { DataTransferWorkspace } from "../../components/data-transfer";
 import { DatePicker } from "../../components/date-picker";
 import { useLocale } from "../../components/locale";
 import { useModal } from "../../components/modal";
@@ -58,10 +58,7 @@ export function PlannerPage() {
     modal = useModal(),
     qc = useQueryClient();
   const [date, setDate] = useState(todayIso()),
-    [mode, setMode] = useState<Mode>("week"),
-    [json, setJson] = useState("");
-  const [replacePlans, setReplacePlans] = useState(false),
-    [replaceExams, setReplaceExams] = useState(false);
+    [mode, setMode] = useState<Mode>("week");
   const range = useMemo(() => plannerRange(date, mode), [date, mode]);
   const plans = useQuery({
     queryKey: ["plans", students.studentId, range.from, range.to],
@@ -127,25 +124,6 @@ export function PlannerPage() {
         studentId: students.studentId,
         ...range,
         published,
-      }),
-    onSuccess: refresh,
-  });
-  const preview = useMutation({
-    mutationFn: (data: unknown) =>
-      api.post<PlannerImportPreview>("/admin/import/preview", {
-        studentId: students.studentId,
-        data,
-      }),
-  });
-  const commit = useMutation({
-    mutationFn: ({ data, published }: { data: unknown; published: boolean }) =>
-      api.post("/admin/import/commit", {
-        studentId: students.studentId,
-        data,
-        publishImported: published,
-        replaceExistingPlans: replacePlans,
-        replaceExistingExams: replaceExams,
-        sourceName: `Admin v2 ${new Date().toISOString()}`,
       }),
     onSuccess: refresh,
   });
@@ -217,18 +195,6 @@ export function PlannerPage() {
       .confirm({ title, description, tone: "danger", confirmLabel: "حذف" })
       .then((ok) => ok && action());
   }
-  function parse(action: (data: unknown) => void) {
-    try {
-      action(JSON.parse(json));
-    } catch {
-      modal.open({
-        title: "JSON معتبر نیست",
-        description: "ساختار فایل، کوتیشن‌ها و ویرگول‌ها را بررسی کنید.",
-        tone: "danger",
-      });
-    }
-  }
-
   return (
     <div className="grid gap-5">
       <header className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
@@ -374,214 +340,17 @@ export function PlannerPage() {
           }
         />
       </Card>
-      <Card>
-        <div className="mb-3 flex items-center gap-2">
-          <FileJson size={18} />
-          <h3 className="font-bold">ورود و خروج JSON</h3>
-        </div>
-        <div className="grid gap-3">
-          <Field label="فایل یا متن JSON">
-            <input
-              type="file"
-              accept="application/json,.json"
-              className="text-sm"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file)
-                  void file.text().then((text) => {
-                    setJson(text);
-                    preview.reset();
-                  });
-              }}
-            />
-            <Textarea
-              rows={8}
-              dir="ltr"
-              value={json}
-              onChange={(e) => {
-                setJson(e.target.value);
-                preview.reset();
-              }}
-            />
-          </Field>
-          <div className="flex flex-wrap gap-4 text-sm">
-            <label>
-              <input
-                type="checkbox"
-                checked={replacePlans}
-                onChange={(e) => setReplacePlans(e.target.checked)}
-              />{" "}
-              جایگزینی برنامه‌های موجود
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                checked={replaceExams}
-                onChange={(e) => setReplaceExams(e.target.checked)}
-              />{" "}
-              جایگزینی آزمون‌های موجود
-            </label>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="soft"
-              loading={preview.isPending}
-              disabled={!json || !students.studentId}
-              onClick={() => parse((data) => preview.mutate(data))}
-            >
-              اعتبارسنجی
-            </Button>
-            <Button
-              loading={commit.isPending}
-              disabled={!preview.data || !!preview.data.errors?.length}
-              onClick={() =>
-                void modal
-                  .confirm({
-                    title: "ثبت داده‌های واردشده؟",
-                    tone: replacePlans || replaceExams ? "danger" : "default",
-                  })
-                  .then(
-                    (ok) =>
-                      ok &&
-                      parse((data) =>
-                        commit.mutate({ data, published: false }),
-                      ),
-                  )
-              }
-            >
-              ثبت پیش‌نویس
-            </Button>
-            <Button
-              loading={commit.isPending}
-              disabled={!preview.data || !!preview.data.errors?.length}
-              onClick={() =>
-                void modal
-                  .confirm({
-                    title: "ثبت و انتشار داده‌های واردشده؟",
-                    tone: replacePlans || replaceExams ? "danger" : "default",
-                  })
-                  .then(
-                    (ok) =>
-                      ok &&
-                      parse((data) => commit.mutate({ data, published: true })),
-                  )
-              }
-            >
-              ثبت و انتشار
-            </Button>
-            <Button
-              variant="ghost"
-              disabled={!students.studentId}
-              onClick={() =>
-                void downloadJson(
-                  `/admin/import/template?studentId=${encodeURIComponent(students.studentId)}&scope=all`,
-                  "moshaver-template.json",
-                )
-              }
-            >
-              دانلود قالب
-            </Button>
-            <Button
-              variant="ghost"
-              disabled={!students.studentId}
-              onClick={() =>
-                void downloadJson(
-                  `/admin/export/json?studentId=${encodeURIComponent(students.studentId)}&from=${range.from}&to=${range.to}&scope=all`,
-                  `moshaver-${range.from}-${range.to}.json`,
-                )
-              }
-            >
-              خروجی بازه
-            </Button>
-          </div>
-          {preview.data ? (
-            <PlannerImportPreviewView preview={preview.data} />
-          ) : null}
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-type PlannerImportPreview = {
-  summary?: {
-    plans?: number;
-    tasks?: number;
-    exams?: number;
-    questions?: number;
-    conflicts?: number;
-  };
-  errors?: string[];
-  warnings?: string[];
-  conflicts?: string[];
-};
-function PlannerImportPreviewView({
-  preview,
-}: {
-  preview: PlannerImportPreview;
-}) {
-  const summary = preview.summary || {};
-  return (
-    <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
-      <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
-        {[
-          ["برنامه", summary.plans],
-          ["فعالیت", summary.tasks],
-          ["آزمون", summary.exams],
-          ["سؤال", summary.questions],
-          ["تداخل", summary.conflicts],
-        ].map(([label, value]) => (
-          <div key={String(label)} className="rounded-md bg-white p-2">
-            <span className="block text-xs text-slate-500">{label}</span>
-            <strong>{fa(value || 0)}</strong>
-          </div>
-        ))}
-      </div>
-      {preview.errors?.length ? (
-        <PlannerMessageList
-          title="خطاها؛ ثبت غیرفعال است"
-          items={preview.errors}
-          tone="text-rose-700"
-        />
-      ) : (
-        <p className="font-semibold text-emerald-700">
-          ساختار معتبر است و برای ثبت آماده است.
-        </p>
-      )}
-      {preview.warnings?.length ? (
-        <PlannerMessageList
-          title="هشدارها"
-          items={preview.warnings}
-          tone="text-amber-700"
-        />
-      ) : null}
-      {preview.conflicts?.length ? (
-        <PlannerMessageList
-          title="تداخل زمانی"
-          items={preview.conflicts}
-          tone="text-amber-700"
-        />
-      ) : null}
-    </div>
-  );
-}
-function PlannerMessageList({
-  title,
-  items,
-  tone,
-}: {
-  title: string;
-  items: string[];
-  tone: string;
-}) {
-  return (
-    <div className={tone}>
-      <strong>{title}</strong>
-      <ul className="mt-1 list-inside list-disc leading-6">
-        {items.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
+      <DataTransferWorkspace
+        studentId={students.studentId}
+        scope="all"
+        title="انتقال برنامه‌ها و آزمون‌های مرتبط"
+        description="فایل برنامه را بدون درگیری با متن خام JSON بررسی، رفع تداخل و ثبت کنید؛ خروجی بازه نیز تمام پیوندهای آزمون را حفظ می‌کند."
+        exportFrom={range.from}
+        exportTo={range.to}
+        showPlanReplacement
+        showExamReplacement
+        onImported={() => void refresh()}
+      />
     </div>
   );
 }
@@ -1107,15 +876,4 @@ export function planWarnings(plans: Plan[]) {
       warnings.push(`${plan.planDate}: حجم برنامه بیش از ۸ ساعت است`);
   });
   return warnings;
-}
-async function downloadJson(path: string, filename: string) {
-  const data = await api.get<unknown>(path),
-    url = URL.createObjectURL(
-      new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
-    ),
-    anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.click();
-  URL.revokeObjectURL(url);
 }
