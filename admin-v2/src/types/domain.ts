@@ -108,4 +108,10 @@ export interface ChatMessage {
   text: string;
   senderRole: Role;
   createdAt?: string;
+  senderUserId?: string;
+  senderName?: string;
+  seen?: boolean;
+  pending?: boolean;
+  editedAt?: string | null;
+  deletedAt?: string | null;
 }
