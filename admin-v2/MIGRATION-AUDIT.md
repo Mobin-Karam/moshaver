@@ -8,9 +8,9 @@ This document is the parity contract for retiring `v1.4/admin-app`. A row is com
 | Dashboard | global counts, selected-student overview, attention inbox, unread chat | dashboard | Re-audit required |
 | Live operations | presence, current task/session, plan progress, study totals, attempt, issues, reviews, event timeline, SSE refresh | live | Re-audit required |
 | Chat | conversation search, thread, send, Enter/Shift+Enter, unread/read state, realtime refresh | chat | Re-audit required |
-| Planner | day/week/month, task CRUD, drafts, publication, JSON preview/commit | planner | Re-audit required |
-| Import/export | safe preview, replacement switches, draft/publish commit, template and range export | planner | Re-audit required |
-| Exams | create/edit/delete, search/filter, bulk actions, publish/status, retry review, syllabus, question management, JSON import/export | exams/questions | Re-audit required |
+| Planner | day/week/month, task CRUD, drafts, publication, JSON preview/commit | planner | Behavior migrated; build and helper tests pass |
+| Import/export | safe preview, replacement switches, draft/publish commit, template and range export | planner | Behavior migrated; target browser smoke pending |
+| Exams | create/edit/delete, search/filter, bulk actions, publish/status, retry review, syllabus, question management, JSON import/export | exams/questions | Behavior migrated; target browser smoke pending |
 | Quiz bank | quiz CRUD and question CRUD | questions | Re-audit required |
 | Reports | date/search/sort, study/test/focus/fatigue/motivation/problem presentation | reports | Re-audit required |
 | Students | search/filter/sort/pagination, create/edit, activate/deactivate/archive/restore, reset password, force logout, overview, learning, attempts, weekly/topics | students | Re-audit required |
@@ -28,6 +28,16 @@ This document is the parity contract for retiring `v1.4/admin-app`. A row is com
 - Login/logout events synchronize across tabs, and visible-page restoration refreshes sessions older than 15 seconds.
 - CSRF tokens remain session-scoped and mutating requests retain the one-time CSRF refresh/retry behavior.
 - Backend health/version is visible before login; development credentials and backend controls are development-only.
+
+## Planner and exams evidence
+
+- Planner uses the backend-native `planDate`, `published`, `start`, and `end` fields; day creation no longer sends the incompatible legacy aliases previously used by v2.
+- Day, Saturday-first week, and calendar-month ranges share one source of truth for loading, bulk publication, and range export.
+- Existing plans and tasks can be edited or deleted; plans can be duplicated; exam tasks retain their linked exam; day metadata and motivation text are preserved.
+- Overlap, post-22:30, and over-eight-hour warnings match the v1.6 safety checks. Import accepts a file or pasted JSON and keeps preview, replacement, draft/publish commit, template, and export operations separate.
+- Exams expose all backend fields: ISO/Persian dates, open/close timestamps, duration, maximum attempts, status, publication, internal note, and student instructions.
+- Exam search, status/publication filters, multi-select publish/draft/delete, retry approval/rejection, syllabus track/required fields, filtered JSON export, and direct question navigation are available.
+- Exam questions support create, edit, single and multi-delete plus book, chapter, lesson, topic, hint, answer explanation, and sort order.
 
 ## Retirement gate
 

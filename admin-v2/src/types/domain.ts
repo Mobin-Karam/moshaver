@@ -48,6 +48,8 @@ export interface PlanTask {
   duration?: number;
   note?: string;
   examId?: string | null;
+  quizId?: string | null;
+  sortOrder?: number;
   completedAt?: string | null;
 }
 
@@ -56,6 +58,8 @@ export interface Plan {
   date?: string;
   planDate: string;
   persianDate?: string;
+  jalaliId?: string;
+  dayLabel?: string;
   title?: string;
   motivationText?: string;
   published: boolean;
@@ -68,13 +72,14 @@ export interface Exam {
   persianDate?: string;
   isoDate: string;
   note?: string;
+  status?: "upcoming" | "active" | "completed" | "cancelled";
   instructions?: string;
   openAt?: string;
   closeAt?: string;
   durationMinutes?: number;
   maxAttempts?: number;
   published?: boolean;
-  syllabus?: Array<{ id: string; subject: string; description: string }>;
+  syllabus?: Array<{ id: string; subject: string; description: string; track?: string; required?: boolean }>;
   delivery?: {
     reason?: string;
     attemptsUsed?: number;
