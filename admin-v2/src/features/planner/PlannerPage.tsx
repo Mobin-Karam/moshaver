@@ -132,7 +132,7 @@ export function PlannerPage() {
   });
   const preview = useMutation({
     mutationFn: (data: unknown) =>
-      api.post<Record<string, unknown>>("/admin/import/preview", {
+      api.post<PlannerImportPreview>("/admin/import/preview", {
         studentId: students.studentId,
         data,
       }),
@@ -387,14 +387,21 @@ export function PlannerPage() {
               className="text-sm"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) void file.text().then(setJson);
+                if (file)
+                  void file.text().then((text) => {
+                    setJson(text);
+                    preview.reset();
+                  });
               }}
             />
             <Textarea
               rows={8}
               dir="ltr"
               value={json}
-              onChange={(e) => setJson(e.target.value)}
+              onChange={(e) => {
+                setJson(e.target.value);
+                preview.reset();
+              }}
             />
           </Field>
           <div className="flex flex-wrap gap-4 text-sm">
@@ -418,13 +425,15 @@ export function PlannerPage() {
           <div className="flex flex-wrap gap-2">
             <Button
               variant="soft"
-              disabled={!json}
+              loading={preview.isPending}
+              disabled={!json || !students.studentId}
               onClick={() => parse((data) => preview.mutate(data))}
             >
               اعتبارسنجی
             </Button>
             <Button
-              disabled={!preview.data}
+              loading={commit.isPending}
+              disabled={!preview.data || !!preview.data.errors?.length}
               onClick={() =>
                 void modal
                   .confirm({
@@ -443,7 +452,8 @@ export function PlannerPage() {
               ثبت پیش‌نویس
             </Button>
             <Button
-              disabled={!preview.data}
+              loading={commit.isPending}
+              disabled={!preview.data || !!preview.data.errors?.length}
               onClick={() =>
                 void modal
                   .confirm({
@@ -464,7 +474,7 @@ export function PlannerPage() {
               disabled={!students.studentId}
               onClick={() =>
                 void downloadJson(
-                  `/admin/import/template?studentId=${encodeURIComponent(students.studentId)}`,
+                  `/admin/import/template?studentId=${encodeURIComponent(students.studentId)}&scope=all`,
                   "moshaver-template.json",
                 )
               }
@@ -476,7 +486,7 @@ export function PlannerPage() {
               disabled={!students.studentId}
               onClick={() =>
                 void downloadJson(
-                  `/admin/export/json?studentId=${encodeURIComponent(students.studentId)}&from=${range.from}&to=${range.to}`,
+                  `/admin/export/json?studentId=${encodeURIComponent(students.studentId)}&from=${range.from}&to=${range.to}&scope=all`,
                   `moshaver-${range.from}-${range.to}.json`,
                 )
               }
@@ -485,15 +495,93 @@ export function PlannerPage() {
             </Button>
           </div>
           {preview.data ? (
-            <pre
-              className="max-h-72 overflow-auto rounded-md bg-slate-950 p-3 text-xs text-slate-100"
-              dir="ltr"
-            >
-              {JSON.stringify(preview.data, null, 2)}
-            </pre>
+            <PlannerImportPreviewView preview={preview.data} />
           ) : null}
         </div>
       </Card>
+    </div>
+  );
+}
+
+type PlannerImportPreview = {
+  summary?: {
+    plans?: number;
+    tasks?: number;
+    exams?: number;
+    questions?: number;
+    conflicts?: number;
+  };
+  errors?: string[];
+  warnings?: string[];
+  conflicts?: string[];
+};
+function PlannerImportPreviewView({
+  preview,
+}: {
+  preview: PlannerImportPreview;
+}) {
+  const summary = preview.summary || {};
+  return (
+    <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+      <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
+        {[
+          ["برنامه", summary.plans],
+          ["فعالیت", summary.tasks],
+          ["آزمون", summary.exams],
+          ["سؤال", summary.questions],
+          ["تداخل", summary.conflicts],
+        ].map(([label, value]) => (
+          <div key={String(label)} className="rounded-md bg-white p-2">
+            <span className="block text-xs text-slate-500">{label}</span>
+            <strong>{fa(value || 0)}</strong>
+          </div>
+        ))}
+      </div>
+      {preview.errors?.length ? (
+        <PlannerMessageList
+          title="خطاها؛ ثبت غیرفعال است"
+          items={preview.errors}
+          tone="text-rose-700"
+        />
+      ) : (
+        <p className="font-semibold text-emerald-700">
+          ساختار معتبر است و برای ثبت آماده است.
+        </p>
+      )}
+      {preview.warnings?.length ? (
+        <PlannerMessageList
+          title="هشدارها"
+          items={preview.warnings}
+          tone="text-amber-700"
+        />
+      ) : null}
+      {preview.conflicts?.length ? (
+        <PlannerMessageList
+          title="تداخل زمانی"
+          items={preview.conflicts}
+          tone="text-amber-700"
+        />
+      ) : null}
+    </div>
+  );
+}
+function PlannerMessageList({
+  title,
+  items,
+  tone,
+}: {
+  title: string;
+  items: string[];
+  tone: string;
+}) {
+  return (
+    <div className={tone}>
+      <strong>{title}</strong>
+      <ul className="mt-1 list-inside list-disc leading-6">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
     </div>
   );
 }

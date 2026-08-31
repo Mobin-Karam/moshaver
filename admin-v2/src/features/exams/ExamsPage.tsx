@@ -3,6 +3,7 @@ import {
   CalendarClock,
   Check,
   Download,
+  FileJson,
   Pencil,
   Plus,
   Trash2,
@@ -48,6 +49,18 @@ type RetryRequest = {
   message?: string;
   createdAt?: string;
 };
+type ImportPreview = {
+  summary?: {
+    plans?: number;
+    tasks?: number;
+    exams?: number;
+    questions?: number;
+    conflicts?: number;
+  };
+  errors?: string[];
+  warnings?: string[];
+  conflicts?: string[];
+};
 
 export function ExamsPage() {
   const students = useStudents(),
@@ -56,7 +69,9 @@ export function ExamsPage() {
   const [search, setSearch] = useState(""),
     [status, setStatus] = useState("all"),
     [visibility, setVisibility] = useState("all"),
-    [selected, setSelected] = useState<string[]>([]);
+    [selected, setSelected] = useState<string[]>([]),
+    [json, setJson] = useState(""),
+    [replaceExisting, setReplaceExisting] = useState(false);
   const exams = useQuery({
     queryKey: ["exams", students.studentId],
     enabled: !!students.studentId,
@@ -103,6 +118,37 @@ export function ExamsPage() {
   const deleteSyllabus = useMutation({
     mutationFn: (id: string) => api.delete(`/admin/syllabus/${id}`),
     onSuccess: refresh,
+  });
+  const previewImport = useMutation({
+    mutationFn: (data: unknown) =>
+      api.post<ImportPreview>("/admin/import/preview", {
+        studentId: students.studentId,
+        data,
+      }),
+    meta: { successMessage: "فایل آزمون اعتبارسنجی شد." },
+  });
+  const commitImport = useMutation({
+    mutationFn: ({
+      data,
+      publishImported,
+    }: {
+      data: unknown;
+      publishImported: boolean;
+    }) =>
+      api.post("/admin/import/commit", {
+        studentId: students.studentId,
+        data,
+        publishImported,
+        replaceExistingPlans: false,
+        replaceExistingExams: replaceExisting,
+        sourceName: `Admin v2 exams ${new Date().toISOString()}`,
+      }),
+    onSuccess: () => {
+      void refresh();
+      setJson("");
+      previewImport.reset();
+    },
+    meta: { successMessage: "آزمون‌های JSON با موفقیت وارد شدند." },
   });
   const filtered = useMemo(
     () =>
@@ -168,6 +214,25 @@ export function ExamsPage() {
     );
     setSelected([]);
     void refresh();
+  }
+  function parseJson(action: (data: unknown) => void) {
+    try {
+      const data = JSON.parse(json);
+      if (
+        data &&
+        typeof data === "object" &&
+        !Array.isArray(data) &&
+        !Array.isArray((data as { exams?: unknown }).exams)
+      )
+        throw new Error("missing exams");
+      action(data);
+    } catch {
+      modal.open({
+        title: "فایل آزمون معتبر نیست",
+        description: "JSON باید یک شیء schema-v2 دارای آرایه exams باشد.",
+        tone: "danger",
+      });
+    }
   }
 
   return (
@@ -271,7 +336,16 @@ export function ExamsPage() {
             <option value="published">منتشر</option>
             <option value="draft">پیش‌نویس</option>
           </Select>
-          <Button variant="soft" onClick={() => download(filtered)}>
+          <Button
+            variant="soft"
+            disabled={!students.studentId}
+            onClick={() =>
+              void downloadJson(
+                `/admin/export/json?studentId=${encodeURIComponent(students.studentId)}&scope=exams`,
+                `moshaver-exams-${new Date().toISOString().slice(0, 10)}.json`,
+              )
+            }
+          >
             <Download size={16} />
             خروجی
           </Button>
@@ -302,6 +376,116 @@ export function ExamsPage() {
             </Button>
           </div>
         ) : null}
+      </Card>
+      <Card>
+        <div className="mb-3 flex items-center gap-2">
+          <FileJson size={18} />
+          <div>
+            <h3 className="font-bold">ورود و خروج کامل آزمون‌ها</h3>
+            <p className="text-xs text-slate-500">
+              schema-v2 شامل بودجه‌بندی، سؤال‌ها، پاسخ‌ها، زمان‌بندی و تعداد
+              تلاش‌ها
+            </p>
+          </div>
+        </div>
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(320px,.7fr)]">
+          <Field label="فایل یا متن JSON آزمون">
+            <input
+              type="file"
+              accept="application/json,.json"
+              className="text-sm"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void file.text().then(setJson);
+              }}
+            />
+            <Textarea
+              rows={9}
+              dir="ltr"
+              value={json}
+              onChange={(event) => {
+                setJson(event.target.value);
+                previewImport.reset();
+              }}
+              placeholder='{"schemaVersion":2,"exams":[...]}'
+            />
+          </Field>
+          <div className="grid content-start gap-3">
+            <label className="text-sm">
+              <input
+                type="checkbox"
+                checked={replaceExisting}
+                onChange={(event) => setReplaceExisting(event.target.checked)}
+              />{" "}
+              جایگزینی آزمون همنام در همان تاریخ
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="soft"
+                loading={previewImport.isPending}
+                disabled={!json || !students.studentId}
+                onClick={() => parseJson((data) => previewImport.mutate(data))}
+              >
+                اعتبارسنجی
+              </Button>
+              <Button
+                loading={commitImport.isPending}
+                disabled={
+                  !previewImport.data || !!previewImport.data.errors?.length
+                }
+                onClick={() =>
+                  parseJson((data) =>
+                    commitImport.mutate({ data, publishImported: false }),
+                  )
+                }
+              >
+                ثبت پیش‌نویس
+              </Button>
+              <Button
+                loading={commitImport.isPending}
+                disabled={
+                  !previewImport.data || !!previewImport.data.errors?.length
+                }
+                onClick={() =>
+                  parseJson((data) =>
+                    commitImport.mutate({ data, publishImported: true }),
+                  )
+                }
+              >
+                ثبت و انتشار
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="ghost"
+                disabled={!students.studentId}
+                onClick={() =>
+                  void downloadJson(
+                    `/admin/import/template?studentId=${encodeURIComponent(students.studentId)}&scope=exams`,
+                    "moshaver-exams-template.json",
+                  )
+                }
+              >
+                قالب آزمون
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={!students.studentId}
+                onClick={() =>
+                  void downloadJson(
+                    `/admin/export/json?studentId=${encodeURIComponent(students.studentId)}&scope=exams`,
+                    "moshaver-exams-full.json",
+                  )
+                }
+              >
+                خروجی کامل
+              </Button>
+            </div>
+            {previewImport.data ? (
+              <ImportPreviewView preview={previewImport.data} />
+            ) : null}
+          </div>
+        </div>
       </Card>
       <Card>
         <div className="mb-3 flex items-center justify-between">
@@ -694,15 +878,68 @@ function statusLabel(status?: Exam["status"]) {
     } as const
   )[status || "upcoming"];
 }
-function download(exams: Exam[]) {
+function ImportPreviewView({ preview }: { preview: ImportPreview }) {
+  return (
+    <div className="grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <Metric label="آزمون" value={preview.summary?.exams || 0} />
+        <Metric label="سؤال" value={preview.summary?.questions || 0} />
+        <Metric label="تداخل" value={preview.summary?.conflicts || 0} />
+      </div>
+      {preview.errors?.length ? (
+        <MessageList
+          title="خطاها"
+          items={preview.errors}
+          tone="text-rose-700"
+        />
+      ) : (
+        <p className="font-semibold text-emerald-700">فایل آماده ثبت است.</p>
+      )}
+      {preview.warnings?.length ? (
+        <MessageList
+          title="هشدارها"
+          items={preview.warnings}
+          tone="text-amber-700"
+        />
+      ) : null}
+      {preview.conflicts?.length ? (
+        <MessageList
+          title="تداخل‌ها"
+          items={preview.conflicts}
+          tone="text-amber-700"
+        />
+      ) : null}
+    </div>
+  );
+}
+function MessageList({
+  title,
+  items,
+  tone,
+}: {
+  title: string;
+  items: string[];
+  tone: string;
+}) {
+  return (
+    <div className={tone}>
+      <strong>{title}</strong>
+      <ul className="mt-1 list-inside list-disc leading-6">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+async function downloadJson(path: string, filename: string) {
+  const data = await api.get<unknown>(path);
   const url = URL.createObjectURL(
-      new Blob([JSON.stringify({ exams }, null, 2)], {
-        type: "application/json",
-      }),
-    ),
-    anchor = document.createElement("a");
+    new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
+  );
+  const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `exams-${new Date().toISOString().slice(0, 10)}.json`;
+  anchor.download = filename;
   anchor.click();
   URL.revokeObjectURL(url);
 }

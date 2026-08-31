@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("/fonts/Vazirmatn.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
   font-family: Vazirmatn, Tahoma, Arial, sans-serif;
@@ -15,6 +23,8 @@
 body {
   margin: 0;
   min-width: 320px;
+  font-family: Vazirmatn, Tahoma, Arial, sans-serif;
+  font-variation-settings: "wght" 400;
 }
 
 button,
@@ -22,4 +32,13 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+strong,
+b,
+h1,
+h2,
+h3,
+h4 {
+  font-variation-settings: "wght" 700;
 }
