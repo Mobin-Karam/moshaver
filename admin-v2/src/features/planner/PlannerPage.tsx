@@ -88,8 +88,8 @@ export function PlannerPage() {
               <h3 className="font-bold">نمای هفته</h3>
             </div>
             <div className="flex gap-2">
-              <Button variant="soft" onClick={() => publishRange.mutate(true)} disabled={!students.studentId || publishRange.isPending}>انتشار بازه</Button>
-              <Button variant="ghost" onClick={() => publishRange.mutate(false)} disabled={!students.studentId || publishRange.isPending}>پیش‌نویس بازه</Button>
+              <Button variant="soft" onClick={() => confirmRangePublish(true)} disabled={!students.studentId || publishRange.isPending}>انتشار بازه</Button>
+              <Button variant="ghost" onClick={() => confirmRangePublish(false)} disabled={!students.studentId || publishRange.isPending}>پیش‌نویس بازه</Button>
             </div>
           </div>
           {plans.data?.length ? (
@@ -151,8 +151,8 @@ export function PlannerPage() {
           <Field label="JSON"><Textarea rows={8} value={json} onChange={(event) => setJson(event.target.value)} placeholder='{"plans":[{"date":"2026-08-20","tasks":[{"type":"STUDY","subject":"ریاضی","title":"تابع","start":"08:00","end":"09:00"}]}]}' /></Field>
           <div className="flex flex-wrap gap-2">
             <Button variant="soft" onClick={() => preview.mutate()} disabled={!json || preview.isPending}>اعتبارسنجی</Button>
-            <Button onClick={() => commit.mutate(false)} disabled={!preview.data || commit.isPending}>ثبت پیش‌نویس</Button>
-            <Button onClick={() => commit.mutate(true)} disabled={!preview.data || commit.isPending}>ثبت و انتشار</Button>
+            <Button onClick={() => confirmImport(false)} disabled={!preview.data || commit.isPending}>ثبت پیش‌نویس</Button>
+            <Button onClick={() => confirmImport(true)} disabled={!preview.data || commit.isPending}>ثبت و انتشار</Button>
           </div>
           <div className="flex flex-wrap gap-4 text-sm"><label><input type="checkbox" checked={replacePlans} onChange={(e) => setReplacePlans(e.target.checked)} /> جایگزینی امن برنامه‌های موجود</label><label><input type="checkbox" checked={replaceExams} onChange={(e) => setReplaceExams(e.target.checked)} /> جایگزینی آزمون‌های همنام/هم‌تاریخ</label></div>
           <div className="flex flex-wrap gap-2"><Button variant="ghost" onClick={() => void loadJson(`/admin/import/template?studentId=${encodeURIComponent(students.studentId)}`, "moshaver-template.json")}>دانلود قالب</Button><Button variant="ghost" onClick={() => void loadJson(`/admin/export/json?studentId=${encodeURIComponent(students.studentId)}&from=${from}&to=${to}`, `moshaver-export-${from}-${to}.json`)}>خروجی بازه</Button></div>
@@ -170,6 +170,15 @@ export function PlannerPage() {
     const data = await api.get<Record<string, unknown>>(path);
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
     const anchor = document.createElement("a"); anchor.href = url; anchor.download = filename; anchor.click(); URL.revokeObjectURL(url);
+  }
+
+  function confirmRangePublish(published: boolean) {
+    void modal.confirm({ title: published ? "انتشار برنامه‌های بازه؟" : "تبدیل بازه به پیش‌نویس؟", description: `${from} تا ${to}`, confirmLabel: published ? "انتشار بازه" : "پیش‌نویس کن" }).then((confirmed) => confirmed && publishRange.mutate(published));
+  }
+
+  function confirmImport(publishImported: boolean) {
+    const replacement = [replacePlans && "برنامه‌های موجود", replaceExams && "آزمون‌های موجود"].filter(Boolean).join(" و ");
+    void modal.confirm({ title: publishImported ? "ثبت و انتشار داده‌های JSON؟" : "ثبت داده‌های JSON؟", description: replacement ? `${replacement} ممکن است جایگزین شوند.` : "داده‌های اعتبارسنجی‌شده برای دانش‌آموز ثبت می‌شوند.", tone: replacement ? "danger" : "default", confirmLabel: publishImported ? "ثبت و انتشار" : "ثبت پیش‌نویس" }).then((confirmed) => confirmed && commit.mutate(publishImported));
   }
 }
 

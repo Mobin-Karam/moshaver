@@ -107,7 +107,7 @@ export function StudentsPage() {
               <Button disabled={!form.name.trim() || !form.username.trim() || create.isPending || update.isPending} onClick={() => selectedId ? update.mutate() : create.mutate(form)}><Save size={16} />{selectedId ? "ذخیره تغییرات" : "ساخت دانش‌آموز"}</Button>
               <Button variant="danger" disabled={!selectedId || remove.isPending} onClick={() => void modal.confirm({ title: "بایگانی دانش‌آموز؟", description: "حساب غیرفعال می‌شود اما تاریخچه برای بازیابی حفظ خواهد شد.", tone: "danger", confirmLabel: "بایگانی" }).then((confirmed) => confirmed && remove.mutate())}><Trash2 size={16} />حذف</Button>
             </div>
-            {selectedId ? <div className="grid gap-2 border-t pt-3 md:grid-cols-2"><Button variant="soft" disabled={form.password.length < 8 || resetPassword.isPending} onClick={() => resetPassword.mutate()}><KeyRound size={16} />تغییر رمز</Button><Button variant="soft" disabled={lifecycle.isPending} onClick={() => lifecycle.mutate("force-logout")}><LogOut size={16} />خروج اجباری</Button>{selected?.account_status === "archived" ? <Button onClick={() => lifecycle.mutate("restore")}><ArchiveRestore size={16} />بازیابی حساب</Button> : <Button variant="soft" onClick={() => lifecycle.mutate(selected?.account_status === "inactive" || selected?.active === false ? "activate" : "deactivate")}><Power size={16} />{selected?.account_status === "inactive" || selected?.active === false ? "فعال‌سازی" : "غیرفعال‌سازی"}</Button>}</div> : null}
+            {selectedId ? <div className="grid gap-2 border-t pt-3 md:grid-cols-2"><Button variant="soft" disabled={form.password.length < 8 || resetPassword.isPending} onClick={() => void modal.confirm({ title: "تغییر رمز دانش‌آموز؟", description: "رمز تغییر می‌کند و تمام نشست‌های قبلی دانش‌آموز بسته می‌شوند.", confirmLabel: "تغییر رمز" }).then((confirmed) => confirmed && resetPassword.mutate())}><KeyRound size={16} />تغییر رمز</Button><Button variant="soft" disabled={lifecycle.isPending} onClick={() => confirmLifecycle("force-logout", "خروج اجباری دانش‌آموز؟", "تمام نشست‌های فعال این دانش‌آموز فوراً بسته می‌شوند.", "خروج اجباری")}><LogOut size={16} />خروج اجباری</Button>{selected?.account_status === "archived" ? <Button onClick={() => confirmLifecycle("restore", "بازیابی حساب؟", "حساب بایگانی‌شده با تمام تاریخچه دوباره فعال می‌شود.", "بازیابی")}><ArchiveRestore size={16} />بازیابی حساب</Button> : <Button variant="soft" onClick={() => { const action = selected?.account_status === "inactive" || selected?.active === false ? "activate" : "deactivate"; confirmLifecycle(action, action === "activate" ? "فعال‌سازی حساب؟" : "غیرفعال‌سازی حساب؟", action === "activate" ? "دانش‌آموز دوباره اجازه ورود خواهد داشت." : "نشست‌های دانش‌آموز بسته و ورود او متوقف می‌شود.", action === "activate" ? "فعال‌سازی" : "غیرفعال‌سازی"); }}><Power size={16} />{selected?.account_status === "inactive" || selected?.active === false ? "فعال‌سازی" : "غیرفعال‌سازی"}</Button>}</div> : null}
           </div>
         </Card>
       </section>
@@ -130,6 +130,10 @@ export function StudentsPage() {
 
   function setField(key: keyof StudentForm, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function confirmLifecycle(action: "activate" | "deactivate" | "restore" | "force-logout", title: string, description: string, confirmLabel: string) {
+    void modal.confirm({ title, description, confirmLabel, tone: action === "deactivate" || action === "force-logout" ? "danger" : "default" }).then((confirmed) => confirmed && lifecycle.mutate(action));
   }
 }
 

@@ -2,6 +2,7 @@ import { Activity, Bell, BookOpen, BookOpenCheck, CalendarDays, Database, Gradua
 import { NavLink, Outlet } from "react-router-dom";
 import { Button } from "./ui";
 import { useAuth } from "../features/auth/AuthProvider";
+import { useModal } from "./modal";
 
 const nav = [
   ["", "داشبورد", LayoutDashboard],
@@ -21,6 +22,7 @@ const nav = [
 
 export function AdminLayout() {
   const auth = useAuth();
+  const modal = useModal();
   return (
     <div className="min-h-screen bg-paper text-ink">
       <aside className="fixed inset-y-0 right-0 hidden w-64 border-l border-slate-200 bg-white p-4 lg:block">
@@ -30,7 +32,7 @@ export function AdminLayout() {
       <div className="lg:mr-64">
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur">
           <div><strong>{auth.user?.displayName || auth.user?.display_name || "مشاور"}</strong><p className="text-xs text-slate-500">نقش: مدیر</p></div>
-          <Button variant="soft" onClick={() => void auth.logout()}><LogOut size={16} />خروج</Button>
+          <Button variant="soft" onClick={() => void modal.confirm({ title: "خروج از پنل؟", description: "نشست این دستگاه بسته می‌شود.", confirmLabel: "خروج", tone: "danger" }).then((confirmed) => { if (confirmed) void auth.logout(); })}><LogOut size={16} />خروج</Button>
         </header>
         <nav className="sticky top-16 z-10 flex gap-1 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 lg:hidden">{nav.map(([to, label, Icon]) => <NavLink key={to} to={`/admin/${to}`} end={to === ""} className={({ isActive }) => `flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold ${isActive ? "bg-teal-50 text-brand" : "text-slate-600"}`}><Icon size={16} />{label}</NavLink>)}</nav>
         <main className="mx-auto max-w-7xl p-4 md:p-6"><Outlet /></main>
