@@ -20,11 +20,11 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { StudentPicker } from "../../components/StudentPicker";
-import { DataTransferWorkspace } from "../../components/data-transfer";
-import { DatePicker } from "../../components/date-picker";
-import { useLocale } from "../../components/locale";
-import { useModal } from "../../components/modal";
+import { StudentPicker } from "../../shared/ui/StudentPicker";
+import { DataTransferWorkspace } from "../../shared/ui/data-transfer";
+import { DatePicker } from "../../shared/ui/date-picker";
+import { useLocale } from "../../shared/ui/locale";
+import { useModal } from "../../shared/ui/modal";
 import {
   Badge,
   Button,
@@ -34,11 +34,11 @@ import {
   Input,
   Select,
   Textarea,
-} from "../../components/ui";
-import { useStudents } from "../../hooks/useStudents";
-import { addDays, fa, normalizePersianText, todayIso } from "../../lib/utils";
-import { api } from "../../services/api";
-import type { Exam, Plan, PlanTask } from "../../types/domain";
+} from "../../shared/ui/ui";
+import { useStudents } from "../../shared/hooks/useStudents";
+import { addDays, fa, normalizePersianText, todayIso } from "../../shared/lib/utils";
+import { api } from "../../shared/api/api";
+import type { Exam, Plan, PlanTask } from "../../shared/types/domain";
 
 type Mode = "day" | "week" | "month" | "list";
 type TaskFilter = "all" | "published" | "draft" | "incomplete";

@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { StudentPicker } from "../../components/StudentPicker";
-import { DatePicker } from "../../components/date-picker";
-import { useLocale } from "../../components/locale";
-import { Badge, Card, EmptyState } from "../../components/ui";
-import { useStudents } from "../../hooks/useStudents";
-import { api } from "../../services/api";
-import { addDays, fa, todayIso } from "../../lib/utils";
+import { StudentPicker } from "../../shared/ui/StudentPicker";
+import { DatePicker } from "../../shared/ui/date-picker";
+import { useLocale } from "../../shared/ui/locale";
+import { Badge, Card, EmptyState } from "../../shared/ui/ui";
+import { useStudents } from "../../shared/hooks/useStudents";
+import { api } from "../../shared/api/api";
+import { addDays, fa, todayIso } from "../../shared/lib/utils";
 import { useState } from "react";
 
 export function ReportsPage() {

@@ -5,6 +5,7 @@ describe("chat helpers", () => {
   it("matches normalized Persian names and last messages", () => {
     expect(chatSearchMatch({ id: "1", student: { id: "s", name: "علي" } }, "علی")).toBe(true);
     expect(chatSearchMatch({ id: "1", lastMessage: { text: "آزمون فردا" } }, "فردا")).toBe(true);
+    expect(chatSearchMatch({ id: "g", type: "group", title: "مرور رياضي" }, "ریاضی")).toBe(true);
   });
 
   it("merges cursor pages chronologically without duplicates", () => {

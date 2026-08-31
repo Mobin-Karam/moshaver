@@ -6,10 +6,10 @@ import {
   EmptyState,
   Field,
   Select,
-} from "../../components/ui";
-import { locations, useLocale, type LocationId } from "../../components/locale";
-import { api, apiBaseUrl } from "../../services/api";
-import { useModal } from "../../components/modal";
+} from "../../shared/ui/ui";
+import { locations, useLocale, type LocationId } from "../../shared/ui/locale";
+import { api, apiBaseUrl } from "../../shared/api/api";
+import { useModal } from "../../shared/ui/modal";
 
 type Session = {
   id: string;

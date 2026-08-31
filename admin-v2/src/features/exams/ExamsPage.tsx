@@ -2,11 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Check, MoreHorizontal, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { StudentPicker } from "../../components/StudentPicker";
-import { DataTransferWorkspace } from "../../components/data-transfer";
-import { DatePicker, DateTimePicker } from "../../components/date-picker";
-import { useLocale } from "../../components/locale";
-import { useModal } from "../../components/modal";
+import { StudentPicker } from "../../shared/ui/StudentPicker";
+import { DataTransferWorkspace } from "../../shared/ui/data-transfer";
+import { DatePicker, DateTimePicker } from "../../shared/ui/date-picker";
+import { useLocale } from "../../shared/ui/locale";
+import { useModal } from "../../shared/ui/modal";
 import {
   Badge,
   Button,
@@ -16,12 +16,12 @@ import {
   Input,
   Select,
   Textarea,
-} from "../../components/ui";
-import { useStudents } from "../../hooks/useStudents";
-import { api } from "../../services/api";
-import type { Exam } from "../../types/domain";
-import { normalizePersianText } from "../../lib/utils";
-import { notify } from "../../components/toast";
+} from "../../shared/ui/ui";
+import { useStudents } from "../../shared/hooks/useStudents";
+import { api } from "../../shared/api/api";
+import type { Exam } from "../../shared/types/domain";
+import { normalizePersianText } from "../../shared/lib/utils";
+import { notify } from "../../shared/ui/notifications";
 
 type ExamDraft = {
   title: string;

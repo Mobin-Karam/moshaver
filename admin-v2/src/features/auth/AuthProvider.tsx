@@ -8,8 +8,8 @@ import {
   useRef,
   useState,
 } from "react";
-import { api, ApiError, onAuthFailure } from "../../services/api";
-import type { User } from "../../types/domain";
+import { api, ApiError, onAuthFailure } from "../../shared/api/api";
+import type { User } from "../../shared/types/domain";
 
 const AUTH_SIGNAL_KEY = "moshaver_admin_auth_signal";
 const PENDING_LOGOUT_KEY = "moshaver_admin_logout_pending";

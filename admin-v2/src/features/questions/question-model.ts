@@ -1,4 +1,4 @@
-import { normalizePersianText } from "../../lib/utils";
+import { normalizePersianText } from "../../shared/lib/utils";
 
 export type QuestionDraft = { question: string; options: string[]; correctOption: string; explanation: string; book: string; chapter: string; lesson: string; topic: string; hint: string; sortOrder: number };
 export type QuestionView = Partial<QuestionDraft> & { id?: string; text?: string; question_text?: string; option_a?: string; option_b?: string; option_c?: string; option_d?: string; correctAnswer?: string; correct_option?: string; sort_order?: number };

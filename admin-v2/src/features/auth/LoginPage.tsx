@@ -12,9 +12,9 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Button, Card, Field, Input } from "../../components/ui";
-import { request } from "../../services/api";
-import { DevBackendSwitcher } from "../../components/DevBackendSwitcher";
+import { Button, Card, Field, Input } from "../../shared/ui/ui";
+import { request } from "../../shared/api/api";
+import { DevBackendSwitcher } from "../../app/dev/DevBackendSwitcher";
 import { useAuth } from "./AuthProvider";
 
 const schema = z.object({

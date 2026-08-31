@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, CheckCheck } from "lucide-react";
-import { Badge, Button, Card, EmptyState } from "../../components/ui";
-import { StudentPicker } from "../../components/StudentPicker";
-import { useLocale } from "../../components/locale";
-import { useStudents } from "../../hooks/useStudents";
-import { api } from "../../services/api";
+import { Badge, Button, Card, EmptyState } from "../../shared/ui/ui";
+import { StudentPicker } from "../../shared/ui/StudentPicker";
+import { useLocale } from "../../shared/ui/locale";
+import { useStudents } from "../../shared/hooks/useStudents";
+import { api } from "../../shared/api/api";
 
 type Notification = {
   id: string;

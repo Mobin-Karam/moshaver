@@ -10,14 +10,14 @@ import {
   Input,
   Select,
   Textarea,
-} from "../../components/ui";
-import { api } from "../../services/api";
-import type { Exam } from "../../types/domain";
-import { useModal } from "../../components/modal";
-import { notify } from "../../components/toast";
+} from "../../shared/ui/ui";
+import { api } from "../../shared/api/api";
+import type { Exam } from "../../shared/types/domain";
+import { useModal } from "../../shared/ui/modal";
+import { notify } from "../../shared/ui/notifications";
 import { emptyQuestion, questionDraft, questionError, questionMatches, type QuestionView } from "./question-model";
-import { StudentPicker } from "../../components/StudentPicker";
-import { useStudents } from "../../hooks/useStudents";
+import { StudentPicker } from "../../shared/ui/StudentPicker";
+import { useStudents } from "../../shared/hooks/useStudents";
 
 export function QuestionsPage() {
   const [params, setParams] = useSearchParams();

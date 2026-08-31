@@ -5,8 +5,8 @@ import {
   getBackendTargetUrl,
   getSelectedBackend,
   setSelectedBackend,
-} from "../services/api";
-import { Button, Select } from "./ui";
+} from "../../shared/api/api";
+import { Button, Select } from "../../shared/ui/ui";
 
 const options: Array<{ value: BackendTarget | ""; label: string }> = [
   { value: "", label: "Env default" },

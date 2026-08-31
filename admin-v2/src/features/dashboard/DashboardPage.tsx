@@ -6,12 +6,12 @@ import {
   MessageSquare,
   type LucideIcon,
 } from "lucide-react";
-import { Card, EmptyState, LoadingState } from "../../components/ui";
-import { StudentPicker } from "../../components/StudentPicker";
-import { useStudents } from "../../hooks/useStudents";
-import { api } from "../../services/api";
-import { fa } from "../../lib/utils";
-import type { Conversation } from "../../types/domain";
+import { Card, EmptyState, LoadingState } from "../../shared/ui/ui";
+import { StudentPicker } from "../../shared/ui/StudentPicker";
+import { useStudents } from "../../shared/hooks/useStudents";
+import { api } from "../../shared/api/api";
+import { fa } from "../../shared/lib/utils";
+import type { Conversation } from "../../shared/types/domain";
 
 type DashboardOverview = {
   health?: number;

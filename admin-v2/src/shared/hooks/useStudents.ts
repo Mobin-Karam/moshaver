@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { api } from "../services/api";
+import { api } from "../api/api";
 import type { Student } from "../types/domain";
 
 export function useStudents() {

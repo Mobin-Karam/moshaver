@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { LoginPage } from "../features/auth/LoginPage";
 import { useAuth } from "../features/auth/AuthProvider";
-import { AdminLayout } from "../components/AdminLayout";
+import { AdminLayout } from "./layout/AdminLayout";
 import { DashboardPage } from "../features/dashboard/DashboardPage";
 import { StudentsPage } from "../features/students/StudentsPage";
 import { PlannerPage } from "../features/planner/PlannerPage";

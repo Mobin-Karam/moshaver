@@ -12,12 +12,12 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Card, EmptyState, Field, Input, Button } from "../../components/ui";
-import { useStudents } from "../../hooks/useStudents";
-import { api } from "../../services/api";
-import type { Student } from "../../types/domain";
-import { useModal } from "../../components/modal";
-import { normalizePersianText } from "../../lib/utils";
+import { Card, EmptyState, Field, Input, Button } from "../../shared/ui/ui";
+import { useStudents } from "../../shared/hooks/useStudents";
+import { api } from "../../shared/api/api";
+import type { Student } from "../../shared/types/domain";
+import { useModal } from "../../shared/ui/modal";
+import { normalizePersianText } from "../../shared/lib/utils";
 
 type StudentForm = {
   name: string;

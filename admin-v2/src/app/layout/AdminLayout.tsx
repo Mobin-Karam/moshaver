@@ -13,10 +13,10 @@ import {
   UsersRound,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
-import { Button } from "./ui";
-import { useAuth } from "../features/auth/AuthProvider";
-import { useModal } from "./modal";
-import { DevBackendSwitcher } from "./DevBackendSwitcher";
+import { Button } from "../../shared/ui/ui";
+import { useAuth } from "../../features/auth/AuthProvider";
+import { useModal } from "../../shared/ui/modal";
+import { DevBackendSwitcher } from "../dev/DevBackendSwitcher";
 
 const nav = [
   ["", "داشبورد", LayoutDashboard],

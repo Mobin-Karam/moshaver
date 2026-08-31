@@ -96,9 +96,15 @@ export interface Exam {
 
 export interface Conversation {
   id: string;
+  type?: "direct" | "group";
+  title?: string;
+  description?: string;
+  role?: "owner" | "admin" | "member";
+  muted?: boolean;
+  memberCount?: number;
   unread?: number;
   student?: Student;
-  lastMessage?: { text?: string; createdAt?: string; senderRole?: Role };
+  lastMessage?: { id?: string; text?: string; type?: string; createdAt?: string; senderRole?: Role; senderName?: string };
   presence?: { online?: boolean; state?: string };
   pinned?: boolean;
 }
@@ -114,4 +120,10 @@ export interface ChatMessage {
   pending?: boolean;
   editedAt?: string | null;
   deletedAt?: string | null;
+  type?: string;
+  payload?: Record<string, unknown>;
+  replyToId?: string | null;
+  pinnedAt?: string | null;
+  reactions?: Array<{ emoji: string; count: number; reacted?: boolean }>;
+  mentionUserIds?: string[];
 }

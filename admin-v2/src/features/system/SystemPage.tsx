@@ -9,9 +9,9 @@ import {
   Field,
   Input,
   Textarea,
-} from "../../components/ui";
-import { api } from "../../services/api";
-import { useModal } from "../../components/modal";
+} from "../../shared/ui/ui";
+import { api } from "../../shared/api/api";
+import { useModal } from "../../shared/ui/modal";
 
 type DatabaseMeta = {
   status?: string;

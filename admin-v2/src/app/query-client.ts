@@ -1,5 +1,5 @@
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
-import { notify } from "../components/toast";
+import { notify } from "../shared/ui/notifications";
 
 function message(error: unknown) {
   return error instanceof Error

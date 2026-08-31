@@ -11,7 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { DragEvent, useRef, useState } from "react";
-import { api } from "../services/api";
+import { api } from "../api/api";
 import { fa } from "../lib/utils";
 import { useLocale } from "./locale";
 import { useModal } from "./modal";

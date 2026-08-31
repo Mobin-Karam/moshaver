@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookPlus, Save } from "lucide-react";
 import { useState } from "react";
-import { StudentPicker } from "../../components/StudentPicker";
+import { StudentPicker } from "../../shared/ui/StudentPicker";
 import {
   Badge,
   Button,
@@ -11,10 +11,10 @@ import {
   Input,
   Select,
   Textarea,
-} from "../../components/ui";
-import { useStudents } from "../../hooks/useStudents";
-import { fa } from "../../lib/utils";
-import { api } from "../../services/api";
+} from "../../shared/ui/ui";
+import { useStudents } from "../../shared/hooks/useStudents";
+import { fa } from "../../shared/lib/utils";
+import { api } from "../../shared/api/api";
 
 type Subject = {
   id: string;

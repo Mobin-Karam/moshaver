@@ -14,10 +14,10 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useLocale } from "../../components/locale";
-import { Badge, Button, Card, EmptyState, Select } from "../../components/ui";
-import { fa, normalizePersianText } from "../../lib/utils";
-import { api } from "../../services/api";
+import { useLocale } from "../../shared/ui/locale";
+import { Badge, Button, Card, EmptyState, Select } from "../../shared/ui/ui";
+import { fa, normalizePersianText } from "../../shared/lib/utils";
+import { api } from "../../shared/api/api";
 
 export type LiveState =
   "online" | "offline" | "studying" | "paused" | "taking_exam";
