@@ -149,7 +149,8 @@ export async function request<T>(
     }
     if (response.status === 401) {
       setCsrf();
-      if (!options.suppressAuthFailure) authFailureListeners.forEach((listener) => listener(apiError));
+      if (!options.suppressAuthFailure)
+        authFailureListeners.forEach((listener) => listener(apiError));
     }
     throw apiError;
   } catch (error) {
@@ -172,10 +173,14 @@ export const api = {
       credentials: "include",
       headers: csrf() ? { "X-CSRF-Token": csrf() } : undefined,
     });
-    if (!response.ok) throw new ApiError(response.status, "دریافت فایل پشتیبان انجام نشد.");
+    if (!response.ok)
+      throw new ApiError(response.status, "دریافت فایل پشتیبان انجام نشد.");
     return {
       blob: await response.blob(),
-      filename: response.headers.get("content-disposition")?.match(/filename="?([^";]+)"?/)?.[1] || "moshaver-backup.sqlite",
+      filename:
+        response.headers
+          .get("content-disposition")
+          ?.match(/filename="?([^";]+)"?/)?.[1] || "moshaver-backup.sqlite",
     };
   },
   async uploadBinary<T>(path: string, body: Blob) {
@@ -188,10 +193,17 @@ export const api = {
       },
       body,
     });
-    const payload = (await response.json().catch(() => null)) as ApiEnvelope<T> | null;
+    const payload = (await response
+      .json()
+      .catch(() => null)) as ApiEnvelope<T> | null;
     if (response.ok && payload?.ok) return payload.data;
     const error = payload && "error" in payload ? payload.error : undefined;
-    throw new ApiError(response.status, error?.message || "بارگذاری فایل انجام نشد.", error?.code, error?.details);
+    throw new ApiError(
+      response.status,
+      error?.message || "بارگذاری فایل انجام نشد.",
+      error?.code,
+      error?.details,
+    );
   },
   setCsrf,
   openEvents(

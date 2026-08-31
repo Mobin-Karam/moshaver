@@ -79,7 +79,13 @@ export interface Exam {
   durationMinutes?: number;
   maxAttempts?: number;
   published?: boolean;
-  syllabus?: Array<{ id: string; subject: string; description: string; track?: string; required?: boolean }>;
+  syllabus?: Array<{
+    id: string;
+    subject: string;
+    description: string;
+    track?: string;
+    required?: boolean;
+  }>;
   delivery?: {
     reason?: string;
     attemptsUsed?: number;

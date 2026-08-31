@@ -6,7 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function fa(value: unknown) {
-  return String(value ?? "").replace(/[0-9]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
+  return String(value ?? "").replace(
+    /[0-9]/g,
+    (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit,
+  );
 }
 
 export function todayIso() {

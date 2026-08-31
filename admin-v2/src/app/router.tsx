@@ -18,7 +18,12 @@ import { QuizzesPage } from "../features/quizzes/QuizzesPage";
 
 function ProtectedRoute() {
   const auth = useAuth();
-  if (auth.status === "checking") return <div className="grid min-h-screen place-items-center bg-paper text-slate-500">در حال بازیابی نشست...</div>;
+  if (auth.status === "checking")
+    return (
+      <div className="grid min-h-screen place-items-center bg-paper text-slate-500">
+        در حال بازیابی نشست...
+      </div>
+    );
   if (auth.status !== "authenticated") return <Navigate to="/login" replace />;
   return <Outlet />;
 }
@@ -28,24 +33,26 @@ export const router = createBrowserRouter([
   {
     path: "/admin",
     element: <ProtectedRoute />,
-    children: [{
-      element: <AdminLayout />,
-      children: [
-        { index: true, element: <DashboardPage /> },
-        { path: "live", element: <LivePage /> },
-        { path: "students", element: <StudentsPage /> },
-        { path: "planner", element: <PlannerPage /> },
-        { path: "exams", element: <ExamsPage /> },
-        { path: "questions", element: <QuestionsPage /> },
-        { path: "quizzes", element: <QuizzesPage /> },
-        { path: "chat", element: <ChatPage /> },
-        { path: "notifications", element: <NotificationsPage /> },
-        { path: "reports", element: <ReportsPage /> },
-        { path: "subjects", element: <SubjectsPage /> },
-        { path: "system", element: <SystemPage /> },
-        { path: "settings", element: <SettingsPage /> },
-      ],
-    }],
+    children: [
+      {
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <DashboardPage /> },
+          { path: "live", element: <LivePage /> },
+          { path: "students", element: <StudentsPage /> },
+          { path: "planner", element: <PlannerPage /> },
+          { path: "exams", element: <ExamsPage /> },
+          { path: "questions", element: <QuestionsPage /> },
+          { path: "quizzes", element: <QuizzesPage /> },
+          { path: "chat", element: <ChatPage /> },
+          { path: "notifications", element: <NotificationsPage /> },
+          { path: "reports", element: <ReportsPage /> },
+          { path: "subjects", element: <SubjectsPage /> },
+          { path: "system", element: <SystemPage /> },
+          { path: "settings", element: <SettingsPage /> },
+        ],
+      },
+    ],
   },
   { path: "*", element: <Navigate to="/admin" replace /> },
 ]);

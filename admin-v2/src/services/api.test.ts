@@ -15,13 +15,31 @@ afterEach(() => {
 
 describe("api client", () => {
   it("returns typed data from the backend envelope", async () => {
-    globalThis.fetch = vi.fn(async () => new Response(JSON.stringify({ ok: true, data: { id: "1" } }), { status: 200 })) as typeof fetch;
-    await expect(api.get<{ id: string }>("/health")).resolves.toEqual({ id: "1" });
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ ok: true, data: { id: "1" } }), {
+          status: 200,
+        }),
+    ) as typeof fetch;
+    await expect(api.get<{ id: string }>("/health")).resolves.toEqual({
+      id: "1",
+    });
   });
 
   it("throws unified ApiError on backend errors", async () => {
-    globalThis.fetch = vi.fn(async () => new Response(JSON.stringify({ ok: false, error: { message: "bad", code: "VALIDATION" } }), { status: 400 })) as typeof fetch;
-    await expect(api.get("/bad")).rejects.toMatchObject(new ApiError(400, "bad", "VALIDATION"));
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            ok: false,
+            error: { message: "bad", code: "VALIDATION" },
+          }),
+          { status: 400 },
+        ),
+    ) as typeof fetch;
+    await expect(api.get("/bad")).rejects.toMatchObject(
+      new ApiError(400, "bad", "VALIDATION"),
+    );
   });
 
   it("uses the selected dev backend when one is set", () => {
