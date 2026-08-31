@@ -16,7 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLocale } from "../../components/locale";
 import { Badge, Button, Card, EmptyState, Select } from "../../components/ui";
-import { fa } from "../../lib/utils";
+import { fa, normalizePersianText } from "../../lib/utils";
 import { api } from "../../services/api";
 
 export type LiveState =
@@ -69,12 +69,11 @@ export function filterLiveStudents(
   search: string,
   filter: LiveFilter,
 ) {
-  const needle = search.trim().toLocaleLowerCase("fa");
+  const needle = normalizePersianText(search).trim().toLocaleLowerCase("fa");
   return list.filter((s) => {
-    const searchable = [s.name, s.grade, s.major, s.currentView]
-      .filter(Boolean)
-      .join(" ")
-      .toLocaleLowerCase("fa");
+    const searchable = normalizePersianText(
+      [s.name, s.grade, s.major, s.currentView].filter(Boolean).join(" "),
+    ).toLocaleLowerCase("fa");
     const state =
       filter === "all" ||
       (filter === "attention" && needsAttention(s)) ||

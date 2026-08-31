@@ -1,14 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  AlertTriangle,
+  Calendar,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  ChevronsUpDown,
+  Command,
   Copy,
+  Filter,
+  List,
+  MoreHorizontal,
   Pencil,
   Plus,
+  Search,
+  SlidersHorizontal,
   Trash2,
+  X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { StudentPicker } from "../../components/StudentPicker";
 import { DataTransferWorkspace } from "../../components/data-transfer";
 import { DatePicker } from "../../components/date-picker";
@@ -25,11 +36,12 @@ import {
   Textarea,
 } from "../../components/ui";
 import { useStudents } from "../../hooks/useStudents";
-import { addDays, fa, todayIso } from "../../lib/utils";
+import { addDays, fa, normalizePersianText, todayIso } from "../../lib/utils";
 import { api } from "../../services/api";
 import type { Exam, Plan, PlanTask } from "../../types/domain";
 
-type Mode = "day" | "week" | "month";
+type Mode = "day" | "week" | "month" | "list";
+type TaskFilter = "all" | "published" | "draft" | "incomplete";
 type PlanDraft = Pick<
   Plan,
   | "planDate"
@@ -56,18 +68,92 @@ type TaskDraft = {
 export function PlannerPage() {
   const students = useStudents(),
     modal = useModal(),
-    qc = useQueryClient();
-  const [date, setDate] = useState(todayIso()),
-    [mode, setMode] = useState<Mode>("week");
+    qc = useQueryClient(),
+    [params, setParams] = useSearchParams();
+  const initialMode = parseMode(params.get("view"));
+  const [date, setDateState] = useState(params.get("date") || todayIso()),
+    [mode, setModeState] = useState<Mode>(initialMode),
+    [search, setSearch] = useState(params.get("q") || ""),
+    [filter, setFilter] = useState<TaskFilter>(
+      parseFilter(params.get("filter")),
+    ),
+    [filtersOpen, setFiltersOpen] = useState(false),
+    [summaryOpen, setSummaryOpen] = useState(true),
+    [warningsOpen, setWarningsOpen] = useState(true),
+    [moreOpen, setMoreOpen] = useState(false),
+    [paletteOpen, setPaletteOpen] = useState(false),
+    [drawer, setDrawer] = useState<{ plan: Plan; task?: PlanTask } | null>(
+      null,
+    );
+  const deferredSearch = useDebouncedValue(search, 220);
+  function syncUrl(next: {
+    date?: string;
+    mode?: Mode;
+    filter?: TaskFilter;
+    search?: string;
+  }) {
+    const copy = new URLSearchParams(params);
+    const nextDate = next.date ?? date,
+      nextMode = next.mode ?? mode,
+      nextFilter = next.filter ?? filter,
+      nextSearch = next.search ?? search;
+    copy.set("date", nextDate);
+    copy.set("view", nextMode);
+    nextFilter === "all"
+      ? copy.delete("filter")
+      : copy.set("filter", nextFilter);
+    nextSearch ? copy.set("q", nextSearch) : copy.delete("q");
+    setParams(copy, { replace: true });
+  }
+  const setDate = (next: string) => {
+    setDateState(next);
+    syncUrl({ date: next });
+  };
+  const setMode = (next: Mode) => {
+    setModeState(next);
+    syncUrl({ mode: next });
+  };
+  const setTaskFilter = (next: TaskFilter) => {
+    setFilter(next);
+    syncUrl({ filter: next });
+  };
   const range = useMemo(() => plannerRange(date, mode), [date, mode]);
+  const plansKey = [
+    "plans",
+    students.studentId,
+    range.from,
+    range.to,
+    deferredSearch,
+    filter,
+  ];
+  const plansUrl = `/admin/plans?studentId=${encodeURIComponent(students.studentId)}&from=${range.from}&to=${range.to}&search=${encodeURIComponent(normalizePersianText(deferredSearch))}&status=${filter}`;
   const plans = useQuery({
-    queryKey: ["plans", students.studentId, range.from, range.to],
+    queryKey: plansKey,
     enabled: !!students.studentId,
-    queryFn: () =>
-      api.get<Plan[]>(
-        `/admin/plans?studentId=${encodeURIComponent(students.studentId)}&from=${range.from}&to=${range.to}`,
-      ),
+    queryFn: () => api.get<Plan[]>(plansUrl),
   });
+  useEffect(() => {
+    if (!students.studentId) return;
+    [-1, 1].forEach((direction) => {
+      const adjacentDate = shiftView(date, mode, direction),
+        adjacent = plannerRange(adjacentDate, mode);
+      void qc.prefetchQuery({
+        queryKey: [
+          "plans",
+          students.studentId,
+          adjacent.from,
+          adjacent.to,
+          deferredSearch,
+          filter,
+        ],
+        queryFn: () =>
+          api.get<Plan[]>(
+            `/admin/plans?studentId=${encodeURIComponent(students.studentId)}&from=${adjacent.from}&to=${adjacent.to}&search=${encodeURIComponent(normalizePersianText(deferredSearch))}&status=${filter}`,
+          ),
+        staleTime: 60_000,
+      });
+    });
+  }, [date, deferredSearch, filter, mode, qc, students.studentId]);
   const exams = useQuery({
     queryKey: ["exams", students.studentId],
     enabled: !!students.studentId,
@@ -76,7 +162,11 @@ export function PlannerPage() {
         `/admin/exams?studentId=${encodeURIComponent(students.studentId)}`,
       ),
   });
-  const totals = summarizePlans(plans.data ?? []),
+  const visiblePlans = useMemo(
+    () => filterPlans(plans.data ?? [], deferredSearch, filter),
+    [deferredSearch, filter, plans.data],
+  );
+  const totals = summarizePlans(visiblePlans),
     warnings = planWarnings(plans.data ?? []),
     refresh = () => qc.invalidateQueries({ queryKey: ["plans"] });
   const savePlan = useMutation({
@@ -112,11 +202,86 @@ export function PlannerPage() {
       task.id
         ? api.patch(`/admin/tasks/${task.id}`, task)
         : api.post(`/admin/plans/${planId}/tasks`, task),
-    onSuccess: refresh,
+    onMutate: async ({ planId, task }) => {
+      const key = plansKey;
+      await qc.cancelQueries({ queryKey: key });
+      const previous = qc.getQueryData<Plan[]>(key);
+      qc.setQueryData<Plan[]>(key, (current) =>
+        current?.map((plan) =>
+          plan.id !== planId
+            ? plan
+            : {
+                ...plan,
+                tasks: task.id
+                  ? plan.tasks.map((item) =>
+                      item.id === task.id ? { ...item, ...task } : item,
+                    )
+                  : [
+                      ...plan.tasks,
+                      { ...task, id: `optimistic-${Date.now()}` } as PlanTask,
+                    ],
+              },
+        ),
+      );
+      return { previous, key };
+    },
+    onSuccess: (updated) => {
+      if (updated && typeof updated === "object" && "id" in updated)
+        qc.setQueryData<Plan[]>(plansKey, (current) =>
+          replacePlan(current, updated as Plan),
+        );
+      else refresh();
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previous) qc.setQueryData(context.key, context.previous);
+    },
+    onSettled: refresh,
   });
   const removeTask = useMutation({
     mutationFn: (id: string) => api.delete(`/admin/tasks/${id}`),
-    onSuccess: refresh,
+    onMutate: async (id) => {
+      const key = plansKey;
+      await qc.cancelQueries({ queryKey: key });
+      const previous = qc.getQueryData<Plan[]>(key);
+      qc.setQueryData<Plan[]>(key, (current) =>
+        current?.map((p) => ({
+          ...p,
+          tasks: p.tasks.filter((t) => t.id !== id),
+        })),
+      );
+      return { previous, key };
+    },
+    onError: (_error, _id, context) => {
+      if (context?.previous) qc.setQueryData(context.key, context.previous);
+    },
+    onSettled: refresh,
+  });
+  const moveTask = useMutation({
+    mutationFn: ({
+      taskId,
+      planId,
+      start,
+      end,
+    }: {
+      taskId: string;
+      planId: string;
+      start: string;
+      end: string;
+    }) => api.patch<Plan>(`/admin/tasks/${taskId}`, { planId, start, end }),
+    onMutate: async (move) => {
+      const key = plansKey;
+      await qc.cancelQueries({ queryKey: key });
+      const previous = qc.getQueryData<Plan[]>(key);
+      qc.setQueryData<Plan[]>(key, (current) =>
+        optimisticMove(current || [], move),
+      );
+      return { previous, key };
+    },
+    onError: (_error, _move, context) => {
+      if (context?.previous) qc.setQueryData(context.key, context.previous);
+    },
+    onSettled: refresh,
+    meta: { successMessage: "زمان فعالیت جابه‌جا شد." },
   });
   const publishRange = useMutation({
     mutationFn: (published: boolean) =>
@@ -149,23 +314,7 @@ export function PlannerPage() {
     });
   }
   function openTask(plan: Plan, task?: PlanTask) {
-    modal.open({
-      title: task ? "ویرایش فعالیت" : "افزودن فعالیت",
-      size: "lg",
-      content: (
-        <TaskForm
-          initial={toTaskDraft(task, plan.tasks.length)}
-          exams={exams.data ?? []}
-          busy={saveTask.isPending}
-          onCancel={modal.close}
-          onSubmit={(body) =>
-            void saveTask
-              .mutateAsync({ planId: plan.id, task: { ...body, id: task?.id } })
-              .then(modal.close)
-          }
-        />
-      ),
-    });
+    setDrawer({ plan, task });
   }
   function openDuplicate(plan: Plan) {
     modal.open({
@@ -195,162 +344,308 @@ export function PlannerPage() {
       .confirm({ title, description, tone: "danger", confirmLabel: "حذف" })
       .then((ok) => ok && action());
   }
+  async function ensurePlan(planDate: string) {
+    const existing = plans.data?.find((plan) => plan.planDate === planDate);
+    if (existing) return existing;
+    return savePlan.mutateAsync(toPlanDraft(planDate));
+  }
+  async function quickAdd(planDate: string, start = "08:00") {
+    const plan = await ensurePlan(planDate);
+    setDrawer({
+      plan,
+      task: {
+        id: "",
+        start,
+        end: addMinutes(start, 60),
+        type: "study",
+        title: "",
+        subject: "",
+        pages: "",
+        testCount: 0,
+        note: "",
+        sortOrder: plan.tasks.length + 1,
+      } as PlanTask,
+    });
+  }
+  useEffect(() => {
+    function keydown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      if (target?.matches("input,textarea,select,[contenteditable=true]"))
+        return;
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setPaletteOpen(true);
+        return;
+      }
+      if (event.key.toLowerCase() === "n") {
+        event.preventDefault();
+        void quickAdd(date);
+      } else if (event.key.toLowerCase() === "t") setDate(todayIso());
+      else if (event.key === "ArrowRight") setDate(shiftView(date, mode, -1));
+      else if (event.key === "ArrowLeft") setDate(shiftView(date, mode, 1));
+    }
+    window.addEventListener("keydown", keydown);
+    return () => window.removeEventListener("keydown", keydown);
+  });
   return (
-    <div className="grid gap-5">
-      <header className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <h2 className="text-2xl font-black">برنامه‌ریز</h2>
-          <p className="text-slate-500">
-            مدیریت کامل روز، هفته و ماه، فعالیت‌ها، انتشار و انتقال JSON
-          </p>
-        </div>
-        <div className="grid gap-2 sm:grid-cols-[minmax(220px,1fr)_170px_auto]">
-          <StudentPicker
-            students={students.students}
-            value={students.studentId}
-            onChange={students.setStudentId}
-          />
-          <DatePicker value={date} onChange={setDate} />
-          <Button onClick={() => openPlan(date)} disabled={!students.studentId}>
-            <Plus size={16} />
-            برنامه این روز
-          </Button>
-        </div>
-      </header>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
-          {(["day", "week", "month"] as Mode[]).map((item) => (
-            <button
-              key={item}
-              className={`rounded-md px-4 py-2 text-sm font-semibold ${mode === item ? "bg-white text-brand shadow-sm" : "text-slate-500"}`}
-              onClick={() => setMode(item)}
+    <div className="grid gap-3">
+      <header className="sticky top-0 z-20 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-sm backdrop-blur-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="w-44 shrink-0">
+            <StudentPicker
+              students={students.students}
+              value={students.studentId}
+              onChange={students.setStudentId}
+            />
+          </div>
+          <div className="flex items-center rounded-lg bg-slate-100 p-1">
+            <Button
+              className="h-8 px-2"
+              variant="ghost"
+              aria-label="بازه قبل"
+              onClick={() => setDate(shiftView(date, mode, -1))}
             >
-              {{ day: "روز", week: "هفته", month: "ماه" }[item]}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-1">
+              <ChevronRight size={16} />
+            </Button>
+            <DatePicker
+              className="h-8 w-36 border-0 bg-transparent"
+              value={date}
+              onChange={setDate}
+            />
+            <Button
+              className="h-8 px-2"
+              variant="ghost"
+              aria-label="بازه بعد"
+              onClick={() => setDate(shiftView(date, mode, 1))}
+            >
+              <ChevronLeft size={16} />
+            </Button>
+          </div>
           <Button
-            variant="ghost"
-            onClick={() => setDate(shiftView(date, mode, -1))}
+            className="h-9 px-3"
+            variant="soft"
+            onClick={() => setDate(todayIso())}
           >
-            <ChevronRight size={17} />
-          </Button>
-          <Button variant="soft" onClick={() => setDate(todayIso())}>
             امروز
           </Button>
-          <Button
-            variant="ghost"
-            onClick={() => setDate(shiftView(date, mode, 1))}
-          >
-            <ChevronLeft size={17} />
-          </Button>
-        </div>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-4">
-        <Metric label="برنامه‌ها" value={plans.data?.length ?? 0} />
-        <Metric label="فعالیت‌ها" value={totals.tasks} />
-        <Metric label="دقیقه" value={totals.minutes} />
-        <Metric label="تست" value={totals.tests} />
-      </div>
-      {warnings.length ? (
-        <Card className="border-amber-200 bg-amber-50">
-          <strong className="text-amber-900">هشدارهای برنامه</strong>
-          <ul className="mt-2 list-inside list-disc text-sm leading-7 text-amber-800">
-            {warnings.slice(0, 8).map((warning) => (
-              <li key={warning}>{warning}</li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
-      <Card>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <CalendarDays size={18} />
-            <h3 className="font-bold">
-              {range.from === range.to
-                ? range.from
-                : `${range.from} تا ${range.to}`}
-            </h3>
-          </div>
-          <div className="flex gap-2">
+          <ViewSwitch value={mode} onChange={setMode} />
+          <label className="flex h-9 min-w-44 flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3">
+            <Search size={15} />
+            <input
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                syncUrl({ search: e.target.value });
+              }}
+              placeholder="جستجوی فعالیت…"
+            />
+            <kbd className="hidden rounded bg-white px-1 text-[10px] text-slate-400 lg:inline">
+              ⌘K
+            </kbd>
+          </label>
+          <div className="relative">
             <Button
+              className="h-9 px-3"
               variant="soft"
-              disabled={!students.studentId}
-              onClick={() =>
-                void modal
-                  .confirm({
-                    title: "انتشار تمام برنامه‌های بازه؟",
-                    description: `${range.from} تا ${range.to}`,
-                  })
-                  .then((ok) => ok && publishRange.mutate(true))
-              }
+              onClick={() => setFiltersOpen((v) => !v)}
             >
-              انتشار بازه
+              <Filter size={15} />
+              فیلتر{filter !== "all" ? <Badge tone="blue">۱</Badge> : null}
             </Button>
+            {filtersOpen ? (
+              <FilterMenu
+                value={filter}
+                onChange={(value) => {
+                  setTaskFilter(value);
+                  setFiltersOpen(false);
+                }}
+              />
+            ) : null}
+          </div>
+          <Button
+            className="h-9"
+            disabled={!students.studentId}
+            onClick={() => void quickAdd(date)}
+          >
+            <Plus size={16} />
+            فعالیت جدید
+          </Button>
+          <div className="relative">
             <Button
+              className="h-9 px-3"
               variant="ghost"
-              disabled={!students.studentId}
-              onClick={() =>
-                void modal
-                  .confirm({
-                    title: "تبدیل بازه به پیش‌نویس؟",
-                    description: `${range.from} تا ${range.to}`,
-                  })
-                  .then((ok) => ok && publishRange.mutate(false))
-              }
+              onClick={() => setMoreOpen((v) => !v)}
             >
-              پیش‌نویس بازه
+              <MoreHorizontal size={18} />
             </Button>
+            {moreOpen ? (
+              <MoreMenu
+                onClose={() => setMoreOpen(false)}
+                onPlan={() => {
+                  setMoreOpen(false);
+                  openPlan(date);
+                }}
+                onPublish={(published) => {
+                  setMoreOpen(false);
+                  void modal
+                    .confirm({
+                      title: published
+                        ? "انتشار برنامه‌های بازه؟"
+                        : "پیش‌نویس کردن بازه؟",
+                      description: `${range.from} تا ${range.to}`,
+                    })
+                    .then((ok) => ok && publishRange.mutate(published));
+                }}
+                onTransfer={() => {
+                  setMoreOpen(false);
+                  modal.open({
+                    title: "ورود و خروج JSON",
+                    size: "xl",
+                    content: (
+                      <DataTransferWorkspace
+                        studentId={students.studentId}
+                        scope="all"
+                        title="انتقال برنامه‌ها و آزمون‌های مرتبط"
+                        description="ورود، اعتبارسنجی و خروجی استاندارد بازه"
+                        exportFrom={range.from}
+                        exportTo={range.to}
+                        showPlanReplacement
+                        showExamReplacement
+                        onImported={() => void refresh()}
+                      />
+                    ),
+                  });
+                }}
+              />
+            ) : null}
           </div>
         </div>
+        {filter !== "all" ? (
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-xs text-slate-400">فیلتر فعال:</span>
+            <button
+              className="flex items-center gap-1 rounded-full bg-teal-50 px-2 py-1 text-xs text-brand"
+              onClick={() => setTaskFilter("all")}
+            >
+              {filterLabel(filter)}
+              <X size={12} />
+            </button>
+          </div>
+        ) : null}
+      </header>
+      <section className="flex min-h-10 flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2">
+        <button
+          className="flex items-center gap-2 text-xs font-bold"
+          onClick={() => setSummaryOpen((v) => !v)}
+        >
+          <ChevronsUpDown size={14} />
+          خلاصه بازه
+        </button>
+        {summaryOpen ? (
+          <div className="flex flex-wrap items-center gap-4 text-xs">
+            <SummaryItem label="روز" value={visiblePlans.length} />
+            <SummaryItem label="فعالیت" value={totals.tasks} />
+            <SummaryItem
+              label="ساعت"
+              value={Math.round((totals.minutes / 60) * 10) / 10}
+            />
+            <SummaryItem label="تست" value={totals.tests} />
+          </div>
+        ) : null}
+        {warnings.length && warningsOpen ? (
+          <button
+            className="mr-auto flex max-w-full items-center gap-2 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-800"
+            onClick={() => setWarningsOpen(false)}
+            title="بستن"
+          >
+            <AlertTriangle size={14} />
+            <span className="truncate">{warnings[0]}</span>
+            {warnings.length > 1 ? (
+              <Badge tone="amber">+{fa(warnings.length - 1)}</Badge>
+            ) : null}
+            <X size={12} />
+          </button>
+        ) : null}
+      </section>
+      <Card className="h-[calc(100vh-235px)] min-h-[480px] overflow-hidden p-0">
         <PlannerCanvas
           mode={mode}
           date={date}
           range={range}
-          plans={plans.data ?? []}
+          plans={visiblePlans}
+          loading={plans.isLoading}
           onSelectDay={(next) => {
             setDate(next);
             setMode("day");
           }}
           onCreate={openPlan}
-          onEditPlan={openPlan}
-          onAddTask={openTask}
+          onQuickAdd={(day, start) => void quickAdd(day, start)}
           onEditTask={openTask}
-          onDuplicate={openDuplicate}
-          onDeleteTask={(task) =>
-            confirmDelete(
-              "حذف فعالیت؟",
-              "این فعالیت از برنامه حذف می‌شود.",
-              () => removeTask.mutate(task.id),
-            )
-          }
-          onDeletePlan={(plan) =>
-            confirmDelete(
-              "حذف کامل برنامه روز؟",
-              `برنامه ${plan.planDate} و فعالیت‌های آن حذف می‌شوند.`,
-              () => removePlan.mutate(plan.id),
-            )
-          }
-          onToggle={(plan) =>
-            patchPlan.mutate({
-              id: plan.id,
-              body: { published: !plan.published },
-            })
+          onMoveTask={(taskId, planId, start, end) =>
+            moveTask.mutate({ taskId, planId, start, end })
           }
         />
       </Card>
-      <DataTransferWorkspace
-        studentId={students.studentId}
-        scope="all"
-        title="انتقال برنامه‌ها و آزمون‌های مرتبط"
-        description="فایل برنامه را بدون درگیری با متن خام JSON بررسی، رفع تداخل و ثبت کنید؛ خروجی بازه نیز تمام پیوندهای آزمون را حفظ می‌کند."
-        exportFrom={range.from}
-        exportTo={range.to}
-        showPlanReplacement
-        showExamReplacement
-        onImported={() => void refresh()}
-      />
+      {drawer ? (
+        <TaskDrawer
+          title={drawer.task?.id ? "ویرایش فعالیت" : "فعالیت جدید"}
+          onClose={() => setDrawer(null)}
+          onDelete={
+            drawer.task?.id
+              ? () =>
+                  confirmDelete(
+                    "حذف فعالیت؟",
+                    "این فعالیت از برنامه حذف می‌شود.",
+                    () => {
+                      removeTask.mutate(drawer.task!.id);
+                      setDrawer(null);
+                    },
+                  )
+              : undefined
+          }
+        >
+          <TaskForm
+            initial={toTaskDraft(
+              drawer.task?.id ? drawer.task : undefined,
+              drawer.plan.tasks.length,
+            )}
+            exams={exams.data ?? []}
+            busy={saveTask.isPending}
+            onCancel={() => setDrawer(null)}
+            onSubmit={(body) =>
+              void saveTask
+                .mutateAsync({
+                  planId: drawer.plan.id,
+                  task: { ...body, id: drawer.task?.id || undefined },
+                })
+                .then(() => setDrawer(null))
+            }
+          />
+        </TaskDrawer>
+      ) : null}
+      {paletteOpen ? (
+        <CommandPalette
+          plans={plans.data ?? []}
+          onClose={() => setPaletteOpen(false)}
+          onDate={(next) => {
+            setDate(next);
+            setPaletteOpen(false);
+          }}
+          onView={(next) => {
+            setMode(next);
+            setPaletteOpen(false);
+          }}
+          onTask={(plan, task) => {
+            setDrawer({ plan, task });
+            setPaletteOpen(false);
+          }}
+          onCreate={() => {
+            void quickAdd(date);
+            setPaletteOpen(false);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -360,180 +655,553 @@ type CanvasProps = {
   date: string;
   range: { from: string; to: string };
   plans: Plan[];
+  loading: boolean;
   onSelectDay: (date: string) => void;
   onCreate: (date: string) => void;
-  onEditPlan: (date: string, plan: Plan) => void;
-  onAddTask: (plan: Plan) => void;
+  onQuickAdd: (date: string, start?: string) => void;
   onEditTask: (plan: Plan, task: PlanTask) => void;
-  onDuplicate: (plan: Plan) => void;
-  onDeleteTask: (task: PlanTask) => void;
-  onDeletePlan: (plan: Plan) => void;
-  onToggle: (plan: Plan) => void;
+  onMoveTask: (
+    taskId: string,
+    planId: string,
+    start: string,
+    end: string,
+  ) => void;
 };
 function PlannerCanvas(props: CanvasProps) {
   const { formatDate } = useLocale();
   const map = new Map(props.plans.map((plan) => [plan.planDate, plan]));
-  if (props.mode === "day") {
-    const plan = map.get(props.date);
-    return plan ? (
-      <DayView plan={plan} actions={props} />
-    ) : (
-      <EmptyState
-        title={`برای ${props.date} برنامه‌ای نیست.`}
-        action={
-          <Button onClick={() => props.onCreate(props.date)}>
-            <Plus size={16} />
-            ساخت برنامه
-          </Button>
-        }
-      />
+  if (props.loading) return <PlannerSkeleton />;
+  if (props.mode === "list")
+    return <VirtualList plans={props.plans} onEdit={props.onEditTask} />;
+  if (props.mode === "month")
+    return (
+      <div className="h-full overflow-auto overscroll-contain">
+        <div className="grid min-h-full grid-cols-2 gap-px bg-slate-200 sm:grid-cols-4 xl:grid-cols-7">
+          {monthCells(props.range.from, props.range.to).map((day, index) =>
+            day ? (
+              <button
+                key={day}
+                className={`min-h-24 bg-white p-2 text-right hover:bg-teal-50 ${day === todayIso() ? "ring-2 ring-inset ring-brand" : ""}`}
+                onClick={() => props.onSelectDay(day)}
+              >
+                <strong className="text-xs">
+                  {formatDate(day, {
+                    day: "numeric",
+                    month: "short",
+                    year: undefined,
+                  })}
+                </strong>
+                <span className="mt-2 block text-xs text-slate-500">
+                  {fa(map.get(day)?.tasks.length || 0)} فعالیت
+                </span>
+                {map
+                  .get(day)
+                  ?.tasks.slice(0, 2)
+                  .map((t) => (
+                    <small
+                      key={t.id}
+                      className="mt-1 block truncate rounded bg-slate-100 px-1"
+                    >
+                      {t.start} {t.title || t.subject}
+                    </small>
+                  ))}
+              </button>
+            ) : (
+              <div key={`empty-${index}`} className="bg-slate-50" />
+            ),
+          )}
+        </div>
+      </div>
     );
-  }
   const days =
-    props.mode === "week"
-      ? dateRange(props.range.from, props.range.to)
-      : monthCells(props.range.from, props.range.to);
+    props.mode === "day"
+      ? [props.date]
+      : dateRange(props.range.from, props.range.to);
+  return (
+    <div className="h-full overflow-y-auto overflow-x-hidden overscroll-contain">
+      <div
+        className={
+          props.mode === "day"
+            ? "grid min-h-full grid-cols-1"
+            : "grid min-h-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
+        }
+      >
+        {days.map((day) => (
+          <DayColumn
+            key={day}
+            day={day}
+            plan={map.get(day)}
+            compact={props.mode === "week"}
+            formatDate={formatDate}
+            actions={props}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DayColumn({
+  day,
+  plan,
+  formatDate,
+  actions,
+}: {
+  day: string;
+  plan?: Plan;
+  compact: boolean;
+  formatDate: (
+    value?: string | Date,
+    options?: Intl.DateTimeFormatOptions,
+  ) => string;
+  actions: CanvasProps;
+}) {
+  function drop(event: React.DragEvent, targetStart?: string) {
+    event.preventDefault();
+    event.stopPropagation();
+    const raw = event.dataTransfer.getData("application/x-moshaver-task");
+    if (!raw) return;
+    const data = JSON.parse(raw) as { id: string; start: string; end: string };
+    if (plan) {
+      const duration = Math.max(15, minutesBetween(data.start, data.end));
+      const start = targetStart || data.start;
+      actions.onMoveTask(data.id, plan.id, start, addMinutes(start, duration));
+    }
+  }
+  return (
+    <section
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(event) => drop(event)}
+      className="min-w-0 border-l border-slate-200 bg-slate-50/40 xl:min-h-full"
+    >
+      <header
+        className={`sticky top-0 z-10 border-b border-slate-200 px-2 py-2 ${day === todayIso() ? "bg-teal-50" : "bg-white"}`}
+      >
+        <button
+          className="w-full text-right"
+          onClick={() => actions.onSelectDay(day)}
+        >
+          <strong className="block text-xs">
+            {formatDate(day, {
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+              year: undefined,
+            })}
+          </strong>
+          <span className="text-[10px] text-slate-400">
+            {fa(plan?.tasks.length || 0)} فعالیت
+          </span>
+        </button>
+      </header>
+      <div className="grid content-start gap-1.5 p-2">
+        {plan?.tasks.length ? (
+          plan.tasks.map((task) => (
+            <CompactTask
+              key={task.id}
+              task={task}
+              plan={plan}
+              onEdit={actions.onEditTask}
+            />
+          ))
+        ) : (
+          <button
+            className="rounded-lg border border-dashed border-slate-200 py-5 text-xs text-slate-400 hover:border-brand hover:text-brand"
+            onClick={() =>
+              plan ? actions.onQuickAdd(day) : actions.onCreate(day)
+            }
+          >
+            + برنامه این روز
+          </button>
+        )}
+        <div className="sticky bottom-2 mt-1 grid grid-cols-3 gap-1 rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-200">
+          {["08:00", "14:00", "19:00"].map((start) => (
+            <button
+              key={start}
+              className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold text-brand hover:bg-teal-50"
+              onClick={() => actions.onQuickAdd(day, start)}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => drop(event, start)}
+              title={`افزودن یا انتقال به ساعت ${start}`}
+            >
+              <Plus size={11} />
+              <span dir="ltr">{start}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+function CompactTask({
+  task,
+  plan,
+  onEdit,
+}: {
+  task: PlanTask;
+  plan: Plan;
+  onEdit: (plan: Plan, task: PlanTask) => void;
+}) {
+  const status = task.completedAt ? "انجام‌شده" : "برنامه‌ریزی";
+  return (
+    <button
+      draggable
+      onDragStart={(e) =>
+        e.dataTransfer.setData(
+          "application/x-moshaver-task",
+          JSON.stringify({ id: task.id, start: task.start, end: task.end }),
+        )
+      }
+      onClick={() => onEdit(plan, task)}
+      className="group min-w-0 rounded-md border border-slate-200 bg-white p-1.5 text-right shadow-sm transition hover:border-brand hover:shadow"
+    >
+      <div className="flex min-w-0 items-center gap-1">
+        <span className="font-mono text-[10px] text-slate-400" dir="ltr">
+          {task.start}
+        </span>
+        <Badge
+          tone={
+            task.type === "exam"
+              ? "red"
+              : task.type === "test"
+                ? "amber"
+                : "neutral"
+          }
+        >
+          {task.type === "exam"
+            ? "بالا"
+            : task.type === "test"
+              ? "متوسط"
+              : "عادی"}
+        </Badge>
+      </div>
+      <strong className="mt-0.5 block truncate text-[11px]">
+        {task.title || task.subject || task.type}
+      </strong>
+      <small className="mt-0.5 block truncate text-[9px] text-slate-400">
+        {status}
+      </small>
+      <div className="grid max-h-0 overflow-hidden text-[10px] text-slate-500 opacity-0 transition-all group-hover:mt-1 group-hover:max-h-12 group-hover:opacity-100">
+        {task.subject} {task.note}
+      </div>
+    </button>
+  );
+}
+function VirtualList({
+  plans,
+  onEdit,
+}: {
+  plans: Plan[];
+  onEdit: (plan: Plan, task: PlanTask) => void;
+}) {
+  const tasks = plans.flatMap((plan) =>
+    plan.tasks.map((task) => ({ plan, task })),
+  );
+  const [start, setStart] = useState(0);
+  const row = 58,
+    visible = 14;
   return (
     <div
-      className={
-        props.mode === "week"
-          ? "grid gap-3 md:grid-cols-2 xl:grid-cols-4"
-          : "grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7"
-      }
+      className="h-full overflow-auto"
+      onScroll={(e) => setStart(Math.floor(e.currentTarget.scrollTop / row))}
     >
-      {days.map((day, index) =>
-        day ? (
-          <button
-            key={day}
-            onClick={() => props.onSelectDay(day)}
-            className={`min-h-32 rounded-lg border p-3 text-right transition hover:border-brand ${day === todayIso() ? "border-brand bg-teal-50" : "border-slate-200"}`}
-          >
-            <span className="text-xs text-slate-500">
-              {formatDate(day, {
-                month: "short",
-                day: "numeric",
-                year: undefined,
-              })}
-            </span>
-            {map.get(day) ? (
-              <>
-                <strong className="mt-2 block">
-                  {map.get(day)?.title || "برنامه روزانه"}
-                </strong>
-                <Badge tone={map.get(day)?.published ? "green" : "amber"}>
-                  {map.get(day)?.published ? "منتشر" : "پیش‌نویس"}
-                </Badge>
-                <small className="mt-2 block text-slate-500">
-                  {fa(map.get(day)?.tasks.length ?? 0)} فعالیت
-                </small>
-              </>
-            ) : (
-              <span className="mt-6 block text-center text-2xl text-slate-300">
-                +
+      <div style={{ height: tasks.length * row, position: "relative" }}>
+        {tasks
+          .slice(start, start + visible + 4)
+          .map(({ plan, task }, index) => (
+            <button
+              key={task.id}
+              onClick={() => onEdit(plan, task)}
+              className="absolute right-0 grid w-full grid-cols-[110px_90px_1fr_auto] items-center gap-3 border-b border-slate-100 px-4 text-right hover:bg-slate-50"
+              style={{ height: row, top: (start + index) * row }}
+            >
+              <span className="text-xs text-slate-500">{plan.planDate}</span>
+              <span className="font-mono text-xs" dir="ltr">
+                {task.start}–{task.end}
               </span>
-            )}
+              <strong className="truncate text-sm">
+                {task.subject ? `${task.subject} — ` : ""}
+                {task.title || task.type}
+              </strong>
+              <Badge>{task.type}</Badge>
+            </button>
+          ))}
+      </div>
+    </div>
+  );
+}
+function PlannerSkeleton() {
+  return (
+    <div className="grid h-full grid-cols-7 gap-px bg-slate-200">
+      {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+        <div key={day} className="bg-white p-2">
+          <div className="h-8 animate-pulse rounded bg-slate-100" />
+          {[1, 2, 3].map((x) => (
+            <div
+              key={x}
+              className="mt-2 h-16 animate-pulse rounded bg-slate-100"
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+function ViewSwitch({
+  value,
+  onChange,
+}: {
+  value: Mode;
+  onChange: (mode: Mode) => void;
+}) {
+  return (
+    <div className="flex rounded-lg bg-slate-100 p-1">
+      {(["day", "week", "month", "list"] as Mode[]).map((mode) => (
+        <button
+          key={mode}
+          className={`h-7 rounded-md px-2 text-xs font-semibold ${value === mode ? "bg-white text-brand shadow-sm" : "text-slate-500"}`}
+          onClick={() => onChange(mode)}
+        >
+          {{ day: "روز", week: "هفته", month: "ماه", list: "فهرست" }[mode]}
+        </button>
+      ))}
+    </div>
+  );
+}
+function SummaryItem({ label, value }: { label: string; value: number }) {
+  return (
+    <span>
+      <b className="text-sm text-ink">{fa(value)}</b>{" "}
+      <span className="text-slate-400">{label}</span>
+    </span>
+  );
+}
+function FilterMenu({
+  value,
+  onChange,
+}: {
+  value: TaskFilter;
+  onChange: (value: TaskFilter) => void;
+}) {
+  return (
+    <div className="absolute left-0 top-11 z-40 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+      <strong className="block px-2 py-1 text-xs">وضعیت برنامه</strong>
+      {(["all", "published", "draft", "incomplete"] as TaskFilter[]).map(
+        (item) => (
+          <button
+            key={item}
+            className={`mt-1 block w-full rounded-md px-3 py-2 text-right text-sm ${value === item ? "bg-teal-50 text-brand" : "hover:bg-slate-50"}`}
+            onClick={() => onChange(item)}
+          >
+            {filterLabel(item)}
           </button>
-        ) : (
-          <div key={`empty-${index}`} />
         ),
       )}
     </div>
   );
 }
-function DayView({ plan, actions }: { plan: Plan; actions: CanvasProps }) {
-  const { formatDate } = useLocale();
+function MoreMenu({
+  onClose,
+  onPlan,
+  onPublish,
+  onTransfer,
+}: {
+  onClose: () => void;
+  onPlan: () => void;
+  onPublish: (value: boolean) => void;
+  onTransfer: () => void;
+}) {
   return (
-    <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
-      <aside className="rounded-lg bg-slate-50 p-4">
-        <Badge tone={plan.published ? "green" : "amber"}>
-          {plan.published ? "منتشر" : "پیش‌نویس"}
-        </Badge>
-        <h3 className="mt-3 text-lg font-black">
-          {plan.title || "برنامه روزانه"}
-        </h3>
-        <p className="text-sm text-slate-500">
-          {plan.persianDate || formatDate(plan.planDate, { weekday: "long" })}{" "}
-          {plan.dayLabel ? `• ${plan.dayLabel}` : ""}
-        </p>
-        {plan.motivationText ? (
-          <p className="mt-3 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
-            {plan.motivationText}
-          </p>
-        ) : null}
-        <div className="mt-4 grid gap-2">
-          <Button onClick={() => actions.onAddTask(plan)}>
-            <Plus size={16} />
-            فعالیت
-          </Button>
-          <Button
-            variant="soft"
-            onClick={() => actions.onEditPlan(plan.planDate, plan)}
-          >
-            <Pencil size={16} />
-            مشخصات روز
-          </Button>
-          <Button variant="soft" onClick={() => actions.onDuplicate(plan)}>
-            <Copy size={16} />
-            کپی روز
-          </Button>
-          <Button variant="ghost" onClick={() => actions.onToggle(plan)}>
-            {plan.published ? "بردن به پیش‌نویس" : "انتشار"}
-          </Button>
-          <Button variant="danger" onClick={() => actions.onDeletePlan(plan)}>
-            <Trash2 size={16} />
-            حذف برنامه
-          </Button>
-        </div>
+    <div className="absolute left-0 top-11 z-40 w-60 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+      <button
+        className="block w-full rounded-md px-3 py-2 text-right text-sm hover:bg-slate-50"
+        onClick={onPlan}
+      >
+        تنظیمات برنامه روز
+      </button>
+      <button
+        className="block w-full rounded-md px-3 py-2 text-right text-sm hover:bg-slate-50"
+        onClick={() => onPublish(true)}
+      >
+        انتشار بازه
+      </button>
+      <button
+        className="block w-full rounded-md px-3 py-2 text-right text-sm hover:bg-slate-50"
+        onClick={() => onPublish(false)}
+      >
+        پیش‌نویس کردن بازه
+      </button>
+      <button
+        className="block w-full rounded-md px-3 py-2 text-right text-sm hover:bg-slate-50"
+        onClick={onTransfer}
+      >
+        ورود / خروج JSON
+      </button>
+      <button
+        className="mt-1 block w-full border-t px-3 py-2 text-right text-xs text-slate-400"
+        onClick={onClose}
+      >
+        بستن
+      </button>
+    </div>
+  );
+}
+function TaskDrawer({
+  title,
+  onClose,
+  onDelete,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  onDelete?: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-slate-950/45"
+      role="presentation"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="absolute bottom-0 left-0 right-0 max-h-[88vh] overflow-auto rounded-t-2xl bg-white p-5 shadow-2xl md:bottom-0 md:right-auto md:top-0 md:w-[460px] md:rounded-none"
+      >
+        <header className="mb-4 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold text-brand">جزئیات فعالیت</span>
+            <h3 className="text-lg font-black">{title}</h3>
+          </div>
+          <div className="flex gap-1">
+            {onDelete ? (
+              <Button className="h-9 px-2" variant="ghost" onClick={onDelete}>
+                <Trash2 size={17} className="text-rose-600" />
+              </Button>
+            ) : null}
+            <Button className="h-9 px-2" variant="ghost" onClick={onClose}>
+              <X size={18} />
+            </Button>
+          </div>
+        </header>
+        {children}
       </aside>
-      <section className="grid content-start gap-2">
-        {plan.tasks.length ? (
-          plan.tasks.map((task) => (
-            <div
-              key={task.id}
-              className="grid gap-2 rounded-lg border border-slate-200 p-3 sm:grid-cols-[100px_1fr_auto]"
-            >
-              <span className="font-mono text-xs text-slate-500">
-                {task.start} — {task.end}
-              </span>
-              <div>
-                <strong>
-                  {task.subject ? `${task.subject} — ` : ""}
-                  {task.title || task.type}
-                </strong>
-                <small className="block text-slate-500">
-                  {[
-                    task.pages && `صفحه ${task.pages}`,
-                    task.testCount && `${task.testCount} تست`,
-                    task.examId && "آزمون متصل",
-                    task.note,
-                  ]
-                    .filter(Boolean)
-                    .join(" • ")}
-                </small>
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  className="h-8 px-2"
-                  variant="ghost"
-                  onClick={() => actions.onEditTask(plan, task)}
+    </div>
+  );
+}
+function CommandPalette({
+  plans,
+  onClose,
+  onDate,
+  onView,
+  onTask,
+  onCreate,
+}: {
+  plans: Plan[];
+  onClose: () => void;
+  onDate: (date: string) => void;
+  onView: (mode: Mode) => void;
+  onTask: (plan: Plan, task: PlanTask) => void;
+  onCreate: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const input = useRef<HTMLInputElement>(null);
+  useEffect(() => input.current?.focus(), []);
+  const tasks = plans
+    .flatMap((plan) => plan.tasks.map((task) => ({ plan, task })))
+    .filter((x) =>
+      [x.task.title, x.task.subject, x.plan.planDate].join(" ").includes(query),
+    )
+    .slice(0, 12);
+  return (
+    <div
+      className="fixed inset-0 z-[60] grid place-items-start bg-slate-950/55 px-4 pt-[12vh]"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-label="فرمان‌های برنامه‌ریز"
+        className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+      >
+        <label className="flex h-14 items-center gap-3 border-b px-4">
+          <Command size={20} className="text-brand" />
+          <input
+            ref={input}
+            className="min-w-0 flex-1 outline-none"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="جستجوی فعالیت، تاریخ یا فرمان…"
+            onKeyDown={(e) => e.key === "Escape" && onClose()}
+          />
+          <kbd className="text-xs text-slate-400">Esc</kbd>
+        </label>
+        <div className="max-h-[55vh] overflow-auto p-2">
+          <div className="grid grid-cols-2 gap-2">
+            <PaletteButton icon={Plus} label="فعالیت جدید" onClick={onCreate} />
+            <PaletteButton
+              icon={Calendar}
+              label="رفتن به امروز"
+              onClick={() => onDate(todayIso())}
+            />
+            {(["day", "week", "month", "list"] as Mode[]).map((mode) => (
+              <PaletteButton
+                key={mode}
+                icon={CalendarDays}
+                label={`نمای ${{ day: "روز", week: "هفته", month: "ماه", list: "فهرست" }[mode]}`}
+                onClick={() => onView(mode)}
+              />
+            ))}
+          </div>
+          {query ? (
+            <>
+              <h4 className="px-2 pb-1 pt-4 text-xs text-slate-400">نتایج</h4>
+              {tasks.map(({ plan, task }) => (
+                <button
+                  key={task.id}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-right hover:bg-slate-50"
+                  onClick={() => onTask(plan, task)}
                 >
-                  <Pencil size={14} />
-                </Button>
-                <Button
-                  className="h-8 px-2"
-                  variant="ghost"
-                  onClick={() => actions.onDeleteTask(task)}
-                >
-                  <Trash2 size={14} />
-                </Button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <EmptyState title="هنوز فعالیتی ثبت نشده است." />
-        )}
+                  <span className="font-mono text-xs text-slate-400">
+                    {task.start}
+                  </span>
+                  <strong className="truncate text-sm">
+                    {task.title || task.subject || task.type}
+                  </strong>
+                  <small className="mr-auto text-slate-400">
+                    {plan.planDate}
+                  </small>
+                </button>
+              ))}
+            </>
+          ) : null}
+        </div>
       </section>
     </div>
+  );
+}
+function PaletteButton({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: typeof Plus;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className="flex items-center gap-2 rounded-lg border border-slate-200 p-3 text-sm hover:border-brand hover:bg-teal-50"
+      onClick={onClick}
+    >
+      <Icon size={16} />
+      {label}
+    </button>
   );
 }
 
@@ -808,15 +1476,21 @@ export function plannerRange(date: string, mode: Mode) {
       from = iso(addDateDays(d, -offset));
     return { from, to: addDays(from, 6) };
   }
-  return {
-    from: `${date.slice(0, 7)}-01`,
-    to: iso(new Date(d.getFullYear(), d.getMonth() + 1, 0, 12)),
-  };
+  if (mode === "month")
+    return {
+      from: `${date.slice(0, 7)}-01`,
+      to: iso(new Date(d.getFullYear(), d.getMonth() + 1, 0, 12)),
+    };
+  return { from: addDays(date, -30), to: addDays(date, 30) };
 }
 function shiftView(date: string, mode: Mode, direction: number) {
   const d = new Date(`${date}T12:00:00`);
   if (mode === "month") d.setMonth(d.getMonth() + direction);
-  else d.setDate(d.getDate() + direction * (mode === "week" ? 7 : 1));
+  else
+    d.setDate(
+      d.getDate() +
+        direction * (mode === "week" ? 7 : mode === "list" ? 30 : 1),
+    );
   return iso(d);
 }
 function addDateDays(date: Date, days: number) {
@@ -876,4 +1550,105 @@ export function planWarnings(plans: Plan[]) {
       warnings.push(`${plan.planDate}: حجم برنامه بیش از ۸ ساعت است`);
   });
   return warnings;
+}
+function parseMode(value: string | null): Mode {
+  return value === "day" || value === "month" || value === "list"
+    ? value
+    : "week";
+}
+function parseFilter(value: string | null): TaskFilter {
+  return value === "published" || value === "draft" || value === "incomplete"
+    ? value
+    : "all";
+}
+function filterLabel(value: TaskFilter) {
+  return (
+    {
+      all: "همه برنامه‌ها",
+      published: "فقط منتشرشده",
+      draft: "فقط پیش‌نویس",
+      incomplete: "فعالیت‌های انجام‌نشده",
+    } as const
+  )[value];
+}
+export function filterPlans(plans: Plan[], search: string, filter: TaskFilter) {
+  const needle = normalizePersianText(search).trim().toLocaleLowerCase("fa");
+  return plans
+    .filter(
+      (plan) =>
+        filter === "all" ||
+        (filter === "published" && plan.published) ||
+        (filter === "draft" && !plan.published) ||
+        (filter === "incomplete" &&
+          plan.tasks.some((task) => !task.completedAt)),
+    )
+    .map((plan) => ({
+      ...plan,
+      tasks: needle
+        ? plan.tasks.filter((task) =>
+            normalizePersianText(
+              [task.title, task.subject, task.note, task.type]
+                .filter(Boolean)
+                .join(" "),
+            )
+              .toLocaleLowerCase("fa")
+              .includes(needle),
+          )
+        : plan.tasks,
+    }))
+    .filter((plan) => !needle || plan.tasks.length > 0);
+}
+function useDebouncedValue<T>(value: T, delay: number) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebounced(value), delay);
+    return () => window.clearTimeout(timer);
+  }, [delay, value]);
+  return debounced;
+}
+function replacePlan(current: Plan[] | undefined, updated: Plan) {
+  if (!current) return [updated];
+  const found = current.some((plan) => plan.id === updated.id);
+  return found
+    ? current.map((plan) => (plan.id === updated.id ? updated : plan))
+    : [...current, updated].sort((a, b) =>
+        a.planDate.localeCompare(b.planDate),
+      );
+}
+export function optimisticMove(
+  plans: Plan[],
+  move: { taskId: string; planId: string; start: string; end: string },
+) {
+  let moved: PlanTask | undefined;
+  const stripped = plans.map((plan) => ({
+    ...plan,
+    tasks: plan.tasks.filter((task) => {
+      if (task.id === move.taskId) {
+        moved = { ...task, start: move.start, end: move.end };
+        return false;
+      }
+      return true;
+    }),
+  }));
+  if (!moved) return plans;
+  return stripped.map((plan) =>
+    plan.id === move.planId
+      ? {
+          ...plan,
+          tasks: [...plan.tasks, moved!].sort((a, b) =>
+            (a.start || "").localeCompare(b.start || ""),
+          ),
+        }
+      : plan,
+  );
+}
+function addMinutes(time: string, minutes: number) {
+  const [hour, minute] = time.split(":").map(Number),
+    total = Math.min(23 * 60 + 59, hour * 60 + minute + minutes);
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
+function minutesBetween(start: string, end: string) {
+  const [startHour, startMinute] = start.split(":").map(Number);
+  const [endHour, endMinute] = end.split(":").map(Number);
+  return endHour * 60 + endMinute - (startHour * 60 + startMinute);
 }

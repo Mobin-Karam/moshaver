@@ -54,7 +54,10 @@ function registerPlansRoutes(router, deps) {
     }
     var from = isoDateValid(q.from) ? q.from : "0000-01-01",
       to = isoDateValid(q.to) ? q.to : "9999-12-31";
-    ok(res, plans.adminPlansInRange(sid, from, to));
+    ok(res, plans.adminPlansInRange(sid, from, to, {
+      search: str(q.search, 200),
+      status: str(q.status, 30),
+    }));
   });
 
     router.add(
@@ -83,6 +86,29 @@ function registerPlansRoutes(router, deps) {
       }
       audit(user, result.data.created ? "create" : "update", "plan", result.data.planId, body);
       ok(res, result.data.plan, result.data.created ? 201 : 200);
+    },
+  );
+
+    router.add(
+    "GET",
+    /^\/api\/v1\/admin\/plans\/summary$/,
+    ["admin"],
+    function (req, res) {
+      var q = query(req), sid = str(q.studentId, 100), from = str(q.from, 10), to = str(q.to, 10);
+      if (!sid || !isoDateValid(from) || !isoDateValid(to)) return fail(res, 400, "VALIDATION", "studentId/from/to لازم است.");
+      ok(res, plans.adminRangeSummary(sid, from, to));
+    },
+  );
+
+    router.add(
+    "POST",
+    /^\/api\/v1\/admin\/tasks\/batch$/,
+    ["admin"],
+    function (req, res, match, body, user) {
+      var result = plans.batchUpdateAdminTasks(body.items);
+      if (result.error) return fail(res, result.error.status, result.error.code, result.error.message);
+      audit(user, "batch_update", "task", "batch", { count: result.data.updated });
+      ok(res, result.data);
     },
   );
 

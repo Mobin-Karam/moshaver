@@ -185,12 +185,24 @@ function createPlansService(deps) {
     return mapPlan(p, studentId);
   }
 
-  function adminPlansInRange(studentId, from, to) {
-    return db
-      .prepare(
-        "SELECT * FROM plans WHERE student_id=? AND plan_date BETWEEN ? AND ? ORDER BY plan_date",
-      )
-      .all(studentId, from, to)
+  function adminPlansInRange(studentId, from, to, options) {
+    options = options || {};
+    var sql = "SELECT * FROM plans p WHERE p.student_id=? AND p.plan_date BETWEEN ? AND ?";
+    var params = [studentId, from, to];
+    if (options.status === "published") sql += " AND p.published=1";
+    else if (options.status === "draft") sql += " AND p.published=0";
+    else if (options.status === "incomplete") {
+      sql += " AND EXISTS(SELECT 1 FROM tasks t LEFT JOIN task_completions tc ON tc.task_id=t.id AND tc.student_id=p.student_id WHERE t.plan_id=p.id AND (tc.id IS NULL OR tc.status<>'done'))";
+    }
+    if (options.search) {
+      sql += " AND (p.title LIKE ? OR EXISTS(SELECT 1 FROM tasks t WHERE t.plan_id=p.id AND (t.title LIKE ? OR t.subject LIKE ? OR t.note LIKE ?)))";
+      var needle = "%" + options.search + "%";
+      params.push(needle, needle, needle, needle);
+    }
+    sql += " ORDER BY p.plan_date";
+    var statement = db.prepare(sql);
+    return statement
+      .all.apply(statement, params)
       .map(function (p) {
         return mapPlan(p, studentId);
       });
@@ -446,6 +458,17 @@ function createPlansService(deps) {
         return { error: { status: 400, code: "VALIDATION", message: "آزمون مرتبط معتبر نیست." } };
       }
     }
+    if (Object.prototype.hasOwnProperty.call(body, "planId")) {
+      var targetPlanId = str(body.planId, 120);
+      var targetPlan = db
+        .prepare("SELECT id FROM plans WHERE id=? AND student_id=?")
+        .get(targetPlanId, task.student_id);
+      if (!targetPlan) {
+        return { error: { status: 400, code: "VALIDATION", message: "برنامه مقصد معتبر نیست." } };
+      }
+      db.prepare("UPDATE tasks SET plan_id=?,updated_at=? WHERE id=?").run(targetPlanId, now(), task.id);
+      task.plan_id = targetPlanId;
+    }
     var map = {
       start: "start_time",
       end: "end_time",
@@ -485,6 +508,37 @@ function createPlansService(deps) {
     };
   }
 
+  function batchUpdateAdminTasks(items) {
+    if (!Array.isArray(items) || !items.length || items.length > 200) {
+      return { error: { status: 400, code: "VALIDATION", message: "بین ۱ تا ۲۰۰ تغییر لازم است." } };
+    }
+    var updated = [];
+    db.exec("BEGIN IMMEDIATE");
+    try {
+      items.forEach(function (item) {
+        var id = str(item && item.id, 120);
+        var result = updateAdminTask(id, item || {});
+        if (result.error) throw result.error;
+        updated.push(result.data.taskId);
+      });
+      db.exec("COMMIT");
+      return { data: { updated: updated.length, taskIds: updated } };
+    } catch (error) {
+      db.exec("ROLLBACK");
+      if (error && error.code) return { error: error };
+      throw error;
+    }
+  }
+
+  function adminRangeSummary(studentId, from, to) {
+    var row = db.prepare(`SELECT COUNT(DISTINCT p.id) AS plans,COUNT(t.id) AS tasks,
+      COALESCE(SUM((CAST(substr(t.end_time,1,2) AS INTEGER)*60+CAST(substr(t.end_time,4,2) AS INTEGER))-(CAST(substr(t.start_time,1,2) AS INTEGER)*60+CAST(substr(t.start_time,4,2) AS INTEGER))),0) AS minutes,
+      COALESCE(SUM(t.test_count),0) AS tests,
+      COALESCE(SUM(CASE WHEN p.published=1 THEN 1 ELSE 0 END),0) AS publishedTasks
+      FROM plans p LEFT JOIN tasks t ON t.plan_id=p.id WHERE p.student_id=? AND p.plan_date BETWEEN ? AND ?`).get(studentId, from, to);
+    return { plans:Number(row.plans||0),tasks:Number(row.tasks||0),minutes:Number(row.minutes||0),tests:Number(row.tests||0),publishedTasks:Number(row.publishedTasks||0) };
+  }
+
   function deleteAdminTask(taskId) {
     var result = db.prepare("DELETE FROM tasks WHERE id=?").run(taskId);
     if (!result.changes) {
@@ -519,6 +573,8 @@ function createPlansService(deps) {
     duplicateAdminPlan: duplicateAdminPlan,
     createAdminTask: createAdminTask,
     updateAdminTask: updateAdminTask,
+    batchUpdateAdminTasks: batchUpdateAdminTasks,
+    adminRangeSummary: adminRangeSummary,
     deleteAdminTask: deleteAdminTask,
     publishAdminPlanRange: publishAdminPlanRange,
     mapPlan: mapPlan,

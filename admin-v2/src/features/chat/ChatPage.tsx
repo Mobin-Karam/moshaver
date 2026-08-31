@@ -18,6 +18,7 @@ import {
 import { useSearchParams } from "react-router-dom";
 import { Badge, Card, EmptyState, Textarea } from "../../components/ui";
 import { api } from "../../services/api";
+import { normalizePersianText } from "../../lib/utils";
 import type { ChatMessage, Conversation } from "../../types/domain";
 
 type MessagePage = {
@@ -43,7 +44,9 @@ export function ChatPage() {
   const filtered = useMemo(
     () =>
       (conversations.data ?? []).filter((item) =>
-        (item.student?.name || "").includes(search.trim()),
+        normalizePersianText(item.student?.name || "").includes(
+          normalizePersianText(search.trim()),
+        ),
       ),
     [conversations.data, search],
   );

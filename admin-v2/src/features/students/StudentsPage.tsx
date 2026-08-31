@@ -17,6 +17,7 @@ import { useStudents } from "../../hooks/useStudents";
 import { api } from "../../services/api";
 import type { Student } from "../../types/domain";
 import { useModal } from "../../components/modal";
+import { normalizePersianText } from "../../lib/utils";
 
 type StudentForm = {
   name: string;
@@ -84,10 +85,11 @@ export function StudentsPage() {
   const filtered = useMemo(
     () =>
       students.filter((s) =>
-        [s.name, s.id, s.user?.username, s.grade, s.major]
-          .filter(Boolean)
-          .join(" ")
-          .includes(search),
+        normalizePersianText(
+          [s.name, s.id, s.user?.username, s.grade, s.major]
+            .filter(Boolean)
+            .join(" "),
+        ).includes(normalizePersianText(search)),
       ),
     [search, students],
   );
