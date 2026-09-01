@@ -18,6 +18,10 @@
       plannerDate: "",
       plans: [],
       exams: [],
+      examSelection: {},
+      examSearch: "",
+      examStatusFilter: "all",
+      examPublishFilter: "all",
       quizzes: [],
       subjects: [],
       importData: null,
@@ -62,6 +66,10 @@
     state.live = null;
     state.plans = [];
     state.exams = [];
+    state.examSelection = {};
+    state.examSearch = "";
+    state.examStatusFilter = "all";
+    state.examPublishFilter = "all";
     state.quizzes = [];
     state.subjects = [];
     state.importData = null;

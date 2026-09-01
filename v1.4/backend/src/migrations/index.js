@@ -9,6 +9,7 @@ var migrations = [
   require("./006_group_chat"),
   require("./007_web_push"),
   require("./008_user_notifications"),
+  require("./009_exam_integrity"),
 ];
 
 function appliedVersions(db) {

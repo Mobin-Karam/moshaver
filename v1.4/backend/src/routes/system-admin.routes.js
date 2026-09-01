@@ -39,6 +39,27 @@ function registerSystemAdminRoutes(router, deps) {
     res.on("close", cleanup);
     stream.pipe(res);
   });
+
+  router.add("POST", /^\/api\/v1\/admin\/system\/database-restore$/, ["admin"], function (req, res, match, body, user) {
+    if (!bucketAllow("database-restore:" + user.id, 1, 300000)) return fail(res, 429, "RATE_LIMIT", "برای بازیابی بعدی کمی صبر کنید.");
+    var contentType = String(req.headers["content-type"] || "").toLowerCase();
+    if (contentType && ["application/vnd.sqlite3", "application/x-sqlite3", "application/octet-stream"].indexOf(contentType.split(";")[0]) < 0) {
+      return fail(res, 415, "UNSUPPORTED_MEDIA_TYPE", "فقط فایل SQLite پشتیبان قابل بارگذاری است.");
+    }
+    if (!Buffer.isBuffer(body) || body.length < 4096) return fail(res, 400, "INVALID_BACKUP", "فایل پشتیبان معتبر نیست.");
+    audit(user, "database.restore.requested", "database", "sqlite", { sizeBytes: body.length });
+    var result;
+    try {
+      result = backup.restore(body);
+    } catch (error) {
+      try { audit(user, "database.restore.failed", "database", "sqlite", { success: false, message: error.message }); } catch (auditError) {}
+      return fail(res, 400, "RESTORE_FAILED", "بازیابی پشتیبان انجام نشد.", env.nodeEnv === "development" ? error.message : null);
+    }
+    ok(res, result);
+    setTimeout(function () {
+      process.exit(0);
+    }, 300);
+  });
 }
 
 module.exports = registerSystemAdminRoutes;

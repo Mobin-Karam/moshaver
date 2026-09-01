@@ -84,6 +84,15 @@ function createExamsService(deps) {
     );
   }
 
+  function cleanOptions(value) {
+    if (!Array.isArray(value) || value.length !== 4) return null;
+    var options = value.map(function (item) { return str(item, 1000); });
+    if (options.some(function (item) { return !item; })) return null;
+    var unique = Object.create(null);
+    options.forEach(function (item) { unique[item.toLocaleLowerCase()] = true; });
+    return Object.keys(unique).length === 4 ? options : null;
+  }
+
   function examAccess(exam, studentId) {
     var quiz = examQuiz(exam.id);
     var attempts = 0;
@@ -91,8 +100,8 @@ function createExamsService(deps) {
     if (quiz) {
       attempts = Number(
         db
-          .prepare("SELECT COUNT(*) AS n FROM quiz_attempts WHERE quiz_id=? AND student_id=?")
-          .get(quiz.id, studentId).n || 0,
+          .prepare("SELECT COUNT(*) AS n FROM quiz_attempts qa JOIN quizzes q ON q.id=qa.quiz_id WHERE q.exam_id=? AND qa.student_id=?")
+          .get(exam.id, studentId).n || 0,
       );
       activeRun =
         db
@@ -101,10 +110,10 @@ function createExamsService(deps) {
           )
           .get(quiz.id, studentId) || null;
     }
-    var approved = Number(
+    var validApproved = Number(
       db
         .prepare(
-          "SELECT COUNT(*) AS n FROM exam_attempt_requests WHERE exam_id=? AND student_id=? AND status='approved'",
+          "SELECT COUNT(*) AS n FROM exam_attempt_requests WHERE exam_id=? AND student_id=? AND status='approved' AND resolved_at IS NOT NULL AND datetime(resolved_at,'+24 hours')>=datetime('now')",
         )
         .get(exam.id, studentId).n || 0,
     );
@@ -121,11 +130,18 @@ function createExamsService(deps) {
         )
         .get(exam.id, studentId) || null;
     var baseMax = Math.max(1, Number(exam.max_attempts || 1));
-    var allowed = baseMax + approved;
+    var allowed = baseMax + validApproved;
     var openAt = examDefaultOpen(exam);
     var closeAt = examDefaultClose(exam);
     var nowMs = Date.now();
     var inWindow = nowMs >= new Date(openAt).getTime() && nowMs <= new Date(closeAt).getTime();
+    if (activeRun) {
+      var runDeadline = Math.min(new Date(closeAt).getTime(), new Date(activeRun.started_at).getTime() + Math.max(1, Number(quiz.duration_minutes || 20)) * 60000);
+      if (nowMs > runDeadline + 5000) {
+        db.prepare("UPDATE quiz_runs SET status='cancelled' WHERE id=? AND status='active'").run(activeRun.id);
+        activeRun = null;
+      }
+    }
     var retryWindow = false;
     if (attempts >= baseMax && attempts < allowed && lastApproved && lastApproved.resolvedAt) {
       retryWindow = nowMs <= new Date(lastApproved.resolvedAt).getTime() + 24 * 3600000;
@@ -153,7 +169,7 @@ function createExamsService(deps) {
       questionCount: questionCount,
       attemptsUsed: attempts,
       maxAttempts: baseMax,
-      approvedExtraAttempts: approved,
+      approvedExtraAttempts: validApproved,
       allowedAttempts: allowed,
       activeRun: activeRun,
       openAt: openAt,
@@ -212,10 +228,12 @@ function createExamsService(deps) {
 
   function getExams(studentId, adminMode) {
     var rows;
-    if (studentId) {
+    if (studentId && !adminMode) {
       rows = db
-        .prepare("SELECT * FROM exams WHERE student_id=? OR student_id IS NULL ORDER BY iso_date,created_at")
+        .prepare("SELECT * FROM exams WHERE published=1 AND (student_id=? OR student_id IS NULL) ORDER BY iso_date,created_at")
         .all(studentId);
+    } else if (studentId) {
+      rows = db.prepare("SELECT * FROM exams WHERE student_id=? OR student_id IS NULL ORDER BY iso_date,created_at").all(studentId);
     } else {
       rows = db.prepare("SELECT * FROM exams ORDER BY iso_date,created_at").all();
     }
@@ -449,12 +467,19 @@ function createExamsService(deps) {
     return { data: run, status: run.resumed ? 200 : 201 };
   }
 
-  function studentQuiz(quizId) {
+  function studentQuiz(studentId, quizId) {
     var quiz = db
       .prepare("SELECT * FROM quizzes WHERE id=? AND active=1")
       .get(quizId);
     if (!quiz) {
       return { error: { status: 404, code: "NOT_FOUND", message: "آزمون پیدا نشد." } };
+    }
+    if (!quiz.exam_id) {
+      var ownRun = db.prepare("SELECT id FROM quiz_runs WHERE quiz_id=? AND student_id=? AND status='active'").get(quiz.id, studentId);
+      if (!ownRun) return { error: { status: 404, code: "NOT_FOUND", message: "آزمون پیدا نشد." } };
+    } else {
+      var exam = db.prepare("SELECT * FROM exams WHERE id=? AND published=1 AND (student_id=? OR student_id IS NULL)").get(quiz.exam_id, studentId);
+      if (!exam || !examAccess(exam, studentId).canStart) return { error: { status: 404, code: "NOT_FOUND", message: "آزمون پیدا نشد." } };
     }
     return { data: quizPayload(quiz) };
   }
@@ -491,13 +516,28 @@ function createExamsService(deps) {
     var attemptId = security.id("attempt");
     var timestamp = now();
     var duration = Math.max(0, Math.round((new Date(timestamp) - new Date(run.started_at)) / 1000));
+    var deadline = new Date(run.started_at).getTime() + Math.max(1, Number(quiz.duration_minutes || 20)) * 60000;
+    if (quiz.exam_id) {
+      var linkedExam = db.prepare("SELECT * FROM exams WHERE id=? AND published=1 AND (student_id=? OR student_id IS NULL)").get(quiz.exam_id, studentId);
+      if (!linkedExam) return { error: { status: 409, code: "EXAM_UNAVAILABLE", message: "این آزمون دیگر قابل ثبت نیست." } };
+      deadline = Math.min(deadline, new Date(examDefaultClose(linkedExam)).getTime());
+    }
+    if (Date.now() > deadline + 5000) {
+      db.prepare("UPDATE quiz_runs SET status='cancelled' WHERE id=? AND status='active'").run(run.id);
+      return { error: { status: 409, code: "QUIZ_EXPIRED", message: "زمان آزمون تمام شده و این تلاش قابل ثبت نیست." } };
+    }
     db.exec("BEGIN");
     try {
+      var claimed = db.prepare("UPDATE quiz_runs SET status='submitted',submitted_at=? WHERE id=? AND status='active'").run(timestamp, run.id);
+      if (!claimed.changes) {
+        db.exec("ROLLBACK");
+        return { error: { status: 409, code: "QUIZ_RUN", message: "این تلاش قبلا ثبت شده است." } };
+      }
       db.prepare(
-        "INSERT INTO quiz_attempts (id,quiz_id,student_id,started_at,submitted_at,correct,wrong,blank,percent,duration_seconds) VALUES (?,?,?,?,?,?,?,?,?,?)",
-      ).run(attemptId, quiz.id, studentId, run.started_at, timestamp, 0, 0, 0, 0, duration);
+        "INSERT INTO quiz_attempts (id,quiz_id,student_id,started_at,submitted_at,correct,wrong,blank,percent,duration_seconds,run_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+      ).run(attemptId, quiz.id, studentId, run.started_at, timestamp, 0, 0, 0, 0, duration, run.id);
       var insertAnswer = db.prepare(
-        "INSERT INTO quiz_answers (id,attempt_id,question_id,selected_option,is_correct,error_reason) VALUES (?,?,?,?,?,?)",
+        "INSERT INTO quiz_answers (id,attempt_id,question_id,selected_option,is_correct,error_reason,question_text,option_a,option_b,option_c,option_d,correct_option,explanation,sort_order,book,chapter,lesson,topic,hint) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
       );
       questions.forEach(function (question) {
         var answer = answerMap[question.id] || {};
@@ -517,6 +557,9 @@ function createExamsService(deps) {
           selected,
           isCorrect,
           str(answer.errorReason, 100),
+          question.question_text, question.option_a, question.option_b, question.option_c, question.option_d,
+          question.correct_option, question.explanation, question.sort_order, question.book, question.chapter,
+          question.lesson, question.topic, question.hint,
         );
         if (!isCorrect && learning) {
           learning.ensureFromWrongAnswer(studentId, answerId, question, quiz);
@@ -530,10 +573,6 @@ function createExamsService(deps) {
         blank,
         percent,
         attemptId,
-      );
-      db.prepare("UPDATE quiz_runs SET status='submitted',submitted_at=? WHERE id=?").run(
-        timestamp,
-        run.id,
       );
       if (quiz.exam_id) {
         var linkedTasks = db
@@ -557,7 +596,7 @@ function createExamsService(deps) {
       db.exec("COMMIT");
       var review = db
         .prepare(
-          "SELECT qa.id AS answerId,qa.question_id AS questionId,qq.question_text AS question,qa.selected_option AS selectedOption,qq.correct_option AS correctOption,qq.explanation,qq.book,qq.chapter,qq.lesson,qq.topic,qq.hint,qa.is_correct AS isCorrect,qa.error_reason AS errorReason FROM quiz_answers qa JOIN quiz_questions qq ON qq.id=qa.question_id WHERE qa.attempt_id=? ORDER BY qq.sort_order",
+          "SELECT qa.id AS answerId,qa.question_id AS questionId,qa.question_text AS question,qa.selected_option AS selectedOption,qa.correct_option AS correctOption,qa.explanation,qa.book,qa.chapter,qa.lesson,qa.topic,qa.hint,qa.is_correct AS isCorrect,qa.error_reason AS errorReason FROM quiz_answers qa WHERE qa.attempt_id=? ORDER BY qa.sort_order",
         )
         .all(attemptId);
       touchPresence(studentId, "online", null, null, "");
@@ -632,12 +671,12 @@ function createExamsService(deps) {
     if (!attempt) return { error: { status: 404, code: "NOT_FOUND", message: "سابقه آزمون پیدا نشد." } };
     attempt.answers = db.prepare(
       `SELECT qa.id AS answerId,qa.question_id AS questionId,qa.selected_option AS selectedOption,qa.is_correct AS isCorrect,qa.error_reason AS errorReason,
-       qq.question_text AS question,qq.option_a AS optionA,qq.option_b AS optionB,qq.option_c AS optionC,qq.option_d AS optionD,qq.correct_option AS correctOption,qq.explanation,
-       qq.book,qq.chapter,qq.lesson,qq.topic,qq.hint,
+       qa.question_text AS question,qa.option_a AS optionA,qa.option_b AS optionB,qa.option_c AS optionC,qa.option_d AS optionD,qa.correct_option AS correctOption,qa.explanation,
+       qa.book,qa.chapter,qa.lesson,qa.topic,qa.hint,
        li.id AS learningItemId,li.note AS learningNote,li.hint AS learningHint,li.due_date AS learningDueDate,li.status AS learningStatus,li.mastery AS learningMastery
-       FROM quiz_answers qa JOIN quiz_questions qq ON qq.id=qa.question_id
+       FROM quiz_answers qa
        LEFT JOIN learning_items li ON li.student_id=? AND li.source_answer_id=qa.id
-       WHERE qa.attempt_id=? ORDER BY qq.sort_order`,
+       WHERE qa.attempt_id=? ORDER BY qa.sort_order`,
     ).all(studentId, attemptId);
     return { data: attempt };
   }
@@ -678,7 +717,9 @@ function createExamsService(deps) {
     }
     var examId = security.id("exam");
     var timestamp = now();
-    var duration = Math.max(1, num(body.durationMinutes, 120));
+    var duration = Math.min(600, Math.max(1, num(body.durationMinutes, 120)));
+    var status = str(body.status, 30) || "upcoming";
+    if (["upcoming", "active", "completed", "cancelled"].indexOf(status) < 0) return { error: { status: 400, code: "VALIDATION", message: "وضعیت آزمون معتبر نیست." } };
     db.prepare(
       "INSERT INTO exams (id,title,persian_date,iso_date,note,status,created_at,updated_at,student_id,open_at,close_at,duration_minutes,max_attempts,instructions,published) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
     ).run(
@@ -687,14 +728,14 @@ function createExamsService(deps) {
       persianDate,
       iso,
       str(body.note, 1000),
-      str(body.status, 30) || "upcoming",
+      status,
       timestamp,
       timestamp,
       studentId,
       openAt,
       closeAt,
       duration,
-      1,
+      Math.min(100, Math.max(1, num(body.maxAttempts, 1))),
       str(body.instructions, 3000),
       body.published === false ? 0 : 1,
     );
@@ -743,8 +784,11 @@ function createExamsService(deps) {
       return { error: { status: 400, code: "VALIDATION", message: "بازه زمانی آزمون معتبر نیست." } };
     }
     var duration = Object.prototype.hasOwnProperty.call(body, "durationMinutes")
-      ? Math.max(1, num(body.durationMinutes, 120))
+      ? Math.min(600, Math.max(1, num(body.durationMinutes, 120)))
       : Math.max(1, Number(exam.duration_minutes || 120));
+    var maxAttempts = Object.prototype.hasOwnProperty.call(body, "maxAttempts")
+      ? Math.min(100, Math.max(1, num(body.maxAttempts, 1)))
+      : Math.min(100, Math.max(1, Number(exam.max_attempts || 1)));
     var published = Object.prototype.hasOwnProperty.call(body, "published")
       ? boolInt(body.published)
       : Number(exam.published == null ? 1 : exam.published);
@@ -752,12 +796,13 @@ function createExamsService(deps) {
     var status = Object.prototype.hasOwnProperty.call(body, "status")
       ? str(body.status, 30)
       : exam.status || "upcoming";
+    if (["upcoming", "active", "completed", "cancelled"].indexOf(status) < 0) return { error: { status: 400, code: "VALIDATION", message: "وضعیت آزمون معتبر نیست." } };
     var instructions = Object.prototype.hasOwnProperty.call(body, "instructions")
       ? str(body.instructions, 3000)
       : exam.instructions || "";
     var timestamp = now();
     db.prepare(
-      "UPDATE exams SET title=?,persian_date=?,iso_date=?,note=?,status=?,student_id=?,open_at=?,close_at=?,duration_minutes=?,max_attempts=1,instructions=?,published=?,updated_at=? WHERE id=?",
+      "UPDATE exams SET title=?,persian_date=?,iso_date=?,note=?,status=?,student_id=?,open_at=?,close_at=?,duration_minutes=?,max_attempts=?,instructions=?,published=?,updated_at=? WHERE id=?",
     ).run(
       title,
       persianDate,
@@ -768,6 +813,7 @@ function createExamsService(deps) {
       openAt,
       closeAt,
       duration,
+      maxAttempts,
       instructions,
       published,
       timestamp,
@@ -789,11 +835,14 @@ function createExamsService(deps) {
   }
 
   function deleteAdminExam(examId) {
+    var exam = db.prepare("SELECT student_id FROM exams WHERE id=?").get(examId);
+    if (!exam) return { error: { status: 404, code: "NOT_FOUND", message: "آزمون پیدا نشد." } };
+    db.prepare("UPDATE quizzes SET active=0,updated_at=? WHERE exam_id=?").run(now(), examId);
     var result = db.prepare("DELETE FROM exams WHERE id=?").run(examId);
     if (!result.changes) {
       return { error: { status: 404, code: "NOT_FOUND", message: "آزمون پیدا نشد." } };
     }
-    return { data: { deleted: true } };
+    return { data: { deleted: true, studentId: exam.student_id || null } };
   }
 
   function createAdminExamSyllabus(examId, body) {
@@ -818,8 +867,10 @@ function createExamsService(deps) {
   }
 
   function deleteAdminSyllabus(syllabusId) {
-    db.prepare("DELETE FROM exam_syllabus WHERE id=?").run(syllabusId);
-    return { data: { deleted: true } };
+    var syllabus = db.prepare("SELECT e.student_id AS studentId,e.id AS examId FROM exam_syllabus es JOIN exams e ON e.id=es.exam_id WHERE es.id=?").get(syllabusId);
+    var result = db.prepare("DELETE FROM exam_syllabus WHERE id=?").run(syllabusId);
+    if (!result.changes) return { error: { status: 404, code: "NOT_FOUND", message: "بودجه آزمون پیدا نشد." } };
+    return { data: { deleted: true, studentId: syllabus ? syllabus.studentId : null, examId: syllabus ? syllabus.examId : null } };
   }
 
   function adminExamQuestions(examId) {
@@ -842,8 +893,8 @@ function createExamsService(deps) {
       ).run(quizId, exam.title, "آزمون اصلی", Math.max(1, num(exam.duration_minutes, 120)), exam.id, timestamp, timestamp);
       quiz = db.prepare("SELECT * FROM quizzes WHERE id=?").get(quizId);
     }
-    var options = Array.isArray(body.options) ? body.options : [];
-    if (!str(body.question, 2000) || options.length !== 4 || ["a", "b", "c", "d"].indexOf(body.correctOption) < 0) {
+    var options = cleanOptions(body.options);
+    if (!str(body.question, 2000) || !options || ["a", "b", "c", "d"].indexOf(body.correctOption) < 0) {
       return {
         error: {
           status: 400,
@@ -872,19 +923,23 @@ function createExamsService(deps) {
       str(body.topic, 240),
       str(body.hint, 3000),
     );
-    return { data: { id: questionId }, audit: { resourceId: questionId, examId: exam.id }, status: 201 };
+    return { data: { id: questionId, studentId: exam.student_id || null, examId: exam.id }, audit: { resourceId: questionId, examId: exam.id }, status: 201 };
   }
 
   function deleteAdminExamQuestion(examId, questionId) {
+    var exam = db.prepare("SELECT student_id FROM exams WHERE id=?").get(examId);
     var quiz = examQuiz(examId);
     if (!quiz) {
       return { error: { status: 404, code: "NOT_FOUND", message: "آزمون پیدا نشد." } };
+    }
+    if (db.prepare("SELECT 1 FROM quiz_answers WHERE question_id=? LIMIT 1").get(questionId)) {
+      return { error: { status: 409, code: "QUESTION_IN_USE", message: "این سؤال در سابقه آزمون استفاده شده و قابل حذف نیست." } };
     }
     var result = db.prepare("DELETE FROM quiz_questions WHERE id=? AND quiz_id=?").run(questionId, quiz.id);
     if (!result.changes) {
       return { error: { status: 404, code: "NOT_FOUND", message: "سؤال پیدا نشد." } };
     }
-    return { data: { deleted: true } };
+    return { data: { deleted: true, studentId: exam ? exam.student_id : null, examId: examId } };
   }
 
   function adminExamAttemptRequests(studentId) {
@@ -904,6 +959,9 @@ function createExamsService(deps) {
     var request = db.prepare("SELECT * FROM exam_attempt_requests WHERE id=?").get(requestId);
     if (!request) {
       return { error: { status: 404, code: "NOT_FOUND", message: "درخواست پیدا نشد." } };
+    }
+    if (request.status !== "pending") {
+      return { error: { status: 409, code: "ALREADY_REVIEWED", message: "این درخواست قبلا بررسی شده است." } };
     }
     var status = ["approved", "rejected"].indexOf(body.status) >= 0 ? body.status : null;
     if (!status) {
@@ -935,7 +993,7 @@ function createExamsService(deps) {
   }
 
   function updateStudentSyllabusProgress(studentId, syllabusId, body) {
-    if (!db.prepare("SELECT id FROM exam_syllabus WHERE id=?").get(syllabusId)) {
+    if (!db.prepare("SELECT es.id FROM exam_syllabus es JOIN exams e ON e.id=es.exam_id WHERE es.id=? AND e.published=1 AND (e.student_id=? OR e.student_id IS NULL)").get(syllabusId, studentId)) {
       return { error: { status: 404, code: "NOT_FOUND", message: "بودجه آزمون پیدا نشد." } };
     }
     var status = ["unread", "read", "tested", "review", "mastered"].indexOf(body.status) >= 0 ? body.status : "read";
@@ -964,6 +1022,8 @@ function createExamsService(deps) {
     if (!title) {
       return { error: { status: 400, code: "VALIDATION", message: "عنوان آزمون لازم است." } };
     }
+    var examId = str(body.examId, 100) || null;
+    if (examId && !db.prepare("SELECT id FROM exams WHERE id=?").get(examId)) return { error: { status: 404, code: "NOT_FOUND", message: "آزمون اصلی پیدا نشد." } };
     var quizId = security.id("quiz");
     var timestamp = now();
     db.prepare(
@@ -973,7 +1033,7 @@ function createExamsService(deps) {
       title,
       str(body.subject, 150),
       Math.max(1, num(body.durationMinutes, 20)),
-      str(body.examId, 100) || null,
+      examId,
       1,
       timestamp,
       timestamp,
@@ -1021,10 +1081,10 @@ function createExamsService(deps) {
     if (!db.prepare("SELECT id FROM quizzes WHERE id=?").get(quizId)) {
       return { error: { status: 404, code: "NOT_FOUND", message: "آزمونک پیدا نشد." } };
     }
-    var options = body.options || [];
+    var options = cleanOptions(body.options);
     if (
       !str(body.question, 1000) ||
-      options.length < 4 ||
+      !options ||
       ["a", "b", "c", "d"].indexOf(body.correctOption) < 0
     ) {
       return {
@@ -1061,10 +1121,10 @@ function createExamsService(deps) {
   function updateAdminQuestion(questionId, body) {
     var row = db.prepare("SELECT * FROM quiz_questions WHERE id=?").get(questionId);
     if (!row) return { error: { status: 404, code: "NOT_FOUND", message: "سؤال پیدا نشد." } };
-    var options = Array.isArray(body.options) ? body.options : [row.option_a, row.option_b, row.option_c, row.option_d];
+    var options = cleanOptions(Array.isArray(body.options) ? body.options : [row.option_a, row.option_b, row.option_c, row.option_d]);
     var question = Object.prototype.hasOwnProperty.call(body, "question") ? str(body.question, 2000) : row.question_text;
     var correct = Object.prototype.hasOwnProperty.call(body, "correctOption") ? str(body.correctOption, 1) : row.correct_option;
-    if (!question || options.length < 4 || ["a", "b", "c", "d"].indexOf(correct) < 0) {
+    if (!question || !options || ["a", "b", "c", "d"].indexOf(correct) < 0) {
       return { error: { status: 400, code: "VALIDATION", message: "سؤال، چهار گزینه و پاسخ صحیح لازم است." } };
     }
     db.prepare(`UPDATE quiz_questions SET question_text=?,option_a=?,option_b=?,option_c=?,option_d=?,correct_option=?,explanation=?,sort_order=?,book=?,chapter=?,lesson=?,topic=?,hint=? WHERE id=?`).run(
@@ -1082,7 +1142,11 @@ function createExamsService(deps) {
   }
 
   function deleteAdminQuestion(questionId) {
-    db.prepare("DELETE FROM quiz_questions WHERE id=?").run(questionId);
+    if (db.prepare("SELECT 1 FROM quiz_answers WHERE question_id=? LIMIT 1").get(questionId)) {
+      return { error: { status: 409, code: "QUESTION_IN_USE", message: "این سؤال در سابقه آزمون استفاده شده و قابل حذف نیست." } };
+    }
+    var result = db.prepare("DELETE FROM quiz_questions WHERE id=?").run(questionId);
+    if (!result.changes) return { error: { status: 404, code: "NOT_FOUND", message: "سؤال پیدا نشد." } };
     return { data: { deleted: true } };
   }
 

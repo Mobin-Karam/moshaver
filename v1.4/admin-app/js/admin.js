@@ -28,7 +28,8 @@
     firstOfMonth = Dates.firstOfMonth,
     lastOfMonth = Dates.lastOfMonth,
     startWeek = Dates.startWeek,
-    fa = Dates.faNum;
+    fa = Dates.faNum,
+    shamsi = Dates.shamsi;
   function toast(msg, type) {
     return UI.toast(msg, type);
   }
@@ -116,7 +117,8 @@
   var loadSystem = SystemView.load,
     loadSessions = SystemView.loadSessions,
     openChangePassword = SystemView.openChangePassword,
-    downloadBackup = SystemView.downloadBackup;
+    downloadBackup = SystemView.downloadBackup,
+    restoreBackup = SystemView.restoreBackup;
   function showLogin(message) {
     el("loginScreen").className = "login-screen";
     el("app").className = "admin-shell hidden";
@@ -256,43 +258,80 @@
   function loadStudents(done, offset, append) {
     offset = Math.max(0, Number(offset || 0));
     if (append && state.studentPrefetch && state.studentPrefetch.length) {
-      state.students = state.students.concat(state.studentPrefetch.splice(0, 15));
-      if (state.studentDirectoryPage) state.studentDirectoryPage.hasMore = state.studentPrefetch.length > 0 || state.studentDirectoryPage.serverHasMore;
+      state.students = state.students.concat(
+        state.studentPrefetch.splice(0, 15),
+      );
+      if (state.studentDirectoryPage)
+        state.studentDirectoryPage.hasMore =
+          state.studentPrefetch.length > 0 ||
+          state.studentDirectoryPage.serverHasMore;
       done && done();
       return;
     }
     if (append) offset = state.studentFetchedCount || offset;
-    var status = el("studentFilter") && el("studentFilter").value === "archived" ? "&status=archived" : "";
-    var search = el("studentSearch") ? String(el("studentSearch").value || "").trim() : "";
+    var status =
+      el("studentFilter") && el("studentFilter").value === "archived"
+        ? "&status=archived"
+        : "";
+    var search = el("studentSearch")
+      ? String(el("studentSearch").value || "").trim()
+      : "";
     var loadSeq = ++state.studentLoadSeq;
-    api("GET", "/admin/students?limit=30&offset=" + offset + status + (search ? "&search=" + encodeURIComponent(search) : ""), null, function (err, data) {
-      if (loadSeq !== state.studentLoadSeq) return;
-      if (err) {
-        toast(err.message);
-        return;
-      }
-      var items = data && data.items ? data.items : data || [];
-      state.studentFetchedCount = offset + items.length;
-      if (append) state.students = state.students.concat(items.slice(0, 15));
-      else { state.students = items.slice(0, 15); state.studentPrefetch = items.slice(15); }
-      if (append && items.length > 15) state.studentPrefetch = state.studentPrefetch.concat(items.slice(15));
-      state.studentDirectoryPage = data && data.items ? { total:data.total, limit:data.limit, offset:data.offset, serverHasMore:data.hasMore, hasMore:state.studentPrefetch.length>0||data.hasMore } : { total:state.students.length, limit:state.students.length, offset:0, serverHasMore:false, hasMore:false };
-      var sel = el("studentSelect"),
-        h = "";
-      for (var i = 0; i < state.students.length; i++)
-        h +=
-          '<option value="' +
-          esc(state.students[i].id) +
-          '">' +
-          esc(state.students[i].name) +
-          (Number(state.students[i].active) === 1 ? "" : " — غیرفعال") +
-          "</option>";
-      sel.innerHTML = h;
-      if (!state.studentId && state.students.length)
-        state.studentId = state.students[0].id;
-      if (state.studentId) sel.value = state.studentId;
-      done && done();
-    });
+    api(
+      "GET",
+      "/admin/students?limit=30&offset=" +
+        offset +
+        status +
+        (search ? "&search=" + encodeURIComponent(search) : ""),
+      null,
+      function (err, data) {
+        if (loadSeq !== state.studentLoadSeq) return;
+        if (err) {
+          toast(err.message);
+          return;
+        }
+        var items = data && data.items ? data.items : data || [];
+        state.studentFetchedCount = offset + items.length;
+        if (append) state.students = state.students.concat(items.slice(0, 15));
+        else {
+          state.students = items.slice(0, 15);
+          state.studentPrefetch = items.slice(15);
+        }
+        if (append && items.length > 15)
+          state.studentPrefetch = state.studentPrefetch.concat(items.slice(15));
+        state.studentDirectoryPage =
+          data && data.items
+            ? {
+                total: data.total,
+                limit: data.limit,
+                offset: data.offset,
+                serverHasMore: data.hasMore,
+                hasMore: state.studentPrefetch.length > 0 || data.hasMore,
+              }
+            : {
+                total: state.students.length,
+                limit: state.students.length,
+                offset: 0,
+                serverHasMore: false,
+                hasMore: false,
+              };
+        var sel = el("studentSelect"),
+          h = "";
+        for (var i = 0; i < state.students.length; i++)
+          h +=
+            '<option value="' +
+            esc(state.students[i].id) +
+            '">' +
+            esc(state.students[i].name) +
+            (Number(state.students[i].active) === 1 ? "" : " — غیرفعال") +
+            "</option>";
+        sel.innerHTML = h;
+        if (!state.studentId && state.students.length)
+          state.studentId = state.students[0].id;
+        if (state.studentId) sel.value = state.studentId;
+        done && done();
+      },
+    );
   }
   function selectedStudent() {
     for (var i = 0; i < state.students.length; i++)
@@ -301,7 +340,14 @@
   }
   function loadDashboard() {
     if (!state.studentId) return;
-    api("GET", "/admin/attention?limit=30", null, function (attentionErr, attention) { if (!attentionErr) renderAttention(attention || []); });
+    api(
+      "GET",
+      "/admin/attention?limit=30",
+      null,
+      function (attentionErr, attention) {
+        if (!attentionErr) renderAttention(attention || []);
+      },
+    );
     api(
       "GET",
       "/admin/students/" + state.studentId + "/overview",
@@ -330,10 +376,36 @@
     );
   }
   function renderAttention(rows) {
-    var box = el("attentionList"); if (!box) return; var h = "";
-    for (var i = 0; i < rows.length; i++) { var x = rows[i], reasons = (x.reasons || []).map(function (r) { return r.label + ": " + faNum(r.value); }).join(" • "); h += '<button class="attention-student-row ' + esc(x.severity || "yellow") + '" data-attention-student="' + esc(x.id) + '"><span class="attention-dot"></span><span><strong>' + esc(x.name) + '</strong><small>' + esc(reasons) + '</small></span><b>باز کردن پرونده</b></button>'; }
-    box.innerHTML = h || '<div class="empty-admin">فعلاً مورد فوری وجود ندارد.</div>';
-    var buttons = qa("[data-attention-student]", box); for (i = 0; i < buttons.length; i++) buttons[i].onclick = function () { state.studentId = this.getAttribute("data-attention-student"); el("studentSelect").value = state.studentId; switchView("students"); };
+    var box = el("attentionList");
+    if (!box) return;
+    var h = "";
+    for (var i = 0; i < rows.length; i++) {
+      var x = rows[i],
+        reasons = (x.reasons || [])
+          .map(function (r) {
+            return r.label + ": " + faNum(r.value);
+          })
+          .join(" • ");
+      h +=
+        '<button class="attention-student-row ' +
+        esc(x.severity || "yellow") +
+        '" data-attention-student="' +
+        esc(x.id) +
+        '"><span class="attention-dot"></span><span><strong>' +
+        esc(x.name) +
+        "</strong><small>" +
+        esc(reasons) +
+        "</small></span><b>باز کردن پرونده</b></button>";
+    }
+    box.innerHTML =
+      h || '<div class="empty-admin">فعلاً مورد فوری وجود ندارد.</div>';
+    var buttons = qa("[data-attention-student]", box);
+    for (i = 0; i < buttons.length; i++)
+      buttons[i].onclick = function () {
+        state.studentId = this.getAttribute("data-attention-student");
+        el("studentSelect").value = state.studentId;
+        switchView("students");
+      };
   }
   function openAdminNotifications() {
     if (!state.studentId) return openAdminPersistentNotifications();
@@ -436,16 +508,111 @@
     );
   }
   function renderAdminPersistentNotifications(rows) {
-    if (!rows || !rows.length) return '<div class="empty-admin">اعلان شخصی جدیدی نداری.</div>';
-    return rows.map(function(n){return '<button class="advisor-notification-item '+(n.isRead?'':'unread')+'" data-admin-notification="'+esc(n.id)+'" data-notification-url="'+esc(n.url||'/')+'"><strong>'+esc(n.title)+'</strong><small>'+esc(n.body||'')+'</small></button>';}).join('');
+    if (!rows || !rows.length)
+      return '<div class="empty-admin">اعلان شخصی جدیدی نداری.</div>';
+    return rows
+      .map(function (n) {
+        return (
+          '<button class="advisor-notification-item ' +
+          (n.isRead ? "" : "unread") +
+          '" data-admin-notification="' +
+          esc(n.id) +
+          '" data-notification-url="' +
+          esc(n.url || "/") +
+          '"><strong>' +
+          esc(n.title) +
+          "</strong><small>" +
+          esc(n.body || "") +
+          "</small></button>"
+        );
+      })
+      .join("");
   }
   function bindAdminPersistentNotifications(root) {
-    qa('[data-admin-notification]',root).forEach(function(button){button.onclick=function(){var id=this.getAttribute('data-admin-notification'),url=this.getAttribute('data-notification-url');api('PUT','/notifications/'+encodeURIComponent(id)+'/read',{},function(){button.classList.remove('unread');});if(url&&url.indexOf('/messages')===0){var conversationId=url.split('/')[2]||'';closeModal();switchView('chat');loadChatList(function(){if(conversationId)selectConversation(conversationId);});}};});
-    var all=el('markAllAdminNotifications');if(all)all.onclick=function(){api('PUT','/notifications/read-all',{},function(err){if(err)return toast(err.message,'error');qa('[data-admin-notification]',root).forEach(function(x){x.classList.remove('unread');});toast('همه اعلان‌ها خوانده شد');});};
-    var pushButton=el('enableAdminPush');if(pushButton&&global.AdminPushClient){global.AdminPushClient.status().then(function(status){pushButton.textContent=status.registered?'اعلان دستگاه فعال است':'فعال‌سازی اعلان دستگاه';pushButton.disabled=!!status.registered;}).catch(function(){});pushButton.onclick=function(){var button=this;button.disabled=true;global.AdminPushClient.enable().then(function(){button.textContent='اعلان دستگاه فعال است';toast('اعلان‌های مشاور فعال شد');}).catch(function(error){button.disabled=false;toast(error.message,'error');});};}
+    qa("[data-admin-notification]", root).forEach(function (button) {
+      button.onclick = function () {
+        var id = this.getAttribute("data-admin-notification"),
+          url = this.getAttribute("data-notification-url");
+        api(
+          "PUT",
+          "/notifications/" + encodeURIComponent(id) + "/read",
+          {},
+          function () {
+            button.classList.remove("unread");
+          },
+        );
+        if (url && url.indexOf("/messages") === 0) {
+          var conversationId = url.split("/")[2] || "";
+          closeModal();
+          switchView("chat");
+          loadChatList(function () {
+            if (conversationId) selectConversation(conversationId);
+          });
+        }
+      };
+    });
+    var all = el("markAllAdminNotifications");
+    if (all)
+      all.onclick = function () {
+        api("PUT", "/notifications/read-all", {}, function (err) {
+          if (err) return toast(err.message, "error");
+          qa("[data-admin-notification]", root).forEach(function (x) {
+            x.classList.remove("unread");
+          });
+          toast("همه اعلان‌ها خوانده شد");
+        });
+      };
+    var pushButton = el("enableAdminPush");
+    if (pushButton && global.AdminPushClient) {
+      global.AdminPushClient.status()
+        .then(function (status) {
+          pushButton.textContent = status.registered
+            ? "اعلان دستگاه فعال است"
+            : "فعال‌سازی اعلان دستگاه";
+          pushButton.disabled = !!status.registered;
+        })
+        .catch(function () {});
+      pushButton.onclick = function () {
+        var button = this;
+        button.disabled = true;
+        global.AdminPushClient.enable()
+          .then(function () {
+            button.textContent = "اعلان دستگاه فعال است";
+            toast("اعلان‌های مشاور فعال شد");
+          })
+          .catch(function (error) {
+            button.disabled = false;
+            toast(error.message, "error");
+          });
+      };
+    }
   }
-  function prependAdminPersistentNotifications(){api('GET','/notifications?limit=30',null,function(err,data){if(err)return;var root=el('genericModalBody'),list=root&&q('.advisor-notification-list',root);if(!list)return;var section=document.createElement('section');section.className='admin-persistent-notifications';section.innerHTML='<div class="section-heading"><strong>اعلان‌های شخصی من</strong><span><button id="enableAdminPush" class="mini-btn" type="button">فعال‌سازی اعلان دستگاه</button><button id="markAllAdminNotifications" class="mini-btn" type="button">خواندن همه</button></span></div>'+renderAdminPersistentNotifications(data.items||[]);list.parentNode.insertBefore(section,list);bindAdminPersistentNotifications(section);});}
-  function openAdminPersistentNotifications(){api('GET','/notifications?limit=30',null,function(err,data){if(err)return toast(err.message,'error');openModal('<span class="eyebrow">NOTIFICATIONS</span><h2>اعلان‌های مشاور</h2><section class="admin-persistent-notifications"><div class="section-heading"><strong>اعلان‌های شخصی من</strong><span><button id="enableAdminPush" class="mini-btn" type="button">فعال‌سازی اعلان دستگاه</button><button id="markAllAdminNotifications" class="mini-btn" type="button">خواندن همه</button></span></div>'+renderAdminPersistentNotifications(data.items||[])+'</section>');bindAdminPersistentNotifications(el('genericModalBody'));});}
+  function prependAdminPersistentNotifications() {
+    api("GET", "/notifications?limit=30", null, function (err, data) {
+      if (err) return;
+      var root = el("genericModalBody"),
+        list = root && q(".advisor-notification-list", root);
+      if (!list) return;
+      var section = document.createElement("section");
+      section.className = "admin-persistent-notifications";
+      section.innerHTML =
+        '<div class="section-heading"><strong>اعلان‌های شخصی من</strong><span><button id="enableAdminPush" class="mini-btn" type="button">فعال‌سازی اعلان دستگاه</button><button id="markAllAdminNotifications" class="mini-btn" type="button">خواندن همه</button></span></div>' +
+        renderAdminPersistentNotifications(data.items || []);
+      list.parentNode.insertBefore(section, list);
+      bindAdminPersistentNotifications(section);
+    });
+  }
+  function openAdminPersistentNotifications() {
+    api("GET", "/notifications?limit=30", null, function (err, data) {
+      if (err) return toast(err.message, "error");
+      openModal(
+        '<span class="eyebrow">NOTIFICATIONS</span><h2>اعلان‌های مشاور</h2><section class="admin-persistent-notifications"><div class="section-heading"><strong>اعلان‌های شخصی من</strong><span><button id="enableAdminPush" class="mini-btn" type="button">فعال‌سازی اعلان دستگاه</button><button id="markAllAdminNotifications" class="mini-btn" type="button">خواندن همه</button></span></div>' +
+          renderAdminPersistentNotifications(data.items || []) +
+          "</section>",
+      );
+      bindAdminPersistentNotifications(el("genericModalBody"));
+    });
+  }
   function renderDashboard() {
     var o = state.overview || {},
       m = o.todayMetrics || {},
@@ -460,7 +627,7 @@
       if (state.conversations[ci].student.id === state.studentId)
         chatN = Number(state.conversations[ci].unread || 0);
     var totalInbox = issueN + recoveryN + reviewN + missedN + retryN + chatN;
-    state.adminAttentionCount=totalInbox;
+    state.adminAttentionCount = totalInbox;
     el("inboxCount").textContent = fa(totalInbox);
     if (el("adminNotificationBadge")) {
       el("adminNotificationBadge").textContent = fa(totalInbox);
@@ -468,7 +635,19 @@
         ? "top-notification-badge"
         : "top-notification-badge hidden";
     }
-    api("GET","/notifications?limit=50&unread=1",null,function(err,data){if(err)return;state.adminPersistentUnread=(data.items||[]).length;var total=Number(state.adminAttentionCount||0)+state.adminPersistentUnread,badge=el("adminNotificationBadge");if(badge){badge.textContent=fa(total);badge.className=total?"top-notification-badge":"top-notification-badge hidden";}});
+    api("GET", "/notifications?limit=50&unread=1", null, function (err, data) {
+      if (err) return;
+      state.adminPersistentUnread = (data.items || []).length;
+      var total =
+          Number(state.adminAttentionCount || 0) + state.adminPersistentUnread,
+        badge = el("adminNotificationBadge");
+      if (badge) {
+        badge.textContent = fa(total);
+        badge.className = total
+          ? "top-notification-badge"
+          : "top-notification-badge hidden";
+      }
+    });
     el("dashboardStats").innerHTML =
       '<article class="stat-card"><span>اجرای امروز</span><strong>' +
       fa((m.doneTasks || 0) + (m.partialTasks || 0)) +
@@ -675,7 +854,10 @@
   function scheduleRealtimeRefresh() {
     if (!q(".view.active") || q(".view.active").id !== "view-live") return;
     if (realtimeRefreshTimer) clearTimeout(realtimeRefreshTimer);
-    realtimeRefreshTimer = setTimeout(function () { realtimeRefreshTimer=null; loadLive(); }, 800);
+    realtimeRefreshTimer = setTimeout(function () {
+      realtimeRefreshTimer = null;
+      loadLive();
+    }, 800);
   }
   function renderLive() {
     var d = state.live || {},
@@ -708,16 +890,62 @@
     el("liveHero").innerHTML = hero;
     renderLiveTimer();
     if (el("liveContext")) {
-      var progress = d.planProgress || {}, learning = d.learning || {}, current = d.currentTask || {}, last = d.lastAttempt || {}, recent = d.activity && d.activity.length ? d.activity[0] : null;
-      var total = Number(progress.total || 0), completed = Number(progress.done || 0), partial = Number(progress.partial || 0);
-      var pct = total ? Math.round(((completed + partial * 0.5) * 100) / total) : 0;
+      var progress = d.planProgress || {},
+        learning = d.learning || {},
+        current = d.currentTask || {},
+        last = d.lastAttempt || {},
+        recent = d.activity && d.activity.length ? d.activity[0] : null;
+      var total = Number(progress.total || 0),
+        completed = Number(progress.done || 0),
+        partial = Number(progress.partial || 0);
+      var pct = total
+        ? Math.round(((completed + partial * 0.5) * 100) / total)
+        : 0;
       el("liveContext").innerHTML =
-        '<article class="live-context-card"><small>فعالیت فعلی</small><strong>' + esc(current.title || (ss && ss.title) || (recent && recent.eventType === 'screen.viewed' && recent.metadata && recent.metadata.viewLabel) || (p.online ? "داخل اپ" : "آفلاین")) + '</strong><span>' + esc(current.subject || (ss && ss.subject) || p.deviceLabel || "") + '</span></article>' +
-        '<article class="live-context-card"><small>پیشرفت برنامه امروز</small><strong>' + fa(pct) + '%</strong><span>' + fa(completed) + ' کامل • ' + fa(partial) + ' نیمه‌کاره از ' + fa(total) + '</span></article>' +
-        '<article class="live-context-card"><small>مطالعه ثبت‌شده امروز</small><strong>' + fa((d.todayStudy && d.todayStudy.minutes) || 0) + ' دقیقه</strong><span>' + fa((d.todayStudy && d.todayStudy.sessions) || 0) + ' جلسه تمام‌شده</span></article>' +
-        '<article class="live-context-card"><small>یادگیری نیازمند توجه</small><strong>' + fa(learning.dueItems || 0) + ' مرور</strong><span>' + fa(learning.pendingItems || 0) + ' مورد فعال • تسلط ' + fa(Math.round(learning.averageMastery || 0)) + '/۵</span></article>' +
-        '<article class="live-context-card"><small>آخرین آزمون</small><strong>' + (last.id ? fa(last.percent || 0) + '%' : '—') + '</strong><span>' + esc(last.title || 'هنوز آزمونی ثبت نشده') + '</span></article>' +
-        '<article class="live-context-card"><small>آخرین حضور</small><strong>' + (p.online ? 'آنلاین' : 'آفلاین') + '</strong><span>' + esc(p.lastSeenAt ? shortDateTime(p.lastSeenAt) : 'بدون سابقه') + '</span></article>';
+        '<article class="live-context-card"><small>فعالیت فعلی</small><strong>' +
+        esc(
+          current.title ||
+            (ss && ss.title) ||
+            (recent &&
+              recent.eventType === "screen.viewed" &&
+              recent.metadata &&
+              recent.metadata.viewLabel) ||
+            (p.online ? "داخل اپ" : "آفلاین"),
+        ) +
+        "</strong><span>" +
+        esc(current.subject || (ss && ss.subject) || p.deviceLabel || "") +
+        "</span></article>" +
+        '<article class="live-context-card"><small>پیشرفت برنامه امروز</small><strong>' +
+        fa(pct) +
+        "%</strong><span>" +
+        fa(completed) +
+        " کامل • " +
+        fa(partial) +
+        " نیمه‌کاره از " +
+        fa(total) +
+        "</span></article>" +
+        '<article class="live-context-card"><small>مطالعه ثبت‌شده امروز</small><strong>' +
+        fa((d.todayStudy && d.todayStudy.minutes) || 0) +
+        " دقیقه</strong><span>" +
+        fa((d.todayStudy && d.todayStudy.sessions) || 0) +
+        " جلسه تمام‌شده</span></article>" +
+        '<article class="live-context-card"><small>یادگیری نیازمند توجه</small><strong>' +
+        fa(learning.dueItems || 0) +
+        " مرور</strong><span>" +
+        fa(learning.pendingItems || 0) +
+        " مورد فعال • تسلط " +
+        fa(Math.round(learning.averageMastery || 0)) +
+        "/۵</span></article>" +
+        '<article class="live-context-card"><small>آخرین آزمون</small><strong>' +
+        (last.id ? fa(last.percent || 0) + "%" : "—") +
+        "</strong><span>" +
+        esc(last.title || "هنوز آزمونی ثبت نشده") +
+        "</span></article>" +
+        '<article class="live-context-card"><small>آخرین حضور</small><strong>' +
+        (p.online ? "آنلاین" : "آفلاین") +
+        "</strong><span>" +
+        esc(p.lastSeenAt ? shortDateTime(p.lastSeenAt) : "بدون سابقه") +
+        "</span></article>";
     }
     var h = "",
       acts = d.activity || [];
@@ -771,17 +999,140 @@
       };
   }
   function renderRealtimeSnapshot(d) {
-    var summary=d.summary||{}, search=String((el("realtimeSearch")&&el("realtimeSearch").value)||"").trim().toLowerCase(), filter=(el("realtimeFilter")&&el("realtimeFilter").value)||"all";
-    el("liveDot").className="live-dot "+(summary.online?"online":"");
-    el("liveHero").innerHTML='<div class="realtime-summary"><div><small>آنلاین</small><strong>'+fa(summary.online||0)+'</strong></div><div><small>در حال مطالعه</small><strong>'+fa(summary.studying||0)+'</strong></div><div><small>توقف</small><strong>'+fa(summary.paused||0)+'</strong></div><div><small>آزمون</small><strong>'+fa(summary.takingExam||0)+'</strong></div><div><small>نیازمند توجه</small><strong>'+fa(summary.attention||0)+'</strong></div></div>';
-    var list=(d.students||[]).filter(function(x){var attention=x.dueReviews>=3||(x.lastExamPercent!=null&&x.lastExamPercent<50);return (!search||String(x.name||"").toLowerCase().indexOf(search)>=0)&& (filter==="all"||filter==="online"&&x.presence&&x.presence.online||filter==="attention"&&attention||x.state===filter);}), h="";
-    list.forEach(function(x){var attention=x.dueReviews>=3||(x.lastExamPercent!=null&&x.lastExamPercent<50),ss=x.activeSession||{};h+='<article class="realtime-student-card '+esc(x.freshness)+'"><div class="realtime-card-head"><span class="pulse '+(x.presence&&x.presence.online?'':'offline')+'"></span><div><strong>'+esc(x.name)+'</strong><small>'+esc(x.grade||x.major||'')+'</small></div><b class="status-chip">'+esc({studying:'مطالعه',paused:'توقف',taking_exam:'آزمون',online:'آنلاین',offline:'آفلاین'}[x.state]||x.state)+'</b></div><p>'+esc(ss.title||x.currentView||'بدون فعالیت جاری')+'</p><div class="realtime-metrics"><span>'+fa(x.remainingTasks)+' کار باقی‌مانده</span><span>'+fa(x.dueReviews)+' مرور</span><span>'+(x.lastExamPercent==null?'—':fa(x.lastExamPercent)+'%')+' آزمون</span></div>'+(ss.startedAt?'<strong class="live-elapsed" data-live-started="'+esc(ss.startedAt)+'">00:00:00</strong>':'')+'<div class="head-actions"><button class="mini-btn" data-live-open="'+esc(x.id)+'">پرونده</button><button class="mini-btn" data-live-message="'+esc(x.id)+'">پیام</button>'+(attention?'<span class="status-chip warn">توجه</span>':'')+'</div></article>';});
-    el("liveContext").innerHTML=h||'<div class="empty-admin">دانش‌آموزی با این فیلتر پیدا نشد.</div>';
-    var timeline="";(d.timeline||[]).slice(0,60).forEach(function(a){timeline+='<div class="activity-row"><span class="activity-dot"></span><div><strong>'+esc(a.studentName)+' — '+esc(activityLabel(a.eventType))+'</strong><p>'+esc(activityMeta(a))+'</p><time>'+esc(shortDateTime(a.createdAt))+'</time></div></div>';});el("activityFeed").innerHTML=timeline||'<div class="empty-admin">رویدادی ثبت نشده.</div>';
-    qa("[data-live-open]").forEach(function(b){b.onclick=function(){state.studentId=this.getAttribute("data-live-open");switchView("students");loadStudentEditor();};});qa("[data-live-message]").forEach(function(b){b.onclick=function(){state.studentId=this.getAttribute("data-live-message");switchView("chat");setTimeout(function(){selectConversationForStudent(state.studentId);},80);};});renderLiveTimer();
+    var summary = d.summary || {},
+      search = String(
+        (el("realtimeSearch") && el("realtimeSearch").value) || "",
+      )
+        .trim()
+        .toLowerCase(),
+      filter = (el("realtimeFilter") && el("realtimeFilter").value) || "all";
+    el("liveDot").className = "live-dot " + (summary.online ? "online" : "");
+    el("liveHero").innerHTML =
+      '<div class="realtime-summary"><div><small>آنلاین</small><strong>' +
+      fa(summary.online || 0) +
+      "</strong></div><div><small>در حال مطالعه</small><strong>" +
+      fa(summary.studying || 0) +
+      "</strong></div><div><small>توقف</small><strong>" +
+      fa(summary.paused || 0) +
+      "</strong></div><div><small>آزمون</small><strong>" +
+      fa(summary.takingExam || 0) +
+      "</strong></div><div><small>نیازمند توجه</small><strong>" +
+      fa(summary.attention || 0) +
+      "</strong></div></div>";
+    var list = (d.students || []).filter(function (x) {
+        var attention =
+          x.dueReviews >= 3 ||
+          (x.lastExamPercent != null && x.lastExamPercent < 50);
+        return (
+          (!search ||
+            String(x.name || "")
+              .toLowerCase()
+              .indexOf(search) >= 0) &&
+          (filter === "all" ||
+            (filter === "online" && x.presence && x.presence.online) ||
+            (filter === "attention" && attention) ||
+            x.state === filter)
+        );
+      }),
+      h = "";
+    list.forEach(function (x) {
+      var attention =
+          x.dueReviews >= 3 ||
+          (x.lastExamPercent != null && x.lastExamPercent < 50),
+        ss = x.activeSession || {};
+      h +=
+        '<article class="realtime-student-card ' +
+        esc(x.freshness) +
+        '"><div class="realtime-card-head"><span class="pulse ' +
+        (x.presence && x.presence.online ? "" : "offline") +
+        '"></span><div><strong>' +
+        esc(x.name) +
+        "</strong><small>" +
+        esc(x.grade || x.major || "") +
+        '</small></div><b class="status-chip">' +
+        esc(
+          {
+            studying: "مطالعه",
+            paused: "توقف",
+            taking_exam: "آزمون",
+            online: "آنلاین",
+            offline: "آفلاین",
+          }[x.state] || x.state,
+        ) +
+        "</b></div><p>" +
+        esc(ss.title || x.currentView || "بدون فعالیت جاری") +
+        '</p><div class="realtime-metrics"><span>' +
+        fa(x.remainingTasks) +
+        " کار باقی‌مانده</span><span>" +
+        fa(x.dueReviews) +
+        " مرور</span><span>" +
+        (x.lastExamPercent == null ? "—" : fa(x.lastExamPercent) + "%") +
+        " آزمون</span></div>" +
+        (ss.startedAt
+          ? '<strong class="live-elapsed" data-live-started="' +
+            esc(ss.startedAt) +
+            '">00:00:00</strong>'
+          : "") +
+        '<div class="head-actions"><button class="mini-btn" data-live-open="' +
+        esc(x.id) +
+        '">پرونده</button><button class="mini-btn" data-live-message="' +
+        esc(x.id) +
+        '">پیام</button>' +
+        (attention ? '<span class="status-chip warn">توجه</span>' : "") +
+        "</div></article>";
+    });
+    el("liveContext").innerHTML =
+      h || '<div class="empty-admin">دانش‌آموزی با این فیلتر پیدا نشد.</div>';
+    var timeline = "";
+    (d.timeline || []).slice(0, 60).forEach(function (a) {
+      timeline +=
+        '<div class="activity-row"><span class="activity-dot"></span><div><strong>' +
+        esc(a.studentName) +
+        " — " +
+        esc(activityLabel(a.eventType)) +
+        "</strong><p>" +
+        esc(activityMeta(a)) +
+        "</p><time>" +
+        esc(shortDateTime(a.createdAt)) +
+        "</time></div></div>";
+    });
+    el("activityFeed").innerHTML =
+      timeline || '<div class="empty-admin">رویدادی ثبت نشده.</div>';
+    qa("[data-live-open]").forEach(function (b) {
+      b.onclick = function () {
+        state.studentId = this.getAttribute("data-live-open");
+        switchView("students");
+        loadStudentEditor();
+      };
+    });
+    qa("[data-live-message]").forEach(function (b) {
+      b.onclick = function () {
+        state.studentId = this.getAttribute("data-live-message");
+        switchView("chat");
+        setTimeout(function () {
+          selectConversationForStudent(state.studentId);
+        }, 80);
+      };
+    });
+    renderLiveTimer();
   }
   function renderLiveTimer() {
-    qa("[data-live-started]").forEach(function(node){var sec=Math.max(0,Math.floor((Date.now()-new Date(node.getAttribute("data-live-started")).getTime())/1000));node.textContent=("0"+Math.floor(sec/3600)).slice(-2)+":"+("0"+Math.floor((sec%3600)/60)).slice(-2)+":"+("0"+(sec%60)).slice(-2);});
+    qa("[data-live-started]").forEach(function (node) {
+      var sec = Math.max(
+        0,
+        Math.floor(
+          (Date.now() -
+            new Date(node.getAttribute("data-live-started")).getTime()) /
+            1000,
+        ),
+      );
+      node.textContent =
+        ("0" + Math.floor(sec / 3600)).slice(-2) +
+        ":" +
+        ("0" + Math.floor((sec % 3600) / 60)).slice(-2) +
+        ":" +
+        ("0" + (sec % 60)).slice(-2);
+    });
     if (!state.live || !state.live.activeSession || !el("liveTimerText"))
       return;
     var sec = Math.max(
@@ -1212,11 +1563,15 @@
   }
   function taskExamOptions(selected, search) {
     var h = '<option value="">— بدون آزمون مرتبط —</option>';
-    var term = String(search || "").trim().toLowerCase(), shown = 0;
+    var term = String(search || "")
+        .trim()
+        .toLowerCase(),
+      shown = 0;
     for (var i = 0; i < state.exams.length; i++) {
       var e = state.exams[i];
       var label = (e.persianDate || e.isoDate) + " — " + e.title;
-      if (term && label.toLowerCase().indexOf(term) < 0 && e.id !== selected) continue;
+      if (term && label.toLowerCase().indexOf(term) < 0 && e.id !== selected)
+        continue;
       if (shown >= 12 && e.id !== selected) continue;
       shown++;
       h +=
@@ -1305,7 +1660,10 @@
     );
     syncTaskExamField(t.examId || "");
     el("tfExamSearch").oninput = function () {
-      el("tfExamId").innerHTML = taskExamOptions(el("tfExamId").value || t.examId || "", this.value);
+      el("tfExamId").innerHTML = taskExamOptions(
+        el("tfExamId").value || t.examId || "",
+        this.value,
+      );
     };
     el("tfType").onchange = function () {
       syncTaskExamField(t.examId || "");
@@ -1368,57 +1726,123 @@
       function (err, data) {
         if (err) return toast(err.message, "error");
         state.exams = data || [];
-        var h = "";
-        for (var i = 0; i < state.exams.length; i++) {
-          var e = state.exams[i],
-            d = e.delivery || {},
-            status = examStateLabel(d.reason, e),
-            attempts =
-              fa(d.attemptsUsed || 0) +
-              " / " +
-              fa(d.allowedAttempts || e.maxAttempts || 1);
-          h +=
-            '<article class="exam-admin-card"><div class="exam-admin-card-head"><div><span class="eyebrow">' +
-            esc(e.persianDate || e.isoDate) +
-            "</span><h3>" +
-            esc(e.title) +
-            "</h3><p>" +
-            esc(e.note || e.instructions || "") +
-            '</p></div><span class="tag ' +
-            (e.published ? "blue" : "warn") +
-            '">' +
-            (e.published ? "منتشر" : "پیش‌نویس") +
-            '</span></div><div class="exam-admin-metrics"><span><small>دسترسی</small><strong>' +
-            esc(status) +
-            "</strong></span><span><small>تلاش</small><strong>" +
-            attempts +
-            "</strong></span><span><small>سؤال</small><strong>" +
-            fa(d.questionCount || 0) +
-            "</strong></span><span><small>زمان</small><strong>" +
-            fa(e.durationMinutes || 120) +
-            ' دقیقه</strong></span></div><div class="exam-window">' +
-            icon("clock") +
-            "<span>" +
-            esc(shortDateTime(e.openAt)) +
-            " تا " +
-            esc(shortDateTime(e.closeAt)) +
-            '</span></div><div class="exam-card-actions"><button class="mini-btn" data-exam-questions="' +
-            e.id +
-            '">سؤال‌ها</button><button class="mini-btn" data-exam-syllabus="' +
-            e.id +
-            '">بودجه</button><button class="mini-btn" data-edit-exam="' +
-            e.id +
-            '">ویرایش</button><button class="mini-btn danger-text" data-del-exam="' +
-            e.id +
-            '">حذف</button></div></article>';
-        }
-        el("examAdminList").innerHTML =
-          h ||
-          '<div class="panel empty-admin">برای دانش‌آموز فعال آزمونی نیست.</div>';
-        bindExamActions();
+        state.examSelection = {};
+        renderExamManagement();
         loadExamRetryRequests();
       },
     );
+  }
+  function filteredExams() {
+    var search = String(state.examSearch || "")
+      .trim()
+      .toLowerCase();
+    return state.exams.filter(function (e) {
+      if (
+        state.examStatusFilter !== "all" &&
+        e.status !== state.examStatusFilter
+      )
+        return false;
+      if (state.examPublishFilter === "published" && !e.published) return false;
+      if (state.examPublishFilter === "draft" && e.published) return false;
+      if (
+        search &&
+        [e.title, e.note, e.instructions, e.isoDate, e.persianDate]
+          .join(" ")
+          .toLowerCase()
+          .indexOf(search) < 0
+      )
+        return false;
+      return true;
+    });
+  }
+  function selectedExamIds() {
+    return Object.keys(state.examSelection || {}).filter(function (id) {
+      return state.examSelection[id] && findExam(id);
+    });
+  }
+  function renderExamManagement() {
+    var rows = filteredExams(),
+      h =
+        '<table class="exam-management-table"><thead><tr><th><input id="selectAllExams" type="checkbox" aria-label="انتخاب همه آزمون‌های نمایش‌داده‌شده"></th><th>ردیف</th><th>آزمون</th><th>تاریخ شمسی</th><th>وضعیت</th><th>انتشار</th><th>سؤال</th><th>تلاش</th><th>زمان</th><th>عملیات</th></tr></thead><tbody>';
+    for (var i = 0; i < rows.length; i++) {
+      var e = rows[i],
+        d = e.delivery || {},
+        checked = state.examSelection[e.id] ? " checked" : "",
+        attempts =
+          fa(d.attemptsUsed || 0) +
+          " / " +
+          fa(d.allowedAttempts || e.maxAttempts || 1);
+      h +=
+        '<tr class="' +
+        (checked ? "selected" : "") +
+        '"><td><input class="exam-row-check" type="checkbox" data-select-exam="' +
+        esc(e.id) +
+        '"' +
+        checked +
+        "></td><td>" +
+        fa(i + 1) +
+        "</td><td><strong>" +
+        esc(e.title) +
+        "</strong><small>" +
+        esc(e.note || e.instructions || "بدون یادداشت") +
+        "</small></td><td><strong>" +
+        esc(shamsi(e.isoDate, false)) +
+        "</strong><small>" +
+        esc(e.persianDate || e.isoDate) +
+        '</small></td><td><span class="exam-state">' +
+        esc(examStateLabel(d.reason, e)) +
+        '</span></td><td><span class="tag ' +
+        (e.published ? "blue" : "warn") +
+        '">' +
+        (e.published ? "منتشر" : "پیش‌نویس") +
+        "</span></td><td>" +
+        fa(d.questionCount || 0) +
+        "</td><td>" +
+        attempts +
+        "</td><td>" +
+        fa(e.durationMinutes || 120) +
+        ' دقیقه</td><td><div class="exam-row-menu"><button class="mini-btn" data-exam-questions="' +
+        e.id +
+        '">سؤال‌ها</button><button class="mini-btn" data-edit-exam="' +
+        e.id +
+        '">ویرایش</button><button class="mini-btn" data-exam-syllabus="' +
+        e.id +
+        '">بودجه</button><button class="mini-btn" data-export-exam="' +
+        e.id +
+        '">JSON</button><button class="mini-btn danger-text" data-del-exam="' +
+        e.id +
+        '">حذف</button></div></td></tr>';
+    }
+    h += "</tbody></table>";
+    el("examAdminList").innerHTML = rows.length
+      ? h
+      : '<div class="empty-admin">آزمونی مطابق فیلترها پیدا نشد.</div>';
+    if (el("examResultCount"))
+      el("examResultCount").textContent = fa(rows.length) + " آزمون";
+    var count = selectedExamIds().length;
+    el("examSelectedCount").textContent = fa(count) + " انتخاب";
+    el("examBulkBar").classList.toggle("active", count > 0);
+    var all = el("selectAllExams");
+    if (all) {
+      all.checked =
+        rows.length > 0 &&
+        rows.every(function (e) {
+          return !!state.examSelection[e.id];
+        });
+      all.onchange = function () {
+        for (var j = 0; j < rows.length; j++)
+          state.examSelection[rows[j].id] = this.checked;
+        renderExamManagement();
+      };
+    }
+    var checks = qa("[data-select-exam]", el("examAdminList"));
+    for (i = 0; i < checks.length; i++)
+      checks[i].onchange = function () {
+        state.examSelection[this.getAttribute("data-select-exam")] =
+          this.checked;
+        renderExamManagement();
+      };
+    bindExamActions();
   }
   function examStateLabel(reason, e) {
     var map = {
@@ -1528,6 +1952,102 @@
       if (state.exams[i].id === id) return state.exams[i];
     return null;
   }
+  function downloadJsonFile(data, name) {
+    var a = document.createElement("a"),
+      blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    setTimeout(function () {
+      URL.revokeObjectURL(a.href);
+    }, 500);
+  }
+  function exportExams(ids, label) {
+    if (!state.studentId)
+      return toast("ابتدا دانش‌آموز را انتخاب کنید.", "error");
+    api(
+      "GET",
+      "/admin/export/json?studentId=" + encodeURIComponent(state.studentId),
+      null,
+      function (err, data) {
+        if (err) return toast(err.message, "error");
+        var wanted = {};
+        (ids || []).forEach(function (id) {
+          wanted[id] = 1;
+        });
+        data.plans = [];
+        data.range = { from: "0000-01-01", to: "9999-12-31" };
+        data.exams = (data.exams || []).filter(function (e) {
+          return !ids || wanted[e.ref];
+        });
+        if (!data.exams.length)
+          return toast("آزمونی برای خروجی پیدا نشد.", "error");
+        downloadJsonFile(data, "moshaver-exams-" + (label || "all") + ".json");
+        toast("خروجی " + fa(data.exams.length) + " آزمون آماده شد.");
+      },
+    );
+  }
+  function runExamBulk(action) {
+    var ids = selectedExamIds();
+    if (!ids.length) return toast("حداقل یک آزمون را انتخاب کنید.", "error");
+    if (action === "export") return exportExams(ids, "selected");
+    var status = action === "status" ? el("examBulkStatus").value : "";
+    if (action === "status" && !status) return;
+    if (
+      action === "delete" &&
+      !confirm(
+        fa(ids.length) +
+          " آزمون انتخاب‌شده حذف شوند؟ این کار قابل بازگشت نیست.",
+      )
+    )
+      return;
+    var index = 0,
+      failed = 0;
+    function next() {
+      if (index >= ids.length) {
+        toast(
+          failed
+            ? fa(failed) + " عملیات ناموفق بود."
+            : "عملیات گروهی انجام شد.",
+          failed ? "error" : null,
+        );
+        loadExams();
+        return;
+      }
+      var id = ids[index++],
+        method = action === "delete" ? "DELETE" : "PATCH",
+        body = null;
+      if (action === "publish") body = { published: true };
+      else if (action === "draft") body = { published: false };
+      else if (action === "status") body = { status: status };
+      api(
+        method,
+        "/admin/exams/" + encodeURIComponent(id),
+        body,
+        function (err) {
+          if (err) failed++;
+          next();
+        },
+      );
+    }
+    next();
+  }
+  function openExamImport() {
+    openImport();
+    el("importModalTitle").textContent = "ورود JSON آزمون‌ها";
+    api(
+      "GET",
+      "/admin/import/template?studentId=" + encodeURIComponent(state.studentId),
+      null,
+      function (err, data) {
+        if (err) return;
+        data.plans = [];
+        el("jsonText").value = JSON.stringify(data, null, 2);
+      },
+    );
+  }
   function bindExamActions() {
     var bs = qa("[data-edit-exam]");
     for (var i = 0; i < bs.length; i++)
@@ -1555,6 +2075,13 @@
       bs[i].onclick = function () {
         openExamQuestions(findExam(this.getAttribute("data-exam-questions")));
       };
+    bs = qa("[data-export-exam]");
+    for (i = 0; i < bs.length; i++)
+      bs[i].onclick = function () {
+        var id = this.getAttribute("data-export-exam"),
+          e = findExam(id);
+        exportExams([id], e ? e.isoDate + "-" + e.title : "exam");
+      };
   }
   function openExamForm(e) {
     e = e || {};
@@ -1569,14 +2096,16 @@
         '"></label><label>تاریخ<input id="efIso" type="date" value="' +
         esc(date) +
         '"></label><label>تاریخ فارسی<input id="efPersian" value="' +
-        esc(e.persianDate || "") +
+        esc(e.persianDate || shamsi(date, false)) +
         '"></label><label>وضعیت<select id="efStatus"><option value="upcoming">آتی</option><option value="completed">پایان‌یافته</option><option value="cancelled">لغوشده</option></select></label><label>شروع دسترسی<input id="efOpen" type="datetime-local" value="' +
         esc(inputDateTime(open)) +
         '"></label><label>پایان دسترسی<input id="efClose" type="datetime-local" value="' +
         esc(inputDateTime(close)) +
         '"></label><label>مدت آزمون (دقیقه)<input id="efDuration" type="number" min="1" max="600" value="' +
         esc(e.durationMinutes || 120) +
-        '"></label><label>تلاش پایه<input id="efAttempts" type="number" min="1" max="1" readonly value="1"></label><label>انتشار<select id="efPublished"><option value="1">منتشر و قابل مشاهده</option><option value="0">پیش‌نویس</option></select></label><label class="span-2">راهنمای شروع<textarea id="efInstructions" rows="3">' +
+        '"></label><label>تعداد تلاش پایه<input id="efAttempts" type="number" min="1" max="100" value="' +
+        esc(e.maxAttempts || 1) +
+        '"></label><label>انتشار<select id="efPublished"><option value="1">منتشر و قابل مشاهده</option><option value="0">پیش‌نویس</option></select></label><label class="span-2">راهنمای شروع<textarea id="efInstructions" rows="3">' +
         esc(
           e.instructions ||
             "بعد از شروع، زمان آزمون متوقف نمی‌شود. پاسخ‌ها را قبل از پایان ثبت کن.",
@@ -1587,6 +2116,9 @@
     );
     el("efStatus").value = e.status || "upcoming";
     el("efPublished").value = e.published === false ? "0" : "1";
+    el("efIso").onchange = function () {
+      el("efPersian").value = shamsi(this.value, false);
+    };
     el("saveExam").onclick = function () {
       var btn = this,
         body = {
@@ -1598,7 +2130,10 @@
           openAt: toIranIso(el("efOpen").value),
           closeAt: toIranIso(el("efClose").value),
           durationMinutes: Number(el("efDuration").value || 120),
-          maxAttempts: 1,
+          maxAttempts: Math.min(
+            100,
+            Math.max(1, Number(el("efAttempts").value || 1)),
+          ),
           published: el("efPublished").value === "1",
           instructions: el("efInstructions").value,
           note: el("efNote").value,
@@ -1638,11 +2173,13 @@
         var h =
           '<span class="eyebrow">QUESTIONS</span><h2>سؤال‌های ' +
           esc(e.title) +
-          '</h2><p class="modal-help">چهار گزینه و پاسخ صحیح را ثبت کن. سؤال‌ها با همان آزمون به دانش‌آموز تحویل می‌شوند.</p><div class="question-admin-list">';
+          '</h2><p class="modal-help">چهار گزینه و پاسخ صحیح را ثبت کن. سؤال‌های استفاده‌شده در سابقه دانش‌آموز برای حفظ گزارش‌ها حذف نمی‌شوند.</p><div class="question-selection-bar"><label><input id="selectAllExamQuestions" type="checkbox"> انتخاب همه</label><button id="deleteSelectedExamQuestions" class="mini-btn danger-text">حذف انتخاب‌شده</button><button id="clearExamQuestionForm" class="mini-btn">سؤال جدید</button></div><div class="question-admin-list">';
         for (var i = 0; i < (rows || []).length; i++) {
           var x = rows[i];
           h +=
-            '<div class="question-admin-row"><div><strong>' +
+            '<div class="question-admin-row"><input type="checkbox" data-select-exam-question="' +
+            x.id +
+            '"><div><strong>' +
             fa(i + 1) +
             ". " +
             esc(x.question_text || x.question || "") +
@@ -1662,12 +2199,77 @@
             : '<div class="empty-admin">هنوز سؤالی ثبت نشده.</div>') +
           '</div><hr><div class="question-builder"><label>صورت سؤال<textarea id="eqQuestion" rows="3"></textarea></label><div class="form-grid"><label>گزینه A<input id="eqA"></label><label>گزینه B<input id="eqB"></label><label>گزینه C<input id="eqC"></label><label>گزینه D<input id="eqD"></label><label>پاسخ صحیح<select id="eqCorrect"><option value="a">A</option><option value="b">B</option><option value="c">C</option><option value="d">D</option></select></label><label>کتاب<input id="eqBook"></label><label>فصل<input id="eqChapter"></label><label>درس<input id="eqLesson"></label><label>مبحث<input id="eqTopic"></label></div><label>توضیح پاسخ<textarea id="eqExplanation" rows="2"></textarea></label><label>هینت مرور آینده<textarea id="eqHint" rows="2"></textarea></label><button id="addExamQuestion" class="btn primary full">افزودن سؤال</button></div>';
         openModal(h);
+        el("selectAllExamQuestions").onchange = function () {
+          var checks = qa("[data-select-exam-question]");
+          for (var ci = 0; ci < checks.length; ci++)
+            checks[ci].checked = this.checked;
+        };
+        el("deleteSelectedExamQuestions").onclick = function () {
+          var checks = qa("[data-select-exam-question]"),
+            ids = [];
+          for (var ci = 0; ci < checks.length; ci++)
+            if (checks[ci].checked)
+              ids.push(checks[ci].getAttribute("data-select-exam-question"));
+          if (!ids.length) return toast("سؤالی انتخاب نشده است.", "error");
+          if (!confirm(fa(ids.length) + " سؤال حذف شوند؟")) return;
+          var pos = 0,
+            failed = 0;
+          function removeNext() {
+            if (pos >= ids.length) {
+              toast(
+                failed
+                  ? fa(failed) + " سؤال به دلیل سابقه آزمون حذف نشد."
+                  : "سؤال‌ها حذف شدند.",
+                failed ? "error" : null,
+              );
+              openExamQuestions(e);
+              loadExams();
+              return;
+            }
+            api(
+              "DELETE",
+              "/admin/exams/" + e.id + "/questions/" + ids[pos++],
+              null,
+              function (er) {
+                if (er) failed++;
+                removeNext();
+              },
+            );
+          }
+          removeNext();
+        };
+        el("clearExamQuestionForm").onclick = function () {
+          el("eqQuestion").value = "";
+          el("eqA").value = "";
+          el("eqB").value = "";
+          el("eqC").value = "";
+          el("eqD").value = "";
+          el("eqCorrect").value = "a";
+          el("eqExplanation").value = "";
+          el("eqBook").value = "";
+          el("eqChapter").value = "";
+          el("eqLesson").value = "";
+          el("eqTopic").value = "";
+          el("eqHint").value = "";
+          el("addExamQuestion").removeAttribute("data-edit-id");
+          el("addExamQuestion").textContent = "افزودن سؤال";
+          el("eqQuestion").focus();
+        };
         el("addExamQuestion").onclick = function () {
-          var btn = this, editId = btn.getAttribute("data-edit-id"), editRow = null;
-          for (var ri = 0; ri < (rows || []).length; ri++) if (String(rows[ri].id) === String(editId || "")) editRow = rows[ri];
+          var btn = this,
+            editId = btn.getAttribute("data-edit-id"),
+            editRow = null;
+          for (var ri = 0; ri < (rows || []).length; ri++)
+            if (String(rows[ri].id) === String(editId || ""))
+              editRow = rows[ri];
           var body = {
             question: el("eqQuestion").value,
-            options: [el("eqA").value, el("eqB").value, el("eqC").value, el("eqD").value],
+            options: [
+              el("eqA").value,
+              el("eqB").value,
+              el("eqC").value,
+              el("eqD").value,
+            ],
             correctOption: el("eqCorrect").value,
             explanation: el("eqExplanation").value,
             book: el("eqBook").value,
@@ -1675,26 +2277,50 @@
             lesson: el("eqLesson").value,
             topic: el("eqTopic").value,
             hint: el("eqHint").value,
-            sortOrder: editRow ? Number(editRow.sort_order || 1) : (rows || []).length + 1,
+            sortOrder: editRow
+              ? Number(editRow.sort_order || 1)
+              : (rows || []).length + 1,
           };
           setButtonBusy(btn, true, editId ? "در حال ذخیره…" : "در حال افزودن…");
-          api(editId ? "PATCH" : "POST", editId ? "/admin/questions/" + encodeURIComponent(editId) : "/admin/exams/" + e.id + "/questions", body, function (er) {
-            setButtonBusy(btn, false);
-            if (er) return toast(er.message, "error");
-            toast(editId ? "سؤال ویرایش شد" : "سؤال اضافه شد");
-            openExamQuestions(e);
-            loadExams();
-          });
+          api(
+            editId ? "PATCH" : "POST",
+            editId
+              ? "/admin/questions/" + encodeURIComponent(editId)
+              : "/admin/exams/" + e.id + "/questions",
+            body,
+            function (er) {
+              setButtonBusy(btn, false);
+              if (er) return toast(er.message, "error");
+              toast(editId ? "سؤال ویرایش شد" : "سؤال اضافه شد");
+              openExamQuestions(e);
+              loadExams();
+            },
+          );
         };
         var edits = qa("[data-edit-exam-question]");
-        for (i = 0; i < edits.length; i++) edits[i].onclick = function () {
-          var qid = this.getAttribute("data-edit-exam-question"), row = null;
-          for (var j = 0; j < (rows || []).length; j++) if (String(rows[j].id) === String(qid)) row = rows[j];
-          if (!row) return;
-          el("eqQuestion").value = row.question_text || ""; el("eqA").value = row.option_a || ""; el("eqB").value = row.option_b || ""; el("eqC").value = row.option_c || ""; el("eqD").value = row.option_d || "";
-          el("eqCorrect").value = row.correct_option || "a"; el("eqExplanation").value = row.explanation || ""; el("eqBook").value = row.book || ""; el("eqChapter").value = row.chapter || ""; el("eqLesson").value = row.lesson || ""; el("eqTopic").value = row.topic || ""; el("eqHint").value = row.hint || "";
-          el("addExamQuestion").setAttribute("data-edit-id", qid); el("addExamQuestion").textContent = "ذخیره تغییرات سؤال"; el("eqQuestion").focus();
-        };
+        for (i = 0; i < edits.length; i++)
+          edits[i].onclick = function () {
+            var qid = this.getAttribute("data-edit-exam-question"),
+              row = null;
+            for (var j = 0; j < (rows || []).length; j++)
+              if (String(rows[j].id) === String(qid)) row = rows[j];
+            if (!row) return;
+            el("eqQuestion").value = row.question_text || "";
+            el("eqA").value = row.option_a || "";
+            el("eqB").value = row.option_b || "";
+            el("eqC").value = row.option_c || "";
+            el("eqD").value = row.option_d || "";
+            el("eqCorrect").value = row.correct_option || "a";
+            el("eqExplanation").value = row.explanation || "";
+            el("eqBook").value = row.book || "";
+            el("eqChapter").value = row.chapter || "";
+            el("eqLesson").value = row.lesson || "";
+            el("eqTopic").value = row.topic || "";
+            el("eqHint").value = row.hint || "";
+            el("addExamQuestion").setAttribute("data-edit-id", qid);
+            el("addExamQuestion").textContent = "ذخیره تغییرات سؤال";
+            el("eqQuestion").focus();
+          };
         var ds = qa("[data-del-exam-question]");
         for (i = 0; i < ds.length; i++)
           ds[i].onclick = function () {
@@ -1768,35 +2394,124 @@
       };
   }
   function loadQuizzes() {
+    var List = global.MoshaverAdminList;
+    if (!state.quizListState)
+      state.quizListState = List.read("quizzes", { q: "", sort: "title" });
+    el("quizAdminList").innerHTML = List.skeleton(5);
     api("GET", "/admin/quizzes", null, function (err, data) {
-      if (err) return toast(err.message);
-      state.quizzes = data || [];
-      var h = "";
-      for (var i = 0; i < state.quizzes.length; i++) {
-        var z = state.quizzes[i];
-        h +=
-          '<div class="table-row"><div><strong>' +
-          esc(z.title) +
-          "</strong><small>" +
-          esc(z.subject || "") +
-          "</small></div><div>" +
-          fa(z.duration_minutes || 20) +
-          " دقیقه</div><div>" +
-          fa(z.question_count || 0) +
-          ' سؤال</div><div class="actions"><button class="action-icon" data-questions="' +
-          z.id +
-          '">' +
-          icon("test") +
-          "</button></div></div>";
+      if (err) {
+        el("quizAdminList").innerHTML = List.error(err.message, "retryQuizzes");
+        el("retryQuizzes").onclick = loadQuizzes;
+        return;
       }
-      el("quizAdminList").innerHTML =
-        h || '<div class="empty-admin">آزمونکی نیست.</div>';
-      var bs = qa("[data-questions]");
-      for (i = 0; i < bs.length; i++)
-        bs[i].onclick = function () {
-          openQuestions(this.getAttribute("data-questions"));
-        };
+      state.quizzes = data || [];
+      renderQuizAdminList();
     });
+  }
+  function renderQuizAdminList() {
+    var List = global.MoshaverAdminList;
+    if (!state.quizListState) state.quizListState = { q: "", sort: "title" };
+    var query = String(state.quizListState.q || "")
+      .trim()
+      .toLowerCase();
+    var rows = (state.quizzes || []).filter(function (quiz) {
+      return (
+        !query ||
+        [quiz.title, quiz.subject, quiz.question_count, quiz.duration_minutes]
+          .join(" ")
+          .toLowerCase()
+          .indexOf(query) >= 0
+      );
+    });
+    rows.sort(function (a, b) {
+      if (state.quizListState.sort === "questions")
+        return Number(b.question_count || 0) - Number(a.question_count || 0);
+      if (state.quizListState.sort === "duration")
+        return (
+          Number(b.duration_minutes || 0) - Number(a.duration_minutes || 0)
+        );
+      return String(a.title || "").localeCompare(String(b.title || ""), "fa");
+    });
+    var h = List.toolbar({
+      id: "quizzes",
+      q: state.quizListState.q,
+      placeholder: "جستجو آزمونک، درس یا تعداد سؤال...",
+      countText: fa(rows.length) + " آزمونک",
+      filters: [
+        {
+          name: "sort",
+          label: "مرتب‌سازی",
+          value: state.quizListState.sort,
+          options: [
+            { value: "title", label: "عنوان" },
+            { value: "questions", label: "سؤال بیشتر" },
+            { value: "duration", label: "زمان بیشتر" },
+          ],
+        },
+      ],
+    });
+    h += navigator.onLine
+      ? ""
+      : List.offline(
+          state.lastSyncAt
+            ? new Date(state.lastSyncAt).toLocaleTimeString("fa-IR")
+            : "",
+        );
+    h += '<div class="responsive-list">';
+    for (var i = 0; i < rows.length; i++) {
+      var z = rows[i];
+      h +=
+        '<div class="table-row" data-list-row tabindex="0" data-open-questions="' +
+        z.id +
+        '"><div><strong>' +
+        esc(z.title) +
+        "</strong><small>" +
+        esc(z.subject || "") +
+        "</small></div><div>" +
+        fa(z.duration_minutes || 20) +
+        " دقیقه</div><div>" +
+        fa(z.question_count || 0) +
+        ' سؤال</div><div class="actions"><button class="action-icon" data-questions="' +
+        z.id +
+        '" aria-label="مدیریت سؤال‌ها">' +
+        icon("test") +
+        "</button></div></div>";
+    }
+    h += "</div>";
+    if (!rows.length)
+      h += List.empty({
+        filtered: !!query,
+        title: query ? "آزمونکی مطابق جستجو پیدا نشد" : "آزمونکی نیست",
+        actionId: "quizEmptyCreate",
+        actionLabel: "آزمونک جدید",
+      });
+    el("quizAdminList").innerHTML = h;
+    List.bind(el("quizAdminList"), {
+      id: "quizzes",
+      onChange: function (name, value) {
+        state.quizListState[name] = value;
+        List.write("quizzes", state.quizListState);
+        renderQuizAdminList();
+      },
+      onReset: function () {
+        state.quizListState = { q: "", sort: "title" };
+        List.write("quizzes", state.quizListState);
+        renderQuizAdminList();
+      },
+      onRefresh: loadQuizzes,
+    });
+    if (el("quizEmptyCreate")) el("quizEmptyCreate").onclick = openQuizForm;
+    var bs = qa("[data-questions]");
+    for (i = 0; i < bs.length; i++)
+      bs[i].onclick = function (event) {
+        event.stopPropagation();
+        openQuestions(this.getAttribute("data-questions"));
+      };
+    var rowsEl = qa("[data-open-questions]");
+    for (i = 0; i < rowsEl.length; i++)
+      rowsEl[i].onclick = function () {
+        openQuestions(this.getAttribute("data-open-questions"));
+      };
   }
   function openQuizForm() {
     openModal(
@@ -1844,34 +2559,71 @@
           '<hr><label>صورت سؤال<textarea id="newQuestion" rows="3"></textarea></label><div class="form-grid"><label>گزینه ۱<input id="optA"></label><label>گزینه ۲<input id="optB"></label><label>گزینه ۳<input id="optC"></label><label>گزینه ۴<input id="optD"></label><label>پاسخ<select id="correctOpt"><option value="a">۱</option><option value="b">۲</option><option value="c">۳</option><option value="d">۴</option></select></label><label>کتاب<input id="qBook"></label><label>فصل<input id="qChapter"></label><label>درس<input id="qLesson"></label><label>مبحث<input id="qTopic"></label></div><label>توضیح پاسخ<textarea id="qExplanation" rows="2"></textarea></label><label>هینت مرور آینده<textarea id="qHint" rows="2"></textarea></label><button id="addQuestion" class="btn primary full">افزودن سؤال</button>';
         openModal(h);
         el("addQuestion").onclick = function () {
-          var btn = this, editId = btn.getAttribute("data-edit-id"), editRow = null;
-          for (var ri = 0; ri < data.length; ri++) if (String(data[ri].id) === String(editId || "")) editRow = data[ri];
+          var btn = this,
+            editId = btn.getAttribute("data-edit-id"),
+            editRow = null;
+          for (var ri = 0; ri < data.length; ri++)
+            if (String(data[ri].id) === String(editId || ""))
+              editRow = data[ri];
           var body = {
             question: el("newQuestion").value,
-            options: [el("optA").value, el("optB").value, el("optC").value, el("optD").value],
+            options: [
+              el("optA").value,
+              el("optB").value,
+              el("optC").value,
+              el("optD").value,
+            ],
             correctOption: el("correctOpt").value,
             explanation: el("qExplanation").value,
-            book: el("qBook").value, chapter: el("qChapter").value, lesson: el("qLesson").value, topic: el("qTopic").value, hint: el("qHint").value,
-            sortOrder: editRow ? Number(editRow.sort_order || 1) : data.length + 1,
+            book: el("qBook").value,
+            chapter: el("qChapter").value,
+            lesson: el("qLesson").value,
+            topic: el("qTopic").value,
+            hint: el("qHint").value,
+            sortOrder: editRow
+              ? Number(editRow.sort_order || 1)
+              : data.length + 1,
           };
           setButtonBusy(btn, true, editId ? "در حال ذخیره…" : "در حال افزودن…");
-          api(editId ? "PATCH" : "POST", editId ? "/admin/questions/" + encodeURIComponent(editId) : "/admin/quizzes/" + id + "/questions", body, function (er) {
-            setButtonBusy(btn, false);
-            if (er) return toast(er.message);
-            toast(editId ? "سؤال ویرایش شد" : "سؤال اضافه شد");
-            closeModal();
-            openQuestions(id);
-          });
+          api(
+            editId ? "PATCH" : "POST",
+            editId
+              ? "/admin/questions/" + encodeURIComponent(editId)
+              : "/admin/quizzes/" + id + "/questions",
+            body,
+            function (er) {
+              setButtonBusy(btn, false);
+              if (er) return toast(er.message);
+              toast(editId ? "سؤال ویرایش شد" : "سؤال اضافه شد");
+              closeModal();
+              openQuestions(id);
+            },
+          );
         };
         var edits = qa("[data-edit-question]");
-        for (i = 0; i < edits.length; i++) edits[i].onclick = function () {
-          var qid = this.getAttribute("data-edit-question"), row = null;
-          for (var j = 0; j < data.length; j++) if (String(data[j].id) === String(qid)) row = data[j];
-          if (!row) return;
-          el("newQuestion").value = row.question_text || ""; el("optA").value = row.option_a || ""; el("optB").value = row.option_b || ""; el("optC").value = row.option_c || ""; el("optD").value = row.option_d || "";
-          el("correctOpt").value = row.correct_option || "a"; el("qExplanation").value = row.explanation || ""; el("qBook").value = row.book || ""; el("qChapter").value = row.chapter || ""; el("qLesson").value = row.lesson || ""; el("qTopic").value = row.topic || ""; el("qHint").value = row.hint || "";
-          el("addQuestion").setAttribute("data-edit-id", qid); el("addQuestion").textContent = "ذخیره تغییرات سؤال"; el("newQuestion").focus();
-        };
+        for (i = 0; i < edits.length; i++)
+          edits[i].onclick = function () {
+            var qid = this.getAttribute("data-edit-question"),
+              row = null;
+            for (var j = 0; j < data.length; j++)
+              if (String(data[j].id) === String(qid)) row = data[j];
+            if (!row) return;
+            el("newQuestion").value = row.question_text || "";
+            el("optA").value = row.option_a || "";
+            el("optB").value = row.option_b || "";
+            el("optC").value = row.option_c || "";
+            el("optD").value = row.option_d || "";
+            el("correctOpt").value = row.correct_option || "a";
+            el("qExplanation").value = row.explanation || "";
+            el("qBook").value = row.book || "";
+            el("qChapter").value = row.chapter || "";
+            el("qLesson").value = row.lesson || "";
+            el("qTopic").value = row.topic || "";
+            el("qHint").value = row.hint || "";
+            el("addQuestion").setAttribute("data-edit-id", qid);
+            el("addQuestion").textContent = "ذخیره تغییرات سؤال";
+            el("newQuestion").focus();
+          };
         var ds = qa("[data-del-question]");
         for (i = 0; i < ds.length; i++)
           ds[i].onclick = function () {
@@ -1893,79 +2645,151 @@
     b.className = n ? "nav-badge" : "nav-badge hidden";
   }
   function loadChatList(done) {
-    var search = el("conversationSearch") ? String(el("conversationSearch").value || "").trim() : "";
-    var visibleTarget = search ? 15 : Math.max(15, state.conversations.length || 0), requestLimit = Math.min(100, Math.max(30, visibleTarget + 15));
+    var search = el("conversationSearch")
+      ? String(el("conversationSearch").value || "").trim()
+      : "";
+    var visibleTarget = search
+        ? 15
+        : Math.max(15, state.conversations.length || 0),
+      requestLimit = Math.min(100, Math.max(30, visibleTarget + 15));
     var loadSeq = ++state.conversationLoadSeq;
     state.conversationLoading = true;
-    api("GET", "/admin/chat/conversations?limit=" + requestLimit + "&offset=0" + (search ? "&search=" + encodeURIComponent(search) : ""), null, function (err, data) {
-      if (loadSeq !== state.conversationLoadSeq) return;
-      state.conversationLoading = false;
-      if (err) return toast(err.message);
-      var rows = data.items || [], cut = Math.min(visibleTarget, rows.length);
-      state.conversations = rows.slice(0, cut);
-      state.conversationPrefetch = rows.slice(cut);
-      state.conversationOffset = rows.length;
-      state.conversationHasMore = !!data.hasMore;
-      state.chatUnreadTotal = Number(data.totalUnread || 0);
-      renderConversationList();
-      updateChatBadge();
-      if (!state.chatConversationId && state.studentId)
-        selectConversationForStudent(state.studentId);
-      else if (state.chatConversationId && !state.chatMessages.length)
-        loadChatMessages(state.chatConversationId);
-      api("GET", "/chat/conversations?limit=30" + (search ? "&search=" + encodeURIComponent(search) : ""), null, function (groupErr, groupData) {
+    api(
+      "GET",
+      "/admin/chat/conversations?limit=" +
+        requestLimit +
+        "&offset=0" +
+        (search ? "&search=" + encodeURIComponent(search) : ""),
+      null,
+      function (err, data) {
         if (loadSeq !== state.conversationLoadSeq) return;
-        if (!groupErr) {
-          var groups = (groupData.items || []).filter(function (x) { return x.type === "group"; }).map(function (x) {
-            x.isGroup = true; x.student = { id: "", name: x.title || "گروه", grade: "" }; x.presence = {}; return x;
-          });
-          state.conversations = state.conversations.filter(function (x) { return !x.isGroup; }).concat(groups);
-          state.groupConversationOffset = groups.length;
-          state.groupConversationHasMore = !!groupData.hasMore;
-          state.chatUnreadTotal += groups.reduce(function (n, x) { return n + Number(x.unread || 0); }, 0);
-          renderConversationList(); updateChatBadge();
-        }
-        done && done();
-      });
-    });
+        state.conversationLoading = false;
+        if (err) return toast(err.message);
+        var rows = data.items || [],
+          cut = Math.min(visibleTarget, rows.length);
+        state.conversations = rows.slice(0, cut);
+        state.conversationPrefetch = rows.slice(cut);
+        state.conversationOffset = rows.length;
+        state.conversationHasMore = !!data.hasMore;
+        state.chatUnreadTotal = Number(data.totalUnread || 0);
+        renderConversationList();
+        updateChatBadge();
+        if (!state.chatConversationId && state.studentId)
+          selectConversationForStudent(state.studentId);
+        else if (state.chatConversationId && !state.chatMessages.length)
+          loadChatMessages(state.chatConversationId);
+        api(
+          "GET",
+          "/chat/conversations?limit=30" +
+            (search ? "&search=" + encodeURIComponent(search) : ""),
+          null,
+          function (groupErr, groupData) {
+            if (loadSeq !== state.conversationLoadSeq) return;
+            if (!groupErr) {
+              var groups = (groupData.items || [])
+                .filter(function (x) {
+                  return x.type === "group";
+                })
+                .map(function (x) {
+                  x.isGroup = true;
+                  x.student = { id: "", name: x.title || "گروه", grade: "" };
+                  x.presence = {};
+                  return x;
+                });
+              state.conversations = state.conversations
+                .filter(function (x) {
+                  return !x.isGroup;
+                })
+                .concat(groups);
+              state.groupConversationOffset = groups.length;
+              state.groupConversationHasMore = !!groupData.hasMore;
+              state.chatUnreadTotal += groups.reduce(function (n, x) {
+                return n + Number(x.unread || 0);
+              }, 0);
+              renderConversationList();
+              updateChatBadge();
+            }
+            done && done();
+          },
+        );
+      },
+    );
   }
   function loadMoreConversations() {
     if (state.conversationLoading) return;
     if (state.conversationPrefetch.length) {
-      state.conversations = state.conversations.concat(state.conversationPrefetch.splice(0, 15));
+      state.conversations = state.conversations.concat(
+        state.conversationPrefetch.splice(0, 15),
+      );
       renderConversationList();
       return;
     }
     if (!state.conversationHasMore) {
       if (!state.groupConversationHasMore) return;
       state.conversationLoading = true;
-      var groupSearch = el("conversationSearch") ? String(el("conversationSearch").value || "").trim() : "";
-      api("GET", "/chat/conversations?limit=15&offset="+Number(state.groupConversationOffset||0)+(groupSearch?"&search="+encodeURIComponent(groupSearch):""), null, function(groupErr,groupData){
-        state.conversationLoading=false;
-        if(groupErr)return toast(groupErr.message,"error");
-        var incoming=(groupData.items||[]).filter(function(x){return x.type==="group";}).map(function(x){x.isGroup=true;x.student={id:"",name:x.title||"گروه",grade:""};x.presence={};return x;});
-        var known={};state.conversations.forEach(function(x){known[x.id]=true;});incoming.forEach(function(x){if(!known[x.id])state.conversations.push(x);});
-        state.groupConversationOffset=Number(state.groupConversationOffset||0)+incoming.length;
-        state.groupConversationHasMore=!!groupData.hasMore;
-        renderConversationList();
-      });
+      var groupSearch = el("conversationSearch")
+        ? String(el("conversationSearch").value || "").trim()
+        : "";
+      api(
+        "GET",
+        "/chat/conversations?limit=15&offset=" +
+          Number(state.groupConversationOffset || 0) +
+          (groupSearch ? "&search=" + encodeURIComponent(groupSearch) : ""),
+        null,
+        function (groupErr, groupData) {
+          state.conversationLoading = false;
+          if (groupErr) return toast(groupErr.message, "error");
+          var incoming = (groupData.items || [])
+            .filter(function (x) {
+              return x.type === "group";
+            })
+            .map(function (x) {
+              x.isGroup = true;
+              x.student = { id: "", name: x.title || "گروه", grade: "" };
+              x.presence = {};
+              return x;
+            });
+          var known = {};
+          state.conversations.forEach(function (x) {
+            known[x.id] = true;
+          });
+          incoming.forEach(function (x) {
+            if (!known[x.id]) state.conversations.push(x);
+          });
+          state.groupConversationOffset =
+            Number(state.groupConversationOffset || 0) + incoming.length;
+          state.groupConversationHasMore = !!groupData.hasMore;
+          renderConversationList();
+        },
+      );
       return;
     }
     state.conversationLoading = true;
     var loadSeq = ++state.conversationLoadSeq;
-    var search = el("conversationSearch") ? String(el("conversationSearch").value || "").trim() : "";
-    api("GET", "/admin/chat/conversations?limit=15&offset=" + state.conversationOffset + (search ? "&search=" + encodeURIComponent(search) : ""), null, function (err, data) {
-      if (loadSeq !== state.conversationLoadSeq) return;
-      state.conversationLoading = false;
-      if (err) return toast(err.message, "error");
-      var rows = data.items || [];
-      state.conversations = state.conversations.concat(rows);
-      state.conversationOffset += rows.length;
-      state.conversationHasMore = !!data.hasMore;
-      state.chatUnreadTotal = Number(data.totalUnread || state.chatUnreadTotal || 0);
-      renderConversationList();
-      updateChatBadge();
-    });
+    var search = el("conversationSearch")
+      ? String(el("conversationSearch").value || "").trim()
+      : "";
+    api(
+      "GET",
+      "/admin/chat/conversations?limit=15&offset=" +
+        state.conversationOffset +
+        (search ? "&search=" + encodeURIComponent(search) : ""),
+      null,
+      function (err, data) {
+        if (loadSeq !== state.conversationLoadSeq) return;
+        state.conversationLoading = false;
+        if (err) return toast(err.message, "error");
+        var rows = data.items || [];
+        state.conversations = state.conversations.concat(rows);
+        state.conversationOffset += rows.length;
+        state.conversationHasMore = !!data.hasMore;
+        state.chatUnreadTotal = Number(
+          data.totalUnread || state.chatUnreadTotal || 0,
+        );
+        renderConversationList();
+        updateChatBadge();
+      },
+    );
   }
   function renderConversationList() {
     var h = "",
@@ -1991,7 +2815,11 @@
         "</strong><small>" +
         (last ? esc(last.text) : "هنوز پیامی نیست") +
         '</small></span><span class="conversation-meta">' +
-        (last && last.createdAt ? '<small class="conversation-time">' + fa(chatClock(last.createdAt)) + '</small>' : '') +
+        (last && last.createdAt
+          ? '<small class="conversation-time">' +
+            fa(chatClock(last.createdAt)) +
+            "</small>"
+          : "") +
         '<i class="presence-mini ' +
         (p.online ? "online" : "") +
         '"></i>' +
@@ -2012,10 +2840,18 @@
         return selectConversation(state.conversations[i].id);
   }
   function selectConversation(id) {
-    if(state.chatConversationId&&el("adminChatInput"))localStorage.setItem("moshaver_admin_chat_draft:"+state.chatConversationId,el("adminChatInput").value||"");
+    if (state.chatConversationId && el("adminChatInput"))
+      localStorage.setItem(
+        "moshaver_admin_chat_draft:" + state.chatConversationId,
+        el("adminChatInput").value || "",
+      );
     var changed = id !== state.chatConversationId;
     state.chatConversationId = id;
-    if(el("adminChatInput")){el("adminChatInput").value=localStorage.getItem("moshaver_admin_chat_draft:"+id)||"";autoGrow(el("adminChatInput"));}
+    if (el("adminChatInput")) {
+      el("adminChatInput").value =
+        localStorage.getItem("moshaver_admin_chat_draft:" + id) || "";
+      autoGrow(el("adminChatInput"));
+    }
     if (changed) {
       state.chatLoadSeq++;
       state.chatMessages = [];
@@ -2044,9 +2880,11 @@
       "/chat/conversations/" + encodeURIComponent(id) + "/messages?limit=30",
       null,
       function (err, data) {
-        if (loadSeq !== state.chatLoadSeq || id !== state.chatConversationId) return;
+        if (loadSeq !== state.chatLoadSeq || id !== state.chatConversationId)
+          return;
         if (err) return toast(err.message, "error");
-        var rows = data.messages || [], cut = Math.max(0, rows.length - 15);
+        var rows = data.messages || [],
+          cut = Math.max(0, rows.length - 15);
         state.chatPrefetch = rows.slice(0, cut);
         state.chatMessages = rows.slice(cut);
         state.chatBefore = data.nextBeforeMessageId || null;
@@ -2055,13 +2893,20 @@
         el("chatEmpty").className = "chat-empty hidden";
         el("chatActive").className = "";
         if (c) {
-          if(el("adminGroupInfo"))el("adminGroupInfo").className=c.isGroup?"mini-btn":"mini-btn hidden";
+          if (el("adminGroupInfo"))
+            el("adminGroupInfo").className = c.isGroup
+              ? "mini-btn"
+              : "mini-btn hidden";
           el("chatStudentName").textContent = c.student.name;
           el("chatStudentAvatar").textContent = (c.student.name || "?").charAt(
             0,
           );
           var p = c.presence || {};
-          el("chatStudentPresence").textContent = c.isGroup ? (fa(c.memberCount || 0) + " عضو • گروه") : (p.online ? "● آنلاین" : "آخرین فعالیت: " + (p.lastSeenAt || "نامشخص"));
+          el("chatStudentPresence").textContent = c.isGroup
+            ? fa(c.memberCount || 0) + " عضو • گروه"
+            : p.online
+              ? "● آنلاین"
+              : "آخرین فعالیت: " + (p.lastSeenAt || "نامشخص");
         }
         renderAdminChatMessages(true);
         if (data.unread) markChatRead();
@@ -2089,7 +2934,8 @@
     return !box || box.scrollHeight - box.scrollTop - box.clientHeight < 112;
   }
   function compareAdminChatMessage(a, b) {
-    var x = String(a.createdAt || "") + "\u0000" + String(a.id || ""), y = String(b.createdAt || "") + "\u0000" + String(b.id || "");
+    var x = String(a.createdAt || "") + "\u0000" + String(a.id || ""),
+      y = String(b.createdAt || "") + "\u0000" + String(b.id || "");
     return x < y ? -1 : x > y ? 1 : 0;
   }
   function binaryInsertAdminMessage(list, item) {
@@ -2097,30 +2943,55 @@
   }
   function loadOlderAdminChat() {
     if (state.chatLoadingOlder || !state.chatConversationId) return;
-    var conversationId = state.chatConversationId, loadSeq = state.chatLoadSeq;
+    var conversationId = state.chatConversationId,
+      loadSeq = state.chatLoadSeq;
     if (state.chatPrefetch.length) {
-      var chunk = state.chatPrefetch.splice(Math.max(0, state.chatPrefetch.length - 15), 15);
+      var chunk = state.chatPrefetch.splice(
+        Math.max(0, state.chatPrefetch.length - 15),
+        15,
+      );
       state.chatMessages = chunk.concat(state.chatMessages);
       renderAdminChatMessages(false, true);
       return;
     }
     if (!state.chatHasMore || !state.chatBefore) return;
     state.chatLoadingOlder = true;
-    api("GET", "/chat/conversations/" + encodeURIComponent(conversationId) + "/messages?limit=15&beforeMessageId=" + encodeURIComponent(state.chatBefore), null, function (err, data) {
-      if (loadSeq !== state.chatLoadSeq || conversationId !== state.chatConversationId) return;
-      state.chatLoadingOlder = false;
-      if (err) return toast(err.message, "error");
-      state.chatBefore = data.nextBeforeMessageId || state.chatBefore;
-      state.chatHasMore = !!data.hasMore;
-      state.chatMessages = (data.messages || []).concat(state.chatMessages);
-      renderAdminChatMessages(false, true);
-    });
+    api(
+      "GET",
+      "/chat/conversations/" +
+        encodeURIComponent(conversationId) +
+        "/messages?limit=15&beforeMessageId=" +
+        encodeURIComponent(state.chatBefore),
+      null,
+      function (err, data) {
+        if (
+          loadSeq !== state.chatLoadSeq ||
+          conversationId !== state.chatConversationId
+        )
+          return;
+        state.chatLoadingOlder = false;
+        if (err) return toast(err.message, "error");
+        state.chatBefore = data.nextBeforeMessageId || state.chatBefore;
+        state.chatHasMore = !!data.hasMore;
+        state.chatMessages = (data.messages || []).concat(state.chatMessages);
+        renderAdminChatMessages(false, true);
+      },
+    );
   }
   function applyAdminReadReceipt(data) {
-    if (!data || data.readerRole !== "student" || data.conversationId !== state.chatConversationId) return;
+    if (
+      !data ||
+      data.readerRole !== "student" ||
+      data.conversationId !== state.chatConversationId
+    )
+      return;
     for (var i = 0; i < state.chatMessages.length; i++) {
       var m = state.chatMessages[i];
-      if (m.senderRole === "admin" && (!data.readAt || m.createdAt <= data.readAt)) m.seen = true;
+      if (
+        m.senderRole === "admin" &&
+        (!data.readAt || m.createdAt <= data.readAt)
+      )
+        m.seen = true;
     }
     renderAdminChatMessages(false);
   }
@@ -2128,29 +2999,52 @@
     if (!data || data.conversationId !== state.chatConversationId) return false;
     var message = adminFindMessage(data.id || data.messageId);
     if (!message) return false;
-    if (type === "chat.message.edited") { message.text = data.text; message.editedAt = data.editedAt; }
-    else if (type === "chat.message.deleted") { message.text = ""; message.deletedAt = data.deletedAt; }
-    else if (type === "chat.reaction.updated") message.reactions = data.reactions || [];
+    if (type === "chat.message.edited") {
+      message.text = data.text;
+      message.editedAt = data.editedAt;
+    } else if (type === "chat.message.deleted") {
+      message.text = "";
+      message.deletedAt = data.deletedAt;
+    } else if (type === "chat.reaction.updated")
+      message.reactions = data.reactions || [];
     else return false;
     renderAdminChatMessages(false);
     return true;
   }
   function refreshAdminLatestMessages() {
     if (!state.chatConversationId) return;
-    var conversationId = state.chatConversationId, loadSeq = state.chatLoadSeq;
-    api("GET", "/chat/conversations/" + encodeURIComponent(conversationId) + "/messages?limit=15", null, function (err, data) {
-      if (loadSeq !== state.chatLoadSeq || conversationId !== state.chatConversationId) return;
-      if (err) return;
-      var rows = data.messages || [], changed = false;
-      for (var i = 0; i < rows.length; i++) if (binaryInsertAdminMessage(state.chatMessages, rows[i])) changed = true;
-      if (changed) renderAdminChatMessages(false);
-      if (data.unread) markChatRead();
-    });
+    var conversationId = state.chatConversationId,
+      loadSeq = state.chatLoadSeq;
+    api(
+      "GET",
+      "/chat/conversations/" +
+        encodeURIComponent(conversationId) +
+        "/messages?limit=15",
+      null,
+      function (err, data) {
+        if (
+          loadSeq !== state.chatLoadSeq ||
+          conversationId !== state.chatConversationId
+        )
+          return;
+        if (err) return;
+        var rows = data.messages || [],
+          changed = false;
+        for (var i = 0; i < rows.length; i++)
+          if (binaryInsertAdminMessage(state.chatMessages, rows[i]))
+            changed = true;
+        if (changed) renderAdminChatMessages(false);
+        if (data.unread) markChatRead();
+      },
+    );
   }
   function syncAdminChatJump() {
-    var box = el("adminChatMessages"), jump = el("adminChatJump");
+    var box = el("adminChatMessages"),
+      jump = el("adminChatJump");
     if (!box || !jump) return;
-    jump.className = adminChatNearBottom(box) ? "chat-jump-latest hidden" : "chat-jump-latest";
+    jump.className = adminChatNearBottom(box)
+      ? "chat-jump-latest hidden"
+      : "chat-jump-latest";
   }
   function scrollAdminChatBottom() {
     var box = el("adminChatMessages");
@@ -2160,16 +3054,45 @@
   }
   function adminChatBody(m) {
     if (m.deletedAt) return '<p class="deleted-message">پیام حذف شده</p>';
-    var p=m.payload||{};
-    if(m.type&&m.type!=='text'&&m.type!=='system'){
-      var title={study_state:'📚 وضعیت مطالعه',exam_result:'📊 نتیجه آزمون',study_time:'⏱ زمان مطالعه',current_activity:'📖 فعالیت فعلی',learning_item:'🔁 مورد یادگیری'}[m.type]||'اشتراک';
-      return '<div class="chat-share-card"><strong>'+title+'</strong>'+(p.title?'<b>'+esc(p.title)+'</b>':'')+(p.percent!=null?'<span>نمره '+fa(p.percent)+'٪</span>':'')+(p.studyMinutes!=null?'<span>مطالعه '+fa(p.studyMinutes)+' دقیقه</span>':'')+(p.totalMinutes!=null?'<span>مجموع '+fa(p.totalMinutes)+' دقیقه</span>':'')+(p.subject?'<span>'+esc(p.subject)+'</span>':'')+'</div>';
+    var p = m.payload || {};
+    if (m.type && m.type !== "text" && m.type !== "system") {
+      var title =
+        {
+          study_state: "📚 وضعیت مطالعه",
+          exam_result: "📊 نتیجه آزمون",
+          study_time: "⏱ زمان مطالعه",
+          current_activity: "📖 فعالیت فعلی",
+          learning_item: "🔁 مورد یادگیری",
+        }[m.type] || "اشتراک";
+      return (
+        '<div class="chat-share-card"><strong>' +
+        title +
+        "</strong>" +
+        (p.title ? "<b>" + esc(p.title) + "</b>" : "") +
+        (p.percent != null ? "<span>نمره " + fa(p.percent) + "٪</span>" : "") +
+        (p.studyMinutes != null
+          ? "<span>مطالعه " + fa(p.studyMinutes) + " دقیقه</span>"
+          : "") +
+        (p.totalMinutes != null
+          ? "<span>مجموع " + fa(p.totalMinutes) + " دقیقه</span>"
+          : "") +
+        (p.subject ? "<span>" + esc(p.subject) + "</span>" : "") +
+        "</div>"
+      );
     }
-    if(m.type==='system')return '<p class="system-message">'+esc(m.text)+'</p>';
-    return '<div class="chat-markdown">'+global.MoshaverChatMarkdown.render(m.text||'')+'</div>';
+    if (m.type === "system")
+      return '<p class="system-message">' + esc(m.text) + "</p>";
+    return (
+      '<div class="chat-markdown">' +
+      global.MoshaverChatMarkdown.render(m.text || "") +
+      "</div>"
+    );
   }
   function renderAdminChatMessages(forceBottom, preserveHistoryAnchor) {
-    var box = el("adminChatMessages"), stick = forceBottom || adminChatNearBottom(box), oldHeight = box.scrollHeight, oldTop = box.scrollTop;
+    var box = el("adminChatMessages"),
+      stick = forceBottom || adminChatNearBottom(box),
+      oldHeight = box.scrollHeight,
+      oldTop = box.scrollTop;
     var h = "",
       lastDay = "";
     for (var i = 0; i < state.chatMessages.length; i++) {
@@ -2186,24 +3109,61 @@
       var reply = "";
       if (m.replyToId) {
         var referenced = adminFindMessage(m.replyToId);
-        reply = '<div class="message-reply-preview">↩ ' + esc(referenced ? (referenced.senderName || "") + ": " + (referenced.text || "پیام") : "پیام قبلی") + "</div>";
+        reply =
+          '<div class="message-reply-preview">↩ ' +
+          esc(
+            referenced
+              ? (referenced.senderName || "") +
+                  ": " +
+                  (referenced.text || "پیام")
+              : "پیام قبلی",
+          ) +
+          "</div>";
       }
       h +=
         '<div class="admin-chat-message ' +
         (mine ? "mine" : "theirs") +
-        '" data-admin-message="'+esc(m.id)+'"><div class="admin-message-bubble">' +
-        (!mine&&currentConversation()&&currentConversation().isGroup?'<small class="message-sender">'+esc(m.senderName||'عضو')+'</small>':'')+
-        reply + adminChatBody(m) +
+        '" data-admin-message="' +
+        esc(m.id) +
+        '"><div class="admin-message-bubble">' +
+        (!mine && currentConversation() && currentConversation().isGroup
+          ? '<small class="message-sender">' +
+            esc(m.senderName || "عضو") +
+            "</small>"
+          : "") +
+        reply +
+        adminChatBody(m) +
         "</div><small>" +
         esc(chatClock(m.createdAt)) +
         (mine ? (m.seen ? " • ✓✓ دیده شد" : " • ✓ ارسال شد") : "") +
-        "</small><div class=\"message-reactions\">"+(m.reactions||[]).map(function(r){return '<span>'+esc(r.emoji)+' '+fa(r.count)+'</span>';}).join('')+"</div><div class=\"message-actions\"><button data-admin-reply=\""+esc(m.id)+"\">پاسخ</button><button data-admin-react=\""+esc(m.id)+"\">❤️</button>"+(mine&&!m.deletedAt?"<button data-admin-edit=\""+esc(m.id)+"\">ویرایش</button><button data-admin-delete=\""+esc(m.id)+"\">حذف</button>":"")+"</div></div>";
+        '</small><div class="message-reactions">' +
+        (m.reactions || [])
+          .map(function (r) {
+            return "<span>" + esc(r.emoji) + " " + fa(r.count) + "</span>";
+          })
+          .join("") +
+        '</div><div class="message-actions"><button data-admin-reply="' +
+        esc(m.id) +
+        '">پاسخ</button><button data-admin-react="' +
+        esc(m.id) +
+        '">❤️</button>' +
+        (mine && !m.deletedAt
+          ? '<button data-admin-edit="' +
+            esc(m.id) +
+            '">ویرایش</button><button data-admin-delete="' +
+            esc(m.id) +
+            '">حذف</button>'
+          : "") +
+        "</div></div>";
     }
-    box.innerHTML = h || '<div class="chat-day-empty">هنوز پیامی ردوبدل نشده.</div>';
+    box.innerHTML =
+      h || '<div class="chat-day-empty">هنوز پیامی ردوبدل نشده.</div>';
     bindAdminMessageActions();
     if (stick) scrollAdminChatBottom();
     else {
-      box.scrollTop = preserveHistoryAnchor ? oldTop + (box.scrollHeight - oldHeight) : oldTop;
+      box.scrollTop = preserveHistoryAnchor
+        ? oldTop + (box.scrollHeight - oldHeight)
+        : oldTop;
       syncAdminChatJump();
     }
   }
@@ -2215,47 +3175,144 @@
     state.chatSending = true;
     var btn = el("adminChatSend");
     setButtonBusy(btn, true, "در حال ارسال…");
-    var edit = state.chatEditing, path = edit ? "/chat/messages/" + encodeURIComponent(edit.id) : "/chat/conversations/" + encodeURIComponent(id) + "/messages", body={text:text};
-    if(state.chatReplyTo)body.replyToId=state.chatReplyTo.id;
-    api(
-      edit ? "PATCH" : "POST",
-      path,
-      body,
-      function (err, msg) {
-        state.chatSending = false;
-        setButtonBusy(btn, false);
-        if (err) { localStorage.setItem("moshaver_admin_chat_draft:"+id,text); return toast(err.message+" — پیش‌نویس حفظ شد.", "error"); }
-        if (id !== state.chatConversationId) return;
-        input.value = "";
-        localStorage.removeItem("moshaver_admin_chat_draft:"+id);
-        autoGrow(input);
-        if(edit){for(var i=0;i<state.chatMessages.length;i++)if(state.chatMessages[i].id===msg.id)state.chatMessages[i]=msg;}else binaryInsertAdminMessage(state.chatMessages,msg);
-        clearAdminChatAction();
-        renderAdminChatMessages(true);
-        loadChatList();
-      },
-    );
+    var edit = state.chatEditing,
+      path = edit
+        ? "/chat/messages/" + encodeURIComponent(edit.id)
+        : "/chat/conversations/" + encodeURIComponent(id) + "/messages",
+      body = { text: text };
+    if (state.chatReplyTo) body.replyToId = state.chatReplyTo.id;
+    api(edit ? "PATCH" : "POST", path, body, function (err, msg) {
+      state.chatSending = false;
+      setButtonBusy(btn, false);
+      if (err) {
+        localStorage.setItem("moshaver_admin_chat_draft:" + id, text);
+        return toast(err.message + " — پیش‌نویس حفظ شد.", "error");
+      }
+      if (id !== state.chatConversationId) return;
+      input.value = "";
+      localStorage.removeItem("moshaver_admin_chat_draft:" + id);
+      autoGrow(input);
+      if (edit) {
+        for (var i = 0; i < state.chatMessages.length; i++)
+          if (state.chatMessages[i].id === msg.id) state.chatMessages[i] = msg;
+      } else binaryInsertAdminMessage(state.chatMessages, msg);
+      clearAdminChatAction();
+      renderAdminChatMessages(true);
+      loadChatList();
+    });
   }
-  function adminFindMessage(id){for(var i=0;i<state.chatMessages.length;i++)if(state.chatMessages[i].id===id)return state.chatMessages[i];return null;}
-  function ensureAdminChatActionBar(){var bar=el("adminChatActionBar");if(bar)return bar;bar=document.createElement("div");bar.id="adminChatActionBar";bar.className="chat-reply-bar hidden";el("adminChatForm").parentNode.insertBefore(bar,el("adminChatForm"));return bar;}
-  function showAdminChatAction(label){var bar=ensureAdminChatActionBar();bar.innerHTML='<span>'+esc(label)+'</span><button id="cancelAdminChatAction" type="button" aria-label="لغو">×</button>';bar.className="chat-reply-bar";el("cancelAdminChatAction").onclick=clearAdminChatAction;}
-  function clearAdminChatAction(){state.chatEditing=null;state.chatReplyTo=null;var input=el("adminChatInput"),bar=ensureAdminChatActionBar();if(input)input.placeholder="پیام کوتاه، مشخص و مرتبط با برنامه...";bar.className="chat-reply-bar hidden";}
-  function bindAdminMessageActions(){var input=el("adminChatInput");qa("[data-admin-reply]").forEach(function(b){b.onclick=function(){state.chatReplyTo=adminFindMessage(this.getAttribute("data-admin-reply"));state.chatEditing=null;showAdminChatAction("پاسخ به "+(state.chatReplyTo.senderName||"پیام")+": "+String(state.chatReplyTo.text||"پیام ساختاریافته").slice(0,80));input.focus();};});qa("[data-admin-edit]").forEach(function(b){b.onclick=function(){state.chatEditing=adminFindMessage(this.getAttribute("data-admin-edit"));state.chatReplyTo=null;input.value=state.chatEditing.text||"";autoGrow(input);showAdminChatAction("ویرایش پیام");input.focus();};});qa("[data-admin-delete]").forEach(function(b){b.onclick=function(){var id=this.getAttribute("data-admin-delete");if(!confirm("پیام حذف شود؟"))return;api("DELETE","/chat/messages/"+encodeURIComponent(id),null,function(err,d){if(err)return toast(err.message,"error");var m=adminFindMessage(id);if(m)m.deletedAt=d.deletedAt;renderAdminChatMessages(false);});};});qa("[data-admin-react]").forEach(function(b){b.onclick=function(){var id=this.getAttribute("data-admin-react");api("POST","/chat/messages/"+encodeURIComponent(id)+"/reactions",{emoji:"❤️"},function(err,rows){if(err)return toast(err.message,"error");var m=adminFindMessage(id);if(m)m.reactions=rows;renderAdminChatMessages(false);});};});}
+  function adminFindMessage(id) {
+    for (var i = 0; i < state.chatMessages.length; i++)
+      if (state.chatMessages[i].id === id) return state.chatMessages[i];
+    return null;
+  }
+  function ensureAdminChatActionBar() {
+    var bar = el("adminChatActionBar");
+    if (bar) return bar;
+    bar = document.createElement("div");
+    bar.id = "adminChatActionBar";
+    bar.className = "chat-reply-bar hidden";
+    el("adminChatForm").parentNode.insertBefore(bar, el("adminChatForm"));
+    return bar;
+  }
+  function showAdminChatAction(label) {
+    var bar = ensureAdminChatActionBar();
+    bar.innerHTML =
+      "<span>" +
+      esc(label) +
+      '</span><button id="cancelAdminChatAction" type="button" aria-label="لغو">×</button>';
+    bar.className = "chat-reply-bar";
+    el("cancelAdminChatAction").onclick = clearAdminChatAction;
+  }
+  function clearAdminChatAction() {
+    state.chatEditing = null;
+    state.chatReplyTo = null;
+    var input = el("adminChatInput"),
+      bar = ensureAdminChatActionBar();
+    if (input) input.placeholder = "پیام کوتاه، مشخص و مرتبط با برنامه...";
+    bar.className = "chat-reply-bar hidden";
+  }
+  function bindAdminMessageActions() {
+    var input = el("adminChatInput");
+    qa("[data-admin-reply]").forEach(function (b) {
+      b.onclick = function () {
+        state.chatReplyTo = adminFindMessage(
+          this.getAttribute("data-admin-reply"),
+        );
+        state.chatEditing = null;
+        showAdminChatAction(
+          "پاسخ به " +
+            (state.chatReplyTo.senderName || "پیام") +
+            ": " +
+            String(state.chatReplyTo.text || "پیام ساختاریافته").slice(0, 80),
+        );
+        input.focus();
+      };
+    });
+    qa("[data-admin-edit]").forEach(function (b) {
+      b.onclick = function () {
+        state.chatEditing = adminFindMessage(
+          this.getAttribute("data-admin-edit"),
+        );
+        state.chatReplyTo = null;
+        input.value = state.chatEditing.text || "";
+        autoGrow(input);
+        showAdminChatAction("ویرایش پیام");
+        input.focus();
+      };
+    });
+    qa("[data-admin-delete]").forEach(function (b) {
+      b.onclick = function () {
+        var id = this.getAttribute("data-admin-delete");
+        if (!confirm("پیام حذف شود؟")) return;
+        api(
+          "DELETE",
+          "/chat/messages/" + encodeURIComponent(id),
+          null,
+          function (err, d) {
+            if (err) return toast(err.message, "error");
+            var m = adminFindMessage(id);
+            if (m) m.deletedAt = d.deletedAt;
+            renderAdminChatMessages(false);
+          },
+        );
+      };
+    });
+    qa("[data-admin-react]").forEach(function (b) {
+      b.onclick = function () {
+        var id = this.getAttribute("data-admin-react");
+        api(
+          "POST",
+          "/chat/messages/" + encodeURIComponent(id) + "/reactions",
+          { emoji: "❤️" },
+          function (err, rows) {
+            if (err) return toast(err.message, "error");
+            var m = adminFindMessage(id);
+            if (m) m.reactions = rows;
+            renderAdminChatMessages(false);
+          },
+        );
+      };
+    });
+  }
   function markChatRead() {
     if (!state.chatConversationId) return;
     var conversationId = state.chatConversationId;
     api(
       "POST",
-      "/chat/conversations/" +
-        encodeURIComponent(conversationId) +
-        "/read",
+      "/chat/conversations/" + encodeURIComponent(conversationId) + "/read",
       {},
       function (err) {
         if (!err) {
           var c = null;
-          for (var i = 0; i < state.conversations.length; i++) if (state.conversations[i].id === conversationId) c = state.conversations[i];
+          for (var i = 0; i < state.conversations.length; i++)
+            if (state.conversations[i].id === conversationId)
+              c = state.conversations[i];
           if (c) {
-            state.chatUnreadTotal = Math.max(0, Number(state.chatUnreadTotal || 0) - Number(c.unread || 0));
+            state.chatUnreadTotal = Math.max(
+              0,
+              Number(state.chatUnreadTotal || 0) - Number(c.unread || 0),
+            );
             c.unread = 0;
           }
           renderConversationList();
@@ -2282,24 +3339,51 @@
       function (type, data) {
         if (type === "chat.message.created") {
           if (state.chatConversationId === data.conversationId) {
-            if (binaryInsertAdminMessage(state.chatMessages, data)) renderAdminChatMessages(false);
+            if (binaryInsertAdminMessage(state.chatMessages, data))
+              renderAdminChatMessages(false);
             if (data.senderRole === "student") markChatRead();
           } else if (data.senderRole === "student")
             toast("پیام جدید دانش‌آموز");
           loadChatList();
         } else if (type === "chat.messages.read") {
           applyAdminReadReceipt(data);
-        } else if (type === "chat.message.edited" || type === "chat.message.deleted" || type === "chat.reaction.updated") {
+        } else if (
+          type === "chat.message.edited" ||
+          type === "chat.message.deleted" ||
+          type === "chat.reaction.updated"
+        ) {
           applyAdminMessageEvent(type, data);
-        } else if (type === "chat.conversation.created" || type === "chat.conversation.updated" || type === "chat.member.added" || type === "chat.member.removed" || type === "chat.member.updated") {
+        } else if (
+          type === "chat.conversation.created" ||
+          type === "chat.conversation.updated" ||
+          type === "chat.member.added" ||
+          type === "chat.member.removed" ||
+          type === "chat.member.updated"
+        ) {
           loadChatList();
         } else if (type === "chat.mention.created") {
           var mentioned = null;
-          for (var ci=0;ci<state.conversations.length;ci++) if(state.conversations[ci].id===data.conversationId) mentioned=state.conversations[ci];
-          if (!(mentioned && mentioned.muted)) toast((data.senderName ? data.senderName+" " : "")+"شما را در گفتگو نام برد");
+          for (var ci = 0; ci < state.conversations.length; ci++)
+            if (state.conversations[ci].id === data.conversationId)
+              mentioned = state.conversations[ci];
+          if (!(mentioned && mentioned.muted))
+            toast(
+              (data.senderName ? data.senderName + " " : "") +
+                "شما را در گفتگو نام برد",
+            );
         } else if (type === "notification.created") {
-          state.adminPersistentUnread=Number(state.adminPersistentUnread||0)+1;var badge=el("adminNotificationBadge"),value=Number(state.adminAttentionCount||0)+state.adminPersistentUnread;
-          if(badge){badge.textContent=fa(value);badge.className="top-notification-badge";}if(!data||data.type!=="message")toast(data&&data.title?data.title:"اعلان جدید");
+          state.adminPersistentUnread =
+            Number(state.adminPersistentUnread || 0) + 1;
+          var badge = el("adminNotificationBadge"),
+            value =
+              Number(state.adminAttentionCount || 0) +
+              state.adminPersistentUnread;
+          if (badge) {
+            badge.textContent = fa(value);
+            badge.className = "top-notification-badge";
+          }
+          if (!data || data.type !== "message")
+            toast(data && data.title ? data.title : "اعلان جدید");
         } else if (type === "presence.changed") {
           loadChatList();
           scheduleRealtimeRefresh();
@@ -2424,7 +3508,7 @@
     }
     if (!p.errors.length)
       h +=
-        '<div class="commit-options"><label><input id="replacePlans" type="checkbox"> جایگزینی برنامه‌های موجود در همان تاریخ</label><label><input id="replaceExams" type="checkbox"> جایگزینی آزمون همنام/هم‌تاریخ</label></div><div class="import-actions"><button id="commitDraft" class="btn soft">ثبت پیش‌نویس</button><button id="commitPublish" class="btn publish">ثبت + انتشار برای دانش‌آموز</button></div>';
+        '<div class="commit-options"><label><input id="replacePlans" type="checkbox"> جایگزینی برنامه‌های موجود بدون سابقه پیشرفت</label><label><input id="replaceExams" type="checkbox"> جایگزینی امن محتوای آزمون همنام/هم‌تاریخ</label></div><div class="import-actions"><button id="commitDraft" class="btn soft">ثبت همه به‌صورت پیش‌نویس</button><button id="commitPublish" class="btn publish">ثبت + انتشار همه برای دانش‌آموز</button></div>';
     el("importPreview").innerHTML = h;
     el("importPreview").className = "import-preview";
     if (el("commitDraft"))
@@ -2502,15 +3586,33 @@
     );
   }
   function downloadAdminExport() {
-    if (!state.studentId) return toast("ابتدا دانش‌آموز را انتخاب کنید.", "error");
+    if (!state.studentId)
+      return toast("ابتدا دانش‌آموز را انتخاب کنید.", "error");
     var range = plannerRange();
-    api("GET", "/admin/export/json?studentId=" + encodeURIComponent(state.studentId) + "&from=" + encodeURIComponent(range.from) + "&to=" + encodeURIComponent(range.to), null, function (err, data) {
-      if (err) return toast(err.message, "error");
-      var a=document.createElement("a"), blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-      a.href=URL.createObjectURL(blob);a.download="moshaver-export-"+range.from+"-"+range.to+".json";a.click();
-      setTimeout(function(){URL.revokeObjectURL(a.href);},500);
-      toast("خروجی JSON بازه دریافت شد.");
-    });
+    api(
+      "GET",
+      "/admin/export/json?studentId=" +
+        encodeURIComponent(state.studentId) +
+        "&from=" +
+        encodeURIComponent(range.from) +
+        "&to=" +
+        encodeURIComponent(range.to),
+      null,
+      function (err, data) {
+        if (err) return toast(err.message, "error");
+        var a = document.createElement("a"),
+          blob = new Blob([JSON.stringify(data, null, 2)], {
+            type: "application/json",
+          });
+        a.href = URL.createObjectURL(blob);
+        a.download = "moshaver-export-" + range.from + "-" + range.to + ".json";
+        a.click();
+        setTimeout(function () {
+          URL.revokeObjectURL(a.href);
+        }, 500);
+        toast("خروجی JSON بازه دریافت شد.");
+      },
+    );
   }
   function readJsonFile(file) {
     var r = new FileReader();
@@ -2519,9 +3621,103 @@
     };
     r.readAsText(file);
   }
-  function openAdminGroupInfo(){var c=currentConversation();if(!c||!c.isGroup)return;api("GET","/chat/conversations/"+encodeURIComponent(c.id),null,function(err,d){if(err)return toast(err.message,"error");api("GET","/chat/groups/"+encodeURIComponent(c.id)+"/members?limit=50",null,function(er,rows){if(er)return toast(er.message,"error");var h='<span class="eyebrow">GROUP INFO</span><h2>'+esc(d.title)+'</h2><p>'+esc(d.description||'بدون توضیحات')+'</p><div class="group-member-list">'+rows.map(function(x){return '<div><strong>'+esc(x.name)+'</strong><small>@'+esc(x.username)+' • '+esc(x.role)+'</small></div>';}).join('')+'</div><p class="muted">نقش شما: '+esc(d.myRole)+' • '+fa(d.memberCount)+' عضو</p>';openModal(h);});});}
+  function openAdminGroupInfo() {
+    var c = currentConversation();
+    if (!c || !c.isGroup) return;
+    api(
+      "GET",
+      "/chat/conversations/" + encodeURIComponent(c.id),
+      null,
+      function (err, d) {
+        if (err) return toast(err.message, "error");
+        api(
+          "GET",
+          "/chat/groups/" + encodeURIComponent(c.id) + "/members?limit=50",
+          null,
+          function (er, rows) {
+            if (er) return toast(er.message, "error");
+            var h =
+              '<span class="eyebrow">GROUP INFO</span><h2>' +
+              esc(d.title) +
+              "</h2><p>" +
+              esc(d.description || "بدون توضیحات") +
+              '</p><div class="group-member-list">' +
+              rows
+                .map(function (x) {
+                  return (
+                    "<div><strong>" +
+                    esc(x.name) +
+                    "</strong><small>@" +
+                    esc(x.username) +
+                    " • " +
+                    esc(x.role) +
+                    "</small></div>"
+                  );
+                })
+                .join("") +
+              '</div><p class="muted">نقش شما: ' +
+              esc(d.myRole) +
+              " • " +
+              fa(d.memberCount) +
+              " عضو</p>";
+            openModal(h);
+          },
+        );
+      },
+    );
+  }
   function bind() {
-    if(!el("adminGroupInfo")){var info=document.createElement("button");info.id="adminGroupInfo";info.type="button";info.className="mini-btn hidden";info.textContent="اطلاعات گروه";el("chatMarkRead").parentNode.insertBefore(info,el("chatMarkRead"));info.onclick=openAdminGroupInfo;}
+    if (!el("adminGroupInfo")) {
+      var info = document.createElement("button");
+      info.id = "adminGroupInfo";
+      info.type = "button";
+      info.className = "mini-btn hidden";
+      info.textContent = "اطلاعات گروه";
+      el("chatMarkRead").parentNode.insertBefore(info, el("chatMarkRead"));
+      info.onclick = openAdminGroupInfo;
+    }
+    var credentialButtons = qa("[data-login-password]");
+    for (
+      var credentialIndex = 0;
+      credentialIndex < credentialButtons.length;
+      credentialIndex++
+    )
+      credentialButtons[credentialIndex].onclick = function () {
+        var value = this.getAttribute("data-login-password") || "",
+          status = el("loginCredentialStatus");
+        el("password").value = value;
+        if (!el("username").value) el("username").value = "admin";
+        function copied(ok) {
+          status.textContent = ok
+            ? "رمز «" + value + "» در فرم قرار گرفت و کپی شد."
+            : "رمز «" + value + "» در فرم قرار گرفت؛ کپی خودکار در دسترس نبود.";
+          status.className = ok ? "copied" : "copy-failed";
+          el("password").focus();
+        }
+        function fallbackCopy() {
+          var area = document.createElement("textarea");
+          area.value = value;
+          area.setAttribute("readonly", "");
+          area.style.position = "fixed";
+          area.style.opacity = "0";
+          document.body.appendChild(area);
+          area.select();
+          var ok = false;
+          try {
+            ok = document.execCommand("copy");
+          } catch (e) {}
+          document.body.removeChild(area);
+          copied(ok);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText)
+          navigator.clipboard
+            .writeText(value)
+            .then(function () {
+              copied(true);
+            })
+            .catch(fallbackCopy);
+        else fallbackCopy();
+      };
     el("loginForm").onsubmit = function (e) {
       e.preventDefault();
       if (state.authStatus === "logging-in") return;
@@ -2574,10 +3770,17 @@
         { suppressAuthFailure: true },
       );
     };
-    if (el("apiSource")) el("apiSource").onchange = function () {
-      cancelStartupAuth(); disconnectEvents(); API.abortAll(); API.clearAuth();
-      applyApiSource(this.value, true); state.authStatus="anonymous"; showLogin(); checkSelectedApi();
-    };
+    if (el("apiSource"))
+      el("apiSource").onchange = function () {
+        cancelStartupAuth();
+        disconnectEvents();
+        API.abortAll();
+        API.clearAuth();
+        applyApiSource(this.value, true);
+        state.authStatus = "anonymous";
+        showLogin();
+        checkSelectedApi();
+      };
     var ns = qa(".nav[data-view]");
     for (var i = 0; i < ns.length; i++)
       ns[i].onclick = function () {
@@ -2641,7 +3844,10 @@
     el("refreshLive").onclick = loadLive;
     if (el("realtimeSearch")) el("realtimeSearch").oninput = renderLive;
     if (el("realtimeFilter")) el("realtimeFilter").onchange = renderLive;
-    if (el("downloadBackupBtn")) el("downloadBackupBtn").onclick = downloadBackup;
+    if (el("downloadBackupBtn"))
+      el("downloadBackupBtn").onclick = downloadBackup;
+    if (el("restoreBackupBtn"))
+      el("restoreBackupBtn").onclick = restoreBackup;
     el("refreshChat").onclick = loadChatList;
     el("chatMarkRead").onclick = markChatRead;
     el("adminChatForm").onsubmit = function (e) {
@@ -2652,7 +3858,9 @@
       var chatSearchTimer = null;
       el("conversationSearch").oninput = function () {
         clearTimeout(chatSearchTimer);
-        chatSearchTimer = setTimeout(function () { loadChatList(); }, 220);
+        chatSearchTimer = setTimeout(function () {
+          loadChatList();
+        }, 220);
       };
     }
     var cq = qa("[data-chat-quick]");
@@ -2664,7 +3872,11 @@
       };
     el("adminChatInput").oninput = function () {
       autoGrow(this);
-      if(state.chatConversationId)localStorage.setItem("moshaver_admin_chat_draft:"+state.chatConversationId,this.value||"");
+      if (state.chatConversationId)
+        localStorage.setItem(
+          "moshaver_admin_chat_draft:" + state.chatConversationId,
+          this.value || "",
+        );
     };
     el("adminChatInput").onkeydown = function (e) {
       if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
@@ -2672,9 +3884,23 @@
         sendAdminChat();
       }
     };
-    el("adminChatMessages").onscroll = function () { syncAdminChatJump(); if (this.scrollTop < 80) loadOlderAdminChat(); };
-    el("adminChatMessages").onclick = function (e) { if (e.target.closest("button")) return; var row=e.target.closest("[data-admin-message]"); if(!row)return; qa(".admin-chat-message.actions-open",this).forEach(function(x){if(x!==row)x.classList.remove("actions-open");}); row.classList.toggle("actions-open"); };
-    el("conversationList").onscroll = function () { if (this.scrollHeight - this.scrollTop - this.clientHeight < 160) loadMoreConversations(); };
+    el("adminChatMessages").onscroll = function () {
+      syncAdminChatJump();
+      if (this.scrollTop < 80) loadOlderAdminChat();
+    };
+    el("adminChatMessages").onclick = function (e) {
+      if (e.target.closest("button")) return;
+      var row = e.target.closest("[data-admin-message]");
+      if (!row) return;
+      qa(".admin-chat-message.actions-open", this).forEach(function (x) {
+        if (x !== row) x.classList.remove("actions-open");
+      });
+      row.classList.toggle("actions-open");
+    };
+    el("conversationList").onscroll = function () {
+      if (this.scrollHeight - this.scrollTop - this.clientHeight < 160)
+        loadMoreConversations();
+    };
     el("adminChatJump").onclick = scrollAdminChatBottom;
     el("chatBackToList").onclick = function () {
       var shell = q(".chat-admin-shell");
@@ -2683,8 +3909,16 @@
     el("quickImport").onclick = openImport;
     el("importJsonBtn").onclick = openImport;
     if (!el("exportJsonBtn")) {
-      var exportButton=document.createElement("button");exportButton.id="exportJsonBtn";exportButton.type="button";exportButton.className="btn soft";exportButton.textContent="خروجی JSON";
-      el("importJsonBtn").parentNode.insertBefore(exportButton,el("importJsonBtn"));exportButton.onclick=downloadAdminExport;
+      var exportButton = document.createElement("button");
+      exportButton.id = "exportJsonBtn";
+      exportButton.type = "button";
+      exportButton.className = "btn soft";
+      exportButton.textContent = "خروجی JSON";
+      el("importJsonBtn").parentNode.insertBefore(
+        exportButton,
+        el("importJsonBtn"),
+      );
+      exportButton.onclick = downloadAdminExport;
     }
     el("createPlanBtn").onclick = function () {
       openPlanForm(state.plannerDate || today());
@@ -2735,7 +3969,68 @@
     el("newExamBtn").onclick = function () {
       openExamForm(null);
     };
-    el("examJsonBtn").onclick = openImport;
+    el("examJsonBtn").onclick = openExamImport;
+    el("examExportAllBtn").onclick = function () {
+      exportExams(null, "all");
+    };
+    el("refreshExamsBtn").onclick = loadExams;
+    if (global.MoshaverAdminList) {
+      var examListState = global.MoshaverAdminList.read("exams", {
+        q: "",
+        status: "all",
+        publish: "all",
+      });
+      state.examSearch = examListState.q;
+      state.examStatusFilter = examListState.status;
+      state.examPublishFilter = examListState.publish;
+      el("examSearch").value = state.examSearch;
+      el("examStatusFilter").value = state.examStatusFilter;
+      el("examPublishFilter").value = state.examPublishFilter;
+    }
+    function persistExamFilters() {
+      if (global.MoshaverAdminList)
+        global.MoshaverAdminList.write("exams", {
+          q: state.examSearch,
+          status: state.examStatusFilter,
+          publish: state.examPublishFilter,
+        });
+    }
+    el("examSearch").oninput = function () {
+      var value = this.value;
+      global.MoshaverAdminList.debounce("exam-search", function () {
+        state.examSearch = value;
+        persistExamFilters();
+        renderExamManagement();
+      });
+    };
+    el("examStatusFilter").onchange = function () {
+      state.examStatusFilter = this.value;
+      persistExamFilters();
+      renderExamManagement();
+    };
+    el("examPublishFilter").onchange = function () {
+      state.examPublishFilter = this.value;
+      persistExamFilters();
+      renderExamManagement();
+    };
+    el("resetExamFiltersBtn").onclick = function () {
+      state.examSearch = "";
+      state.examStatusFilter = "all";
+      state.examPublishFilter = "all";
+      el("examSearch").value = "";
+      el("examStatusFilter").value = "all";
+      el("examPublishFilter").value = "all";
+      persistExamFilters();
+      renderExamManagement();
+    };
+    var examBulkButtons = qa("[data-exam-bulk]");
+    for (i = 0; i < examBulkButtons.length; i++)
+      examBulkButtons[i].onclick = function () {
+        runExamBulk(this.getAttribute("data-exam-bulk"));
+      };
+    el("examBulkStatus").onchange = function () {
+      if (this.value) runExamBulk("status");
+    };
     el("newQuizBtn").onclick = openQuizForm;
     el("messageStudentBtn").onclick = sendMessage;
     StudentsView.bindPage();
@@ -2777,19 +4072,52 @@
     };
   }
   function apiSourceConfig(source) {
-    var cfg=global.APP_CONFIG||{},local=source==="local";
-    return { source:local?"local":"server", base:local?(cfg.API_LOCAL_URL||"/api-local/v1"):(cfg.API_SERVER_URL||cfg.API_BASE_URL||"/api/v1") };
+    var cfg = global.APP_CONFIG || {},
+      local = source === "local";
+    return {
+      source: local ? "local" : "server",
+      base: local
+        ? cfg.API_LOCAL_URL || "/api-local/v1"
+        : cfg.API_SERVER_URL || cfg.API_BASE_URL || "/api/v1",
+    };
   }
   function applyApiSource(source, persist) {
-    var selected=apiSourceConfig(source),picker=el("apiSource"),status=el("apiSourceStatus");
-    API.setBase(selected.base); if(picker)picker.value=selected.source;
-    if(status){status.className="api-source-status "+selected.source;status.textContent=selected.source==="local"?"مسیر فعال: بک‌اند محلی (127.0.0.1:4000)":"مسیر فعال: API سرور";}
-    if(persist)try{localStorage.setItem(API_SOURCE_KEY,selected.source);}catch(e){}
+    var selected = apiSourceConfig(source),
+      picker = el("apiSource"),
+      status = el("apiSourceStatus");
+    API.setBase(selected.base);
+    if (picker) picker.value = selected.source;
+    if (status) {
+      status.className = "api-source-status " + selected.source;
+      status.textContent =
+        selected.source === "local"
+          ? "مسیر فعال: بک‌اند محلی (127.0.0.1:4000)"
+          : "مسیر فعال: API سرور";
+    }
+    if (persist)
+      try {
+        localStorage.setItem(API_SOURCE_KEY, selected.source);
+      } catch (e) {}
     return selected;
   }
   function checkSelectedApi() {
-    var status=el("apiSourceStatus"); if(status)status.textContent="در حال بررسی اتصال…";
-    API.request("GET","/health",null,function(err,data){var selected=el("apiSource")&&el("apiSource").value;if(status){status.className="api-source-status "+selected;status.textContent=err?"این بک‌اند در دسترس نیست.":"اتصال برقرار است • نسخه "+esc((data&&data.version)||"—");}},{suppressAuthFailure:true});
+    var status = el("apiSourceStatus");
+    if (status) status.textContent = "در حال بررسی اتصال…";
+    API.request(
+      "GET",
+      "/health",
+      null,
+      function (err, data) {
+        var selected = el("apiSource") && el("apiSource").value;
+        if (status) {
+          status.className = "api-source-status " + selected;
+          status.textContent = err
+            ? "این بک‌اند در دسترس نیست."
+            : "اتصال برقرار است • نسخه " + esc((data && data.version) || "—");
+        }
+      },
+      { suppressAuthFailure: true },
+    );
   }
   function bootAfterMe() {
     if (state.authStatus !== "authenticated" || !state.me) return;
@@ -2909,8 +4237,12 @@
   function init() {
     Modal.bind();
     Connectivity.syncFromBrowser();
-    var initial=(global.APP_CONFIG&&global.APP_CONFIG.DEFAULT_API_SOURCE)||"server";try{initial=localStorage.getItem(API_SOURCE_KEY)||initial;}catch(e){}
-    applyApiSource(initial,false);
+    var initial =
+      (global.APP_CONFIG && global.APP_CONFIG.DEFAULT_API_SOURCE) || "server";
+    try {
+      initial = localStorage.getItem(API_SOURCE_KEY) || initial;
+    } catch (e) {}
+    applyApiSource(initial, false);
     bind();
     API.setAuthFailureHandler(handleAuthFailure);
     el("versionText").textContent =
@@ -2932,7 +4264,25 @@
         });
       else syncAdminVisible();
     });
-    if("serviceWorker" in navigator)navigator.serviceWorker.addEventListener("message",function(event){if(event.data&&event.data.type==="NOTIFICATION_CLICK"){var url=event.data.url||'',conversationId=url.split('/')[2]||'';switchView("chat");loadChatList(function(){if(conversationId)selectConversation(conversationId);});}if(event.data&&event.data.type==="PUSH_SUBSCRIPTION_CHANGED"&&global.AdminPushClient&&global.Notification&&Notification.permission==="granted")global.AdminPushClient.enable().catch(function(){});});
+    if ("serviceWorker" in navigator)
+      navigator.serviceWorker.addEventListener("message", function (event) {
+        if (event.data && event.data.type === "NOTIFICATION_CLICK") {
+          var url = event.data.url || "",
+            conversationId = url.split("/")[2] || "";
+          switchView("chat");
+          loadChatList(function () {
+            if (conversationId) selectConversation(conversationId);
+          });
+        }
+        if (
+          event.data &&
+          event.data.type === "PUSH_SUBSCRIPTION_CHANGED" &&
+          global.AdminPushClient &&
+          global.Notification &&
+          Notification.permission === "granted"
+        )
+          global.AdminPushClient.enable().catch(function () {});
+      });
     if (hasPendingAdminLogout()) {
       state.authStatus = "logging-out";
       flushPendingAdminLogout(function (err) {

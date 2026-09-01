@@ -15,13 +15,17 @@ function createImportService(deps) {
     } catch (e) {
       if (
         String(e.message).indexOf("PLAN_EXISTS:") === 0 ||
-        String(e.message).indexOf("EXAM_EXISTS:") === 0
+        String(e.message).indexOf("EXAM_EXISTS:") === 0 ||
+        String(e.message).indexOf("PLAN_HAS_PROGRESS:") === 0
       ) {
+        var hasProgress = String(e.message).indexOf("PLAN_HAS_PROGRESS:") === 0;
         return {
           error: {
             status: 409,
-            code: "IMPORT_CONFLICT",
-            message: String(e.message),
+            code: hasProgress ? "PLAN_HAS_PROGRESS" : "IMPORT_CONFLICT",
+            message: hasProgress
+              ? "برنامه دارای پیشرفت ثبت‌شده است و برای جلوگیری از حذف سابقه جایگزین نشد: " + String(e.message).split(":")[1]
+              : String(e.message),
           },
         };
       }
@@ -38,6 +42,8 @@ function createImportService(deps) {
     var createdTasks = 0;
     var createdExams = 0;
     var createdQuestions = 0;
+    var skippedPlans = 0;
+    var skippedExams = 0;
     var examRefMap = {};
     db.exec("BEGIN IMMEDIATE");
     try {
@@ -45,30 +51,36 @@ function createImportService(deps) {
         var existing = db
           .prepare("SELECT id FROM exams WHERE student_id=? AND title=? AND iso_date=? LIMIT 1")
           .get(studentId, exam.title, exam.isoDate);
+        var examId;
         if (existing) {
+          if (opts.skipExistingExams) {
+            skippedExams++;
+            examId = existing.id;
+            if (exam.ref) examRefMap[exam.ref] = examId;
+            examRefMap[exam.isoDate + "|" + exam.title] = examId;
+            return;
+          }
           if (!opts.replaceExistingExams) throw new Error("EXAM_EXISTS:" + exam.title);
-          db.prepare("DELETE FROM exams WHERE id=?").run(existing.id);
+          examId = existing.id;
+          db.prepare(
+            "UPDATE exams SET title=?,persian_date=?,iso_date=?,note=?,status=?,updated_at=?,student_id=?,open_at=?,close_at=?,duration_minutes=?,max_attempts=?,instructions=?,published=? WHERE id=?",
+          ).run(
+            exam.title, exam.persianDate, exam.isoDate, exam.note, exam.status, timestamp,
+            studentId, exam.openAt, exam.closeAt, exam.durationMinutes, exam.maxAttempts,
+            exam.instructions, opts.publishImported ? 1 : 0, examId,
+          );
+          db.prepare("DELETE FROM exam_syllabus WHERE exam_id=?").run(examId);
+          db.prepare("UPDATE quizzes SET active=0,updated_at=? WHERE exam_id=? AND active=1").run(timestamp, examId);
+        } else {
+          examId = security.id("exam");
+          db.prepare(
+            "INSERT INTO exams (id,title,persian_date,iso_date,note,status,created_at,updated_at,student_id,open_at,close_at,duration_minutes,max_attempts,instructions,published) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+          ).run(
+            examId, exam.title, exam.persianDate, exam.isoDate, exam.note, exam.status,
+            timestamp, timestamp, studentId, exam.openAt, exam.closeAt, exam.durationMinutes,
+            exam.maxAttempts, exam.instructions, opts.publishImported ? 1 : 0,
+          );
         }
-        var examId = security.id("exam");
-        db.prepare(
-          "INSERT INTO exams (id,title,persian_date,iso_date,note,status,created_at,updated_at,student_id,open_at,close_at,duration_minutes,max_attempts,instructions,published) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        ).run(
-          examId,
-          exam.title,
-          exam.persianDate,
-          exam.isoDate,
-          exam.note,
-          exam.status,
-          timestamp,
-          timestamp,
-          studentId,
-          exam.openAt,
-          exam.closeAt,
-          exam.durationMinutes,
-          exam.maxAttempts,
-          exam.instructions,
-          opts.publishImported || exam.published ? 1 : 0,
-        );
         if (exam.ref) examRefMap[exam.ref] = examId;
         examRefMap[exam.isoDate + "|" + exam.title] = examId;
         exam.syllabus.forEach(function (item) {
@@ -89,7 +101,7 @@ function createImportService(deps) {
         ).run(quizId, exam.title, "آزمون اصلی", exam.durationMinutes, examId, timestamp, timestamp);
         exam.questions.forEach(function (question) {
           db.prepare(
-            "INSERT INTO quiz_questions (id,quiz_id,question_text,option_a,option_b,option_c,option_d,correct_option,explanation,sort_order) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO quiz_questions (id,quiz_id,question_text,option_a,option_b,option_c,option_d,correct_option,explanation,sort_order,book,chapter,lesson,topic,hint) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
           ).run(
             security.id("question"),
             quizId,
@@ -101,6 +113,11 @@ function createImportService(deps) {
             question.correctOption,
             question.explanation,
             question.sortOrder,
+            question.book,
+            question.chapter,
+            question.lesson,
+            question.topic,
+            question.hint,
           );
           createdQuestions++;
         });
@@ -111,7 +128,15 @@ function createImportService(deps) {
           .prepare("SELECT id FROM plans WHERE student_id=? AND plan_date=?")
           .get(studentId, plan.planDate);
         if (existing) {
+          if (opts.skipExistingPlans) {
+            skippedPlans++;
+            return;
+          }
           if (!opts.replaceExistingPlans) throw new Error("PLAN_EXISTS:" + plan.planDate);
+          var progress = db.prepare(
+            "SELECT COUNT(*) AS n FROM tasks t WHERE t.plan_id=? AND (EXISTS(SELECT 1 FROM task_completions tc WHERE tc.task_id=t.id) OR EXISTS(SELECT 1 FROM study_sessions ss WHERE ss.task_id=t.id))",
+          ).get(existing.id);
+          if (progress && progress.n) throw new Error("PLAN_HAS_PROGRESS:" + plan.planDate);
           db.prepare("DELETE FROM plans WHERE id=?").run(existing.id);
         }
         var planId = security.id("plan");
@@ -126,7 +151,7 @@ function createImportService(deps) {
           plan.persianDate,
           plan.title,
           plan.motivationText || "",
-          opts.publishImported ? 1 : plan.published ? 1 : 0,
+          opts.publishImported ? 1 : 0,
           timestamp,
           timestamp,
         );
@@ -202,6 +227,8 @@ function createImportService(deps) {
         tasks: createdTasks,
         exams: createdExams,
         questions: createdQuestions,
+        skippedPlans: skippedPlans,
+        skippedExams: skippedExams,
         published: !!opts.publishImported,
       });
       return {
@@ -211,6 +238,8 @@ function createImportService(deps) {
         tasks: createdTasks,
         exams: createdExams,
         questions: createdQuestions,
+        skippedPlans: skippedPlans,
+        skippedExams: skippedExams,
         published: !!opts.publishImported,
       };
     } catch (error) {
