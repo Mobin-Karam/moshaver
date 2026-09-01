@@ -3,6 +3,8 @@ import { User } from "./user.entity";
 import { Plan } from "./plan.entity";
 import { ExamAttempt } from "./exam-attempt.entity";
 import { Notification } from "./notification.entity";
+import { DailyReport } from "./daily-report.entity";
+import { RecoveryRequest } from "./recovery-request.entity";
 
 @Entity("students")
 export class Student {
@@ -48,4 +50,10 @@ export class Student {
 
   @OneToMany(() => Notification, (notification) => notification.student)
   notifications!: Notification[];
+
+  @OneToMany(() => DailyReport, (report) => report.student)
+  dailyReports!: DailyReport[];
+
+  @OneToMany(() => RecoveryRequest, (request) => request.student)
+  recoveryRequests!: RecoveryRequest[];
 }

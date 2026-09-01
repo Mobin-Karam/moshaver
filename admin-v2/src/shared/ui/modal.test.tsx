@@ -36,6 +36,16 @@ function Harness({ resolved }: { resolved: (value: boolean) => void }) {
   );
 }
 
+function NestedConfirmation() {
+  const modal = useModal();
+  return <button onClick={() => void modal.confirm({ title: "تأیید داخلی", showCancel: true })}>nested confirm</button>;
+}
+
+function NestedHarness() {
+  const modal = useModal();
+  return <button onClick={() => modal.open({ title: "مدیریت گروه", content: <NestedConfirmation /> })}>open manager</button>;
+}
+
 afterEach(cleanup);
 
 describe("global modal", () => {
@@ -69,5 +79,14 @@ describe("global modal", () => {
     await userEvent.click(screen.getByRole("button", { name: "confirm" }));
     await userEvent.click(screen.getByRole("button", { name: "حذف" }));
     expect(resolved).toHaveBeenCalledWith(true);
+  });
+
+  it("restores a parent modal after a nested confirmation is cancelled", async () => {
+    render(<ModalProvider><NestedHarness /></ModalProvider>);
+    await userEvent.click(screen.getByRole("button", { name: "open manager" }));
+    await userEvent.click(screen.getByRole("button", { name: "nested confirm" }));
+    expect(screen.getByRole("dialog", { name: "تأیید داخلی" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "انصراف" }));
+    expect(screen.getByRole("dialog", { name: "مدیریت گروه" })).toBeInTheDocument();
   });
 });

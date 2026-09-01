@@ -21,6 +21,10 @@ import { RealtimeModule } from "./modules/realtime/realtime.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { ChatModule } from "./modules/chat/chat.module";
+import { StudySessionsModule } from "./modules/study-sessions/study-sessions.module";
+import { TasksModule } from "./modules/tasks/tasks.module";
+import { MistakesModule } from "./modules/mistakes/mistakes.module";
+import { ReportsModule } from "./modules/reports/reports.module";
 
 @Module({
   imports: [
@@ -36,6 +40,10 @@ import { ChatModule } from "./modules/chat/chat.module";
     NotificationsModule,
     AnalyticsModule,
     ChatModule,
+    StudySessionsModule,
+    TasksModule,
+    MistakesModule,
+    ReportsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

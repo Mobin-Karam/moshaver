@@ -15,6 +15,12 @@ import { apiClient } from './api-client';
 
 type AuthStatus = 'checking' | 'anonymous' | 'authenticated';
 type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
+type FocusStatus = 'running' | 'paused';
+
+interface FocusSession extends ActiveStudySession {
+  status: FocusStatus;
+  elapsedSeconds: number;
+}
 
 interface BackendUser {
   id: string;
@@ -72,15 +78,78 @@ interface BackendExam {
   questions?: unknown[];
 }
 
+interface BackendStudySession {
+  id: string;
+  taskId?: string;
+  status: 'ACTIVE' | 'PAUSED' | 'FINISHED';
+  startedAt: string;
+  elapsedSeconds?: number;
+}
+
+export interface StudentProgress {
+  studentId: string | null;
+  completed: number;
+  total: number;
+  percent: number;
+}
+
+export interface StudentReviewItem {
+  id?: string;
+  title?: string;
+  subject?: string;
+  status?: string;
+  dueAt?: string;
+  note?: string;
+}
+
+export interface StudentNotification {
+  id: string;
+  type?: string;
+  title: string;
+  message: string;
+  readAt?: string | null;
+}
+
+export interface AuthSession {
+  id: string;
+  createdAt: string;
+  expiresAt: string;
+  current: boolean;
+}
+
+export interface NightReportDraft {
+  sleepHours: string;
+  studyMinutes: string;
+  mood: string;
+  note: string;
+  savedAt: string;
+}
+
+export interface RecoveryRequestDraft {
+  date: string;
+  reason: string;
+  details: string;
+  savedAt: string;
+}
+
 interface StudentState {
   authStatus: AuthStatus;
   loadStatus: LoadStatus;
   syncStatus: SyncStatus;
+  setSyncStatus(status: SyncStatus): void;
   user: BackendUser | null;
   student: BackendStudent | null;
   plan: StudentPlan;
   exams: ExamSummary[];
-  activeSession: ActiveStudySession | null;
+  notifications: StudentNotification[];
+    progress: StudentProgress | null;
+    reviews: StudentReviewItem[];
+    learningLoadStatus: LoadStatus;
+    learningError: string | null;
+  authSessions: AuthSession[];
+  nightReportDraft: NightReportDraft | null;
+  recoveryRequestDraft: RecoveryRequestDraft | null;
+  activeSession: FocusSession | null;
   error: string | null;
   restoreSession(): Promise<void>;
   login(username: string, password: string): Promise<void>;
@@ -88,7 +157,20 @@ interface StudentState {
   loadDashboard(): Promise<void>;
   loadPlan(date: string): Promise<void>;
   loadExams(): Promise<void>;
-  startTask(taskId: string): void;
+  loadNotifications(): Promise<void>;
+    loadLearning(): Promise<void>;
+  markNotificationRead(id: string): Promise<void>;
+  markAllNotificationsRead(): Promise<void>;
+  loadAuthSessions(): Promise<void>;
+  revokeAuthSession(id: string): Promise<void>;
+  saveNightReportDraft(draft: Omit<NightReportDraft, 'savedAt'>): Promise<void>;
+  saveRecoveryRequestDraft(draft: Omit<RecoveryRequestDraft, 'savedAt'>): Promise<void>;
+  submitNightReport(draft: Omit<NightReportDraft, 'savedAt'>): Promise<void>;
+  submitRecoveryRequest(draft: Omit<RecoveryRequestDraft, 'savedAt'>): Promise<void>;
+  restoreActiveSession(): Promise<void>;
+  startTask(taskId: string): Promise<void>;
+  pauseFocus(): Promise<void>;
+  resumeFocus(): Promise<void>;
   finishTask(taskId: string, feedback?: { status?: TaskCompletionStatus; actualTests?: number; difficulty?: string; note?: string }): Promise<void>;
   completeTask(taskId: string): Promise<void>;
   cancelFocus(): void;
@@ -101,14 +183,57 @@ const emptyPlan = (): StudentPlan => ({
   tasks: [],
 });
 
+const FOCUS_SESSION_KEY = 'moshaver_v2_active_focus';
+const NIGHT_REPORT_DRAFT_KEY = 'moshaver_v2_night_report_draft';
+const RECOVERY_REQUEST_DRAFT_KEY = 'moshaver_v2_recovery_request_draft';
+
+function readFocusSession(): FocusSession | null {
+  try {
+    const value = localStorage.getItem(FOCUS_SESSION_KEY);
+    return value ? (JSON.parse(value) as FocusSession) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveFocusSession(session: FocusSession | null) {
+  if (session) localStorage.setItem(FOCUS_SESSION_KEY, JSON.stringify(session));
+  else localStorage.removeItem(FOCUS_SESSION_KEY);
+}
+
+function readDraft<T>(key: string): T | null {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? (JSON.parse(value) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+function elapsedSeconds(session: FocusSession, now = Date.now()) {
+  if (session.status === 'paused') return session.elapsedSeconds;
+  return session.elapsedSeconds + Math.max(0, Math.floor((now - new Date(session.startedAt).getTime()) / 1000));
+}
+
 export const useStudentStore = create<StudentState>((set, get) => ({
   authStatus: 'checking',
   loadStatus: 'idle',
   syncStatus: navigator.onLine ? 'online' : 'offline',
-  activeSession: null,
+  setSyncStatus(status) {
+    set({ syncStatus: status });
+  },
+  activeSession: readFocusSession(),
   user: null,
   student: null,
   exams: [],
+  notifications: [],
+    progress: null,
+    reviews: [],
+    learningLoadStatus: 'idle',
+    learningError: null,
+  authSessions: [],
+  nightReportDraft: readDraft<NightReportDraft>(NIGHT_REPORT_DRAFT_KEY),
+  recoveryRequestDraft: readDraft<RecoveryRequestDraft>(RECOVERY_REQUEST_DRAFT_KEY),
   plan: emptyPlan(),
   error: null,
   async restoreSession() {
@@ -125,6 +250,9 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       set({ authStatus: 'authenticated', user });
       await get().loadDashboard();
       await get().loadExams();
+      await get().loadNotifications();
+      await get().loadLearning();
+      await get().restoreActiveSession();
     } catch {
       apiClient.setCsrfToken(null);
       set({ authStatus: 'anonymous', user: null, student: null, plan: emptyPlan() });
@@ -148,6 +276,9 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       set({ authStatus: 'authenticated', user: session.user, loadStatus: 'idle' });
       await get().loadDashboard();
       await get().loadExams();
+      await get().loadNotifications();
+      await get().loadLearning();
+      await get().restoreActiveSession();
     } catch (error) {
       set({ loadStatus: 'error', error: readableError(error) });
     }
@@ -156,7 +287,7 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     set({ loadStatus: 'loading', error: null });
     await apiClient.request('POST', '/auth/logout').catch(() => undefined);
     apiClient.setCsrfToken(null);
-    set({ authStatus: 'anonymous', loadStatus: 'idle', user: null, student: null, plan: emptyPlan(), exams: [], error: null });
+    set({ authStatus: 'anonymous', loadStatus: 'idle', user: null, student: null, plan: emptyPlan(), exams: [], notifications: [], authSessions: [], error: null });
   },
   async loadDashboard() {
     set({ loadStatus: 'loading', error: null });
@@ -205,19 +336,149 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       set({ exams: [] });
     }
   },
-  startTask(taskId) {
-    set({ activeSession: { id: `local-${Date.now()}`, taskId, startedAt: new Date().toISOString() } });
+  async loadNotifications() {
+    try {
+      const result = await apiClient.request<{ items: Array<{ id: string; type?: string; title: string; message: string; isRead?: boolean; readAt?: string | null }>; unreadCount: number }>('GET', '/notifications?limit=50');
+      set({ notifications: result.items.map((notification) => ({ ...notification, readAt: notification.readAt ?? (notification.isRead ? new Date(0).toISOString() : null) })) });
+    } catch (error) {
+      set({ notifications: [], error: readableError(error) });
+    }
+  },
+  async loadLearning() {
+    set({ learningLoadStatus: 'loading', learningError: null });
+    try {
+      const [progress, reviews] = await Promise.all([
+        apiClient.request<StudentProgress>('GET', '/student/progress'),
+        apiClient.request<{ studentId: string | null; items: StudentReviewItem[] }>('GET', '/student/reviews'),
+      ]);
+      set({ progress, reviews: reviews.items ?? [], learningLoadStatus: 'ready' });
+    } catch (error) {
+      set({ progress: null, reviews: [], learningLoadStatus: 'error', learningError: readableError(error) });
+    }
+  },
+  async markNotificationRead(id) {
+    await apiClient.request('PUT', `/notifications/${encodeURIComponent(id)}/read`);
+    await get().loadNotifications();
+  },
+  async markAllNotificationsRead() {
+    await apiClient.request('PUT', '/notifications/read-all');
+    await get().loadNotifications();
+  },
+  async loadAuthSessions() {
+    try {
+      const sessions = await apiClient.request<AuthSession[]>('GET', '/auth/sessions');
+      set({ authSessions: sessions });
+    } catch (error) {
+      set({ authSessions: [], error: readableError(error) });
+    }
+  },
+  async revokeAuthSession(id) {
+    await apiClient.request('DELETE', `/auth/sessions/${encodeURIComponent(id)}`);
+    const session = get().authSessions.find((item) => item.id === id);
+    if (session?.current) {
+      await get().logout();
+      return;
+    }
+    set((state) => ({ authSessions: state.authSessions.filter((item) => item.id !== id) }));
+  },
+  async saveNightReportDraft(draft) {
+    const saved = { ...draft, savedAt: new Date().toISOString() };
+    localStorage.setItem(NIGHT_REPORT_DRAFT_KEY, JSON.stringify(saved));
+    set({ nightReportDraft: saved });
+  },
+  async saveRecoveryRequestDraft(draft) {
+    const saved = { ...draft, savedAt: new Date().toISOString() };
+    localStorage.setItem(RECOVERY_REQUEST_DRAFT_KEY, JSON.stringify(saved));
+    set({ recoveryRequestDraft: saved });
+  },
+  async submitNightReport(draft) {
+    await apiClient.request('POST', '/reports', {
+      planDate: new Date().toISOString().slice(0, 10),
+      focus: Math.max(0, Math.min(10, Number(draft.studyMinutes) ? Math.round(Math.min(10, Number(draft.studyMinutes) / 60)) : 0)),
+      fatigue: Math.max(0, Math.min(10, Number(draft.sleepHours) ? Math.round(Math.max(0, 10 - Number(draft.sleepHours) / 2)) : 0)),
+      motivation: draft.mood === 'خوب' ? 8 : draft.mood === 'معمولی' ? 5 : 3,
+      problem: draft.note,
+      tomorrow: '',
+    });
+    localStorage.removeItem(NIGHT_REPORT_DRAFT_KEY);
+    set({ nightReportDraft: null });
+  },
+  async submitRecoveryRequest(draft) {
+    await apiClient.request('POST', '/recovery-requests', { planDate: draft.date, reason: draft.reason, note: draft.details });
+    localStorage.removeItem(RECOVERY_REQUEST_DRAFT_KEY);
+    set({ recoveryRequestDraft: null });
+  },
+  async restoreActiveSession() {
+    try {
+      const session = await apiClient.request<BackendStudySession | null>('GET', '/student/study-sessions/active');
+      if (session) {
+        const restored = mapStudySession(session);
+        saveFocusSession(restored);
+        set({ activeSession: restored });
+      }
+    } catch {
+      // A cached local session remains available when the server is unreachable.
+    }
+  },
+  async startTask(taskId) {
+    try {
+      const current = get().activeSession;
+      if (current?.taskId === taskId && current.status === 'paused') {
+        const session = await apiClient.request<BackendStudySession>('POST', `/student/study-sessions/${current.id}/resume`);
+        const resumed = mapStudySession(session);
+        saveFocusSession(resumed);
+        set({ activeSession: resumed, error: null });
+        return;
+      }
+      if (current?.taskId === taskId && current.status === 'running') return;
+      const session = await apiClient.request<BackendStudySession, { taskId: string }>('POST', '/student/study-sessions', { taskId });
+      const next = mapStudySession(session);
+      saveFocusSession(next);
+      set({ activeSession: next, error: null });
+    } catch (error) {
+      set({ error: readableError(error), syncStatus: navigator.onLine ? 'failed' : 'offline' });
+      throw error;
+    }
+  },
+  async pauseFocus() {
+    try {
+      const current = get().activeSession;
+      if (!current || current.status === 'paused' || current.id.startsWith('local-')) return;
+      const session = await apiClient.request<BackendStudySession>('POST', `/student/study-sessions/${current.id}/pause`);
+      const paused = mapStudySession(session);
+      saveFocusSession(paused);
+      set({ activeSession: paused, error: null });
+    } catch (error) {
+      set({ error: readableError(error), syncStatus: navigator.onLine ? 'failed' : 'offline' });
+      throw error;
+    }
+  },
+  async resumeFocus() {
+    try {
+      const current = get().activeSession;
+      if (!current || current.status === 'running' || current.id.startsWith('local-')) return;
+      const session = await apiClient.request<BackendStudySession>('POST', `/student/study-sessions/${current.id}/resume`);
+      const resumed = mapStudySession(session);
+      saveFocusSession(resumed);
+      set({ activeSession: resumed, error: null });
+    } catch (error) {
+      set({ error: readableError(error), syncStatus: navigator.onLine ? 'failed' : 'offline' });
+      throw error;
+    }
   },
   async finishTask(taskId, feedback) {
     const previousPlan = get().plan;
     const task = previousPlan.tasks.find((item) => item.id === taskId);
     if (!task) return;
-    const payload = createTaskCompletionPayload(task, feedback?.status || 'done', get().activeSession?.taskId === taskId ? get().activeSession?.startedAt : null);
+    const session = get().activeSession?.taskId === taskId ? get().activeSession : null;
+    const payload = createTaskCompletionPayload(task, feedback?.status || 'done', session?.startedAt ?? null);
     const completion = {
       ...payload,
+      actualMinutes: session ? Math.max(1, Math.round(elapsedSeconds(session) / 60)) : payload.actualMinutes,
       actualTests: Number(feedback?.actualTests ?? payload.actualTests),
       note: [feedback?.difficulty ? `سختی: ${feedback.difficulty}` : '', feedback?.note || ''].filter(Boolean).join(' | '),
     };
+    saveFocusSession(null);
     set((state) => ({
       activeSession: null,
       plan: {
@@ -226,16 +487,25 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       },
     }));
     try {
+      if (session && !session.id.startsWith('local-')) {
+        await apiClient.request('POST', `/student/study-sessions/${session.id}/finish`, {
+          actualTests: completion.actualTests,
+          difficulty: feedback?.difficulty,
+          note: feedback?.note,
+        });
+      }
       await apiClient.request('POST', `/student/tasks/${taskId}/complete`);
       await get().loadDashboard();
     } catch (error) {
       set({ plan: previousPlan, activeSession: null, error: readableError(error), syncStatus: navigator.onLine ? 'failed' : 'offline' });
+      throw error;
     }
   },
   async completeTask(taskId) {
     await get().finishTask(taskId);
   },
   cancelFocus() {
+    saveFocusSession(null);
     set({ activeSession: null });
   },
 }));
@@ -288,6 +558,16 @@ function mapExam(exam: BackendExam): ExamSummary {
       allowedAttempts: exam.attemptLimit,
       questionCount: exam.questions?.length ?? 0,
     },
+  };
+}
+
+function mapStudySession(session: BackendStudySession): FocusSession {
+  return {
+    id: session.id,
+    taskId: session.taskId || '',
+    startedAt: session.startedAt,
+    status: session.status === 'PAUSED' ? 'paused' : 'running',
+    elapsedSeconds: Number(session.elapsedSeconds || 0),
   };
 }
 

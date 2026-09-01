@@ -9,21 +9,45 @@ interface ChatMessage {
   createdAt?: string;
 }
 
+interface Conversation {
+  id: string;
+}
+
+const CHAT_LAST_READ_KEY = 'moshaver_v2_chat_last_read';
+
 export function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState('');
   const [status, setStatus] = useState<'loading' | 'ready' | 'sending' | 'error'>('loading');
   const [online, setOnline] = useState(navigator.onLine);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [lastReadAt, setLastReadAt] = useState(() => localStorage.getItem(CHAT_LAST_READ_KEY));
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   async function loadMessages() {
     try {
-      const next = await apiClient.request<ChatMessage[]>('GET', '/chat/conversations/advisor/messages');
+      const conversations = await apiClient.request<Conversation[]>('GET', '/chat/conversations');
+      const id = conversations[0]?.id;
+      if (!id) {
+        setMessages([]);
+        setStatus('ready');
+        return;
+      }
+      setConversationId(id);
+      const next = await apiClient.request<ChatMessage[]>('GET', `/chat/conversations/${encodeURIComponent(id)}/messages`);
       setMessages(next);
       setStatus('ready');
     } catch {
       setStatus('error');
     }
+  }
+
+  function markChatRead(nextMessages = messages) {
+    const latest = nextMessages[nextMessages.length - 1]?.createdAt;
+    if (!latest) return;
+    localStorage.setItem(CHAT_LAST_READ_KEY, latest);
+    setLastReadAt(latest);
+    if (conversationId) void apiClient.request('POST', `/chat/conversations/${encodeURIComponent(conversationId)}/read`).catch(() => undefined);
   }
 
   async function sendMessage() {
@@ -32,7 +56,8 @@ export function ChatPage() {
     setStatus('sending');
     setText('');
     try {
-      const message = await apiClient.request<ChatMessage, { text: string }>('POST', '/chat/conversations/advisor/messages', { text: value });
+      if (!conversationId) throw new Error('گفتگویی برای ارسال پیدا نشد.');
+      const message = await apiClient.request<ChatMessage, { text: string }>('POST', `/chat/conversations/${encodeURIComponent(conversationId)}/messages`, { text: value });
       setMessages((current) => [...current, message]);
       setStatus('ready');
     } catch {
@@ -58,6 +83,8 @@ export function ChatPage() {
     };
   }, []);
 
+  const unreadCount = messages.filter((message) => String(message.senderRole).toLowerCase() !== 'student' && (!lastReadAt || new Date(message.createdAt || 0) > new Date(lastReadAt))).length;
+
   useLayoutEffect(() => {
     const node = scrollRef.current;
     if (node) node.scrollTop = node.scrollHeight;
@@ -74,8 +101,14 @@ export function ChatPage() {
     <section className="flex h-[calc(100vh-164px)] min-h-[520px] flex-col overflow-hidden rounded-md border border-black/10 bg-[#efeae2]">
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-black/10 bg-white px-4 py-3">
         <div>
-          <h1 className="text-base font-semibold">مشاور</h1>
-          <p className="text-xs text-ink/60">{statusLabel(status)}</p>
+          <div>
+            <h1 className="text-base font-semibold">مشاور</h1>
+            <p className="text-xs text-ink/60">{statusLabel(status)}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {unreadCount ? <span className="rounded-full bg-red-100 px-2 py-1 text-xs text-red-700">{unreadCount} خوانده‌نشده</span> : null}
+            <button type="button" className="rounded-md bg-paper px-2 py-1 text-xs text-ink/70" onClick={() => markChatRead()}>خوانده شد</button>
+          </div>
         </div>
         <span className={`grid size-9 place-items-center rounded-md ${online ? 'bg-mint/15 text-mint' : 'bg-red-50 text-red-700'}`}>
           {online ? <Wifi size={18} /> : <WifiOff size={18} />}

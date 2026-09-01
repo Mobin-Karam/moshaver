@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { ok } from "../../common/utils/envelope";
@@ -6,6 +6,7 @@ import { UserRole } from "../../database/entities/user.entity";
 import { AuthenticatedUser } from "../auth/auth.service";
 import { CreateExamDto, CreateQuestionDto } from "./dto/create-exam.dto";
 import { ExamsService } from "./exams.service";
+import { SubmitExamDto } from "./dto/submit-exam.dto";
 
 @Controller()
 export class ExamsController {
@@ -13,8 +14,32 @@ export class ExamsController {
 
   @Get("student/exams")
   @Roles(UserRole.STUDENT)
-  listForStudent() {
-    return this.exams.list(false).then(ok);
+  listForStudent(@CurrentUser() user: AuthenticatedUser) {
+    return this.exams.listForStudent(user.id).then(ok);
+  }
+
+  @Get("student/exams/attempts")
+  @Roles(UserRole.STUDENT)
+  history(@CurrentUser() user: AuthenticatedUser) {
+    return this.exams.history(user.id).then(ok);
+  }
+
+  @Get("student/exams/:id/progress")
+  @Roles(UserRole.STUDENT)
+  progress(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.exams.progress(id, user.id).then(ok);
+  }
+
+  @Get("student/exams/:id")
+  @Roles(UserRole.STUDENT)
+  detail(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.exams.detail(id, user.id).then(ok);
+  }
+
+  @Patch("student/exams/attempts/:id")
+  @Roles(UserRole.STUDENT)
+  saveProgress(@Param("id") id: string, @Body() dto: SubmitExamDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.exams.saveProgress(id, dto.answers, user.id).then(ok);
   }
 
   @Post("student/exams/:id/start")
@@ -25,8 +50,8 @@ export class ExamsController {
 
   @Post("student/exams/:id/submit")
   @Roles(UserRole.STUDENT)
-  submit(@Param("id") id: string, @Body("answers") answers: Array<{ questionId: string; selectedOption?: string | null }> = []) {
-    return this.exams.submit(id, answers).then(ok);
+  submit(@Param("id") id: string, @Body() dto: SubmitExamDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.exams.submit(id, dto.answers, user.id).then(ok);
   }
 
   @Post("admin/exams")

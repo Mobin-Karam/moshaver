@@ -102,7 +102,7 @@ export function AdminLayout() {
             </NavLink>
           ))}
         </nav>
-        <main className="w-full p-3 sm:p-4 lg:p-5 xl:p-6">
+        <main className="w-full p-2 sm:p-2 lg:p-2 xl:p-2">
           <Outlet />
         </main>
       </div>

@@ -1,15 +1,24 @@
 import { Body, Controller, Get, Post, Query } from "@nestjs/common";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { Roles } from "../../common/decorators/roles.decorator";
 import { ok } from "../../common/utils/envelope";
+import { UserRole } from "../../database/entities/user.entity";
+import { AuthenticatedUser } from "../auth/auth.service";
+import { UploadSyncDto } from "./dto/sync.dto";
+import { SyncService } from "./sync.service";
 
 @Controller("sync")
+@Roles(UserRole.STUDENT)
 export class SyncController {
+  constructor(private readonly syncService: SyncService) {}
+
   @Get()
-  sync(@Query("lastSync") lastSync?: string) {
-    return ok({ lastSync: lastSync || null, plans: [], tasks: [], messages: [], notifications: [], exams: [], serverTime: new Date().toISOString() });
+  sync(@CurrentUser() user: AuthenticatedUser, @Query("lastSync") lastSync?: string) {
+    return this.syncService.pull(user, lastSync).then(ok);
   }
 
   @Post("upload")
-  upload(@Body() body: { changes?: unknown[] }) {
-    return ok({ accepted: Array.isArray(body?.changes) ? body.changes.length : 0, rejected: 0, serverTime: new Date().toISOString() });
+  upload(@CurrentUser() user: AuthenticatedUser, @Body() dto: UploadSyncDto) {
+    return this.syncService.upload(user, dto.changes).then(ok);
   }
 }

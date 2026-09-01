@@ -12,6 +12,7 @@ export interface NetworkProvider {
 export interface NetworkRequestOptions {
   suppressAuthFailure?: boolean;
   noCsrfRetry?: boolean;
+  skipSyncQueue?: boolean;
 }
 
 export interface AuthProvider<TUser = unknown> {

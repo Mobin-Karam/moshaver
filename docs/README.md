@@ -15,6 +15,7 @@ Welcome to the Moshaver documentation hub. This folder is the single place to br
 4. [Student App v1 Backup Analysis](./student-app-v1-backup-analysis.md)
 5. [Student Core Architecture](./student-core-architecture.md)
 6. [Tauri Student App Architecture](./tauri-architecture.md)
+7. [Student App v1.4 to v2 Migration Audit](./student-app-v1-to-v2-migration-audit.md)
 
 ## Current Reality
 
@@ -36,6 +37,7 @@ Read [Student App v2 Gap Analysis](./student-app-v2-gap-analysis.md) before repl
 ## Migration Series
 
 - [Migration v1 to v2](./migration-v1-to-v2.md)
+- [Student App v1.4 to v2 Migration Audit](./student-app-v1-to-v2-migration-audit.md)
 - [Backend v2 Discovery](./backend-v2-discovery.md)
 - [Student App v1 Backup Analysis](./student-app-v1-backup-analysis.md)
 - [Student Core Architecture](./student-core-architecture.md)

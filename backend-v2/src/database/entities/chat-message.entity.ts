@@ -29,6 +29,9 @@ export class ChatMessage {
   @Column()
   content!: string;
 
+  @Column({ type: "datetime", nullable: true })
+  readAt?: Date | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 }

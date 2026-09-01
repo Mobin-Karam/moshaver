@@ -1,8 +1,15 @@
+import { LearningPage } from './features/learning/LearningPage';
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { NavLink, Route, Routes, BrowserRouter } from 'react-router-dom';
 import { CalendarDays, GraduationCap, Home, LogIn, MessageCircle, MoreHorizontal } from 'lucide-react';
 import { useStudentStore } from './services/student-store';
+import { apiClient } from './services/api-client';
+import { TauriSQLiteProvider } from './native/tauri-sqlite-provider';
+import { SQLiteSyncProvider } from './sync/sqlite-sync-provider';
+import { WebSyncProvider } from './sync/sync-status';
+import { SyncWorker } from '@moshaver/student-core';
+import { registerWebUpdateAdapter } from './pwa/web-update-adapter';
 import { HomePage } from './features/home/HomePage';
 import { PlanPage } from './features/plan/PlanPage';
 import { ExamPage } from './features/exam/ExamPage';
@@ -54,6 +61,7 @@ function App() {
             <Route path="/exam" element={<ExamPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/more" element={<MorePage />} />
+                      <Route path="/learning" element={<LearningPage />} />
           </Routes>
         </main>
 
@@ -69,6 +77,25 @@ function App() {
       </div>
     </BrowserRouter>
   );
+}
+
+async function initializeSync() {
+  const syncProvider = '__TAURI_INTERNALS__' in window
+    ? new SQLiteSyncProvider(await new TauriSQLiteProvider().raw())
+    : new WebSyncProvider();
+  const worker = new SyncWorker(syncProvider, apiClient, () => navigator.onLine);
+  apiClient.configureSync(syncProvider);
+  worker.subscribe((status) => useStudentStore.getState().setSyncStatus(status));
+  const onOnline = () => void worker.flush();
+  const onOffline = () => worker.setOffline();
+  window.addEventListener('online', onOnline);
+  window.addEventListener('offline', onOffline);
+  worker.start();
+  return () => {
+    worker.stop();
+    window.removeEventListener('online', onOnline);
+    window.removeEventListener('offline', onOffline);
+  };
 }
 
 function LoginPage() {
@@ -144,4 +171,7 @@ function syncStatusLabel(status: string) {
   return 'آنلاین';
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+void initializeSync().then(() => {
+  registerWebUpdateAdapter();
+  ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+});

@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
-import { LessThan, Repository } from "typeorm";
+import { LessThan, Not, Repository } from "typeorm";
 import { ApiException } from "../../common/exceptions/api.exception";
 import { Session } from "../../database/entities/session.entity";
 import { User } from "../../database/entities/user.entity";
@@ -53,14 +53,29 @@ export class AuthService {
     return { id: user.id, username: user.username, role: user.role, csrfToken: session?.csrfToken };
   }
 
+  async changePassword(user: AuthenticatedUser, currentPassword: string, newPassword: string) {
+    const account = await this.users.findOne({ where: { id: user.id } });
+    if (!account || !(await bcrypt.compare(currentPassword, account.passwordHash))) {
+      throw new ApiException(401, "INVALID_CREDENTIALS", "رمز فعلی درست نیست.");
+    }
+
+    account.passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.users.save(account);
+    await this.sessions.delete({ user: { id: user.id }, id: Not(user.sessionId) });
+    return { changed: true, otherSessionsRevoked: true };
+  }
+
   async listSessions(user: AuthenticatedUser) {
     const sessions = await this.sessions.find({ where: { user: { id: user.id } }, order: { createdAt: "DESC" } });
     return sessions.map((session) => ({ id: session.id, createdAt: session.createdAt, expiresAt: session.expiresAt, current: session.id === user.sessionId }));
   }
 
   async revokeSession(user: AuthenticatedUser, id: string) {
-    await this.sessions.delete({ id, user: { id: user.id } });
-    return { id, revoked: true };
+    if (id === user.sessionId) {
+      throw new ApiException(400, "CURRENT_SESSION", "برای خروج از نشست فعلی از دکمه خروج استفاده کنید.");
+    }
+    const result = await this.sessions.delete({ id, user: { id: user.id } });
+    return { id, revoked: Boolean(result.affected) };
   }
 
   async verifyCsrf(sessionId: string, csrfToken: string) {

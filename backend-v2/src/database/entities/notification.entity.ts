@@ -1,4 +1,4 @@
-import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Student } from "./student.entity";
 
 export enum NotificationType {
@@ -29,4 +29,7 @@ export class Notification {
 
   @Column({ type: "datetime", nullable: true })
   readAt?: Date | null;
+
+  @CreateDateColumn()
+  createdAt!: Date;
 }

@@ -88,6 +88,8 @@ export function LivePage() {
     { formatDateTime } = useLocale();
   const [search, setSearch] = useState(""),
     [filter, setFilter] = useState<LiveFilter>("all"),
+    [selectedId, setSelectedId] = useState(""),
+    [panel, setPanel] = useState<"students" | "timeline">("students"),
     [clock, setClock] = useState(Date.now());
   const live = useQuery({
     queryKey: ["live-students"],
@@ -105,13 +107,14 @@ export function LivePage() {
     return () => window.clearInterval(timer);
   }, []);
   const students = useMemo(
-    () => filterLiveStudents(live.data?.students || [], search, filter),
+    () => filterLiveStudents(live.data?.students || [], search, filter).sort((a, b) => Number(needsAttention(b)) - Number(needsAttention(a)) || Number(!!b.presence?.online) - Number(!!a.presence?.online) || a.name.localeCompare(b.name, "fa")),
     [filter, live.data?.students, search],
   );
   const summary = live.data?.summary || {};
+  const selected = students.find((student) => student.id === selectedId) || students[0];
   return (
-    <div className="grid gap-5">
-      <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+    <div className="grid h-[calc(100dvh-132px)] min-h-0 gap-3 overflow-hidden lg:h-[calc(100dvh-96px)]">
+      <header className="flex shrink-0 flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2">
         <div className="flex items-center gap-2 text-xs font-bold text-brand">
             <span className="relative flex size-2">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60" />
@@ -119,7 +122,7 @@ export function LivePage() {
             </span>
             عملیات بلادرنگ
           </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="mr-auto flex flex-wrap items-center gap-3">
           <span className="text-xs text-slate-500">
             {live.data?.generatedAt
               ? `آخرین همگام‌سازی: ${formatDateTime(live.data.generatedAt)}`
@@ -151,7 +154,7 @@ export function LivePage() {
           </Button>
         </Card>
       ) : null}
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-6">
+      <section className="grid shrink-0 grid-cols-3 gap-2 lg:grid-cols-6">
         <Summary
           icon={Users}
           label="همه"
@@ -200,8 +203,8 @@ export function LivePage() {
           onClick={() => setFilter("attention")}
         />
       </section>
-      <Card className="p-3">
-        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_240px_auto]">
+      <Card className="shrink-0 p-2">
+        <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_220px_auto_auto]">
           <label className="flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 focus-within:border-brand focus-within:ring-2 focus-within:ring-teal-100">
             <Search size={16} className="text-slate-400" />
             <input
@@ -228,44 +231,23 @@ export function LivePage() {
           <span className="self-center text-xs text-slate-500">
             نمایش {fa(students.length)} از {fa(summary.total || 0)}
           </span>
+          <div className="flex rounded-md bg-slate-100 p-1 lg:hidden"><button className={`rounded px-2 py-1 text-xs ${panel === "students" ? "bg-white font-bold shadow-sm" : ""}`} onClick={() => setPanel("students")}>دانش‌آموزان</button><button className={`rounded px-2 py-1 text-xs ${panel === "timeline" ? "bg-white font-bold shadow-sm" : ""}`} onClick={() => setPanel("timeline")}>رویدادها</button></div>
         </div>
       </Card>
-      {live.isLoading ? (
-        <Skeleton />
-      ) : students.length ? (
-        <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-          {students.map((s) => (
-            <StudentCard
-              key={s.id}
-              student={s}
-              now={clock}
-              formatDateTime={formatDateTime}
-            />
-          ))}
-        </section>
-      ) : (
-        <Card>
-          <EmptyState title="دانش‌آموزی با این جستجو یا فیلتر پیدا نشد." />
+      <section className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(360px,.9fr)_minmax(320px,.75fr)_minmax(300px,.65fr)]">
+        <Card className={`${panel === "timeline" ? "hidden lg:flex" : "flex"} min-h-0 flex-col overflow-hidden p-0`}>
+          <div className="flex items-center justify-between border-b px-3 py-2"><strong>صف عملیات دانش‌آموزان</strong><Badge tone={students.some(needsAttention) ? "red" : "green"}>{fa(students.filter(needsAttention).length)} نیازمند توجه</Badge></div>
+          {live.isLoading ? <CompactSkeleton /> : students.length ? <div className="min-h-0 flex-1 divide-y overflow-y-auto overscroll-contain">{students.map((student) => <StudentRow key={student.id} student={student} active={selected?.id === student.id} now={clock} onClick={() => setSelectedId(student.id)} />)}</div> : <EmptyState title="دانش‌آموزی با این جستجو یا فیلتر پیدا نشد." />}
         </Card>
-      )}
-      <Card className="overflow-hidden p-0">
-        <div className="flex items-center justify-between border-b border-slate-200 p-4">
-          <div className="flex items-center gap-2">
-            <Activity size={18} className="text-brand" />
-            <h3 className="font-black">خط زمانی همه دانش‌آموزان</h3>
-          </div>
-          <Badge>{fa(live.data?.timeline?.length || 0)} رویداد اخیر</Badge>
-        </div>
-        {live.data?.timeline?.length ? (
-          <div className="max-h-[560px] divide-y divide-slate-100 overflow-auto">
-            {live.data.timeline.slice(0, 60).map((e) => (
-              <Timeline key={e.id} event={e} formatDateTime={formatDateTime} />
-            ))}
-          </div>
-        ) : !live.isLoading ? (
-          <EmptyState title="هنوز رویدادی ثبت نشده است." />
-        ) : null}
-      </Card>
+        <Card className="hidden min-h-0 flex-col overflow-hidden p-0 lg:flex">
+          <div className="border-b px-3 py-2"><strong>کنترل سریع</strong><p className="text-xs text-slate-500">جزئیات فقط برای مورد انتخاب‌شده</p></div>
+          {selected ? <StudentDetail student={selected} now={clock} formatDateTime={formatDateTime} /> : <EmptyState title="یک دانش‌آموز را انتخاب کنید." />}
+        </Card>
+        <Card className={`${panel === "students" ? "hidden lg:flex" : "flex"} min-h-0 flex-col overflow-hidden p-0`}>
+          <div className="flex items-center justify-between border-b px-3 py-2"><span className="flex items-center gap-2"><Activity size={17} className="text-brand" /><strong>رویدادهای اخیر</strong></span><Badge>{fa(live.data?.timeline?.length || 0)}</Badge></div>
+          {live.data?.timeline?.length ? <div className="min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto overscroll-contain">{live.data.timeline.map((event) => <Timeline key={event.id} event={event} formatDateTime={formatDateTime} />)}</div> : !live.isLoading ? <EmptyState title="هنوز رویدادی ثبت نشده است." /> : <CompactSkeleton />}
+        </Card>
+      </section>
     </div>
   );
 }
@@ -297,16 +279,32 @@ function Summary({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`rounded-xl border bg-white p-4 text-right shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${active ? "border-brand ring-2 ring-teal-100" : "border-slate-200"}`}
+      className={`flex min-w-0 items-center gap-2 rounded-lg border bg-white px-2 py-2 text-right shadow-sm transition hover:border-brand ${active ? "border-brand ring-2 ring-teal-100" : "border-slate-200"}`}
     >
-      <span className={`flex items-center gap-2 text-xs ${color}`}>
+      <span className={`grid size-7 shrink-0 place-items-center rounded-md bg-slate-50 ${color}`}>
         <Icon size={16} />
-        {label}
       </span>
-      <strong className="mt-2 block text-2xl">{fa(value)}</strong>
+      <span className="min-w-0"><strong className="block text-base leading-5">{fa(value)}</strong><small className="block truncate text-[10px] text-slate-500">{label}</small></span>
     </button>
   );
 }
+function StudentRow({ student: s, active, now, onClick }: { student: LiveStudent; active: boolean; now: number; onClick: () => void }) {
+  const attention = needsAttention(s);
+  return <button type="button" onClick={onClick} style={{ contentVisibility: "auto", containIntrinsicSize: "72px" }} className={`grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 text-right transition hover:bg-slate-50 ${active ? "bg-teal-50" : ""}`}>
+    <span className="relative grid size-9 place-items-center rounded-full bg-slate-100 text-sm font-black text-brand">{s.name.slice(0,1)}<i className={`absolute bottom-0 left-0 size-2.5 rounded-full border-2 border-white ${s.presence?.online ? "bg-emerald-500" : "bg-slate-400"}`} /></span>
+    <span className="min-w-0"><span className="flex items-center gap-2"><strong className="truncate text-sm">{s.name}</strong>{attention ? <AlertTriangle size={14} className="shrink-0 text-amber-600" /> : null}</span><small className="block truncate text-slate-500">{s.activeSession?.title || s.currentView || [s.grade,s.major].filter(Boolean).join(" • ") || "بدون فعالیت جاری"}</small></span>
+    <span className="text-left"><Badge tone={stateTone(s.state)}>{stateLabel(s.state)}</Badge>{s.activeSession?.startedAt ? <small className="mt-1 block font-mono text-[10px] text-brand" dir="ltr">{elapsed(now,s.activeSession.startedAt)}</small> : null}</span>
+  </button>;
+}
+function StudentDetail({ student: s, now, formatDateTime }: { student: LiveStudent; now: number; formatDateTime: (value?: string | Date) => string }) {
+  return <div className="min-h-0 flex-1 overflow-y-auto p-3"><div className="flex items-center gap-3"><span className="grid size-11 place-items-center rounded-full bg-teal-50 font-black text-brand">{s.name.slice(0,1)}</span><div className="min-w-0 flex-1"><strong className="block truncate">{s.name}</strong><small className="text-slate-500">{[s.grade,s.major].filter(Boolean).join(" • ") || "بدون مشخصات تحصیلی"}</small></div><Badge tone={stateTone(s.state)}>{stateLabel(s.state)}</Badge></div>
+    <div className="mt-3 rounded-lg bg-slate-50 p-3"><small className="text-slate-500">فعالیت فعلی</small><strong className="mt-1 block truncate text-sm">{s.activeSession?.title || s.currentView || (s.presence?.online ? "داخل برنامه" : "بدون فعالیت جاری")}</strong><span className="mt-1 block text-xs text-slate-500">{s.activeSession?.subject || s.presence?.deviceLabel || (s.lastActivityAt ? `آخرین حضور ${formatDateTime(s.lastActivityAt)}` : "بدون سابقه حضور")}</span>{s.activeSession?.startedAt ? <strong className="mt-2 block font-mono text-lg text-brand" dir="ltr">{elapsed(now,s.activeSession.startedAt)}</strong> : null}</div>
+    <div className="mt-3 grid grid-cols-3 gap-2 text-center"><Mini label="کار باقی‌مانده" value={fa(s.remainingTasks)} /><Mini label="مرور سررسید" value={fa(s.dueReviews)} warn={s.dueReviews >= 3} /><Mini label="آخرین آزمون" value={s.lastExamPercent == null ? "—" : `${fa(s.lastExamPercent)}٪`} warn={s.lastExamPercent != null && s.lastExamPercent < 50} /></div>
+    {needsAttention(s) ? <div className="mt-3 flex gap-2 rounded-lg bg-amber-50 p-2 text-xs font-semibold text-amber-800"><AlertTriangle size={15} />پیگیری این دانش‌آموز در اولویت است.</div> : null}
+    <div className="mt-3 grid grid-cols-2 gap-2"><Link className="inline-flex h-9 items-center justify-center gap-2 rounded-md border text-sm font-semibold hover:bg-slate-50" to={`/admin/students?studentId=${encodeURIComponent(s.id)}`}><ExternalLink size={15} />پرونده</Link><Link className="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-brand text-sm font-semibold text-white" to={`/admin/chat?studentId=${encodeURIComponent(s.id)}`}><MessageCircle size={15} />پیام</Link></div>
+  </div>;
+}
+function CompactSkeleton() { return <div className="grid gap-px">{[1,2,3,4,5,6].map((item) => <div key={item} className="h-[68px] animate-pulse bg-slate-50" />)}</div>; }
 function StudentCard({
   student: s,
   now,

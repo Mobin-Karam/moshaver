@@ -5,6 +5,7 @@ import { Repository } from "typeorm";
 import { PlanStatus } from "../../database/entities/plan.entity";
 import { Student } from "../../database/entities/student.entity";
 import { Task } from "../../database/entities/task.entity";
+import { TopicMastery } from "../../database/entities/topic-mastery.entity";
 import { User, UserRole } from "../../database/entities/user.entity";
 import { ApiException } from "../../common/exceptions/api.exception";
 
@@ -12,8 +13,8 @@ import { ApiException } from "../../common/exceptions/api.exception";
 export class StudentsService {
   constructor(
     @InjectRepository(Student) private readonly students: Repository<Student>,
-    @InjectRepository(Task) private readonly tasks: Repository<Task>,
     @InjectRepository(User) private readonly users: Repository<User>,
+    @InjectRepository(TopicMastery) private readonly mastery: Repository<TopicMastery>,
   ) {}
 
   list() {
@@ -128,14 +129,42 @@ export class StudentsService {
   }
 
   async progress(userId?: string) {
-    const today = await this.today(userId);
-    const completed = today.tasks.filter((task) => task.completedAt).length;
-    return { studentId: today.student?.id || null, completed, total: today.tasks.length, percent: today.tasks.length ? Math.round((completed / today.tasks.length) * 100) : 0 };
+    const student = userId ? await this.findByUserId(userId) : null;
+    const today = new Date().toISOString().slice(0, 10);
+    const from = this.addDays(today, -6);
+    const days = (student?.plans || [])
+      .filter((plan) => plan.status === PlanStatus.PUBLISHED && plan.date >= from && plan.date <= today)
+      .sort((left, right) => left.date.localeCompare(right.date))
+      .map((plan) => this.taskMetrics(plan.date, plan.tasks || []));
+    const summary = days.reduce((result, day) => ({ completed: result.completed + day.completed, total: result.total + day.total }), { completed: 0, total: 0 });
+    return {
+      studentId: student?.id || null,
+      completed: summary.completed,
+      total: summary.total,
+      percent: summary.total ? Math.round((summary.completed / summary.total) * 100) : 0,
+      from,
+      to: today,
+      days,
+    };
   }
 
   async reviews(userId?: string) {
     const student = userId ? await this.findByUserId(userId) : null;
-    return { studentId: student?.id || null, items: [] };
+    const items = (student?.plans || [])
+      .flatMap((plan) => (plan.status === PlanStatus.PUBLISHED ? plan.tasks || [] : []))
+      .filter((task) => task.type === "REVIEW")
+      .sort((left, right) => (left.plan?.date || "").localeCompare(right.plan?.date || "") || left.priority - right.priority);
+    return { studentId: student?.id || null, items };
+  }
+
+  async learning(userId?: string) {
+    const student = userId ? await this.findByUserId(userId) : null;
+    const items = student ? await this.mastery.find({ where: { studentId: student.id }, order: { score: "ASC", topic: "ASC" } }) : [];
+    return {
+      studentId: student?.id || null,
+      summary: { total: items.length, averageScore: items.length ? Math.round((items.reduce((sum, item) => sum + item.score, 0) / items.length) * 10) / 10 : 0 },
+      items,
+    };
   }
 
   async dashboardForStudent(studentId: string) {
@@ -168,11 +197,6 @@ export class StudentsService {
     };
   }
 
-  async completeTask(id: string) {
-    await this.tasks.update(id, { completedAt: new Date() });
-    return { id, completedAt: new Date() };
-  }
-
   private findByUserId(userId: string) {
     return this.students.findOne({ where: { user: { id: userId } }, relations: { user: true, plans: { tasks: true } } });
   }
@@ -193,5 +217,16 @@ export class StudentsService {
 
   private sortTasks(tasks: Task[]) {
     return [...tasks].sort((left, right) => left.priority - right.priority || left.startTime.localeCompare(right.startTime) || left.title.localeCompare(right.title));
+  }
+
+  private taskMetrics(date: string, tasks: Task[]) {
+    const completed = tasks.filter((task) => task.completedAt).length;
+    return { date, completed, total: tasks.length, percent: tasks.length ? Math.round((completed / tasks.length) * 100) : 0 };
+  }
+
+  private addDays(isoDate: string, days: number) {
+    const date = new Date(`${isoDate}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
   }
 }

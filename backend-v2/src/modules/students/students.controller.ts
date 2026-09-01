@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { Controller, Get, Query } from "@nestjs/common";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { ok } from "../../common/utils/envelope";
@@ -26,19 +26,55 @@ export class StudentController {
     return this.students.day(user?.id, date).then((data) => ok(data.plan ? [data.plan] : []));
   }
 
-  @Post("tasks/:id/complete")
-  completeTask(@Param("id") id: string) {
-    return this.students.completeTask(id).then(ok);
-  }
-
   @Get("progress")
   progress(@CurrentUser() user: AuthenticatedUser) {
+    return this.students.progress(user?.id).then(ok);
+  }
+
+  @Get("progress/weekly")
+  weeklyProgress(@CurrentUser() user: AuthenticatedUser) {
     return this.students.progress(user?.id).then(ok);
   }
 
   @Get("reviews")
   reviews(@CurrentUser() user: AuthenticatedUser) {
     return this.students.reviews(user?.id).then(ok);
+  }
+
+  @Get("learning/summary")
+  learningSummary(@CurrentUser() user: AuthenticatedUser) {
+    return this.students.learning(user?.id).then((data) => ok(data.summary));
+  }
+
+  @Get("learning/items")
+  learningItems(@CurrentUser() user: AuthenticatedUser) {
+    return this.students.learning(user?.id).then((data) => ok(data.items));
+  }
+}
+
+@Controller()
+@Roles(UserRole.STUDENT)
+export class StudentParityController {
+  constructor(private readonly students: StudentsService) {}
+
+  @Get("reviews")
+  reviews(@CurrentUser() user: AuthenticatedUser) {
+    return this.students.reviews(user?.id).then(ok);
+  }
+
+  @Get("progress/weekly")
+  weeklyProgress(@CurrentUser() user: AuthenticatedUser) {
+    return this.students.progress(user?.id).then(ok);
+  }
+
+  @Get("learning/summary")
+  learningSummary(@CurrentUser() user: AuthenticatedUser) {
+    return this.students.learning(user?.id).then((data) => ok(data.summary));
+  }
+
+  @Get("learning/items")
+  learningItems(@CurrentUser() user: AuthenticatedUser) {
+    return this.students.learning(user?.id).then((data) => ok(data.items));
   }
 }
 
