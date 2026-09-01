@@ -10,5 +10,6 @@ describe("admin navigation metadata", () => {
     expect(flatAdminNavigation.every((item) => item.title && item.description)).toBe(true);
     expect(adminNavigation.every((group) => group.items.length > 0)).toBe(true);
     expect(mainAdminNavigation.map((item) => item.path)).toEqual(["", "planner", "live", "students", "system"]);
+    expect(mainAdminNavigation.map((item) => item.title)).toEqual(["خانه", "آموزش", "ارتباط", "مدیریت", "سامانه"]);
   });
 });

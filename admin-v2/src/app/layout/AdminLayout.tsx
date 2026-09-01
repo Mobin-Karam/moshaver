@@ -16,7 +16,7 @@ export function AdminLayout() {
   const routePath = location.pathname.replace(/^\/admin\/?/, "").split("/")[0];
   const current = flatAdminNavigation.find((item) => item.path === routePath) || flatAdminNavigation[0];
   const contextual = adminNavigation.find((group) => group.section === current.section)?.items || [];
-  const showContextRail = current.path !== "" && contextual.length > 1;
+  const showContextRail = contextual.length > 0;
   return (
     <div className="min-h-screen bg-paper text-ink">
       <aside className={`fixed inset-y-0 right-0 z-30 hidden border-l border-slate-200 bg-white transition-[width] lg:block ${mainCollapsed ? "w-[4.5rem] p-2" : "w-64 p-4"}`}>
@@ -27,15 +27,16 @@ export function AdminLayout() {
           </button>
         </div>
         <nav className="grid max-h-[calc(100vh-5rem)] gap-1 overflow-y-auto overflow-x-hidden">
-          {mainAdminNavigation.map(({ path, title, icon: Icon }) => (
+          {mainAdminNavigation.map(({ path, title, section, icon: Icon }) => (
             <NavLink
               key={path}
               to={`/admin/${path}`}
               end={path === ""}
               title={mainCollapsed ? title : undefined}
               aria-label={title}
-              className={({ isActive }) =>
-                `flex h-11 items-center rounded-md text-sm font-semibold ${mainCollapsed ? "justify-center px-2" : "gap-3 px-3"} ${isActive ? "bg-teal-50 text-brand" : "text-slate-600 hover:bg-slate-50"}`
+              aria-current={current.section === section ? "page" : undefined}
+              className={() =>
+                `flex h-11 items-center rounded-md text-sm font-semibold ${mainCollapsed ? "justify-center px-2" : "gap-3 px-3"} ${current.section === section ? "bg-teal-50 text-brand" : "text-slate-600 hover:bg-slate-50"}`
               }
             >
               <Icon className="shrink-0" size={19} />
@@ -44,8 +45,8 @@ export function AdminLayout() {
           ))}
         </nav>
       </aside>
-      {showContextRail ? <aside className={`fixed inset-y-0 left-0 z-30 hidden border-r border-slate-200 bg-slate-50/95 transition-[width] xl:block ${contextCollapsed ? "w-16 p-2" : "w-52 p-3"}`}><div className={`mb-3 flex items-center ${contextCollapsed ? "justify-center" : "justify-between gap-2 px-1"}`}>{!contextCollapsed ? <p className="truncate text-xs font-black text-slate-500">{current.section}</p> : null}<button type="button" className="grid size-9 shrink-0 place-items-center rounded-md text-slate-500 hover:bg-white" title={contextCollapsed ? "بازکردن نوار مرتبط" : "بستن نوار مرتبط"} aria-label={contextCollapsed ? "بازکردن نوار مرتبط" : "بستن نوار مرتبط"} aria-expanded={!contextCollapsed} onClick={() => setContextCollapsed((value) => !value)}>{contextCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}</button></div><nav className="grid gap-1 overflow-hidden">{contextual.map(({ path, title, icon: Icon }) => <NavLink key={path} to={`/admin/${path}`} title={contextCollapsed ? title : undefined} aria-label={title} className={({ isActive }) => `flex h-10 items-center rounded-md text-sm ${contextCollapsed ? "justify-center px-2" : "gap-2 px-3"} ${isActive ? "bg-white font-bold text-brand shadow-sm" : "text-slate-600 hover:bg-white"}`}><Icon className="shrink-0" size={17} />{!contextCollapsed ? <span className="truncate">{title}</span> : null}</NavLink>)}</nav></aside> : null}
-      <div className={`${mainCollapsed ? "lg:mr-[4.5rem]" : "lg:mr-64"} ${showContextRail ? contextCollapsed ? "xl:ml-16" : "xl:ml-52" : ""} transition-[margin]`}>
+      {showContextRail ? <aside className={`fixed inset-y-0 z-20 hidden border-l border-slate-200 bg-slate-50/95 transition-[right,width] lg:block ${mainCollapsed ? "right-[4.5rem]" : "right-64"} ${contextCollapsed ? "w-16 p-2" : "w-52 p-3"}`}><div className={`mb-3 flex items-center ${contextCollapsed ? "justify-center" : "justify-between gap-2 px-1"}`}>{!contextCollapsed ? <p className="truncate text-xs font-black text-slate-500">مسیرهای {current.section}</p> : null}<button type="button" className="grid size-9 shrink-0 place-items-center rounded-md text-slate-500 hover:bg-white" title={contextCollapsed ? "بازکردن مسیرهای بخش" : "بستن مسیرهای بخش"} aria-label={contextCollapsed ? "بازکردن مسیرهای بخش" : "بستن مسیرهای بخش"} aria-expanded={!contextCollapsed} onClick={() => setContextCollapsed((value) => !value)}>{contextCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}</button></div><nav className="grid gap-1 overflow-hidden">{contextual.map(({ path, title, icon: Icon }) => <NavLink key={path} to={`/admin/${path}`} title={contextCollapsed ? title : undefined} aria-label={title} className={({ isActive }) => `flex h-10 items-center rounded-md text-sm ${contextCollapsed ? "justify-center px-2" : "gap-2 px-3"} ${isActive ? "bg-white font-bold text-brand shadow-sm" : "text-slate-600 hover:bg-white"}`}><Icon className="shrink-0" size={17} />{!contextCollapsed ? <span className="truncate">{title}</span> : null}</NavLink>)}</nav></aside> : null}
+      <div className={`${mainCollapsed ? contextCollapsed ? "lg:mr-[8.5rem]" : "lg:mr-[17.5rem]" : contextCollapsed ? "lg:mr-80" : "lg:mr-[29rem]"} transition-[margin]`}>
         <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between gap-2 border-b border-slate-200 bg-white/90 px-3 py-2 backdrop-blur sm:px-4">
           <div className="min-w-0 flex-1">
             <div className="mb-0.5 flex items-center gap-1 text-[11px] text-slate-400"><Home size={12} /><NavLink to="/admin">خانه</NavLink>{current.path ? <><ChevronLeft size={12} /><span className="truncate">{current.title}</span></> : null}</div>
