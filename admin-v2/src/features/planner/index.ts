@@ -1,4 +1,3 @@
-/** Backward-compatible public entry. */
 export { PlannerPage } from "./pages/PlannerPage";
 export {
   filterPlans,
@@ -10,3 +9,4 @@ export {
   planWarnings,
   comparePlanTasks,
 } from "./lib/planner-model";
+export type { PlannerMode, TaskFilter, PlanDraft, TaskDraft } from "./model/planner.types";
