@@ -10,10 +10,14 @@ describe("LoginPage", () => {
     globalThis.fetch = vi.fn(
       async () =>
         new Response(
-          JSON.stringify({ ok: false, error: { message: "unauthorized" } }),
+          JSON.stringify({
+            ok: false,
+            error: { message: "unauthorized" },
+          }),
           { status: 401 },
         ),
     ) as typeof fetch;
+
     render(
       <MemoryRouter>
         <AuthProvider>
@@ -21,8 +25,17 @@ describe("LoginPage", () => {
         </AuthProvider>
       </MemoryRouter>,
     );
-    await userEvent.click(await screen.findByRole("button", { name: "ورود" }));
-    expect(await screen.findByText("نام کاربری لازم است")).toBeInTheDocument();
-    expect(screen.getByText("رمز عبور لازم است")).toBeInTheDocument();
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "ورود" }),
+    );
+
+    expect(
+      await screen.findByText("نام کاربری لازم است"),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("رمز عبور لازم است"),
+    ).toBeInTheDocument();
   });
 });
