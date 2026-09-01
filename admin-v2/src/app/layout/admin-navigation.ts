@@ -42,3 +42,14 @@ export const mainAdminNavigation = adminNavigation.map((group) => ({
   title: group.section,
   section: group.section,
 }));
+
+export function adminBreadcrumbs(path: string) {
+  const current = flatAdminNavigation.find((item) => item.path === path) || flatAdminNavigation[0];
+  if (!current.path) return [{ title: "خانه", path: "" }];
+  const group = adminNavigation.find((item) => item.section === current.section);
+  return [
+    { title: "خانه", path: "" },
+    { title: current.section, path: group?.items[0].path || current.path },
+    { title: current.title, path: current.path },
+  ];
+}

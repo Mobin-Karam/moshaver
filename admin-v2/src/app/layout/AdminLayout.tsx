@@ -5,7 +5,7 @@ import { Button } from "../../shared/ui/ui";
 import { useAuth } from "../../features/auth/AuthProvider";
 import { useModal } from "../../shared/ui/modal";
 import { DevBackendSwitcher } from "../dev/DevBackendSwitcher";
-import { adminNavigation, flatAdminNavigation, mainAdminNavigation } from "./admin-navigation";
+import { adminBreadcrumbs, adminNavigation, flatAdminNavigation, mainAdminNavigation } from "./admin-navigation";
 
 export function AdminLayout() {
   const auth = useAuth();
@@ -15,6 +15,7 @@ export function AdminLayout() {
   const [contextCollapsed, setContextCollapsed] = usePersistentCollapse("admin-context-sidebar-collapsed");
   const routePath = location.pathname.replace(/^\/admin\/?/, "").split("/")[0];
   const current = flatAdminNavigation.find((item) => item.path === routePath) || flatAdminNavigation[0];
+  const breadcrumbs = adminBreadcrumbs(routePath);
   const contextual = adminNavigation.find((group) => group.section === current.section)?.items || [];
   const showContextRail = contextual.length > 0;
   return (
@@ -49,7 +50,9 @@ export function AdminLayout() {
       <div className={`${mainCollapsed ? contextCollapsed ? "lg:mr-[8.5rem]" : "lg:mr-[17.5rem]" : contextCollapsed ? "lg:mr-80" : "lg:mr-[29rem]"} transition-[margin]`}>
         <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between gap-2 border-b border-slate-200 bg-white/90 px-3 py-2 backdrop-blur sm:px-4">
           <div className="min-w-0 flex-1">
-            <div className="mb-0.5 flex items-center gap-1 text-[11px] text-slate-400"><Home size={12} /><NavLink to="/admin">خانه</NavLink>{current.path ? <><ChevronLeft size={12} /><span className="truncate">{current.title}</span></> : null}</div>
+            <nav aria-label="موقعیت صفحه" className="mb-0.5 flex min-w-0 items-center gap-1 text-[11px] text-slate-400">
+              {breadcrumbs.map((item, index) => <span key={`${item.path}-${index}`} className="flex min-w-0 items-center gap-1">{index ? <ChevronLeft className="shrink-0" size={12} /> : <Home className="shrink-0" size={12} />}{index === breadcrumbs.length - 1 ? <span className="truncate font-semibold text-slate-600" aria-current="page">{item.title}</span> : <NavLink className="truncate transition hover:text-brand" to={item.path ? `/admin/${item.path}` : "/admin"}>{item.title}</NavLink>}</span>)}
+            </nav>
             <strong className="block truncate text-sm sm:text-base">{current.title}</strong>
             <p className="hidden truncate text-xs text-slate-500 md:block">{current.description}</p>
           </div>
