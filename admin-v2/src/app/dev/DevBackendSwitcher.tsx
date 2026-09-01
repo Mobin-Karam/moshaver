@@ -31,6 +31,11 @@ export function DevBackendSwitcher() {
 
   if (!import.meta.env.DEV) return null;
 
+  function applyAndReload(action: () => void) {
+    action();
+    window.location.reload();
+  }
+
   return (
     <div
       className="flex min-w-0 items-center gap-1 rounded-md border border-slate-200 bg-slate-50 p-1 text-xs sm:gap-1.5"
@@ -45,7 +50,7 @@ export function DevBackendSwitcher() {
         onChange={(event) => {
           const next = event.target.value as BackendTarget | "";
           setSelected(next);
-          setSelectedBackend(next || null);
+          applyAndReload(() => setSelectedBackend(next || null));
         }}
       >
         {options.map((option) => (
@@ -61,7 +66,7 @@ export function DevBackendSwitcher() {
         onChange={(event) => {
           const next = event.target.value as ApiVersion;
           setVersion(next);
-          setSelectedApiVersion(next);
+          applyAndReload(() => setSelectedApiVersion(next));
         }}
       >
         <option value="v1">API v1</option>
@@ -73,7 +78,7 @@ export function DevBackendSwitcher() {
       <Button
         className="h-8 shrink-0 px-2"
         variant="soft"
-        title="Reload with selected backend"
+        title="بارگذاری دوباره اتصال فعلی"
         onClick={() => window.location.reload()}
       >
         <RotateCw size={14} />

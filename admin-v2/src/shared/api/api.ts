@@ -78,7 +78,12 @@ export function setSelectedBackend(target: BackendTarget | null) {
 export function getApiBaseUrl() {
   const configured = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "");
   if (!configured) return versionedPath();
-  if (/\/api\/v[12]$/.test(configured)) return configured;
+  // The configured URL selects the host/proxy, while the runtime switcher owns
+  // the API version. Keeping the configured suffix here used to pin every
+  // request to v1 even after the user selected v2.
+  if (/\/api\/v[12]$/.test(configured)) {
+    return configured.replace(/\/api\/v[12]$/, versionedPath());
+  }
   return `${configured}${versionedPath()}`;
 }
 
@@ -87,8 +92,6 @@ export function getBackendTargetUrl() {
   if (selected) return `${backendTargets[selected]}${versionedPath()}`;
   return getApiBaseUrl();
 }
-
-export const apiBaseUrl = getApiBaseUrl();
 
 function csrf() {
   return sessionStorage.getItem(CSRF_KEY) || "";

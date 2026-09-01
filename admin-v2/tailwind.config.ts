@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 export default {
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
@@ -8,11 +9,11 @@ export default {
         sans: ['Vazirmatn', 'Tahoma', 'Arial', 'sans-serif'],
       },
       colors: {
-        ink: "#172033",
-        paper: "#f4f7fb",
-        brand: "#4338ca",
-        saffron: "#b45309",
-        rosewood: "#be123c",
+        ink: "rgb(var(--color-ink) / <alpha-value>)",
+        paper: "rgb(var(--color-paper) / <alpha-value>)",
+        brand: "rgb(var(--color-brand) / <alpha-value>)",
+        saffron: "rgb(var(--color-saffron) / <alpha-value>)",
+        rosewood: "rgb(var(--color-rosewood) / <alpha-value>)",
       },
     },
   },

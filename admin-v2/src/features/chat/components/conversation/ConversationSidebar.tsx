@@ -16,9 +16,9 @@ export function ConversationSidebar({ visible, items, activeId, search, filter, 
   onSelect: (item: Conversation) => void; onRetry: () => void; onMore: () => void;
   onGroupCreated: (id: string) => void;
 }) {
-  return <Card className={`${visible ? "flex" : "hidden lg:flex"} min-h-0 flex-col overflow-hidden p-0`}>
-    <div className="border-b p-3">
-      <div className="flex flex-wrap items-center gap-2"><MessageCircle size={18} /><strong>گفتگوها</strong><Badge tone="blue">{total}</Badge>{unread ? <Badge tone="red">{toFa(unread)} خوانده‌نشده</Badge> : null}<span className="mr-auto"><CreateGroupButton onCreated={onGroupCreated} /></span>{fetching && !fetchingMore ? <RefreshCw className="animate-spin text-slate-400" size={15} /> : null}</div>
+  return <Card className={`${visible ? "flex" : "hidden lg:flex"} min-h-0 flex-col overflow-hidden border-slate-200/90 p-0 shadow-[0_12px_35px_rgba(31,49,46,0.06)]`}>
+    <div className="border-b border-slate-200/80 bg-white/90 p-3">
+      <div className="flex flex-wrap items-center gap-2"><span className="grid size-8 place-items-center rounded-lg bg-brand/10 text-brand"><MessageCircle size={17} /></span><strong>گفتگوها</strong><Badge>{toFa(total)}</Badge>{unread ? <Badge tone="red">{toFa(unread)} خوانده‌نشده</Badge> : null}<span className="mr-auto"><CreateGroupButton onCreated={onGroupCreated} /></span>{fetching && !fetchingMore ? <RefreshCw className="animate-spin text-slate-400" size={15} /> : null}</div>
       <ConversationSearch search={search} filter={filter} onSearch={onSearch} onFilter={onFilter} />
     </div>
     <div className="min-h-0 flex-1 overflow-auto">

@@ -1,5 +1,7 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { lazy, Suspense, type ReactNode } from "react";
+import { RefreshCw } from "lucide-react";
+import { Button } from "../shared/ui/ui";
 import { LoginPage, useAuth } from "../features/auth";
 import { AdminLayout } from "./layout/AdminLayout";
 import { DashboardPage } from "../features/dashboard";
@@ -30,8 +32,22 @@ function ProtectedRoute() {
   const auth = useAuth();
   if (auth.status === "checking")
     return (
-      <div className="grid min-h-screen place-items-center bg-paper text-slate-500">
-        در حال بازیابی نشست...
+      <div className="grid min-h-screen place-items-center bg-paper p-4">
+        <div className="grid max-w-md gap-4 rounded-xl border bg-white p-6 text-center shadow-sm">
+          <div className="mx-auto size-9 animate-spin rounded-full border-4 border-slate-200 border-t-brand" aria-hidden="true" />
+          <div>
+            <p className="font-bold text-slate-800">در حال بازیابی نشست…</p>
+            <p className="mt-2 text-sm text-slate-500">{auth.message}</p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button variant="soft" onClick={() => void auth.restore()}>
+              <RefreshCw size={16} /> تلاش دوباره
+            </Button>
+            <Button variant="ghost" onClick={auth.stopRestore}>
+              رفتن به صفحه ورود
+            </Button>
+          </div>
+        </div>
       </div>
     );
   if (auth.status !== "authenticated") return <Navigate to="/login" replace />;

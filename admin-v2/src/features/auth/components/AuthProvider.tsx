@@ -31,6 +31,9 @@ import type {
 
 export const AuthContext = createContext<AuthState | null>(null);
 
+const MAX_RESTORE_ATTEMPTS = 3;
+const RESTORE_RETRY_DELAY_MS = 1_800;
+
 export function AuthProvider({
   children,
 }: {
@@ -41,6 +44,7 @@ export function AuthProvider({
   const [message, setMessage] = useState("در حال بررسی نشست امن…");
   const operation = useRef(0);
   const retryTimer = useRef<number>();
+  const restoreAttempts = useRef(0);
   const lastCheck = useRef(0);
 
   const finishLocalLogout = useCallback(
@@ -60,6 +64,7 @@ export function AuthProvider({
 
   const restore = useCallback(async () => {
     const current = ++operation.current;
+    window.clearTimeout(retryTimer.current);
 
     setStatus((value) =>
       value === "authenticated" ? value : "checking",
@@ -84,6 +89,7 @@ export function AuthProvider({
       }
 
       lastCheck.current = Date.now();
+      restoreAttempts.current = 0;
       setUser(me);
       setStatus("authenticated");
       setMessage("");
@@ -91,21 +97,30 @@ export function AuthProvider({
       if (current !== operation.current) return;
 
       if (error instanceof ApiError && error.status === 401) {
+        restoreAttempts.current = 0;
         finishLocalLogout("");
+        return;
+      }
+
+      restoreAttempts.current += 1;
+
+      if (restoreAttempts.current >= MAX_RESTORE_ATTEMPTS) {
+        finishLocalLogout(
+          "پس از ۳ تلاش، سرور پاسخ نداد. می‌توانید دوباره تلاش کنید یا وارد حساب شوید.",
+          false,
+        );
         return;
       }
 
       setStatus("checking");
 
       setMessage(
-        "ارتباط با سرور موقتاً برقرار نیست؛ نشست حذف نشده و دوباره تلاش می‌کنیم…",
+        `ارتباط با سرور برقرار نشد؛ تلاش ${restoreAttempts.current} از ${MAX_RESTORE_ATTEMPTS} انجام شد و دوباره تلاش می‌کنیم…`,
       );
-
-      window.clearTimeout(retryTimer.current);
 
       retryTimer.current = window.setTimeout(
         () => void restore(),
-        1800,
+        RESTORE_RETRY_DELAY_MS,
       );
     }
   }, [finishLocalLogout]);
@@ -207,6 +222,14 @@ export function AuthProvider({
       status,
       message,
       restore,
+      stopRestore() {
+        window.clearTimeout(retryTimer.current);
+        restoreAttempts.current = 0;
+        finishLocalLogout(
+          "بازیابی نشست متوقف شد. برای ادامه وارد حساب شوید.",
+          false,
+        );
+      },
 
       async login(username, password) {
         const current = ++operation.current;
@@ -233,6 +256,7 @@ export function AuthProvider({
         api.setCsrf(data.csrfToken);
         setUser(normalizedUser);
         setStatus("authenticated");
+        restoreAttempts.current = 0;
         lastCheck.current = Date.now();
         signalAuthEvent("login");
       },

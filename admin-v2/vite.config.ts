@@ -17,10 +17,14 @@ function devBackendProxy() {
   return {
     name: "dev-backend-proxy",
     configureServer(server: import("vite").ViteDevServer) {
-      server.middlewares.use("/api/v1", (req, res) => {
+      server.middlewares.use("/api", (req, res, next) => {
         const target = backendTargets[selectedBackend(req.headers.cookie)];
         const originalUrl = (req as typeof req & { originalUrl?: string }).originalUrl || req.url || "";
-        const path = originalUrl.startsWith("/api/v1") ? originalUrl : `/api/v1${originalUrl}`;
+        if (!/^\/api\/v[12](?:\/|$)/.test(originalUrl)) {
+          next();
+          return;
+        }
+        const path = originalUrl;
         const upstreamUrl = new URL(path, target);
         const client = upstreamUrl.protocol === "https:" ? https : http;
         const proxyReq = client.request(
@@ -38,8 +42,10 @@ function devBackendProxy() {
           },
         );
         proxyReq.on("error", () => {
+          if (res.headersSent) return;
           res.statusCode = 502;
-          res.end("Backend proxy error");
+          res.setHeader("Content-Type", "application/json; charset=utf-8");
+          res.end(JSON.stringify({ ok: false, error: { code: "PROXY_ERROR", message: "Backend proxy error" } }));
         });
         req.pipe(proxyReq);
       });

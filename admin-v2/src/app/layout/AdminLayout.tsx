@@ -7,6 +7,7 @@ import { useModal } from "../../shared/ui/modal";
 import { DevBackendSwitcher } from "../dev/DevBackendSwitcher";
 import { adminBreadcrumbs, adminDestination, adminNavigation, flatAdminNavigation, mainAdminNavigation, resolveAdminNavigation } from "./admin-navigation";
 import { HeaderNotifications, useAdminNotifications } from "../../features/notifications";
+import { ThemeSwitcher } from "../../shared/theme/theme";
 
 export function AdminLayout() {
   const auth = useAuth();
@@ -59,6 +60,7 @@ export function AdminLayout() {
             <p className="hidden truncate text-xs text-slate-500 md:block">{current.description}</p>
           </div>
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+            <ThemeSwitcher />
             <HeaderNotifications />
             <DevBackendSwitcher />
             <Button

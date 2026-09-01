@@ -16,6 +16,7 @@ function Probe() {
       <button onClick={() => void api.get("/protected").catch(() => undefined)}>
         protected
       </button>
+      <button onClick={auth.stopRestore}>stop restore</button>
     </div>
   );
 }
@@ -44,11 +45,20 @@ describe("AuthProvider", () => {
 
     expect(
       await screen.findByText(
-        "ارتباط با سرور موقتاً برقرار نیست؛ نشست حذف نشده و دوباره تلاش می‌کنیم…",
+        "ارتباط با سرور برقرار نشد؛ تلاش 1 از 3 انجام شد و دوباره تلاش می‌کنیم…",
       ),
     ).toBeInTheDocument();
 
     expect(screen.getByText("checking")).toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "stop restore" }),
+    );
+
+    expect(screen.getByText("anonymous")).toBeInTheDocument();
+    expect(
+      screen.getByText("بازیابی نشست متوقف شد. برای ادامه وارد حساب شوید."),
+    ).toBeInTheDocument();
 
     view.unmount();
   });
