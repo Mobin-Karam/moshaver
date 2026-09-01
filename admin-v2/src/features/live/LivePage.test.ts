@@ -33,17 +33,24 @@ const students: LiveStudent[] = [
 
 describe("live operations console", () => {
   it("searches across identity and current activity", () => {
-    expect(filterLiveStudents(students, "سارا", "all")).toEqual([students[0]]);
-    expect(filterLiveStudents(students, "برنامه امروز", "all")).toEqual([
+    expect(filterLiveStudents(students, "سارا", "all")).toEqual([
       students[0],
     ]);
+
+    expect(
+      filterLiveStudents(students, "برنامه امروز", "all"),
+    ).toEqual([students[0]]);
   });
 
   it("normalizes online and attention filters", () => {
-    expect(filterLiveStudents(students, "", "online")).toEqual([students[0]]);
-    expect(filterLiveStudents(students, "", "attention")).toEqual([
-      students[1],
+    expect(filterLiveStudents(students, "", "online")).toEqual([
+      students[0],
     ]);
+
+    expect(
+      filterLiveStudents(students, "", "attention"),
+    ).toEqual([students[1]]);
+
     expect(needsAttention(students[1])).toBe(true);
   });
 });
