@@ -37,3 +37,4 @@ export const adminNavigation = [
 ] as const;
 
 export const flatAdminNavigation = adminNavigation.flatMap((group) => group.items.map((item) => ({ ...item, section: group.section })));
+export const mainAdminNavigation = adminNavigation.map((group) => ({ ...group.items[0], section: group.section }));
