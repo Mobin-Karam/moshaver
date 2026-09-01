@@ -1,0 +1,3 @@
+import { Card, EmptyState } from "../../../shared/ui/ui";
+import type { HistoryRow } from "../model/system.types";
+export function SystemHistory({ title, rows = [] }: { title: string; rows?: HistoryRow[] }) { return <Card><h3 className="mb-3 font-bold">{title}</h3>{rows.length ? <div className="grid max-h-80 gap-2 overflow-auto">{rows.map((row,index) => <article key={String(row.id || index)} className="rounded-md border p-3 text-sm"><strong>{String(row.app_name || row.action || row.type || row.created_at || "رکورد")}</strong><p className="mt-1 text-xs text-slate-500">{String(row.version || row.notes || row.message || row.created_at || row.updated_at || "")}</p></article>)}</div> : <EmptyState title="سابقه‌ای وجود ندارد." />}</Card>; }

@@ -1,0 +1,4 @@
+import { KeyRound } from "lucide-react";
+import { Button, Card, Field, Input } from "../../../shared/ui/ui";
+import type { PasswordDraft } from "../model/system.types";
+export function AccountSecurityPanel({ passwords, setPasswords, busy, onSubmit }: { passwords: PasswordDraft; setPasswords: (next: PasswordDraft) => void; busy: boolean; onSubmit: () => void }) { return <Card><h3 className="mb-3 font-bold">امنیت حساب</h3><div className="grid gap-3"><Field label="رمز فعلی"><Input type="password" value={passwords.currentPassword} onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })} /></Field><Field label="رمز جدید"><Input type="password" value={passwords.newPassword} onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })} /></Field><Button loading={busy} disabled={passwords.newPassword.length < 8 || busy} onClick={onSubmit}><KeyRound size={16}/>تغییر رمز</Button></div></Card>; }
