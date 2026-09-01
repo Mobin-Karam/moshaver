@@ -2,16 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookOpen, BookPlus, Edit3, RotateCcw, Save, Search } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { api } from "../../shared/api/api";
-import { useStudents } from "../../shared/hooks/useStudents";
-import { fa, normalizePersianText } from "../../shared/lib/utils";
-import { useModal } from "../../shared/ui/modal";
-import { notify } from "../../shared/ui/notifications";
-import { StudentPicker } from "../../shared/ui/StudentPicker";
-import { Badge, Button, Card, EmptyState, Field, Input, Select, Textarea } from "../../shared/ui/ui";
-
-type Subject = { id: string; name: string; subject_key?: string; subjectKey?: string; display_order?: number; displayOrder?: number; status?: string; progress?: number; mastery?: string; note?: string };
-type Mode = "student" | "catalog";
+import { useStudents } from "../../../shared/hooks/useStudents";
+import { fa, normalizePersianText } from "../../../shared/lib/utils";
+import { useModal } from "../../../shared/ui/modal";
+import { notify } from "../../../shared/ui/notifications";
+import { StudentPicker } from "../../../shared/ui/StudentPicker";
+import { Badge, Button, Card, EmptyState, Field, Input, Select, Textarea } from "../../../shared/ui/ui";
+import { createSubject, getStudentSubjects, getSubjects, updateStudentSubject, updateSubject } from "../api/subjects.api";
+import type { Subject, SubjectsMode as Mode } from "../model/subject.types";
 
 export function SubjectsPage() {
   const students = useStudents(), qc = useQueryClient(), modal = useModal(), [params, setParams] = useSearchParams();
@@ -19,11 +17,11 @@ export function SubjectsPage() {
   const deferredSearch = useDeferredValue(search), studentParam = params.get("studentId") || "";
   useEffect(() => { if (studentParam && studentParam !== students.studentId) students.setStudentId(studentParam); }, [studentParam, students.studentId, students.setStudentId]);
   useEffect(() => { if (!students.studentId || studentParam === students.studentId) return; updateUrl({ studentId: students.studentId }); }, [students.studentId, studentParam]);
-  const subjects = useQuery({ queryKey: ["subjects"], queryFn: () => api.get<Subject[]>("/admin/subjects") });
-  const assigned = useQuery({ queryKey: ["student-subjects", students.studentId], enabled: !!students.studentId && mode === "student", queryFn: () => api.get<Subject[]>(`/admin/student-subjects/${students.studentId}`) });
-  const create = useMutation({ mutationFn: (draft: { name: string; subjectKey: string; displayOrder: number }) => api.post("/admin/subjects", draft), onSuccess: () => { notify("درس جدید ساخته شد."); void refreshAll(); }, onError: (error) => notify(error instanceof Error ? error.message : "ساخت درس ناموفق بود.", "error") });
-  const updateCatalog = useMutation({ mutationFn: (subject: Subject) => api.patch(`/admin/subjects/${subject.id}`, { name: subject.name, displayOrder: Number(subject.display_order ?? subject.displayOrder ?? 0) }), onSuccess: () => { notify("مشخصات درس به‌روز شد."); void refreshAll(); }, onError: (error) => notify(error instanceof Error ? error.message : "ویرایش درس ناموفق بود.", "error") });
-  const updateStudent = useMutation({ mutationFn: (subject: Subject) => api.patch(`/admin/student-subjects/${students.studentId}/${subject.id}`, { status: subject.status || "yellow", progress: Number(subject.progress || 0), mastery: subject.mastery || "", note: subject.note || "" }), onSuccess: () => { notify("وضعیت آموزشی دانش‌آموز ذخیره شد."); void qc.invalidateQueries({ queryKey: ["student-subjects", students.studentId] }); }, onError: (error) => notify(error instanceof Error ? error.message : "ذخیره وضعیت درس ناموفق بود.", "error") });
+  const subjects = useQuery({ queryKey: ["subjects"], queryFn: getSubjects });
+  const assigned = useQuery({ queryKey: ["student-subjects", students.studentId], enabled: !!students.studentId && mode === "student", queryFn: () => getStudentSubjects(students.studentId) });
+  const create = useMutation({ mutationFn: createSubject, onSuccess: () => { notify("درس جدید ساخته شد."); void refreshAll(); }, onError: (error) => notify(error instanceof Error ? error.message : "ساخت درس ناموفق بود.", "error") });
+  const updateCatalog = useMutation({ mutationFn: updateSubject, onSuccess: () => { notify("مشخصات درس به‌روز شد."); void refreshAll(); }, onError: (error) => notify(error instanceof Error ? error.message : "ویرایش درس ناموفق بود.", "error") });
+  const updateStudent = useMutation({ mutationFn: (subject: Subject) => updateStudentSubject(students.studentId, subject), onSuccess: () => { notify("وضعیت آموزشی دانش‌آموز ذخیره شد."); void qc.invalidateQueries({ queryKey: ["student-subjects", students.studentId] }); }, onError: (error) => notify(error instanceof Error ? error.message : "ذخیره وضعیت درس ناموفق بود.", "error") });
   const source = mode === "catalog" ? subjects.data : assigned.data;
   const rows = useMemo(() => (source || []).filter((row) => normalizePersianText(`${row.name} ${row.subject_key || row.subjectKey || ""} ${row.note || ""}`).includes(normalizePersianText(deferredSearch))).sort((a, b) => Number(a.display_order ?? a.displayOrder ?? 0) - Number(b.display_order ?? b.displayOrder ?? 0)), [deferredSearch, source]);
   const summary = { total: source?.length || 0, strong: (assigned.data || []).filter((row) => row.status === "green").length, attention: (assigned.data || []).filter((row) => row.status === "red").length, average: assigned.data?.length ? Math.round(assigned.data.reduce((sum, row) => sum + Number(row.progress || 0), 0) / assigned.data.length) : 0 };
