@@ -1,0 +1,6 @@
+import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
+import { Badge, Button, Card, EmptyState } from "../../../shared/ui/ui";
+import type { Session } from "../model/settings.types";
+export function SessionsSettings({ sessions, revoke, formatDateTime, confirm }: { sessions: UseQueryResult<Session[], Error>; revoke: UseMutationResult<unknown, Error, string>; formatDateTime: (value?: string | Date) => string; confirm: (id: string) => void }) {
+ return <Card><h3 className="mb-3 font-bold">نشست‌های فعال</h3>{sessions.data?.length ? <div className="grid gap-2">{sessions.data.map((session) => <div key={session.id} className="flex items-center justify-between rounded-md border p-3"><div><strong>{session.current ? "نشست فعلی" : "نشست فعال"}</strong><p className="text-xs text-slate-500">{session.ipAddress || "IP نامشخص"} - {(session.userAgent || "").slice(0,80)}</p>{session.lastSeenAt ? <small className="text-slate-400">{formatDateTime(session.lastSeenAt)}</small> : null}</div>{session.current ? <Badge>فعلی</Badge> : <Button variant="danger" loading={revoke.isPending && revoke.variables === session.id} onClick={() => confirm(session.id)}>بستن</Button>}</div>)}</div> : <EmptyState title="نشستی پیدا نشد." />}</Card>;
+}
