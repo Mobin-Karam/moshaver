@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api/api";
 import type { Student } from "../types/domain";
 
+export const STUDENT_SELECTION_EVENT = "admin-selected-student-change";
+
 type StudentsPage = {
   items: Student[];
   total?: number;
@@ -55,6 +57,9 @@ export function useStudents() {
     if (typeof window !== "undefined") {
       if (next) window.localStorage.setItem("admin-selected-student-id", next);
       else window.localStorage.removeItem("admin-selected-student-id");
+      window.dispatchEvent(
+        new CustomEvent(STUDENT_SELECTION_EVENT, { detail: next }),
+      );
     }
   }, []);
   useEffect(() => {
@@ -63,7 +68,13 @@ export function useStudents() {
         setStudentIdState(event.newValue || "");
     }
     window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
+    const syncSameWindow = (event: Event) =>
+      setStudentIdState((event as CustomEvent<string>).detail || "");
+    window.addEventListener(STUDENT_SELECTION_EVENT, syncSameWindow);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener(STUDENT_SELECTION_EVENT, syncSameWindow);
+    };
   }, []);
   useEffect(() => {
     if (studentId && students.length && studentId !== selectedStudentId)

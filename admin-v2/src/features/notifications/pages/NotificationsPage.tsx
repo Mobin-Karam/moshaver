@@ -1,7 +1,7 @@
 import {
   useState,
 } from "react";
-import { useStudents } from "../../../shared/hooks/useStudents";
+import { useStudentSelection } from "../../../shared/hooks/useStudentSelection";
 import { useModal } from "../../../shared/ui/modal";
 import { AdvisorInboxPanel } from "../components/AdvisorInboxPanel";
 import { MobileNotificationTabs } from "../components/MobileNotificationTabs";
@@ -14,7 +14,7 @@ import { useFilteredNotifications } from "../hooks/useFilteredNotifications";
 
 export function NotificationsPage() {
   const students =
-    useStudents();
+    useStudentSelection();
 
   const notifications =
     useAdminNotifications();
@@ -129,7 +129,7 @@ export function NotificationsPage() {
               .isError
           }
           onStudentChange={
-            students.setStudentId
+            students.selectStudent
           }
           onRetry={() => {
             void advisor.inbox.refetch();

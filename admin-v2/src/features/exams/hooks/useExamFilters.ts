@@ -4,19 +4,16 @@ import {
   useState,
 } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useStudents } from "../../../shared/hooks/useStudents";
+import { useStudentSelection } from "../../../shared/hooks/useStudentSelection";
 import type {
   ExamFilterStatus,
   ExamVisibilityFilter,
 } from "../model/exam.types";
 
 export function useExamFilters() {
-  const students = useStudents();
+  const students = useStudentSelection({ clearOnChange: ["search"] });
   const [params, setParams] =
     useSearchParams();
-
-  const studentParam =
-    params.get("studentId") || "";
 
   const searchParam =
     params.get("search") || "";
@@ -50,22 +47,6 @@ export function useExamFilters() {
 
   const deferredSearch =
     useDeferredValue(search);
-
-  useEffect(() => {
-    if (
-      studentParam &&
-      studentParam !==
-        students.studentId
-    ) {
-      students.setStudentId(
-        studentParam,
-      );
-    }
-  }, [
-    studentParam,
-    students.studentId,
-    students.setStudentId,
-  ]);
 
   useEffect(() => {
     setSearch(searchParam);

@@ -37,6 +37,14 @@ describe("useStudents education context", () => {
     expect(localStorage.getItem("admin-selected-student-id")).toBe("student-2");
   });
 
+  it("synchronizes separate hook consumers in the same browser tab", async () => {
+    const first = renderHook(() => useStudents(), { wrapper });
+    const second = renderHook(() => useStudents(), { wrapper });
+    await waitFor(() => expect(first.result.current.students).toHaveLength(2));
+    first.result.current.setStudentId("student-2");
+    await waitFor(() => expect(second.result.current.studentId).toBe("student-2"));
+  });
+
   it("loads every students page so planner selection is not limited to 100 accounts", async () => {
     const firstPage = Array.from({ length: 100 }, (_, index) => ({
       id: `student-${index + 1}`,

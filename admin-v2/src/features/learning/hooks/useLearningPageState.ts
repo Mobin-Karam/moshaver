@@ -4,27 +4,24 @@ import {
   useState,
 } from "react";
 import {
+  useNavigate,
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { useStudents } from "../../../shared/hooks/useStudents";
+import { useStudentSelection } from "../../../shared/hooks/useStudentSelection";
 import { parseLearningFilter } from "../lib/learning-filters";
 import type { LearningFilter } from "../model/learning.types";
 
 export function useLearningPageState() {
-  const students = useStudents();
   const params = useParams();
+  const navigate = useNavigate();
+  const students = useStudentSelection({ preferredStudentId: params.studentId });
   const [
     searchParams,
     setSearchParams,
   ] = useSearchParams();
 
-  const studentId =
-    params.studentId ||
-    searchParams.get(
-      "studentId",
-    ) ||
-    students.studentId;
+  const studentId = students.studentId;
 
   const initialFilter =
     parseLearningFilter(
@@ -49,6 +46,7 @@ export function useLearningPageState() {
     nextFilter = filter,
     nextSearch = search,
   ) {
+    if (nextStudentId !== studentId) students.selectStudent(nextStudentId);
     const next =
       new URLSearchParams();
 
@@ -73,12 +71,14 @@ export function useLearningPageState() {
       );
     }
 
-    setSearchParams(
-      next,
-      {
-        replace: true,
-      },
-    );
+    if (params.studentId && nextStudentId !== params.studentId) {
+      void navigate(
+        { pathname: `/admin/students/${encodeURIComponent(nextStudentId)}/learning`, search: next.toString() },
+        { replace: true },
+      );
+    } else {
+      setSearchParams(next, { replace: true });
+    }
   }
 
   useEffect(() => {

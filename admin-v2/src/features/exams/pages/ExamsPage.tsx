@@ -256,7 +256,7 @@ export function ExamsPage() {
         }
         onStudentChange={
           filters.students
-            .setStudentId
+            .selectStudent
         }
         onCreate={() =>
           openEditor()
