@@ -1,0 +1,44 @@
+services:
+  backend-v1:
+    build: ./v1.4/backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_PATH: /data/moshaver-v1.sqlite
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      COOKIE_SECURE: ${COOKIE_SECURE:-1}
+      COOKIE_SAMESITE: ${COOKIE_SAMESITE:-Lax}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    volumes:
+      - api-v1-data:/data
+
+  backend-v2:
+    build: ./backend-v2
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_TYPE: sqlite
+      DATABASE_PATH: /data/moshaver-v2.sqlite
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      COOKIE_SECURE: ${COOKIE_SECURE:-1}
+      COOKIE_SAMESITE: ${COOKIE_SAMESITE:-Lax}
+    volumes:
+      - api-v2-data:/data
+
+  api-gateway:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - backend-v1
+      - backend-v2
+    ports:
+      - "${API_PORT:-4000}:8080"
+    volumes:
+      - ./deploy/dual-api/nginx.conf:/etc/nginx/nginx.conf:ro
+
+volumes:
+  api-v1-data:
+  api-v2-data:
