@@ -1,11 +1,11 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode } from "react";
-import { AuthProvider } from "../features/auth/AuthProvider";
+import { AuthProvider } from "../features/auth";
 import { AppToaster } from "../shared/ui/notifications";
 import { queryClient } from "./query-client";
 import { ModalProvider } from "../shared/ui/modal";
 import { LocaleProvider } from "../shared/ui/locale";
-import { NotificationProvider } from "../features/notifications/NotificationProvider";
+import { NotificationProvider } from "../features/notifications";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (

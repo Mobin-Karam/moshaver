@@ -1,13 +1,13 @@
-export { LivePage } from "./LivePage";
+export { LivePage } from "./pages/LivePage";
 
 export {
   filterLiveStudents,
   needsAttention,
-} from "./LivePage";
+} from "./lib/live-helpers";
 
 export type {
   LiveEvent,
   LiveFilter,
   LiveState,
   LiveStudent,
-} from "./LivePage";
+} from "./model/live.types";

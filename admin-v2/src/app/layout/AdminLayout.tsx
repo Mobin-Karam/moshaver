@@ -2,12 +2,11 @@ import { ChevronLeft, ChevronRight, Home, LogOut, PanelLeftClose, PanelLeftOpen 
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Button } from "../../shared/ui/ui";
-import { useAuth } from "../../features/auth/AuthProvider";
+import { useAuth } from "../../features/auth";
 import { useModal } from "../../shared/ui/modal";
 import { DevBackendSwitcher } from "../dev/DevBackendSwitcher";
 import { adminBreadcrumbs, adminDestination, adminNavigation, flatAdminNavigation, mainAdminNavigation, resolveAdminNavigation } from "./admin-navigation";
-import { HeaderNotifications } from "../../features/notifications/HeaderNotifications";
-import { useAdminNotifications } from "../../features/notifications/NotificationProvider";
+import { HeaderNotifications, useAdminNotifications } from "../../features/notifications";
 
 export function AdminLayout() {
   const auth = useAuth();

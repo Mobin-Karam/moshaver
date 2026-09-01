@@ -1,18 +1,18 @@
-export { ExamsPage } from "./ExamsPage";
-export { ExamAttempts } from "./ExamAttempts";
+export { ExamsPage } from "./pages/ExamsPage";
+export { ExamAttempts } from "./components/ExamAttempts";
 
 export {
   examDraftError,
   examReadiness,
   makeExamDraft,
   matchesExam,
-} from "./exam-model";
+} from "./model/exam-model";
 
 export type {
   AttemptDetail,
   AttemptSummary,
   ExamDraft,
-} from "./exam-model";
+} from "./model/exam-model";
 
 export type {
   BulkExamAction,
