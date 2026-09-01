@@ -11,10 +11,32 @@ export function questionDraft(item: QuestionView, index = 0): QuestionDraft {
 
 export function questionError(draft: QuestionDraft) {
   if (!draft.question.trim()) return "صورت سؤال را وارد کنید.";
+  if (draft.question.trim().length > 2000) return "صورت سؤال نباید بیشتر از ۲۰۰۰ نویسه باشد.";
   if (draft.options.length !== 4 || draft.options.some((option) => !option.trim())) return "هر چهار گزینه باید تکمیل شوند.";
+  if (draft.options.some((option) => option.trim().length > 1000)) return "هر گزینه حداکثر می‌تواند ۱۰۰۰ نویسه داشته باشد.";
   const unique = new Set(draft.options.map((option) => normalizePersianText(option).trim().toLocaleLowerCase("fa")));
   if (unique.size !== 4) return "گزینه‌های تکراری مجاز نیستند.";
-  return ["a", "b", "c", "d"].includes(draft.correctOption) ? "" : "پاسخ صحیح معتبر نیست.";
+  if (!["a", "b", "c", "d"].includes(draft.correctOption)) return "پاسخ صحیح معتبر نیست.";
+  if (!Number.isInteger(draft.sortOrder) || draft.sortOrder < 1) return "ترتیب سؤال باید عددی بزرگ‌تر از صفر باشد.";
+  return "";
+}
+
+export function questionPayload(draft: QuestionDraft): QuestionDraft {
+  return {
+    ...draft,
+    question: draft.question.trim(),
+    options: draft.options.map((option) => option.trim()),
+    explanation: draft.explanation.trim(),
+    book: draft.book.trim(),
+    chapter: draft.chapter.trim(),
+    lesson: draft.lesson.trim(),
+    topic: draft.topic.trim(),
+    hint: draft.hint.trim(),
+  };
+}
+
+export function questionNumber(item: QuestionView, fallback: number) {
+  return Number(item.sortOrder || item.sort_order || fallback);
 }
 
 export function questionMatches(item: QuestionView, search: string) {
