@@ -18,6 +18,7 @@ import { api } from "../../shared/api/api";
 import type { Student } from "../../shared/types/domain";
 import { useModal } from "../../shared/ui/modal";
 import { normalizePersianText } from "../../shared/lib/utils";
+import type { LearningResponse } from "../learning/learning-model";
 
 type StudentForm = {
   name: string;
@@ -111,7 +112,7 @@ export function StudentsPage() {
   const learning = useQuery({
     queryKey: ["student-learning", selectedId],
     enabled: !!selectedId,
-    queryFn: () => api.get<unknown[]>(`/admin/students/${selectedId}/learning`),
+    queryFn: () => api.get<LearningResponse>(`/admin/students/${selectedId}/learning`),
   });
   const attempts = useQuery({
     queryKey: ["student-attempts", selectedId],
@@ -424,7 +425,7 @@ export function StudentsPage() {
               label="گزارش اخیر"
               value={count(overview.data?.recentReports)}
             />
-            <Insight label="موارد یادگیری" value={count(learning.data)} />
+            <Insight label="موارد یادگیری" value={learning.data?.summary.totalItems || 0} />
             <Insight label="تلاش آزمون" value={count(attempts.data)} />
             <Insight label="روزهای هفتگی" value={count(weekly.data)} />
             <Insight label="موضوع عملکرد" value={count(topics.data)} />
@@ -434,7 +435,13 @@ export function StudentsPage() {
 
       <Card>
         <h3 className="mb-3 font-bold">دسترسی مدیریت</h3>
-        <div className="grid gap-2 md:grid-cols-6">
+        <div className="grid gap-2 md:grid-cols-7">
+          <Link
+            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-teal-50"
+            to={`/admin/learning?studentId=${encodeURIComponent(selectedId)}`}
+          >
+            سیستم یادگیری
+          </Link>
           <Link
             className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-teal-50"
             to="/admin/planner"

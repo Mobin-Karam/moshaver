@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   MessageSquare,
   Settings,
+  Sparkles,
   UsersRound,
 } from "lucide-react";
 
@@ -16,6 +17,7 @@ export const adminNavigation = [
   { section: "خانه", items: [{ path: "", title: "داشبورد", description: "نمای کلی امروز، سلامت سیستم و موارد نیازمند توجه", icon: LayoutDashboard }] },
   { section: "آموزش", items: [
     { path: "planner", title: "برنامه‌ریز", description: "مدیریت برنامه روزانه، هفتگی و وظایف دانش‌آموز", icon: CalendarDays },
+    { path: "learning", title: "سیستم یادگیری", description: "مدیریت مرورهای فاصله‌دار، تسلط و الگوهای خطای دانش‌آموز", icon: Sparkles, aliases: ["education", "students/:studentId/learning"] },
     { path: "exams", title: "آزمون‌ها", description: "زمان‌بندی، انتشار، تلاش مجدد، بودجه و سؤال‌ها", icon: BookOpenCheck },
     { path: "questions", title: "بانک سؤال", description: "ساخت، بازبینی و مرتب‌سازی سؤال‌های هر آزمون", icon: GraduationCap },
     { path: "quizzes", title: "آزمونک‌ها", description: "مدیریت آزمونک‌ها، سؤال‌ها و وضعیت انتشار", icon: BookOpenCheck },
@@ -43,8 +45,31 @@ export const mainAdminNavigation = adminNavigation.map((group) => ({
   section: group.section,
 }));
 
+export function normalizeAdminPath(pathname: string) {
+  return pathname.replace(/^https?:\/\/[^/]+/i, "").split(/[?#]/)[0].replace(/^\/admin\/?/, "").replace(/^\/+|\/+$/g, "");
+}
+
+function routeMatches(pattern: string, path: string) {
+  const expected = pattern.split("/").filter(Boolean), actual = path.split("/").filter(Boolean);
+  if (!expected.length) return !actual.length;
+  if (actual.length < expected.length) return false;
+  return expected.every((part, index) => part.startsWith(":") || part === actual[index]);
+}
+
+export function resolveAdminNavigation(pathname: string) {
+  const path = normalizeAdminPath(pathname);
+  return flatAdminNavigation.find((item) => routeMatches(item.path, path) || ("aliases" in item && item.aliases.some((alias) => routeMatches(alias, path)))) || flatAdminNavigation[0];
+}
+
+export function adminDestination(path: string, section: string, studentId = "") {
+  const base = path ? `/admin/${path}` : "/admin";
+  return section === "آموزش" && studentId
+    ? `${base}?studentId=${encodeURIComponent(studentId)}`
+    : base;
+}
+
 export function adminBreadcrumbs(path: string) {
-  const current = flatAdminNavigation.find((item) => item.path === path) || flatAdminNavigation[0];
+  const current = resolveAdminNavigation(path);
   if (!current.path) return [{ title: "خانه", path: "" }];
   const group = adminNavigation.find((item) => item.section === current.section);
   return [

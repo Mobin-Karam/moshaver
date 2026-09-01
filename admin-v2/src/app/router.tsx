@@ -1,20 +1,31 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { lazy, Suspense, type ReactNode } from "react";
 import { LoginPage } from "../features/auth/LoginPage";
 import { useAuth } from "../features/auth/AuthProvider";
 import { AdminLayout } from "./layout/AdminLayout";
 import { DashboardPage } from "../features/dashboard/DashboardPage";
 import { StudentsPage } from "../features/students/StudentsPage";
-import { PlannerPage } from "../features/planner/PlannerPage";
-import { ExamsPage } from "../features/exams/ExamsPage";
-import { QuestionsPage } from "../features/questions/QuestionsPage";
 import { ChatPage } from "../features/chat/ChatPage";
 import { NotificationsPage } from "../features/notifications/NotificationsPage";
 import { ReportsPage } from "../features/reports/ReportsPage";
 import { SettingsPage } from "../features/settings/SettingsPage";
 import { LivePage } from "../features/live/LivePage";
-import { SubjectsPage } from "../features/subjects/SubjectsPage";
 import { SystemPage } from "../features/system/SystemPage";
-import { QuizzesPage } from "../features/quizzes/QuizzesPage";
+
+const PlannerPage = lazy(() => import("../features/planner/PlannerPage").then((module) => ({ default: module.PlannerPage })));
+const LearningPage = lazy(() => import("../features/learning/LearningPage").then((module) => ({ default: module.LearningPage })));
+const ExamsPage = lazy(() => import("../features/exams/ExamsPage").then((module) => ({ default: module.ExamsPage })));
+const QuestionsPage = lazy(() => import("../features/questions/QuestionsPage").then((module) => ({ default: module.QuestionsPage })));
+const QuizzesPage = lazy(() => import("../features/quizzes/QuizzesPage").then((module) => ({ default: module.QuizzesPage })));
+const SubjectsPage = lazy(() => import("../features/subjects/SubjectsPage").then((module) => ({ default: module.SubjectsPage })));
+
+function EducationScreen({ children }: { children: ReactNode }) {
+  return <Suspense fallback={<EducationLoading />}>{children}</Suspense>;
+}
+
+function EducationLoading() {
+  return <div className="grid gap-3" aria-label="در حال آماده‌سازی فضای آموزشی"><div className="h-14 animate-pulse rounded-lg bg-white" /><div className="grid grid-cols-2 gap-3 md:grid-cols-4">{[1, 2, 3, 4].map((item) => <div key={item} className="h-24 animate-pulse rounded-lg bg-white" />)}</div><div className="h-[50vh] animate-pulse rounded-lg bg-white" /></div>;
+}
 
 function ProtectedRoute() {
   const auth = useAuth();
@@ -40,14 +51,17 @@ export const router = createBrowserRouter([
           { index: true, element: <DashboardPage /> },
           { path: "live", element: <LivePage /> },
           { path: "students", element: <StudentsPage /> },
-          { path: "planner", element: <PlannerPage /> },
-          { path: "exams", element: <ExamsPage /> },
-          { path: "questions", element: <QuestionsPage /> },
-          { path: "quizzes", element: <QuizzesPage /> },
+          { path: "planner", element: <EducationScreen><PlannerPage /></EducationScreen> },
+          { path: "learning", element: <EducationScreen><LearningPage /></EducationScreen> },
+          { path: "education", element: <Navigate to="/admin/learning" replace /> },
+          { path: "students/:studentId/learning", element: <EducationScreen><LearningPage /></EducationScreen> },
+          { path: "exams", element: <EducationScreen><ExamsPage /></EducationScreen> },
+          { path: "questions", element: <EducationScreen><QuestionsPage /></EducationScreen> },
+          { path: "quizzes", element: <EducationScreen><QuizzesPage /></EducationScreen> },
           { path: "chat", element: <ChatPage /> },
           { path: "notifications", element: <NotificationsPage /> },
           { path: "reports", element: <ReportsPage /> },
-          { path: "subjects", element: <SubjectsPage /> },
+          { path: "subjects", element: <EducationScreen><SubjectsPage /></EducationScreen> },
           { path: "system", element: <SystemPage /> },
           { path: "settings", element: <SettingsPage /> },
         ],

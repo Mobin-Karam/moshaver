@@ -329,7 +329,7 @@ export function ExamsPage() {
         {exams.isLoading ? (
           <div className="grid gap-3 lg:grid-cols-2" aria-label="در حال دریافت آزمون‌ها">{[1,2,3,4].map((item) => <div key={item} className="h-48 animate-pulse rounded-lg bg-slate-100" />)}</div>
         ) : exams.isError ? (
-          <EmptyState title="دریافت آزمون‌ها ناموفق بود؛ اتصال را بررسی و دوباره تلاش کنید." />
+          <EmptyState title="دریافت آزمون‌ها ناموفق بود؛ اتصال را بررسی و دوباره تلاش کنید." action={<Button variant="soft" onClick={() => void exams.refetch()}>تلاش دوباره</Button>} />
         ) : filtered.length ? (
           <div className="grid gap-3 lg:grid-cols-2">
             {filtered.map((exam) => (

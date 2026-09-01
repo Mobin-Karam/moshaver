@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Pencil, Power, Save, Search } from "lucide-react";
+import { CheckCircle2, Pencil, Power, RotateCcw, Save, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Badge,
   Button,
@@ -30,9 +31,12 @@ type Question = QuestionView & { id: string };
 
 export function QuizzesPage() {
   const qc = useQueryClient();
-  const [quizId, setQuizId] = useState("");
+  const [params, setParams] = useSearchParams();
+  const [quizId, setQuizIdState] = useState(params.get("quizId") || "");
   const [editingQuestionId, setEditingQuestionId] = useState("");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(params.get("question") || "");
+  const [quizSearch, setQuizSearch] = useState(params.get("q") || "");
+  const [status, setStatus] = useState(params.get("status") || "all");
   const [quiz, setQuiz] = useState({
     title: "",
     subject: "",
@@ -50,9 +54,22 @@ export function QuizzesPage() {
     queryFn: () => api.get<Question[]>(`/admin/quizzes/${quizId}/questions`),
   });
   const selected = quizzes.data?.find((item) => item.id === quizId);
+  const visibleQuizzes = (quizzes.data || []).filter((item) => {
+    const matchesSearch = `${item.title} ${item.subject || ""} ${item.exam_title || ""}`.toLocaleLowerCase("fa").includes(quizSearch.trim().toLocaleLowerCase("fa"));
+    const matchesStatus = status === "all" || (status === "active" ? !!item.active : !item.active);
+    return matchesSearch && matchesStatus;
+  });
+  function setQuizId(value: string) { setQuizIdState(value); setParams((current) => { const next = new URLSearchParams(current); value ? next.set("quizId", value) : next.delete("quizId"); return next; }, { replace: true }); }
+  function syncFilter(key: "q" | "status" | "question", value: string, fallback = "") { setParams((current) => { const next = new URLSearchParams(current); value && value !== fallback ? next.set(key, value) : next.delete(key); return next; }, { replace: true }); }
   useEffect(() => {
     if (!quizId && quizzes.data?.[0]) setQuizId(quizzes.data[0].id);
   }, [quizId, quizzes.data]);
+  useEffect(() => {
+    if (quizId && quizzes.isSuccess && !selected) {
+      setQuizId("");
+      notify("آزمونک انتخاب‌شده دیگر وجود ندارد.", "warning");
+    }
+  }, [quizId, quizzes.isSuccess, selected]);
   useEffect(() => {
     if (selected)
       setQuiz({
@@ -68,14 +85,17 @@ export function QuizzesPage() {
         : api.post<{ id: string }>("/admin/quizzes", quiz),
     onSuccess: (value) => {
       qc.invalidateQueries({ queryKey: ["quizzes"] });
+      notify(quizId ? "آزمونک به‌روز شد." : "آزمونک ساخته شد.");
       if (value && typeof value === "object" && "id" in value)
         setQuizId(String(value.id));
     },
+    onError: (error) => notify(error instanceof Error ? error.message : "ذخیره آزمونک ناموفق بود.", "error"),
   });
   const toggle = useMutation({
     mutationFn: () =>
       api.patch(`/admin/quizzes/${quizId}`, { active: !selected?.active }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["quizzes"] }),
+    onSuccess: () => { notify(selected?.active ? "آزمونک غیرفعال شد." : "آزمونک فعال شد."); void qc.invalidateQueries({ queryKey: ["quizzes"] }); },
+    onError: (error) => notify(error instanceof Error ? error.message : "تغییر وضعیت آزمونک ناموفق بود.", "error"),
   });
   const add = useMutation({
     mutationFn: () => editingQuestionId ? api.patch(`/admin/questions/${editingQuestionId}`, question) : api.post(`/admin/quizzes/${quizId}/questions`, question),
@@ -85,18 +105,19 @@ export function QuizzesPage() {
       setEditingQuestionId("");
       qc.invalidateQueries({ queryKey: ["quiz-questions", quizId] });
     },
+    onError: (error) => notify(error instanceof Error ? error.message : "ذخیره سؤال ناموفق بود.", "error"),
   });
   const visibleQuestions = (questions.data ?? []).filter((item) => questionMatches(item, search));
   const validationError = questionError(question);
   const remove = useMutation({
     mutationFn: (id: string) => api.delete(`/admin/questions/${id}`),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: ["quiz-questions", quizId] }),
+    onSuccess: () => { notify("سؤال حذف شد."); void qc.invalidateQueries({ queryKey: ["quiz-questions", quizId] }); },
+    onError: (error) => notify(error instanceof Error ? error.message : "حذف سؤال ناموفق بود.", "error"),
   });
   return (
     <div className="grid gap-5">
       <section className="grid gap-4 lg:grid-cols-[300px_1fr]">
-        <Card>
+        <Card className="self-start lg:sticky lg:top-20">
           <Button
             className="mb-3 w-full"
             variant="soft"
@@ -107,13 +128,14 @@ export function QuizzesPage() {
           >
             آزمونک جدید
           </Button>
+          <div className="mb-3 grid gap-2"><div className="relative"><Search className="absolute right-3 top-2.5 text-slate-400" size={16} /><Input className="pr-9" type="search" placeholder="جستجوی آزمونک…" value={quizSearch} onChange={(event) => { setQuizSearch(event.target.value); syncFilter("q", event.target.value); }} /></div><Select value={status} onChange={(event) => { setStatus(event.target.value); syncFilter("status", event.target.value, "all"); }}><option value="all">همه وضعیت‌ها</option><option value="active">فعال</option><option value="inactive">غیرفعال</option></Select></div>
           {quizzes.isLoading ? (
             <div className="grid gap-2">{[1,2,3].map((item) => <div key={item} className="h-16 animate-pulse rounded-md bg-slate-100" />)}</div>
           ) : quizzes.isError ? (
-            <EmptyState title="دریافت آزمونک‌ها ناموفق بود." />
-          ) : quizzes.data?.length ? (
-            <div className="grid gap-2">
-              {quizzes.data.map((item) => (
+            <EmptyState title="دریافت آزمونک‌ها ناموفق بود." action={<Button variant="soft" onClick={() => void quizzes.refetch()}>تلاش دوباره</Button>} />
+          ) : visibleQuizzes.length ? (
+            <div className="grid max-h-[calc(100dvh-21rem)] gap-2 overflow-y-auto">
+              {visibleQuizzes.map((item) => (
                 <button
                   key={item.id}
                   className={`rounded-md border p-3 text-right ${quizId === item.id ? "border-brand bg-teal-50" : ""}`}
@@ -131,7 +153,7 @@ export function QuizzesPage() {
               ))}
             </div>
           ) : (
-            <EmptyState title="آزمونکی ثبت نشده است." />
+            <EmptyState title={quizSearch || status !== "all" ? "آزمونکی با این فیلتر پیدا نشد." : "آزمونکی ثبت نشده است."} action={quizSearch || status !== "all" ? <Button variant="ghost" onClick={() => { setQuizSearch(""); setStatus("all"); syncFilter("q", ""); syncFilter("status", "all", "all"); }}><RotateCcw size={15} /> پاک‌کردن فیلترها</Button> : undefined} />
           )}
         </Card>
         <div className="grid gap-4">
@@ -167,7 +189,7 @@ export function QuizzesPage() {
             <div className="mt-3 flex gap-2">
               <Button
                 loading={save.isPending}
-                disabled={!quiz.title || save.isPending}
+                disabled={!quiz.title.trim() || quiz.durationMinutes < 1 || quiz.durationMinutes > 360 || save.isPending}
                 onClick={() => save.mutate()}
               >
                 <Save size={16} />
@@ -257,9 +279,9 @@ export function QuizzesPage() {
               </Card>
               <Card>
                 <div className="mb-3 flex items-center justify-between"><h3 className="font-bold">سؤال‌ها</h3><Badge tone="blue">{visibleQuestions.length} سؤال</Badge></div>
-                <div className="relative mb-3"><Search className="absolute right-3 top-2.5 text-slate-400" size={16} /><Input className="pr-9" type="search" placeholder="جست‌وجوی سؤال…" value={search} onChange={(event) => setSearch(event.target.value)} /></div>
-                {questions.isLoading ? <div className="grid gap-2">{[1,2,3].map((item) => <div key={item} className="h-20 animate-pulse rounded-md bg-slate-100" />)}</div> : questions.isError ? <EmptyState title="دریافت سؤال‌ها ناموفق بود." /> : visibleQuestions.length ? (
-                  <div className="grid gap-2">
+                <div className="relative mb-3"><Search className="absolute right-3 top-2.5 text-slate-400" size={16} /><Input className="pr-9" type="search" placeholder="جست‌وجوی سؤال…" value={search} onChange={(event) => { setSearch(event.target.value); syncFilter("question", event.target.value); }} /></div>
+                {questions.isLoading ? <div className="grid gap-2">{[1,2,3].map((item) => <div key={item} className="h-20 animate-pulse rounded-md bg-slate-100" />)}</div> : questions.isError ? <EmptyState title="دریافت سؤال‌ها ناموفق بود." action={<Button variant="soft" onClick={() => void questions.refetch()}>تلاش دوباره</Button>} /> : visibleQuestions.length ? (
+                  <div className="grid max-h-[calc(100dvh-25rem)] gap-2 overflow-y-auto pl-1">
                     {visibleQuestions.map((item, index) => (
                       <article key={item.id} className="rounded-md border p-3">
                         <div className="flex justify-between">

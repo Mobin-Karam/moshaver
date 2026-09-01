@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, ChevronDown, ListChecks, Pencil, RotateCcw, Search, Trash2 } from "lucide-react";
+import { CheckCircle2, ChevronDown, Copy, ListChecks, Pencil, RotateCcw, Search, Trash2 } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -302,6 +302,19 @@ export function QuestionsPage() {
                     </label>
                     {question.id ? (
                       <div className="flex gap-1">
+                        <Button
+                          className="h-8 px-2"
+                          variant="ghost"
+                          title="ساخت کپی برای ویرایش"
+                          aria-label="کپی سؤال"
+                          onClick={() => {
+                            setEditingId("");
+                            setForm({ ...questionDraft(question, index), sortOrder: nextSortOrder });
+                            setSubmitted(false);
+                          }}
+                        >
+                          <Copy size={14} />
+                        </Button>
                         <Button
                           className="h-8 px-2"
                           variant="ghost"

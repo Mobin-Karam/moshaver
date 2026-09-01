@@ -71,6 +71,7 @@ export function PlannerPage() {
     qc = useQueryClient(),
     [params, setParams] = useSearchParams();
   const initialMode = parseMode(params.get("view"));
+  const studentParam = params.get("studentId") || "";
   const [date, setDateState] = useState(params.get("date") || todayIso()),
     [mode, setModeState] = useState<Mode>(initialMode),
     [search, setSearch] = useState(params.get("q") || ""),
@@ -86,6 +87,18 @@ export function PlannerPage() {
       null,
     );
   const deferredSearch = useDebouncedValue(search, 220);
+  useEffect(() => {
+    if (studentParam && studentParam !== students.studentId)
+      students.setStudentId(studentParam);
+  }, [studentParam, students.studentId, students.setStudentId]);
+  useEffect(() => {
+    if (!students.studentId || studentParam === students.studentId) return;
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set("studentId", students.studentId);
+      return next;
+    }, { replace: true });
+  }, [studentParam, students.studentId, setParams]);
   function syncUrl(next: {
     date?: string;
     mode?: Mode;
@@ -99,6 +112,7 @@ export function PlannerPage() {
       nextSearch = next.search ?? search;
     copy.set("date", nextDate);
     copy.set("view", nextMode);
+    if (students.studentId) copy.set("studentId", students.studentId);
     nextFilter === "all"
       ? copy.delete("filter")
       : copy.set("filter", nextFilter);
@@ -395,7 +409,12 @@ export function PlannerPage() {
             <StudentPicker
               students={students.students}
               value={students.studentId}
-              onChange={students.setStudentId}
+              onChange={(studentId) => {
+                students.setStudentId(studentId);
+                const next = new URLSearchParams(params);
+                next.set("studentId", studentId);
+                setParams(next, { replace: true });
+              }}
             />
           </div>
           <div className="flex items-center rounded-lg bg-slate-100 p-1">
@@ -568,6 +587,12 @@ export function PlannerPage() {
           </button>
         ) : null}
       </section>
+      {plans.isError ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800" role="alert">
+          <span>برنامه‌های این بازه دریافت نشدند؛ داده قبلی، در صورت وجود، حفظ شده است.</span>
+          <Button className="h-8" variant="danger" onClick={() => void plans.refetch()}>تلاش دوباره</Button>
+        </div>
+      ) : null}
       <Card className="h-[calc(100vh-235px)] min-h-[480px] overflow-hidden p-0">
         <PlannerCanvas
           mode={mode}
