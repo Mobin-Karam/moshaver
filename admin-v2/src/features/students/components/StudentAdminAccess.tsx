@@ -1,0 +1,4 @@
+import { MessageCircle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Card } from "../../../shared/ui/ui";
+export function StudentAdminAccess({selectedId}:{selectedId:string}){const links=[[`/admin/learning?studentId=${encodeURIComponent(selectedId)}`,"سیستم یادگیری"],["/admin/planner","برنامه‌ها"],["/admin/exams","آزمون‌ها"],["/admin/questions","بانک سؤال"],["/admin/chat","گفتگو"],["/admin/reports","گزارش‌ها"],["/admin/dashboard","داشبورد"]];return <Card><h3 className="mb-3 font-bold">دسترسی مدیریت</h3><div className="grid gap-2 md:grid-cols-7">{links.map(([to,label])=><Link key={to} className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-indigo-50" to={to}>{label==="گفتگو"?<MessageCircle className="mx-auto mb-1" size={16}/>:null}{label}</Link>)}</div></Card>}
