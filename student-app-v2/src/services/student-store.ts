@@ -10,8 +10,10 @@ import {
   type StudentTask,
   type TaskCompletionStatus,
   type SyncStatus,
+  sortStudentTasks,
 } from '@moshaver/student-core';
 import { apiClient } from './api-client';
+import { notifyNewNotifications } from './notification-service';
 
 type AuthStatus = 'checking' | 'anonymous' | 'authenticated';
 type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -302,7 +304,7 @@ export const useStudentStore = create<StudentState>((set, get) => ({
           isoDate: dashboard.plan?.date ?? new Date().toISOString().slice(0, 10),
           title: 'برنامه امروز',
           motivationText: dashboard.recommendations?.length ? 'پیشنهادهای امروز آماده است.' : '',
-          tasks: tasks.map(mapTask),
+          tasks: sortStudentTasks(tasks.map(mapTask)),
         },
       });
     } catch (error) {
@@ -321,7 +323,7 @@ export const useStudentStore = create<StudentState>((set, get) => ({
           id: plan?.id,
           isoDate: plan?.date ?? date,
           title: 'برنامه روزانه',
-          tasks: tasks.map(mapTask),
+          tasks: sortStudentTasks(tasks.map(mapTask)),
         },
       });
     } catch (error) {
@@ -339,7 +341,9 @@ export const useStudentStore = create<StudentState>((set, get) => ({
   async loadNotifications() {
     try {
       const result = await apiClient.request<{ items: Array<{ id: string; type?: string; title: string; message: string; isRead?: boolean; readAt?: string | null }>; unreadCount: number }>('GET', '/notifications?limit=50');
-      set({ notifications: result.items.map((notification) => ({ ...notification, readAt: notification.readAt ?? (notification.isRead ? new Date(0).toISOString() : null) })) });
+      const notifications = result.items.map((notification) => ({ ...notification, readAt: notification.readAt ?? (notification.isRead ? new Date(0).toISOString() : null) }));
+      set({ notifications });
+      void notifyNewNotifications(notifications);
     } catch (error) {
       set({ notifications: [], error: readableError(error) });
     }

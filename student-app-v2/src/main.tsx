@@ -10,6 +10,7 @@ import { SQLiteSyncProvider } from './sync/sqlite-sync-provider';
 import { WebSyncProvider } from './sync/sync-status';
 import { SyncWorker } from '@moshaver/student-core';
 import { registerWebUpdateAdapter } from './pwa/web-update-adapter';
+import { registerNotificationClickHandler } from './services/notification-service';
 import { HomePage } from './features/home/HomePage';
 import { PlanPage } from './features/plan/PlanPage';
 import { ExamPage } from './features/exam/ExamPage';
@@ -21,10 +22,27 @@ function App() {
   const syncStatus = useStudentStore((state) => state.syncStatus);
   const authStatus = useStudentStore((state) => state.authStatus);
   const restoreSession = useStudentStore((state) => state.restoreSession);
+  const [online, setOnline] = useState(navigator.onLine);
+  const [reconnected, setReconnected] = useState(false);
 
   useEffect(() => {
     void restoreSession();
   }, [restoreSession]);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setOnline(true);
+      setReconnected(true);
+      window.setTimeout(() => setReconnected(false), 3000);
+    };
+    const handleOffline = () => setOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   if (authStatus === 'checking') {
     return (
@@ -44,6 +62,8 @@ function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-paper text-ink">
+        {!online ? <div className="bg-red-700 px-4 py-2 text-center text-sm text-white" role="status">اتصال اینترنت قطع است؛ تغییرات روی دستگاه ذخیره می‌شوند.</div> : null}
+        {online && reconnected ? <div className="bg-mint px-4 py-2 text-center text-sm text-white" role="status">اتصال اینترنت برقرار شد.</div> : null}
         <header className="sticky top-0 z-10 border-b border-black/10 bg-paper/95 px-4 py-3 backdrop-blur">
           <div className="mx-auto flex max-w-3xl items-center justify-between">
             <div>
@@ -173,5 +193,6 @@ function syncStatusLabel(status: string) {
 
 void initializeSync().then(() => {
   registerWebUpdateAdapter();
+  registerNotificationClickHandler();
   ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
 });

@@ -4,8 +4,10 @@ export function registerWebUpdateAdapter() {
   if (isTauri || !('serviceWorker' in navigator)) return;
 
   void navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((registration) => {
+    let updatePrompted = false;
     const promptForUpdate = (worker: ServiceWorker | null) => {
-      if (!worker || !navigator.serviceWorker.controller) return;
+      if (!worker || updatePrompted || !navigator.serviceWorker.controller) return;
+      updatePrompted = true;
       if (window.confirm('نسخه جدید برنامه آماده است. اکنون به‌روزرسانی شود؟')) {
         worker.postMessage({ type: 'SKIP_WAITING' });
       }
@@ -20,7 +22,12 @@ export function registerWebUpdateAdapter() {
       });
     });
 
-    window.setTimeout(() => void registration.update(), 1000);
+    const checkForUpdate = () => void registration.update();
+    window.setTimeout(checkForUpdate, 1000);
+    window.addEventListener('online', checkForUpdate);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkForUpdate();
+    });
   }).catch(() => {
     // Service workers are progressive enhancement for the web build.
   });
