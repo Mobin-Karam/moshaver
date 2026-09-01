@@ -1,7 +1,8 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { addDays, cn, todayIso } from "../lib/utils";
 import { useLocale } from "./locale";
+import { ViewportPopover } from "./popover";
 
 type DatePickerProps = {
   value: string;
@@ -25,14 +26,6 @@ export function DatePicker({
   const { profile, formatDate } = useLocale();
   const [open, setOpen] = useState(false),
     [cursor, setCursor] = useState(value || todayIso());
-  const root = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const close = (event: MouseEvent) => {
-      if (!root.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, []);
   useEffect(() => {
     if (value) setCursor(value);
   }, [value]);
@@ -41,31 +34,19 @@ export function DatePicker({
     [cursor, profile],
   );
   return (
-    <div ref={root} className={cn("relative", className)}>
-      <button
+    <div className={cn("relative", className)}>
+      <ViewportPopover open={open} onOpenChange={setOpen} width={300} className="p-3" trigger={(props) => <button
+        {...props}
         type="button"
         disabled={disabled}
         aria-haspopup="dialog"
         aria-expanded={open}
-        onClick={() => setOpen((x) => !x)}
         className="flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-teal-100 disabled:opacity-60"
       >
         <span>{value ? formatDate(value) : "انتخاب تاریخ"}</span>
         <CalendarDays size={16} className="text-slate-400" />
-      </button>
-      {required ? (
-        <input
-          className="sr-only"
-          required
-          value={value}
-          onChange={() => undefined}
-        />
-      ) : null}
-      {open ? (
-        <div
-          role="dialog"
-          className="absolute z-40 mt-2 w-[300px] rounded-xl border border-slate-200 bg-white p-3 shadow-xl"
-        >
+      </button>}>
+        <div>
           <div className="mb-3 flex items-center justify-between">
             <button
               type="button"
@@ -152,7 +133,8 @@ export function DatePicker({
             امروز
           </button>
         </div>
-      ) : null}
+      </ViewportPopover>
+      {required ? <input className="sr-only" required value={value} onChange={() => undefined} /> : null}
     </div>
   );
 }

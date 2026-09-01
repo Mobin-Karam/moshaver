@@ -166,7 +166,7 @@ function ModalSurface({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-slate-950/55 p-4"
+      className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-slate-950/55 p-2 sm:p-4"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && dismissible) onCancel();
@@ -182,7 +182,7 @@ function ModalSurface({
         }
         tabIndex={-1}
         className={cn(
-          "my-auto w-full rounded-xl border border-slate-200 bg-white text-ink shadow-2xl outline-none",
+          "my-auto flex max-h-[calc(100dvh-1rem)] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white text-ink shadow-2xl outline-none sm:max-h-[calc(100dvh-2rem)]",
           modal.size === "sm" && "max-w-md",
           modal.size === "md" && "max-w-xl",
           modal.size === "lg" && "max-w-3xl",
@@ -221,7 +221,7 @@ function ModalSurface({
           ) : null}
         </header>
         {modal.content ? (
-          <div className="max-h-[min(70vh,720px)] overflow-y-auto px-5 py-4">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
             {modal.content}
           </div>
         ) : null}

@@ -7,10 +7,12 @@ import { useModal } from "../../shared/ui/modal";
 import { DevBackendSwitcher } from "../dev/DevBackendSwitcher";
 import { adminBreadcrumbs, adminNavigation, flatAdminNavigation, mainAdminNavigation } from "./admin-navigation";
 import { HeaderNotifications } from "../../features/notifications/HeaderNotifications";
+import { useAdminNotifications } from "../../features/notifications/NotificationProvider";
 
 export function AdminLayout() {
   const auth = useAuth();
   const modal = useModal();
+  const notificationState = useAdminNotifications();
   const location = useLocation();
   const [mainCollapsed, setMainCollapsed] = usePersistentCollapse("admin-main-sidebar-collapsed");
   const [contextCollapsed, setContextCollapsed] = usePersistentCollapse("admin-context-sidebar-collapsed");
@@ -47,7 +49,7 @@ export function AdminLayout() {
           ))}
         </nav>
       </aside>
-      {showContextRail ? <aside className={`fixed inset-y-0 z-20 hidden border-l border-slate-200 bg-slate-50/95 transition-[right,width] lg:block ${mainCollapsed ? "right-[4.5rem]" : "right-64"} ${contextCollapsed ? "w-16 p-2" : "w-52 p-3"}`}><div className={`mb-3 flex items-center ${contextCollapsed ? "justify-center" : "justify-between gap-2 px-1"}`}>{!contextCollapsed ? <p className="truncate text-xs font-black text-slate-500">مسیرهای {current.section}</p> : null}<button type="button" className="grid size-9 shrink-0 place-items-center rounded-md text-slate-500 hover:bg-white" title={contextCollapsed ? "بازکردن مسیرهای بخش" : "بستن مسیرهای بخش"} aria-label={contextCollapsed ? "بازکردن مسیرهای بخش" : "بستن مسیرهای بخش"} aria-expanded={!contextCollapsed} onClick={() => setContextCollapsed((value) => !value)}>{contextCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}</button></div><nav className="grid gap-1 overflow-hidden">{contextual.map(({ path, title, icon: Icon }) => <NavLink key={path} to={`/admin/${path}`} title={contextCollapsed ? title : undefined} aria-label={title} className={({ isActive }) => `flex h-10 items-center rounded-md text-sm ${contextCollapsed ? "justify-center px-2" : "gap-2 px-3"} ${isActive ? "bg-white font-bold text-brand shadow-sm" : "text-slate-600 hover:bg-white"}`}><Icon className="shrink-0" size={17} />{!contextCollapsed ? <span className="truncate">{title}</span> : null}</NavLink>)}</nav></aside> : null}
+      {showContextRail ? <aside className={`fixed inset-y-0 z-20 hidden border-l border-slate-200 bg-slate-50/95 transition-[right,width] lg:block ${mainCollapsed ? "right-[4.5rem]" : "right-64"} ${contextCollapsed ? "w-16 p-2" : "w-52 p-3"}`}><div className={`mb-3 flex items-center ${contextCollapsed ? "justify-center" : "justify-between gap-2 px-1"}`}>{!contextCollapsed ? <p className="truncate text-xs font-black text-slate-500">مسیرهای {current.section}</p> : null}<button type="button" className="grid size-9 shrink-0 place-items-center rounded-md text-slate-500 hover:bg-white" title={contextCollapsed ? "بازکردن مسیرهای بخش" : "بستن مسیرهای بخش"} aria-label={contextCollapsed ? "بازکردن مسیرهای بخش" : "بستن مسیرهای بخش"} aria-expanded={!contextCollapsed} onClick={() => setContextCollapsed((value) => !value)}>{contextCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}</button></div><nav className="grid gap-1 overflow-hidden">{contextual.map(({ path, title, icon: Icon }) => <NavLink key={path} to={`/admin/${path}`} title={contextCollapsed ? title : undefined} aria-label={title} className={({ isActive }) => `relative flex h-10 items-center rounded-md text-sm ${contextCollapsed ? "justify-center px-2" : "gap-2 px-3"} ${isActive ? "bg-white font-bold text-brand shadow-sm" : "text-slate-600 hover:bg-white"}`}><Icon className="shrink-0" size={17} />{!contextCollapsed ? <span className="truncate">{title}</span> : null}{path === "notifications" && notificationState.unread ? <span className={`${contextCollapsed ? "absolute -left-0.5 -top-0.5" : "mr-auto"} min-w-5 rounded-full bg-rose-600 px-1 text-center text-[10px] font-black leading-5 text-white`}>{Math.min(notificationState.unread, 99).toLocaleString("fa-IR")}{notificationState.unread > 99 ? "+" : ""}</span> : null}</NavLink>)}</nav></aside> : null}
       <div className={`${mainCollapsed ? contextCollapsed ? "lg:mr-[8.5rem]" : "lg:mr-[17.5rem]" : contextCollapsed ? "lg:mr-80" : "lg:mr-[29rem]"} transition-[margin]`}>
         <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between gap-2 border-b border-slate-200 bg-white/90 px-3 py-2 backdrop-blur sm:px-4">
           <div className="min-w-0 flex-1">
@@ -95,6 +97,7 @@ export function AdminLayout() {
             >
               <Icon size={16} />
               {title}
+              {path === "notifications" && notificationState.unread ? <span className="rounded-full bg-rose-600 px-1.5 text-[10px] text-white">{Math.min(notificationState.unread, 99).toLocaleString("fa-IR")}</span> : null}
             </NavLink>
           ))}
         </nav>

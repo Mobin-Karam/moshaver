@@ -1,7 +1,7 @@
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { type InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../shared/api/api";
-import { notify } from "../../shared/ui/notifications";
+import { notify, notifications as sonner } from "../../shared/ui/notifications";
 import { useAuth } from "../auth/AuthProvider";
 import { notificationAdminUrl, type AdminNotification, type NotificationPage, type PushPreferences, type PushStatus } from "./notification-model";
 
@@ -43,8 +43,15 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     if (auth.status !== "authenticated") return;
     const source = api.openEvents((type, data) => {
       if (type === "notification.created") {
-        void qc.invalidateQueries({ queryKey: ["notifications"] });
         const item = data as AdminNotification;
+        qc.setQueryData<InfiniteData<NotificationPage>>(["notifications"], (current) => {
+          if (!current?.pages.length || current.pages.some((page) => page.items.some((existing) => existing.id === item.id))) return current;
+          const pages = [...current.pages], first = pages[0];
+          pages[0] = { ...first, unreadCount: Number(first.unreadCount || 0) + 1, items: [{ ...item, isRead: false }, ...first.items].slice(0, 20) };
+          return { ...current, pages };
+        });
+        sonner.info(item.title || "اعلان جدید", { id: item.id, description: item.body, duration: 6500, action: { label: "مشاهده", onClick: () => window.location.assign(notificationAdminUrl(item.url)) } });
+        window.setTimeout(() => void qc.invalidateQueries({ queryKey: ["notifications"] }), 500);
         if (item.type !== "message") playSound(false);
         if (document.hidden && "Notification" in window && Notification.permission === "granted") { const systemNotification = new Notification(item.title || "اعلان مشاور", { body: item.body || "", tag: item.id }); systemNotification.onclick = () => { window.focus(); window.location.assign(notificationAdminUrl(item.url)); systemNotification.close(); }; }
       }
