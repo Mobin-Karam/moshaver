@@ -185,7 +185,7 @@ export function StudentsPage() {
                   {filtered.map((s) => (
                     <tr
                       key={s.id}
-                      className={`border-b last:border-0 ${selectedId === s.id ? "bg-teal-50" : ""}`}
+                      className={`border-b last:border-0 ${selectedId === s.id ? "bg-indigo-50" : ""}`}
                     >
                       <td className="py-3 font-semibold">{s.name}</td>
                       <td>{s.user?.username || s.username || "-"}</td>
@@ -437,44 +437,44 @@ export function StudentsPage() {
         <h3 className="mb-3 font-bold">دسترسی مدیریت</h3>
         <div className="grid gap-2 md:grid-cols-7">
           <Link
-            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-teal-50"
+            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-indigo-50"
             to={`/admin/learning?studentId=${encodeURIComponent(selectedId)}`}
           >
             سیستم یادگیری
           </Link>
           <Link
-            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-teal-50"
+            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-indigo-50"
             to="/admin/planner"
           >
             برنامه‌ها
           </Link>
           <Link
-            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-teal-50"
+            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-indigo-50"
             to="/admin/exams"
           >
             آزمون‌ها
           </Link>
           <Link
-            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-teal-50"
+            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-indigo-50"
             to="/admin/questions"
           >
             بانک سؤال
           </Link>
           <Link
-            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-teal-50"
+            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-indigo-50"
             to="/admin/chat"
           >
             <MessageCircle className="mx-auto mb-1" size={16} />
             گفتگو
           </Link>
           <Link
-            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-teal-50"
+            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-indigo-50"
             to="/admin/reports"
           >
             گزارش‌ها
           </Link>
           <Link
-            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-teal-50"
+            className="rounded-md bg-slate-50 p-3 text-center text-sm font-semibold hover:bg-indigo-50"
             to="/admin/dashboard"
           >
             داشبورد

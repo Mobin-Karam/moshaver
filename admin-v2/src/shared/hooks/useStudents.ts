@@ -3,6 +3,34 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api/api";
 import type { Student } from "../types/domain";
 
+type StudentsPage = {
+  items: Student[];
+  total?: number;
+  limit?: number;
+  offset?: number;
+  hasMore?: boolean;
+};
+
+const STUDENTS_PAGE_SIZE = 100;
+
+async function loadAllStudents() {
+  const students: Student[] = [];
+  let offset = 0;
+
+  while (true) {
+    const page = await api.get<Student[] | StudentsPage>(
+      `/admin/students?limit=${STUDENTS_PAGE_SIZE}&offset=${offset}`,
+    );
+    if (Array.isArray(page)) return page;
+
+    students.push(...page.items);
+    const nextOffset = offset + page.items.length;
+    const hasMore = page.hasMore ?? nextOffset < (page.total ?? nextOffset);
+    if (!hasMore || page.items.length === 0) return students;
+    offset = nextOffset;
+  }
+}
+
 export function useStudents() {
   const [studentId, setStudentIdState] = useState(() =>
     typeof window === "undefined"
@@ -11,12 +39,9 @@ export function useStudents() {
   );
   const query = useQuery({
     queryKey: ["students"],
-    queryFn: () =>
-      api.get<Student[] | { items: Student[] }>("/admin/students?limit=100"),
+    queryFn: loadAllStudents,
   });
-  const students = Array.isArray(query.data)
-    ? query.data
-    : (query.data?.items ?? []);
+  const students = query.data ?? [];
   const selectedStudentId =
     (studentId && students.some((student) => student.id === studentId)
       ? studentId

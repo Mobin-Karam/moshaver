@@ -96,7 +96,7 @@ function ReportCard({
         </p>
       ) : null}
       {r.tomorrow ? (
-        <p className="mt-2 rounded-md bg-teal-50 p-3 text-sm text-teal-800">
+        <p className="mt-2 rounded-md bg-indigo-50 p-3 text-sm text-indigo-800">
           فردا: {String(r.tomorrow)}
         </p>
       ) : null}

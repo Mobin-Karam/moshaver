@@ -41,7 +41,7 @@ export function DatePicker({
         disabled={disabled}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-teal-100 disabled:opacity-60"
+        className="flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-indigo-100 disabled:opacity-60"
       >
         <span>{value ? formatDate(value) : "انتخاب تاریخ"}</span>
         <CalendarDays size={16} className="text-slate-400" />
@@ -107,7 +107,7 @@ export function DatePicker({
                     setOpen(false);
                   }}
                   className={cn(
-                    "aspect-square rounded-md text-sm hover:bg-teal-50 disabled:opacity-30",
+                    "aspect-square rounded-md text-sm hover:bg-indigo-50 disabled:opacity-30",
                     day.iso === value && "bg-brand text-white hover:bg-brand",
                     day.iso === todayIso() &&
                       day.iso !== value &&
@@ -123,7 +123,7 @@ export function DatePicker({
           </div>
           <button
             type="button"
-            className="mt-3 w-full rounded-md py-2 text-sm font-semibold text-brand hover:bg-teal-50"
+            className="mt-3 w-full rounded-md py-2 text-sm font-semibold text-brand hover:bg-indigo-50"
             onClick={() => {
               onChange(todayIso());
               setCursor(todayIso());

@@ -25,6 +25,7 @@ import { DataTransferWorkspace } from "../../shared/ui/data-transfer";
 import { DatePicker } from "../../shared/ui/date-picker";
 import { useLocale } from "../../shared/ui/locale";
 import { useModal } from "../../shared/ui/modal";
+import { notify } from "../../shared/ui/notifications";
 import {
   Badge,
   Button,
@@ -69,6 +70,7 @@ export function PlannerPage() {
   const students = useStudents(),
     modal = useModal(),
     qc = useQueryClient(),
+    { profile } = useLocale(),
     [params, setParams] = useSearchParams();
   const initialMode = parseMode(params.get("view"));
   const studentParam = params.get("studentId") || "";
@@ -88,36 +90,48 @@ export function PlannerPage() {
     );
   const deferredSearch = useDebouncedValue(search, 220);
   useEffect(() => {
-    if (studentParam && studentParam !== students.studentId)
-      students.setStudentId(studentParam);
-  }, [studentParam, students.studentId, students.setStudentId]);
-  useEffect(() => {
-    if (!students.studentId || studentParam === students.studentId) return;
+    if (students.isLoading || !students.students.length) return;
+    const urlStudentExists = students.students.some(
+      (student) => student.id === studentParam,
+    );
+    if (urlStudentExists) {
+      if (studentParam !== students.studentId)
+        students.setStudentId(studentParam);
+      return;
+    }
+    if (!students.studentId) return;
     setParams((current) => {
       const next = new URLSearchParams(current);
       next.set("studentId", students.studentId);
       return next;
     }, { replace: true });
-  }, [studentParam, students.studentId, setParams]);
+  }, [
+    studentParam,
+    students.isLoading,
+    students.studentId,
+    students.students,
+    students.setStudentId,
+    setParams,
+  ]);
   function syncUrl(next: {
     date?: string;
     mode?: Mode;
     filter?: TaskFilter;
     search?: string;
   }) {
-    const copy = new URLSearchParams(params);
-    const nextDate = next.date ?? date,
-      nextMode = next.mode ?? mode,
-      nextFilter = next.filter ?? filter,
-      nextSearch = next.search ?? search;
-    copy.set("date", nextDate);
-    copy.set("view", nextMode);
-    if (students.studentId) copy.set("studentId", students.studentId);
-    nextFilter === "all"
-      ? copy.delete("filter")
-      : copy.set("filter", nextFilter);
-    nextSearch ? copy.set("q", nextSearch) : copy.delete("q");
-    setParams(copy, { replace: true });
+    setParams((current) => {
+      const copy = new URLSearchParams(current);
+      if (next.date !== undefined) copy.set("date", next.date);
+      if (next.mode !== undefined) copy.set("view", next.mode);
+      if (students.studentId) copy.set("studentId", students.studentId);
+      if (next.filter !== undefined)
+        next.filter === "all"
+          ? copy.delete("filter")
+          : copy.set("filter", next.filter);
+      if (next.search !== undefined)
+        next.search ? copy.set("q", next.search) : copy.delete("q");
+      return copy;
+    }, { replace: true });
   }
   const setDate = (next: string) => {
     setDateState(next);
@@ -131,7 +145,16 @@ export function PlannerPage() {
     setFilter(next);
     syncUrl({ filter: next });
   };
-  const range = useMemo(() => plannerRange(date, mode), [date, mode]);
+  useEffect(() => {
+    setDateState(params.get("date") || todayIso());
+    setModeState(parseMode(params.get("view")));
+    setSearch(params.get("q") || "");
+    setFilter(parseFilter(params.get("filter")));
+  }, [params]);
+  const range = useMemo(
+    () => plannerRange(date, mode, profile.locale, profile.calendar),
+    [date, mode, profile.calendar, profile.locale],
+  );
   const plansKey = [
     "plans",
     students.studentId,
@@ -145,12 +168,13 @@ export function PlannerPage() {
     queryKey: plansKey,
     enabled: !!students.studentId,
     queryFn: () => api.get<Plan[]>(plansUrl),
+    select: sortPlanTasks,
   });
   useEffect(() => {
     if (!students.studentId) return;
     [-1, 1].forEach((direction) => {
-      const adjacentDate = shiftView(date, mode, direction),
-        adjacent = plannerRange(adjacentDate, mode);
+      const adjacentDate = shiftView(date, mode, direction, profile.locale, profile.calendar),
+        adjacent = plannerRange(adjacentDate, mode, profile.locale, profile.calendar);
       void qc.prefetchQuery({
         queryKey: [
           "plans",
@@ -167,7 +191,7 @@ export function PlannerPage() {
         staleTime: 60_000,
       });
     });
-  }, [date, deferredSearch, filter, mode, qc, students.studentId]);
+  }, [date, deferredSearch, filter, mode, profile.calendar, profile.locale, qc, students.studentId]);
   const exams = useQuery({
     queryKey: ["exams", students.studentId],
     enabled: !!students.studentId,
@@ -214,8 +238,8 @@ export function PlannerPage() {
       task: TaskDraft & { id?: string };
     }) =>
       task.id
-        ? api.patch(`/admin/tasks/${task.id}`, task)
-        : api.post(`/admin/plans/${planId}/tasks`, task),
+        ? api.patch<Plan>(`/admin/tasks/${task.id}`, normalizeTaskDraft(task))
+        : api.post<Plan>(`/admin/plans/${planId}/tasks`, normalizeTaskDraft(task)),
     onMutate: async ({ planId, task }) => {
       const key = plansKey;
       await qc.cancelQueries({ queryKey: key });
@@ -228,12 +252,12 @@ export function PlannerPage() {
                 ...plan,
                 tasks: task.id
                   ? plan.tasks.map((item) =>
-                      item.id === task.id ? { ...item, ...task } : item,
-                    )
+                      item.id === task.id ? { ...item, ...normalizeTaskDraft(task) } : item,
+                    ).sort(comparePlanTasks)
                   : [
                       ...plan.tasks,
-                      { ...task, id: `optimistic-${Date.now()}` } as PlanTask,
-                    ],
+                      { ...normalizeTaskDraft(task), id: `optimistic-${Date.now()}` } as PlanTask,
+                    ].sort(comparePlanTasks),
               },
         ),
       );
@@ -281,7 +305,12 @@ export function PlannerPage() {
       planId: string;
       start: string;
       end: string;
-    }) => api.patch<Plan>(`/admin/tasks/${taskId}`, { planId, start, end }),
+    }) => api.patch<Plan>(`/admin/tasks/${taskId}`, {
+      planId,
+      start,
+      end,
+      sortOrder: timeToMinutes(start),
+    }),
     onMutate: async (move) => {
       const key = plansKey;
       await qc.cancelQueries({ queryKey: key });
@@ -314,10 +343,11 @@ export function PlannerPage() {
       content: (
         <PlanForm
           initial={toPlanDraft(planDate, plan)}
+          lockDate={Boolean(plan)}
           busy={savePlan.isPending || patchPlan.isPending}
           onCancel={modal.close}
           onSubmit={(body) =>
-            void (
+            (
               plan
                 ? patchPlan.mutateAsync({ id: plan.id, body })
                 : savePlan.mutateAsync(body)
@@ -338,7 +368,7 @@ export function PlannerPage() {
           initial={addDays(plan.planDate, 1)}
           onCancel={modal.close}
           onSubmit={(planDate) =>
-            void duplicatePlan
+            duplicatePlan
               .mutateAsync({ id: plan.id, planDate })
               .then(() => {
                 setDate(planDate);
@@ -348,6 +378,18 @@ export function PlannerPage() {
         />
       ),
     });
+  }
+  async function openPlanSettings(planDate: string) {
+    try {
+      const existing =
+        plans.data?.find((plan) => plan.planDate === planDate) ||
+        (await api.get<Plan | null>(
+          `/admin/plans?studentId=${encodeURIComponent(students.studentId)}&date=${encodeURIComponent(planDate)}`,
+        ));
+      openPlan(planDate, existing || undefined);
+    } catch (reason) {
+      notify(errorMessage(reason, "دریافت برنامه روز انجام نشد."), "error");
+    }
   }
   function confirmDelete(
     title: string,
@@ -361,6 +403,10 @@ export function PlannerPage() {
   async function ensurePlan(planDate: string) {
     const existing = plans.data?.find((plan) => plan.planDate === planDate);
     if (existing) return existing;
+    const stored = await api.get<Plan | null>(
+      `/admin/plans?studentId=${encodeURIComponent(students.studentId)}&date=${encodeURIComponent(planDate)}`,
+    );
+    if (stored) return stored;
     return savePlan.mutateAsync(toPlanDraft(planDate));
   }
   async function quickAdd(planDate: string, start = "08:00") {
@@ -381,6 +427,21 @@ export function PlannerPage() {
       } as PlanTask,
     });
   }
+  function requestQuickAdd(planDate: string, start = "08:00") {
+    void quickAdd(planDate, start).catch((reason) =>
+      notify(errorMessage(reason, "ساخت فعالیت انجام نشد."), "error"),
+    );
+  }
+  function requestMoveTask(
+    taskId: string,
+    planDate: string,
+    start: string,
+    end: string,
+  ) {
+    void ensurePlan(planDate)
+      .then((plan) => moveTask.mutateAsync({ taskId, planId: plan.id, start, end }))
+      .catch(() => undefined);
+  }
   useEffect(() => {
     function keydown(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null;
@@ -393,10 +454,16 @@ export function PlannerPage() {
       }
       if (event.key.toLowerCase() === "n") {
         event.preventDefault();
-        void quickAdd(date);
+        requestQuickAdd(date);
       } else if (event.key.toLowerCase() === "t") setDate(todayIso());
-      else if (event.key === "ArrowRight") setDate(shiftView(date, mode, -1));
-      else if (event.key === "ArrowLeft") setDate(shiftView(date, mode, 1));
+      else if (event.key === "ArrowRight") setDate(shiftView(date, mode, -1, profile.locale, profile.calendar));
+      else if (event.key === "ArrowLeft") setDate(shiftView(date, mode, 1, profile.locale, profile.calendar));
+      else if (event.key === "Escape") {
+        setFiltersOpen(false);
+        setMoreOpen(false);
+        setPaletteOpen(false);
+        setDrawer(null);
+      }
     }
     window.addEventListener("keydown", keydown);
     return () => window.removeEventListener("keydown", keydown);
@@ -422,7 +489,7 @@ export function PlannerPage() {
               className="h-8 px-2"
               variant="ghost"
               aria-label="بازه قبل"
-              onClick={() => setDate(shiftView(date, mode, -1))}
+              onClick={() => setDate(shiftView(date, mode, -1, profile.locale, profile.calendar))}
             >
               <ChevronRight size={16} />
             </Button>
@@ -435,7 +502,7 @@ export function PlannerPage() {
               className="h-8 px-2"
               variant="ghost"
               aria-label="بازه بعد"
-              onClick={() => setDate(shiftView(date, mode, 1))}
+              onClick={() => setDate(shiftView(date, mode, 1, profile.locale, profile.calendar))}
             >
               <ChevronLeft size={16} />
             </Button>
@@ -485,7 +552,7 @@ export function PlannerPage() {
           <Button
             className="h-9"
             disabled={!students.studentId}
-            onClick={() => void quickAdd(date)}
+            onClick={() => requestQuickAdd(date)}
           >
             <Plus size={16} />
             فعالیت جدید
@@ -503,7 +570,7 @@ export function PlannerPage() {
                 onClose={() => setMoreOpen(false)}
                 onPlan={() => {
                   setMoreOpen(false);
-                  openPlan(date);
+                  void openPlanSettings(date);
                 }}
                 onPublish={(published) => {
                   setMoreOpen(false);
@@ -544,7 +611,7 @@ export function PlannerPage() {
           <div className="mt-2 flex items-center gap-2">
             <span className="text-xs text-slate-400">فیلتر فعال:</span>
             <button
-              className="flex items-center gap-1 rounded-full bg-teal-50 px-2 py-1 text-xs text-brand"
+              className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-1 text-xs text-brand"
               onClick={() => setTaskFilter("all")}
             >
               {filterLabel(filter)}
@@ -594,7 +661,14 @@ export function PlannerPage() {
         </div>
       ) : null}
       <Card className="h-[calc(100vh-235px)] min-h-[480px] overflow-hidden p-0">
-        <PlannerCanvas
+        {!students.studentId ? (
+          <div className="grid h-full place-items-center p-6">
+            <EmptyState
+              title="دانش‌آموزی انتخاب نشده است"
+              action={<p className="text-sm text-slate-500">برای مشاهده یا ساخت برنامه، ابتدا دانش‌آموز را از نوار بالا انتخاب کنید.</p>}
+            />
+          </div>
+        ) : <PlannerCanvas
           mode={mode}
           date={date}
           range={range}
@@ -605,12 +679,15 @@ export function PlannerPage() {
             setMode("day");
           }}
           onCreate={openPlan}
-          onQuickAdd={(day, start) => void quickAdd(day, start)}
+          onQuickAdd={requestQuickAdd}
           onEditTask={openTask}
-          onMoveTask={(taskId, planId, start, end) =>
-            moveTask.mutate({ taskId, planId, start, end })
+          onMoveTask={requestMoveTask}
+          onEditPlan={(plan) => openPlan(plan.planDate, plan)}
+          onDuplicatePlan={openDuplicate}
+          onDeletePlan={(plan) =>
+            confirmDelete("حذف برنامه روز؟", "همه فعالیت‌های این روز حذف می‌شوند.", () => removePlan.mutate(plan.id))
           }
-        />
+        />}
       </Card>
       {drawer ? (
         <TaskDrawer
@@ -640,7 +717,7 @@ export function PlannerPage() {
             busy={saveTask.isPending}
             onCancel={() => setDrawer(null)}
             onSubmit={(body) =>
-              void saveTask
+              saveTask
                 .mutateAsync({
                   planId: drawer.plan.id,
                   task: { ...body, id: drawer.task?.id || undefined },
@@ -667,7 +744,7 @@ export function PlannerPage() {
             setPaletteOpen(false);
           }}
           onCreate={() => {
-            void quickAdd(date);
+            requestQuickAdd(date);
             setPaletteOpen(false);
           }}
         />
@@ -686,9 +763,12 @@ type CanvasProps = {
   onCreate: (date: string) => void;
   onQuickAdd: (date: string, start?: string) => void;
   onEditTask: (plan: Plan, task: PlanTask) => void;
+  onEditPlan: (plan: Plan) => void;
+  onDuplicatePlan: (plan: Plan) => void;
+  onDeletePlan: (plan: Plan) => void;
   onMoveTask: (
     taskId: string,
-    planId: string,
+    planDate: string,
     start: string,
     end: string,
   ) => void;
@@ -707,7 +787,7 @@ function PlannerCanvas(props: CanvasProps) {
             day ? (
               <button
                 key={day}
-                className={`min-h-24 bg-white p-2 text-right hover:bg-teal-50 ${day === todayIso() ? "ring-2 ring-inset ring-brand" : ""}`}
+                className={`min-h-24 bg-white p-2 text-right hover:bg-indigo-50 ${day === todayIso() ? "ring-2 ring-inset ring-brand" : ""}`}
                 onClick={() => props.onSelectDay(day)}
               >
                 <strong className="text-xs">
@@ -785,14 +865,13 @@ function DayColumn({
   function drop(event: React.DragEvent, targetStart?: string) {
     event.preventDefault();
     event.stopPropagation();
-    const raw = event.dataTransfer.getData("application/x-moshaver-task");
-    if (!raw) return;
-    const data = JSON.parse(raw) as { id: string; start: string; end: string };
-    if (plan) {
-      const duration = Math.max(15, minutesBetween(data.start, data.end));
-      const start = targetStart || data.start;
-      actions.onMoveTask(data.id, plan.id, start, addMinutes(start, duration));
-    }
+    const data = parseDraggedTask(
+      event.dataTransfer.getData("application/x-moshaver-task"),
+    );
+    if (!data) return;
+    const duration = Math.max(15, minutesBetween(data.start, data.end));
+    const start = targetStart || data.start;
+    actions.onMoveTask(data.id, day, start, addMinutes(start, duration));
   }
   return (
     <section
@@ -801,24 +880,34 @@ function DayColumn({
       className="min-w-0 border-l border-slate-200 bg-slate-50/40 xl:min-h-full"
     >
       <header
-        className={`sticky top-0 z-10 border-b border-slate-200 px-2 py-2 ${day === todayIso() ? "bg-teal-50" : "bg-white"}`}
+        className={`sticky top-0 z-10 border-b border-slate-200 px-2 py-2 ${day === todayIso() ? "bg-indigo-50" : "bg-white"}`}
       >
-        <button
-          className="w-full text-right"
-          onClick={() => actions.onSelectDay(day)}
-        >
-          <strong className="block text-xs">
-            {formatDate(day, {
-              weekday: "short",
-              day: "numeric",
-              month: "short",
-              year: undefined,
-            })}
-          </strong>
-          <span className="text-[10px] text-slate-400">
-            {fa(plan?.tasks.length || 0)} فعالیت
-          </span>
-        </button>
+        <div className="flex items-start gap-1">
+          <button
+            className="min-w-0 flex-1 text-right"
+            onClick={() => actions.onSelectDay(day)}
+          >
+            <strong className="block truncate text-xs">
+              {formatDate(day, {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+                year: undefined,
+              })}
+            </strong>
+            <span className="text-[10px] text-slate-400">
+              {fa(plan?.tasks.length || 0)} فعالیت
+              {plan ? ` · ${plan.published ? "منتشر" : "پیش‌نویس"}` : ""}
+            </span>
+          </button>
+          {plan ? (
+            <div className="flex shrink-0 opacity-70 transition hover:opacity-100">
+              <button className="rounded p-1 hover:bg-slate-100" title="ویرایش روز" aria-label="ویرایش برنامه روز" onClick={() => actions.onEditPlan(plan)}><Pencil size={12} /></button>
+              <button className="rounded p-1 hover:bg-slate-100" title="کپی روز" aria-label="کپی برنامه روز" onClick={() => actions.onDuplicatePlan(plan)}><Copy size={12} /></button>
+              <button className="rounded p-1 text-rose-600 hover:bg-rose-50" title="حذف روز" aria-label="حذف برنامه روز" onClick={() => actions.onDeletePlan(plan)}><Trash2 size={12} /></button>
+            </div>
+          ) : null}
+        </div>
       </header>
       <div className="grid content-start gap-1.5 p-2">
         {plan?.tasks.length ? (
@@ -844,7 +933,7 @@ function DayColumn({
           {["08:00", "14:00", "19:00"].map((start) => (
             <button
               key={start}
-              className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold text-brand hover:bg-teal-50"
+              className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold text-brand hover:bg-indigo-50"
               onClick={() => actions.onQuickAdd(day, start)}
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => drop(event, start)}
@@ -868,7 +957,7 @@ function CompactTask({
   plan: Plan;
   onEdit: (plan: Plan, task: PlanTask) => void;
 }) {
-  const status = task.completedAt ? "انجام‌شده" : "برنامه‌ریزی";
+  const status = isTaskComplete(task) ? "انجام‌شده" : "برنامه‌ریزی";
   return (
     <button
       draggable
@@ -924,6 +1013,9 @@ function VirtualList({
     plan.tasks.map((task) => ({ plan, task })),
   );
   const [start, setStart] = useState(0);
+  useEffect(() => {
+    setStart((current) => Math.min(current, Math.max(0, tasks.length - 1)));
+  }, [tasks.length]);
   const row = 58,
     visible = 14;
   return (
@@ -938,7 +1030,7 @@ function VirtualList({
             <button
               key={task.id}
               onClick={() => onEdit(plan, task)}
-              className="absolute right-0 grid w-full grid-cols-[110px_90px_1fr_auto] items-center gap-3 border-b border-slate-100 px-4 text-right hover:bg-slate-50"
+              className="absolute right-0 grid w-full grid-cols-[80px_72px_minmax(0,1fr)] items-center gap-2 border-b border-slate-100 px-3 text-right hover:bg-slate-50 sm:grid-cols-[110px_90px_minmax(0,1fr)_auto] sm:gap-3 sm:px-4"
               style={{ height: row, top: (start + index) * row }}
             >
               <span className="text-xs text-slate-500">{plan.planDate}</span>
@@ -949,7 +1041,7 @@ function VirtualList({
                 {task.subject ? `${task.subject} — ` : ""}
                 {task.title || task.type}
               </strong>
-              <Badge>{task.type}</Badge>
+              <span className="hidden sm:inline-flex"><Badge>{taskTypeLabel(task.type)}</Badge></span>
             </button>
           ))}
       </div>
@@ -1016,7 +1108,7 @@ function FilterMenu({
         (item) => (
           <button
             key={item}
-            className={`mt-1 block w-full rounded-md px-3 py-2 text-right text-sm ${value === item ? "bg-teal-50 text-brand" : "hover:bg-slate-50"}`}
+            className={`mt-1 block w-full rounded-md px-3 py-2 text-right text-sm ${value === item ? "bg-indigo-50 text-brand" : "hover:bg-slate-50"}`}
             onClick={() => onChange(item)}
           >
             {filterLabel(item)}
@@ -1222,7 +1314,7 @@ function PaletteButton({
 }) {
   return (
     <button
-      className="flex items-center gap-2 rounded-lg border border-slate-200 p-3 text-sm hover:border-brand hover:bg-teal-50"
+      className="flex items-center gap-2 rounded-lg border border-slate-200 p-3 text-sm hover:border-brand hover:bg-indigo-50"
       onClick={onClick}
     >
       <Icon size={16} />
@@ -1233,28 +1325,35 @@ function PaletteButton({
 
 function PlanForm({
   initial,
+  lockDate,
   busy,
   onSubmit,
   onCancel,
 }: {
   initial: PlanDraft;
+  lockDate: boolean;
   busy: boolean;
-  onSubmit: (data: PlanDraft) => void;
+  onSubmit: (data: PlanDraft) => void | Promise<void>;
   onCancel: () => void;
 }) {
   const [data, setData] = useState(initial);
+  const [error, setError] = useState("");
   return (
     <form
       className="grid gap-3"
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit(data);
+        setError("");
+        void Promise.resolve(onSubmit(data)).catch((reason) =>
+          setError(errorMessage(reason, "ذخیره برنامه انجام نشد.")),
+        );
       }}
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="تاریخ ISO">
           <DatePicker
             required
+            disabled={lockDate}
             value={data.planDate}
             onChange={(planDate) => setData({ ...data, planDate })}
           />
@@ -1303,6 +1402,7 @@ function PlanForm({
           onChange={(e) => setData({ ...data, motivationText: e.target.value })}
         />
       </Field>
+      {error ? <p role="alert" className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p> : null}
       <Actions busy={busy} onCancel={onCancel} />
     </form>
   );
@@ -1319,16 +1419,20 @@ function TaskForm({
   exams: Exam[];
   studentId: string;
   busy: boolean;
-  onSubmit: (data: TaskDraft) => void;
+  onSubmit: (data: TaskDraft) => void | Promise<void>;
   onCancel: () => void;
 }) {
   const [data, setData] = useState(initial);
+  const [error, setError] = useState("");
   return (
     <form
       className="grid gap-3"
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit(data);
+        const validation = validateTaskDraft(data);
+        if (validation) { setError(validation); return; }
+        setError("");
+        void Promise.resolve(onSubmit(data)).catch((reason) => setError(errorMessage(reason, "ذخیره فعالیت انجام نشد.")));
       }}
     >
       <div className="grid gap-3 sm:grid-cols-2">
@@ -1359,17 +1463,8 @@ function TaskForm({
               })
             }
           >
-            {[
-              "study",
-              "review",
-              "test",
-              "class",
-              "prayer",
-              "meal",
-              "break",
-              "exam",
-            ].map((x) => (
-              <option key={x}>{x}</option>
+            {["study", "review", "test", "class", "prayer", "meal", "break", "exam"].map((x) => (
+              <option key={x} value={x}>{taskTypeLabel(x)}</option>
             ))}
           </Select>
         </Field>
@@ -1420,6 +1515,7 @@ function TaskForm({
           </div>
         ) : null}
       </div>
+      {error ? <p role="alert" className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p> : null}
       <Field label="یادداشت">
         <Textarea
           rows={3}
@@ -1437,21 +1533,26 @@ function DateAction({
   onCancel,
 }: {
   initial: string;
-  onSubmit: (date: string) => void;
+  onSubmit: (date: string) => void | Promise<void>;
   onCancel: () => void;
 }) {
   const [date, setDate] = useState(initial);
+  const [error, setError] = useState("");
   return (
     <form
       className="grid gap-3"
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit(date);
+        setError("");
+        void Promise.resolve(onSubmit(date)).catch((reason) =>
+          setError(errorMessage(reason, "کپی برنامه انجام نشد.")),
+        );
       }}
     >
       <Field label="تاریخ مقصد">
         <DatePicker required value={date} onChange={setDate} />
       </Field>
+      {error ? <p role="alert" className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p> : null}
       <Actions busy={false} onCancel={onCancel} />
     </form>
   );
@@ -1499,7 +1600,12 @@ function toTaskDraft(task?: PlanTask, count = 0): TaskDraft {
     sortOrder: task?.sortOrder || count + 1,
   };
 }
-export function plannerRange(date: string, mode: Mode) {
+export function plannerRange(
+  date: string,
+  mode: Mode,
+  locale = "en",
+  calendar = "gregory",
+) {
   if (mode === "day") return { from: date, to: date };
   const d = new Date(`${date}T12:00:00`);
   if (mode === "week") {
@@ -1507,15 +1613,27 @@ export function plannerRange(date: string, mode: Mode) {
       from = iso(addDateDays(d, -offset));
     return { from, to: addDays(from, 6) };
   }
-  if (mode === "month")
-    return {
-      from: `${date.slice(0, 7)}-01`,
-      to: iso(new Date(d.getFullYear(), d.getMonth() + 1, 0, 12)),
-    };
+  if (mode === "month") return calendarMonthRange(date, locale, calendar);
   return { from: addDays(date, -30), to: addDays(date, 30) };
 }
-function shiftView(date: string, mode: Mode, direction: number) {
+function shiftView(
+  date: string,
+  mode: Mode,
+  direction: number,
+  locale = "en",
+  calendar = "gregory",
+) {
   const d = new Date(`${date}T12:00:00`);
+  if (mode === "month" && calendar !== "gregory") {
+    const current = calendarParts(date, locale, calendar);
+    let next = date;
+    for (let count = 0; count < 40; count++) {
+      next = addDays(next, direction);
+      const part = calendarParts(next, locale, calendar);
+      if (part.month !== current.month || part.year !== current.year) return next;
+    }
+    return next;
+  }
   if (mode === "month") d.setMonth(d.getMonth() + direction);
   else
     d.setDate(
@@ -1615,17 +1733,16 @@ export function filterPlans(plans: Plan[], search: string, filter: TaskFilter) {
     )
     .map((plan) => ({
       ...plan,
-      tasks: needle
-        ? plan.tasks.filter((task) =>
-            normalizePersianText(
-              [task.title, task.subject, task.note, task.type]
-                .filter(Boolean)
-                .join(" "),
-            )
-              .toLocaleLowerCase("fa")
-              .includes(needle),
-          )
-        : plan.tasks,
+      tasks: plan.tasks
+        .filter((task) => filter !== "incomplete" || !isTaskComplete(task))
+        .filter((task) =>
+          !needle || normalizePersianText(
+            [task.title, task.subject, task.note, task.type, task.pages]
+              .filter(Boolean)
+              .join(" "),
+          ).toLocaleLowerCase("fa").includes(needle),
+        )
+        .sort(comparePlanTasks),
     }))
     .filter((plan) => !needle || plan.tasks.length > 0);
 }
@@ -1638,6 +1755,7 @@ function useDebouncedValue<T>(value: T, delay: number) {
   return debounced;
 }
 function replacePlan(current: Plan[] | undefined, updated: Plan) {
+  updated = { ...updated, tasks: [...updated.tasks].sort(comparePlanTasks) };
   if (!current) return [updated];
   const found = current.some((plan) => plan.id === updated.id);
   return found
@@ -1655,7 +1773,12 @@ export function optimisticMove(
     ...plan,
     tasks: plan.tasks.filter((task) => {
       if (task.id === move.taskId) {
-        moved = { ...task, start: move.start, end: move.end };
+        moved = {
+          ...task,
+          start: move.start,
+          end: move.end,
+          sortOrder: timeToMinutes(move.start),
+        };
         return false;
       }
       return true;
@@ -1666,12 +1789,65 @@ export function optimisticMove(
     plan.id === move.planId
       ? {
           ...plan,
-          tasks: [...plan.tasks, moved!].sort((a, b) =>
-            (a.start || "").localeCompare(b.start || ""),
-          ),
+          tasks: [...plan.tasks, moved!].sort(comparePlanTasks),
         }
       : plan,
   );
+}
+export function comparePlanTasks(a: PlanTask, b: PlanTask) {
+  return taskTime(a).localeCompare(taskTime(b)) || (a.end || a.endTime || "").localeCompare(b.end || b.endTime || "") || a.id.localeCompare(b.id);
+}
+export function sortPlanTasks(plans: Plan[]) { return plans.map((plan) => ({ ...plan, tasks: [...plan.tasks].sort(comparePlanTasks) })); }
+function taskTime(task: PlanTask) { return task.start || task.startTime || "99:99"; }
+function normalizeTaskDraft<T extends TaskDraft & { id?: string }>(task: T): T { return { ...task, start: normalizeTime(task.start), end: normalizeTime(task.end), sortOrder: timeToMinutes(task.start) }; }
+function normalizeTime(value: string) { const [hour = "0", minute = "0"] = value.split(":"); return `${String(Number(hour)).padStart(2, "0")}:${String(Number(minute)).padStart(2, "0")}`; }
+function timeToMinutes(value: string) { const [hour = 0, minute = 0] = value.split(":").map(Number); return hour * 60 + minute; }
+export function validateTaskDraft(task: Pick<TaskDraft, "start" | "end">) { if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(task.start) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(task.end)) return "زمان شروع و پایان معتبر وارد کنید."; if (timeToMinutes(task.end) <= timeToMinutes(task.start)) return "زمان پایان باید بعد از زمان شروع باشد."; return ""; }
+export function parseDraggedTask(raw: string) {
+  try {
+    const value = JSON.parse(raw) as Record<string, unknown>;
+    if (
+      typeof value.id !== "string" ||
+      typeof value.start !== "string" ||
+      typeof value.end !== "string" ||
+      validateTaskDraft({ start: value.start, end: value.end })
+    ) return null;
+    return { id: value.id, start: value.start, end: value.end };
+  } catch {
+    return null;
+  }
+}
+function calendarParts(value: string, locale: string, calendar: string) {
+  const parts = new Intl.DateTimeFormat(`${locale}-u-ca-${calendar}-nu-latn`, {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  }).formatToParts(new Date(`${value}T12:00:00`));
+  const number = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value);
+  return { year: number("year"), month: number("month"), day: number("day") };
+}
+function calendarMonthRange(date: string, locale: string, calendar: string) {
+  const selected = calendarParts(date, locale, calendar);
+  let from = date;
+  while (calendarParts(from, locale, calendar).day !== 1) from = addDays(from, -1);
+  let to = from;
+  for (let count = 0; count < 32; count++) {
+    const next = addDays(to, 1);
+    const part = calendarParts(next, locale, calendar);
+    if (part.month !== selected.month || part.year !== selected.year) break;
+    to = next;
+  }
+  return { from, to };
+}
+function taskTypeLabel(type: string) {
+  return ({ study: "مطالعه", review: "مرور", test: "تست", class: "کلاس", prayer: "نماز", meal: "وعده غذایی", break: "استراحت", exam: "آزمون" } as Record<string, string>)[type] || type;
+}
+function errorMessage(reason: unknown, fallback: string) {
+  return reason instanceof Error && reason.message ? reason.message : fallback;
+}
+function isTaskComplete(task: PlanTask) {
+  return Boolean(task.completedAt || task.completion?.status === "done");
 }
 function addMinutes(time: string, minutes: number) {
   const [hour, minute] = time.split(":").map(Number),

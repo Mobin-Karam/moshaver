@@ -138,7 +138,7 @@ export function QuizzesPage() {
               {visibleQuizzes.map((item) => (
                 <button
                   key={item.id}
-                  className={`rounded-md border p-3 text-right ${quizId === item.id ? "border-brand bg-teal-50" : ""}`}
+                  className={`rounded-md border p-3 text-right ${quizId === item.id ? "border-brand bg-indigo-50" : ""}`}
                   onClick={() => setQuizId(item.id)}
                 >
                   <strong>{item.title}</strong>

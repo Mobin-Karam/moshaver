@@ -40,7 +40,7 @@ export function AdminLayout() {
               aria-label={title}
               aria-current={current.section === section ? "page" : undefined}
               className={() =>
-                `flex h-11 items-center rounded-md text-sm font-semibold ${mainCollapsed ? "justify-center px-2" : "gap-3 px-3"} ${current.section === section ? "bg-teal-50 text-brand" : "text-slate-600 hover:bg-slate-50"}`
+                `flex h-11 items-center rounded-md text-sm font-semibold ${mainCollapsed ? "justify-center px-2" : "gap-3 px-3"} ${current.section === section ? "bg-indigo-50 text-brand" : "text-slate-600 hover:bg-slate-50"}`
               }
             >
               <Icon className="shrink-0" size={19} />
@@ -93,7 +93,7 @@ export function AdminLayout() {
               end={path === ""}
               aria-current={current.path === path ? "page" : undefined}
               className={() =>
-                `flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold ${current.path === path ? "bg-teal-50 text-brand" : "text-slate-600"}`
+                `flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold ${current.path === path ? "bg-indigo-50 text-brand" : "text-slate-600"}`
               }
             >
               <Icon size={16} />

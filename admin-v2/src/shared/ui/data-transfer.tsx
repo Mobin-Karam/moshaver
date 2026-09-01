@@ -177,7 +177,7 @@ export function DataTransferWorkspace(props: Props) {
 
   return (
     <Card className="overflow-hidden p-0">
-      <div className="border-b border-slate-200 bg-gradient-to-l from-teal-50 via-white to-white p-4 sm:p-5">
+      <div className="border-b border-slate-200 bg-gradient-to-l from-indigo-50 via-white to-white p-4 sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-3">
             <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand text-white">
@@ -232,7 +232,7 @@ export function DataTransferWorkspace(props: Props) {
                     setDragging(false);
                     loadFile(event.dataTransfer.files[0]);
                   }}
-                  className={`grid min-h-52 place-items-center rounded-xl border-2 border-dashed p-6 text-center transition ${dragging ? "border-brand bg-teal-50" : fileName ? "border-emerald-300 bg-emerald-50/50" : "border-slate-200 bg-slate-50 hover:border-teal-300"}`}
+                  className={`grid min-h-52 place-items-center rounded-xl border-2 border-dashed p-6 text-center transition ${dragging ? "border-brand bg-indigo-50" : fileName ? "border-emerald-300 bg-emerald-50/50" : "border-slate-200 bg-slate-50 hover:border-indigo-300"}`}
                 >
                   <div className="grid justify-items-center gap-3">
                     {fileName ? (
@@ -426,7 +426,7 @@ export function DataTransferWorkspace(props: Props) {
               />
             </div>
           </section>
-          <aside className="grid content-start gap-3 rounded-xl border border-teal-200 bg-teal-50 p-5">
+          <aside className="grid content-start gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-5">
             <ShieldCheck size={28} className="text-brand" />
             <h4 className="font-black">خروجی قابل بازیابی</h4>
             <p className="text-sm leading-6 text-slate-600">
@@ -513,7 +513,7 @@ function ReviewLoading() {
   return (
     <div className="grid min-h-52 place-items-center rounded-xl border border-slate-200 bg-slate-50">
       <div className="text-center">
-        <span className="mx-auto block size-9 animate-spin rounded-full border-4 border-teal-100 border-t-brand" />
+        <span className="mx-auto block size-9 animate-spin rounded-full border-4 border-indigo-100 border-t-brand" />
         <strong className="mt-3 block text-sm">
           در حال بررسی ساختار و تداخل‌ها…
         </strong>
@@ -658,7 +658,7 @@ function ConflictPolicyPicker({
         {options.map((option) => (
           <label
             key={option.value}
-            className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition ${value === option.value ? (option.value === "replace" ? "border-rose-300 bg-rose-50" : "border-teal-300 bg-teal-50") : "border-slate-200 hover:bg-slate-50"}`}
+            className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition ${value === option.value ? (option.value === "replace" ? "border-rose-300 bg-rose-50" : "border-indigo-300 bg-indigo-50") : "border-slate-200 hover:bg-slate-50"}`}
           >
             <input
               type="radio"

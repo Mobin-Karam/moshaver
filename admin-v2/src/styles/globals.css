@@ -13,7 +13,8 @@
 :root {
   color-scheme: light;
   font-family: Vazirmatn, Tahoma, Arial, sans-serif;
-  background: #f7f8f5;
+  background: #f4f7fb;
+  accent-color: #4338ca;
 }
 
 * {
@@ -23,8 +24,21 @@
 body {
   margin: 0;
   min-width: 320px;
+  color: #172033;
+  background:
+    radial-gradient(circle at 85% -10%, rgb(224 231 255 / 55%), transparent 30rem),
+    #f4f7fb;
   font-family: Vazirmatn, Tahoma, Arial, sans-serif;
   font-variation-settings: "wght" 400;
+}
+
+::selection {
+  color: #312e81;
+  background: #c7d2fe;
+}
+
+:focus-visible {
+  outline-color: #4f46e5;
 }
 
 button,

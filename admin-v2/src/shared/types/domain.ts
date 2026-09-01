@@ -51,6 +51,12 @@ export interface PlanTask {
   quizId?: string | null;
   sortOrder?: number;
   completedAt?: string | null;
+  completion?: {
+    status?: "done" | "partial" | string;
+    actualMinutes?: number;
+    actualTests?: number;
+    note?: string;
+  } | null;
 }
 
 export interface Plan {

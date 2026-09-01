@@ -21,7 +21,7 @@ export function Button({
       disabled={disabled || loading}
       className={cn(
         "inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
-        variant === "primary" && "bg-brand text-white hover:bg-teal-800",
+        variant === "primary" && "bg-brand text-white hover:bg-indigo-800",
         variant === "soft" &&
           "bg-white text-ink ring-1 ring-slate-200 hover:bg-slate-50",
         variant === "danger" && "bg-rosewood text-white hover:bg-rose-800",
@@ -57,7 +57,7 @@ export const Input = forwardRef<HTMLInputElement, ComponentProps<"input">>(
         ref={ref}
         {...props}
         className={cn(
-          "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-teal-100",
+          "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-indigo-100",
           props.className,
         )}
       />
@@ -74,7 +74,7 @@ export const Textarea = forwardRef<
       ref={ref}
       {...props}
       className={cn(
-        "w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-teal-100",
+        "w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-indigo-100",
         props.className,
       )}
     />
@@ -88,7 +88,7 @@ export const Select = forwardRef<HTMLSelectElement, ComponentProps<"select">>(
         ref={ref}
         {...props}
         className={cn(
-          "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-teal-100",
+          "h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-indigo-100",
           props.className,
         )}
       />

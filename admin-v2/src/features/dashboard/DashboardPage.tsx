@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -35,6 +37,23 @@ type AdvisorInbox = {
 
 export function DashboardPage() {
   const students = useStudents();
+  const [params, setParams] = useSearchParams();
+  useEffect(() => {
+    const urlStudentId = params.get("studentId") || "";
+    if (urlStudentId && urlStudentId !== students.studentId && students.students.some((s) => s.id === urlStudentId)) {
+      students.setStudentId(urlStudentId);
+    }
+  }, [params, students]);
+  useEffect(() => {
+    if (!students.studentId) return;
+    const urlStudentId = params.get("studentId");
+    if (urlStudentId === students.studentId) return;
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set("studentId", students.studentId);
+      return next;
+    }, { replace: true });
+  }, [students.studentId, params, setParams]);
   const overview = useQuery({
     queryKey: ["overview", students.studentId],
     enabled: !!students.studentId,
@@ -85,7 +104,14 @@ export function DashboardPage() {
           <StudentPicker
             students={students.students}
             value={students.studentId}
-            onChange={students.setStudentId}
+            onChange={(id) => {
+              students.setStudentId(id);
+              setParams((current) => {
+                const next = new URLSearchParams(current);
+                next.set("studentId", id);
+                return next;
+              }, { replace: true });
+            }}
           />
         </div>
       </div>
