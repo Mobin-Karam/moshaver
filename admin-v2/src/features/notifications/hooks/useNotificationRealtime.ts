@@ -1,8 +1,5 @@
-import {
-  type InfiniteData,
-  useEffect,
-} from "react";
-import type { QueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { api } from "../../../shared/api/api";
 import {
   notifications as sonner,

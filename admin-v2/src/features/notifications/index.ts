@@ -1,19 +1,19 @@
-export { HeaderNotifications } from "./HeaderNotifications";
+export { HeaderNotifications } from "./components/HeaderNotifications";
 export {
   NotificationProvider,
-  useAdminNotifications,
-} from "./NotificationProvider";
-export { NotificationsPage } from "./NotificationsPage";
+} from "./components/NotificationProvider";
+export { useAdminNotifications } from "./hooks/useAdminNotifications";
+export { NotificationsPage } from "./pages/NotificationsPage";
 
 export {
   notificationAdminUrl,
   notificationTone,
   notificationTypeLabel,
-} from "./notification-model";
+} from "./model/notification-model";
 
 export type {
   AdminNotification,
   NotificationPage,
   PushPreferences,
   PushStatus,
-} from "./notification-model";
+} from "./model/notification-model";

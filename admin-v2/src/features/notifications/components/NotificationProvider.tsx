@@ -5,7 +5,7 @@ import {
 import {
   useQueryClient,
 } from "@tanstack/react-query";
-import { useAuth } from "../../auth/AuthProvider";
+import { useAuth } from "../../auth/hooks/useAuth";
 import { useNotificationInbox } from "../hooks/useNotificationInbox";
 import { useNotificationRealtime } from "../hooks/useNotificationRealtime";
 import { useNotificationSound } from "../hooks/useNotificationSound";
