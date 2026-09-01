@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { api, ApiError, getBackendTargetUrl, setSelectedBackend } from "./api";
+import {
+  api,
+  ApiError,
+  getBackendTargetUrl,
+  getSelectedApiVersion,
+  setSelectedApiVersion,
+  setSelectedBackend,
+} from "./api";
 
 const originalFetch = globalThis.fetch;
 
@@ -47,6 +54,17 @@ describe("api client", () => {
     expect(getBackendTargetUrl()).toBe("https://api.mahakaram.ir/api/v1");
 
     setSelectedBackend("local");
+    expect(getBackendTargetUrl()).toBe("http://localhost:4000/api/v1");
+  });
+
+  it("switches the same backend between API v1 and API v2", () => {
+    setSelectedBackend("local");
+    setSelectedApiVersion("v2");
+
+    expect(getSelectedApiVersion()).toBe("v2");
+    expect(getBackendTargetUrl()).toBe("http://localhost:4000/api/v2");
+
+    setSelectedApiVersion("v1");
     expect(getBackendTargetUrl()).toBe("http://localhost:4000/api/v1");
   });
 });
