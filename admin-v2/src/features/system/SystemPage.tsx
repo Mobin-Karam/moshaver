@@ -97,12 +97,6 @@ export function SystemPage() {
   const meta = database.data;
   return (
     <div className="grid gap-5">
-      <div>
-        <h2 className="text-2xl font-black">سیستم و امنیت</h2>
-        <p className="text-slate-500">
-          سلامت سرویس، پایگاه داده، نشست‌ها، نسخه‌ها و سوابق عملیاتی
-        </p>
-      </div>
       <section className="grid gap-3 md:grid-cols-4">
         <Metric
           label="پایگاه داده"

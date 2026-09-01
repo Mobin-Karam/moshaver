@@ -59,13 +59,7 @@ export function NotificationsPage() {
   ];
   return (
     <div className="grid gap-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h2 className="text-2xl font-black">مرکز اعلان‌ها</h2>
-          <p className="text-slate-500">
-            اعلان‌های پایدار مدیر و صندوق پیگیری دانش‌آموز
-          </p>
-        </div>
+      <div className="flex justify-end">
         <div className="w-full md:w-72">
           <StudentPicker
             students={students.students}

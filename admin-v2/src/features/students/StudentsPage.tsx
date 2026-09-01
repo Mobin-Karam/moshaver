@@ -142,13 +142,7 @@ export function StudentsPage() {
 
   return (
     <div className="grid gap-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h2 className="text-2xl font-black">دانش‌آموزان</h2>
-          <p className="text-slate-500">
-            مدیریت کامل حساب، پروفایل و دسترسی به همه بخش‌های دانش‌آموز
-          </p>
-        </div>
+      <div className="flex justify-end">
         <Button
           variant="soft"
           onClick={() => {

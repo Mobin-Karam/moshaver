@@ -187,13 +187,7 @@ export function ExamsPage() {
 
   return (
     <div className="grid gap-5">
-      <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h2 className="text-2xl font-black">آزمون‌ها</h2>
-          <p className="text-slate-500">
-            زمان‌بندی، وضعیت، انتشار، تلاش مجدد، بودجه و سؤال‌ها
-          </p>
-        </div>
+      <header className="flex justify-end">
         <div className="grid w-full grid-cols-2 gap-2 sm:flex md:w-auto">
           <div className="col-span-2 min-w-0 flex-1 sm:min-w-60">
             <StudentPicker

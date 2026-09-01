@@ -34,10 +34,6 @@ export function SettingsPage() {
   });
   return (
     <div className="grid gap-5">
-      <div>
-        <h2 className="text-2xl font-black">تنظیمات</h2>
-        <p className="text-slate-500">موقعیت، تقویم، نشست‌ها و API</p>
-      </div>
       <Card>
         <h3 className="mb-3 font-bold">موقعیت و تقویم</h3>
         <div className="grid gap-3 md:grid-cols-2">

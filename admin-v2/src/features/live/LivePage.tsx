@@ -112,20 +112,13 @@ export function LivePage() {
   return (
     <div className="grid gap-5">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-xs font-bold text-brand">
+        <div className="flex items-center gap-2 text-xs font-bold text-brand">
             <span className="relative flex size-2">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
             </span>
             عملیات بلادرنگ
           </div>
-          <h2 className="text-2xl font-black">نمای زنده همه دانش‌آموزان</h2>
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            در یک نگاه ببینید چه کسی آنلاین، در حال مطالعه یا نیازمند پیگیری
-            است.
-          </p>
-        </div>
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs text-slate-500">
             {live.data?.generatedAt

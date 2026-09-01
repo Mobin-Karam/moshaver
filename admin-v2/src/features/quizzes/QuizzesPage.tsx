@@ -95,12 +95,6 @@ export function QuizzesPage() {
   });
   return (
     <div className="grid gap-5">
-      <div>
-        <h2 className="text-2xl font-black">آزمونک‌ها</h2>
-        <p className="text-slate-500">
-          ساخت و ویرایش آزمونک مستقل، فعال‌سازی و مدیریت سؤال‌ها
-        </p>
-      </div>
       <section className="grid gap-4 lg:grid-cols-[300px_1fr]">
         <Card>
           <Button

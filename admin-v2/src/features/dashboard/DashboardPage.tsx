@@ -80,13 +80,7 @@ export function DashboardPage() {
 
   return (
     <div className="grid gap-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h2 className="text-2xl font-black">داشبورد</h2>
-          <p className="text-slate-500">
-            نمای سریع وضعیت دانش‌آموز، صندوق توجه و فعالیت امروز
-          </p>
-        </div>
+      <div className="flex justify-end">
         <div className="w-full md:w-72">
           <StudentPicker
             students={students.students}

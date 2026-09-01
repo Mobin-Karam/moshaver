@@ -65,13 +65,7 @@ export function SubjectsPage() {
   const rows = assigned.data ?? subjects.data ?? [];
   return (
     <div className="grid gap-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h2 className="text-2xl font-black">درس‌ها</h2>
-          <p className="text-slate-500">
-            تعریف درس و وضعیت، تسلط، پیشرفت و یادداشت هر دانش‌آموز
-          </p>
-        </div>
+      <div className="flex justify-end">
         <div className="w-full md:w-72">
           <StudentPicker
             students={students.students}

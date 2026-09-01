@@ -85,8 +85,7 @@ export function QuestionsPage() {
   }, [examId, exams.isSuccess, selectedExam, setParams]);
   return (
     <div className="grid gap-5">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div><h2 className="text-2xl font-black">بانک سؤال</h2><p className="text-slate-500">ساخت، بازبینی و مرتب‌سازی سؤال‌های هر آزمون</p></div>
+      <header className="flex justify-end">
         {examId ? <Link to={`/admin/exams?studentId=${encodeURIComponent(students.studentId)}`}><Button variant="soft">بازگشت به آزمون‌ها</Button></Link> : null}
       </header>
       <Card className="sticky top-16 z-10 shadow-sm">

@@ -23,13 +23,7 @@ export function ReportsPage() {
   });
   return (
     <div className="grid gap-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h2 className="text-2xl font-black">گزارش‌ها</h2>
-          <p className="text-slate-500">
-            مطالعه، تست، تمرکز، خستگی، انگیزه و یادداشت روزانه
-          </p>
-        </div>
+      <div className="flex justify-end">
         <div className="grid gap-2 md:grid-cols-3">
           <StudentPicker
             students={students.students}
