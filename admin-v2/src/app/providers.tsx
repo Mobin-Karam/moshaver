@@ -5,13 +5,14 @@ import { AppToaster } from "../shared/ui/notifications";
 import { queryClient } from "./query-client";
 import { ModalProvider } from "../shared/ui/modal";
 import { LocaleProvider } from "../shared/ui/locale";
+import { NotificationProvider } from "../features/notifications/NotificationProvider";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <LocaleProvider>
         <ModalProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider><NotificationProvider>{children}</NotificationProvider></AuthProvider>
           <AppToaster />
         </ModalProvider>
       </LocaleProvider>

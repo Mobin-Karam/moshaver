@@ -6,6 +6,7 @@ import { useAuth } from "../../features/auth/AuthProvider";
 import { useModal } from "../../shared/ui/modal";
 import { DevBackendSwitcher } from "../dev/DevBackendSwitcher";
 import { adminBreadcrumbs, adminNavigation, flatAdminNavigation, mainAdminNavigation } from "./admin-navigation";
+import { HeaderNotifications } from "../../features/notifications/HeaderNotifications";
 
 export function AdminLayout() {
   const auth = useAuth();
@@ -57,6 +58,7 @@ export function AdminLayout() {
             <p className="hidden truncate text-xs text-slate-500 md:block">{current.description}</p>
           </div>
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+            <HeaderNotifications />
             <DevBackendSwitcher />
             <Button
               className="h-9 shrink-0 px-2 sm:px-3"
