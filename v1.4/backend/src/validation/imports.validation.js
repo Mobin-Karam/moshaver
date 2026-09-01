@@ -14,6 +14,10 @@ function createImportsValidation(deps) {
     var errors = [];
     var warnings = [];
     var conflicts = [];
+    var schemaVersion = Number(src.schemaVersion || 2);
+    if ([1, 2].indexOf(schemaVersion) < 0) {
+      errors.push("Unsupported schemaVersion: " + String(src.schemaVersion) + ". Supported versions are 1 and 2.");
+    }
     var studentId = str(fallbackStudentId || src.studentId, 120);
     if (!studentId) errors.push("studentId is required.");
     if (studentId && !db.prepare("SELECT id FROM students WHERE id=?").get(studentId)) {
@@ -27,7 +31,7 @@ function createImportsValidation(deps) {
         errors.push("plans[" + planIndex + "].planDate must be YYYY-MM-DD.");
         return;
       }
-      if (planSeen[date]) warnings.push("Duplicate imported plan date: " + date);
+      if (planSeen[date]) errors.push("Duplicate imported plan date: " + date);
       planSeen[date] = 1;
       var tasks = [];
       (Array.isArray(plan.tasks) ? plan.tasks : []).forEach(function (task, taskIndex) {
@@ -38,11 +42,22 @@ function createImportsValidation(deps) {
           return;
         }
         if (end <= start) {
-          warnings.push("Task end time is not after start time: " + date + " " + start + "-" + end);
+          errors.push("Task end time must be after start time: " + date + " " + start + "-" + end);
+          return;
         }
         var taskType = str(task.type, 30) || "study";
         if (TASK_TYPES.indexOf(taskType) < 0) {
           errors.push("Unsupported task type in " + date + " task " + (taskIndex + 1) + ": " + taskType);
+          return;
+        }
+        var quizId = str(task.quizId, 120) || null;
+        var examId = str(task.examId, 120) || null;
+        if (examId && !db.prepare("SELECT id FROM exams WHERE id=? AND (student_id=? OR student_id IS NULL)").get(examId, studentId)) {
+          errors.push("Invalid or inaccessible examId in " + date + " task " + (taskIndex + 1));
+          return;
+        }
+        if (quizId && !db.prepare("SELECT q.id FROM quizzes q LEFT JOIN exams e ON e.id=q.exam_id WHERE q.id=? AND q.active=1 AND (q.exam_id IS NULL OR e.student_id=? OR e.student_id IS NULL)").get(quizId, studentId)) {
+          errors.push("Invalid or inaccessible quizId in " + date + " task " + (taskIndex + 1));
           return;
         }
         tasks.push({
@@ -54,8 +69,8 @@ function createImportsValidation(deps) {
           pages: str(task.pages, 120),
           testCount: Math.max(0, num(task.testCount, 0)),
           note: str(task.note, 1500),
-          quizId: str(task.quizId, 120) || null,
-          examId: str(task.examId, 120) || null,
+          quizId: quizId,
+          examId: examId,
           examRef: str(task.examRef, 120) || null,
           sortOrder: num(task.sortOrder, taskIndex + 1),
         });
@@ -82,6 +97,10 @@ function createImportsValidation(deps) {
         db.prepare("SELECT id FROM plans WHERE student_id=? AND plan_date=?").get(studentId, date)
       ) {
         warnings.push("Existing plan found for " + date + ".");
+        var existingProgress = db.prepare(
+          "SELECT COUNT(*) AS n FROM tasks t JOIN plans p ON p.id=t.plan_id WHERE p.student_id=? AND p.plan_date=? AND (EXISTS(SELECT 1 FROM task_completions tc WHERE tc.task_id=t.id) OR EXISTS(SELECT 1 FROM study_sessions ss WHERE ss.task_id=t.id))",
+        ).get(studentId, date);
+        if (existingProgress && existingProgress.n) warnings.push("Existing plan has recorded progress and cannot be replaced: " + date + ".");
       }
       plans.push({
         planDate: date,
@@ -130,9 +149,14 @@ function createImportsValidation(deps) {
         var options = Array.isArray(question.options) ? question.options : [];
         var correctOption = str(question.correctOption || question.answer, 20).toLowerCase();
         if (/^[0-3]$/.test(correctOption)) correctOption = ["a", "b", "c", "d"][Number(correctOption)];
+        var normalizedOptions = options.map(function (option) { return str(option, 1000); });
+        var uniqueOptions = {};
+        normalizedOptions.forEach(function (option) { uniqueOptions[option] = 1; });
         if (
           !str(question.question || question.q, 2000) ||
           options.length !== 4 ||
+          normalizedOptions.some(function (option) { return !option; }) ||
+          Object.keys(uniqueOptions).length !== 4 ||
           ["a", "b", "c", "d"].indexOf(correctOption) < 0
         ) {
           errors.push(
@@ -140,20 +164,20 @@ function createImportsValidation(deps) {
               examIndex +
               "].questions[" +
               questionIndex +
-              "] needs question, 4 options, correctOption a/b/c/d.",
+              "] needs question, 4 distinct non-empty options, correctOption a/b/c/d.",
           );
           return;
         }
         questions.push({
           question: str(question.question || question.q, 2000),
-          options: [
-            str(options[0], 1000),
-            str(options[1], 1000),
-            str(options[2], 1000),
-            str(options[3], 1000),
-          ],
+          options: normalizedOptions,
           correctOption: correctOption,
           explanation: str(question.explanation, 2000),
+          book: str(question.book, 200),
+          chapter: str(question.chapter, 200),
+          lesson: str(question.lesson, 200),
+          topic: str(question.topic, 240),
+          hint: str(question.hint, 3000),
           sortOrder: num(question.sortOrder, questionIndex + 1),
         });
       });
@@ -166,18 +190,23 @@ function createImportsValidation(deps) {
       ) {
         warnings.push("Existing exam found: " + title + " " + date + ".");
       }
+      var status = str(exam.status, 30) || "upcoming";
+      if (["upcoming", "active", "completed", "cancelled"].indexOf(status) < 0) {
+        errors.push("exams[" + examIndex + "].status must be upcoming, active, completed, or cancelled.");
+        return;
+      }
       exams.push({
         ref: str(exam.ref, 120) || null,
         title: title,
         persianDate: str(exam.persianDate, 100) || date,
         isoDate: date,
         note: str(exam.note, 1500),
-        status: str(exam.status, 30) || "upcoming",
+        status: status,
         published: exam.published !== false,
         openAt: openAt,
         closeAt: closeAt,
-        durationMinutes: Math.max(1, num(exam.durationMinutes, 120)),
-        maxAttempts: 1,
+        durationMinutes: Math.min(600, Math.max(1, num(exam.durationMinutes, 120))),
+        maxAttempts: Math.min(100, Math.max(1, num(exam.maxAttempts, 1))),
         instructions: str(exam.instructions, 3000),
         syllabus: syllabus,
         questions: questions,
@@ -197,12 +226,13 @@ function createImportsValidation(deps) {
         }
       });
     });
+    if (!plans.length && !exams.length) errors.push("Import must contain at least one valid plan or exam.");
     var taskCount = 0;
     plans.forEach(function (plan) {
       taskCount += plan.tasks.length;
     });
     return {
-      schemaVersion: Number(src.schemaVersion || 2),
+      schemaVersion: schemaVersion,
       studentId: studentId,
       plans: plans,
       exams: exams,
@@ -243,6 +273,8 @@ function createImportsValidation(deps) {
         options: {
           replaceExistingPlans: !!body.replaceExistingPlans,
           replaceExistingExams: !!body.replaceExistingExams,
+          skipExistingPlans: !!body.skipExistingPlans,
+          skipExistingExams: !!body.skipExistingExams,
           publishImported: !!body.publishImported,
           sourceName: str(body.sourceName, 200),
         },

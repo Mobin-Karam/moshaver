@@ -48,6 +48,17 @@
     });
   }
 
+  function shamsi(value, withTime) {
+    if (!value) return "—";
+    var date = new Date(String(value).length === 10 ? value + "T12:00:00" : value);
+    if (isNaN(date.getTime())) return String(value);
+    try {
+      return new Intl.DateTimeFormat("fa-IR-u-ca-persian", withTime ? {
+        year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"
+      } : { year: "numeric", month: "long", day: "numeric" }).format(date);
+    } catch (e) { return String(value); }
+  }
+
   global.MoshaverAdminDates = {
     today: today,
     shift: shift,
@@ -55,5 +66,6 @@
     lastOfMonth: lastOfMonth,
     startWeek: startWeek,
     faNum: faNum,
+    shamsi: shamsi,
   };
 })(window);

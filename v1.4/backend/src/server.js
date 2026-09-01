@@ -43,6 +43,7 @@ var createPushService = require("./services/push.service");
 var realtime = require("./realtime");
 var router = new Router();
 var MAX_BODY = 1024 * 1024;
+var MAX_RESTORE_BODY = 250 * 1024 * 1024;
 var rateBuckets = Object.create(null);
 
 function send(res, status, payload) {
@@ -133,6 +134,31 @@ function parseBody(req, callback) {
   });
 }
 
+function parseRawBody(req, maxBytes, callback) {
+  var chunks = [],
+    size = 0,
+    called = false;
+  function done(err, body) {
+    if (called) return;
+    called = true;
+    callback(err, body);
+  }
+  req.on("data", function (chunk) {
+    size += chunk.length;
+    if (size > maxBytes) {
+      done(new Error("BODY_TOO_LARGE"));
+      req.destroy();
+      return;
+    }
+    chunks.push(chunk);
+  });
+  req.on("end", function () {
+    if (called) return;
+    done(null, Buffer.concat(chunks));
+  });
+  req.on("error", done);
+}
+
 function query(req) {
   return url.parse(req.url, true).query || {};
 }
@@ -148,7 +174,15 @@ function boolInt(v) {
   return v === true || v === 1 || v === "1" || v === "true" ? 1 : 0;
 }
 function isoDateValid(v) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(String(v || ""));
+  var value = String(v || "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  var parts = value.split("-").map(Number);
+  var date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+  return (
+    date.getUTCFullYear() === parts[0] &&
+    date.getUTCMonth() === parts[1] - 1 &&
+    date.getUTCDate() === parts[2]
+  );
 }
 function dateTimeValid(v) {
   return !!v && !isNaN(new Date(v).getTime());
@@ -843,6 +877,7 @@ function handle(req, res) {
   }
   var found = router.match(req);
   if (!found) return fail(res, 404, "NOT_FOUND", "مسیر API پیدا نشد.");
+  var rawRestoreUpload = req.method === "POST" && found.pathname === "/api/v1/admin/system/database-restore";
   var needsBody = ["POST", "PUT", "PATCH"].indexOf(req.method) >= 0;
   function run(body) {
     var user = found.route.roles
@@ -882,7 +917,16 @@ function handle(req, res) {
         );
     }
   }
-  if (needsBody)
+  if (rawRestoreUpload)
+    parseRawBody(req, MAX_RESTORE_BODY, function (err, body) {
+      if (err) {
+        if (!res.writableEnded)
+          fail(res, err.message === "BODY_TOO_LARGE" ? 413 : 400, err.message, "فایل پشتیبان بیش از حد بزرگ یا نامعتبر است.");
+        return;
+      }
+      run(body);
+    });
+  else if (needsBody)
     parseBody(req, function (err, body) {
       if (err) {
         if (!res.writableEnded)

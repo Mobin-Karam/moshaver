@@ -23,16 +23,31 @@ function registerImportsRoutes(router, deps) {
       if (!sid) return fail(res, 400, "VALIDATION", "studentId لازم است.");
       var student = db.prepare("SELECT id,name,grade,major FROM students WHERE id=? AND account_status<>'archived'").get(sid);
       if (!student) return fail(res, 404, "NOT_FOUND", "دانش‌آموز پیدا نشد.");
+      var scope = ["all", "plans", "exams"].indexOf(String(q.scope || "all")) >= 0 ? String(q.scope || "all") : "all";
       var from = /^\d{4}-\d{2}-\d{2}$/.test(String(q.from || "")) ? String(q.from) : "0000-01-01";
       var to = /^\d{4}-\d{2}-\d{2}$/.test(String(q.to || "")) ? String(q.to) : "9999-12-31";
-      var plans = db.prepare("SELECT * FROM plans WHERE student_id=? AND plan_date BETWEEN ? AND ? ORDER BY plan_date").all(sid, from, to).map(function (p) {
-        return { planDate:p.plan_date,jalaliId:p.jalali_id||"",dayLabel:p.day_label||"",persianDate:p.persian_date||"",title:p.title||"",motivationText:p.motivation_text||"",published:!!p.published,tasks:db.prepare("SELECT start_time AS start,end_time AS end,type,subject,title,pages,test_count AS testCount,note,quiz_id AS quizId,exam_id AS examId,sort_order AS sortOrder FROM tasks WHERE plan_id=? ORDER BY sort_order,start_time").all(p.id) };
+      var planRows = scope === "exams" ? [] : db.prepare("SELECT * FROM plans WHERE student_id=? AND plan_date BETWEEN ? AND ? ORDER BY plan_date").all(sid, from, to);
+      var planTasks = {}, linkedExamIds = {};
+      planRows.forEach(function (p) {
+        planTasks[p.id] = db.prepare("SELECT start_time AS start,end_time AS end,type,subject,title,pages,test_count AS testCount,note,quiz_id AS quizId,exam_id AS examId,sort_order AS sortOrder FROM tasks WHERE plan_id=? ORDER BY sort_order,start_time").all(p.id);
+        planTasks[p.id].forEach(function (task) { if (task.examId) linkedExamIds[task.examId] = 1; });
       });
-      var exams = db.prepare("SELECT * FROM exams WHERE student_id=? AND iso_date BETWEEN ? AND ? ORDER BY iso_date,created_at").all(sid, from, to).map(function (e) {
+      var examRows = scope === "plans" ? [] : db.prepare("SELECT * FROM exams WHERE student_id=? AND iso_date BETWEEN ? AND ? ORDER BY iso_date,created_at").all(sid, from, to);
+      Object.keys(linkedExamIds).forEach(function (examId) {
+        if (!examRows.some(function (exam) { return exam.id === examId; })) {
+          var linked = db.prepare("SELECT * FROM exams WHERE id=? AND (student_id=? OR student_id IS NULL)").get(examId, sid);
+          if (linked) examRows.push(linked);
+        }
+      });
+      var exportedExamIds = {}; examRows.forEach(function (exam) { exportedExamIds[exam.id] = 1; });
+      var plans = planRows.map(function (p) {
+        return { planDate:p.plan_date,jalaliId:p.jalali_id||"",dayLabel:p.day_label||"",persianDate:p.persian_date||"",title:p.title||"",motivationText:p.motivation_text||"",published:!!p.published,tasks:planTasks[p.id].map(function(task){return {start:task.start,end:task.end,type:task.type,subject:task.subject||"",title:task.title||"",pages:task.pages||"",testCount:task.testCount||0,note:task.note||"",quizId:task.quizId||null,examRef:task.examId&&exportedExamIds[task.examId]?task.examId:null,sortOrder:task.sortOrder||0};}) };
+      });
+      var exams = examRows.sort(function(a,b){return String(a.iso_date).localeCompare(String(b.iso_date))||String(a.created_at).localeCompare(String(b.created_at));}).map(function (e) {
         var quiz=db.prepare("SELECT id FROM quizzes WHERE exam_id=? AND active=1 ORDER BY created_at LIMIT 1").get(e.id);
-        return { ref:e.id,title:e.title,persianDate:e.persian_date||"",isoDate:e.iso_date,note:e.note||"",status:e.status,published:!!e.published,openAt:e.open_at,closeAt:e.close_at,durationMinutes:e.duration_minutes,maxAttempts:e.max_attempts,instructions:e.instructions||"",syllabus:db.prepare("SELECT subject_label AS subject,description,required,track FROM exam_syllabus WHERE exam_id=? ORDER BY rowid").all(e.id),questions:quiz?db.prepare("SELECT question_text AS question,option_a,option_b,option_c,option_d,correct_option AS correctOption,explanation,sort_order AS sortOrder FROM quiz_questions WHERE quiz_id=? ORDER BY sort_order").all(quiz.id).map(function(x){return {question:x.question,options:[x.option_a,x.option_b,x.option_c,x.option_d],correctOption:x.correctOption,explanation:x.explanation||"",sortOrder:x.sortOrder};}):[] };
+        return { ref:e.id,title:e.title,persianDate:e.persian_date||"",isoDate:e.iso_date,note:e.note||"",status:e.status,published:!!e.published,openAt:e.open_at,closeAt:e.close_at,durationMinutes:e.duration_minutes,maxAttempts:e.max_attempts,instructions:e.instructions||"",syllabus:db.prepare("SELECT subject_label AS subject,description,required,track FROM exam_syllabus WHERE exam_id=? ORDER BY rowid").all(e.id),questions:quiz?db.prepare("SELECT question_text AS question,option_a,option_b,option_c,option_d,correct_option AS correctOption,explanation,sort_order AS sortOrder,book,chapter,lesson,topic,hint FROM quiz_questions WHERE quiz_id=? ORDER BY sort_order").all(quiz.id).map(function(x){return {question:x.question,options:[x.option_a,x.option_b,x.option_c,x.option_d],correctOption:x.correctOption,explanation:x.explanation||"",book:x.book||"",chapter:x.chapter||"",lesson:x.lesson||"",topic:x.topic||"",hint:x.hint||"",sortOrder:x.sortOrder};}):[] };
       });
-      ok(res,{schemaVersion:2,exportedAt:new Date().toISOString(),student:{id:student.id,name:student.name,grade:student.grade,major:student.major},range:{from:from,to:to},plans:plans,exams:exams});
+      ok(res,{schemaVersion:2,scope:scope,exportedAt:new Date().toISOString(),student:{id:student.id,name:student.name,grade:student.grade,major:student.major},range:{from:from,to:to},plans:plans,exams:exams});
     },
   );
 
@@ -44,7 +59,8 @@ function registerImportsRoutes(router, deps) {
       var q = query(req),
         sid = str(q.studentId, 120) || null,
         d = addIsoDays(todayIso(), 7);
-      ok(res, {
+      var scope = ["all", "plans", "exams"].indexOf(String(q.scope || "all")) >= 0 ? String(q.scope || "all") : "all";
+      var template = {
         schemaVersion: 2,
         studentId: sid,
         plans: [
@@ -92,7 +108,7 @@ function registerImportsRoutes(router, deps) {
             closeAt: d + "T12:00:00+03:30",
             durationMinutes: 120,
             maxAttempts: 1,
-            published: true,
+            published: false,
             note: "",
             instructions:
               "پس از شروع، زمان آزمون ادامه پیدا می‌کند. آزمون فقط یک‌بار قابل انجام است.",
@@ -115,7 +131,11 @@ function registerImportsRoutes(router, deps) {
             ],
           },
         ],
-      });
+      };
+      if (scope === "plans") template.exams = [];
+      if (scope === "exams") template.plans = [];
+      template.scope = scope;
+      ok(res, template);
     },
   );
 

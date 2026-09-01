@@ -26,6 +26,7 @@ function registerExamsRoutes(router, deps) {
       if (result.error)
         return fail(res, result.error.status, result.error.code, result.error.message);
       audit(user, "create", "exam", result.audit.resourceId, body);
+      emitStudent(result.data.studentId, "exam.updated", { examId: result.data.id, action: "created" });
       ok(res, result.data, result.status);
     },
   );
@@ -38,6 +39,7 @@ function registerExamsRoutes(router, deps) {
       if (result.error)
         return fail(res, result.error.status, result.error.code, result.error.message);
       audit(user, "update", "exam", result.audit.resourceId, body);
+      emitStudent(result.data.studentId, "exam.updated", { examId: result.data.id, action: "updated" });
       ok(res, result.data);
     },
   );
@@ -50,6 +52,7 @@ function registerExamsRoutes(router, deps) {
       if (result.error)
         return fail(res, result.error.status, result.error.code, result.error.message);
       audit(user, "delete", "exam", match[1], {});
+      if (result.data.studentId) emitStudent(result.data.studentId, "exam.updated", { examId: match[1], action: "deleted" });
       ok(res, result.data);
     },
   );
@@ -62,6 +65,7 @@ function registerExamsRoutes(router, deps) {
       if (result.error)
         return fail(res, result.error.status, result.error.code, result.error.message);
       audit(user, "create", "exam_syllabus", result.audit.resourceId, body);
+      if (result.data.studentId) emitStudent(result.data.studentId, "exam.updated", { examId: result.data.id, action: "syllabus_created" });
       ok(res, result.data, result.status);
     },
   );
@@ -71,7 +75,9 @@ function registerExamsRoutes(router, deps) {
     ["admin"],
     function (req, res, match, body, user) {
       var result = exams.deleteAdminSyllabus(match[1]);
+      if (result.error) return fail(res, result.error.status, result.error.code, result.error.message);
       audit(user, "delete", "exam_syllabus", match[1], {});
+      if (result.data.studentId) emitStudent(result.data.studentId, "exam.updated", { examId: result.data.examId, action: "syllabus_deleted" });
       ok(res, result.data);
     },
   );
@@ -95,6 +101,7 @@ function registerExamsRoutes(router, deps) {
       audit(user, "create", "exam_question", result.audit.resourceId, {
         examId: result.audit.examId,
       });
+      if (result.data.studentId) emitStudent(result.data.studentId, "exam.updated", { examId: result.data.examId, action: "question_created" });
       ok(res, result.data, result.status);
     },
   );
@@ -107,6 +114,7 @@ function registerExamsRoutes(router, deps) {
       if (result.error)
         return fail(res, result.error.status, result.error.code, result.error.message);
       audit(user, "delete", "exam_question", match[2], { examId: match[1] });
+      if (result.data.studentId) emitStudent(result.data.studentId, "exam.updated", { examId: result.data.examId, action: "question_deleted" });
       ok(res, result.data);
     },
   );
@@ -214,9 +222,10 @@ function registerExamsRoutes(router, deps) {
     /^\/api\/v1\/admin\/questions\/([^/]+)$/,
     ["admin"],
     function (req, res, match, body, user) {
-      exams.deleteAdminQuestion(match[1]);
+      var result = exams.deleteAdminQuestion(match[1]);
+      if (result.error) return fail(res, result.error.status, result.error.code, result.error.message);
       audit(user, "delete", "question", match[1], {});
-      ok(res, { deleted: true });
+      ok(res, result.data);
     },
   );
 
@@ -359,8 +368,8 @@ function registerExamsRoutes(router, deps) {
     "GET",
     /^\/api\/v1\/quizzes\/(?!history$)([^/]+)$/,
     ["student"],
-    function (req, res, match) {
-      var result = exams.studentQuiz(match[1]);
+    function (req, res, match, body, user) {
+      var result = exams.studentQuiz(user.student_id, match[1]);
       if (result.error)
         return fail(res, result.error.status, result.error.code, result.error.message);
       ok(res, result.data);
