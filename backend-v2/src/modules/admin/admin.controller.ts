@@ -75,6 +75,36 @@ export class AdminController {
     return this.plans.upsertPlan(dto).then(ok);
   }
 
+  @Patch("plans/:id")
+  updatePlan(@Param("id") id: string, @Body() body: Partial<ImportPlanDto>) {
+    return this.plans.updatePlan(id, body).then(ok);
+  }
+
+  @Delete("plans/:id")
+  deletePlan(@Param("id") id: string) {
+    return this.plans.deletePlan(id).then(ok);
+  }
+
+  @Post("plans/:id/duplicate")
+  duplicatePlan(@Param("id") id: string, @Body() body: { planDate: string }) {
+    return this.plans.duplicatePlan(id, body.planDate).then(ok);
+  }
+
+  @Post("plans/:id/tasks")
+  addTask(@Param("id") id: string, @Body() body: ImportPlanDto["tasks"][number]) {
+    return this.plans.addTask(id, body).then(ok);
+  }
+
+  @Patch("tasks/:id")
+  updateTask(@Param("id") id: string, @Body() body: Partial<ImportPlanDto["tasks"][number]> & { planId?: string }) {
+    return this.plans.updateTask(id, body).then(ok);
+  }
+
+  @Delete("tasks/:id")
+  deleteTask(@Param("id") id: string) {
+    return this.plans.deleteTask(id).then(ok);
+  }
+
   @Post("plans/publish-range")
   publishRange(@Body() body: { studentId: string; from: string; to: string; published?: boolean }) {
     return this.plans.publishRange(body.studentId, body.from, body.to, body.published !== false).then(ok);

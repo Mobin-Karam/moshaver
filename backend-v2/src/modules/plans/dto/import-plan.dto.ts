@@ -1,10 +1,10 @@
-import { IsArray, IsBoolean, IsDateString, IsEnum, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsBoolean, IsDateString, IsOptional, IsString, ValidateNested } from "class-validator";
 import { Type } from "class-transformer";
 import { TaskType } from "../../../database/entities/task.entity";
 
 export class ImportTaskDto {
-  @IsEnum(TaskType)
-  type!: TaskType;
+  @IsString()
+  type!: TaskType | string;
 
   @IsString()
   title!: string;
@@ -23,7 +23,15 @@ export class ImportTaskDto {
 
   @IsOptional()
   @IsString()
+  start?: string;
+
+  @IsOptional()
+  @IsString()
   endTime?: string;
+
+  @IsOptional()
+  @IsString()
+  end?: string;
 
   @IsOptional()
   duration?: number;
@@ -43,8 +51,13 @@ export class ImportPlanDto {
   @IsString()
   studentId!: string;
 
+  @IsOptional()
   @IsDateString()
-  date!: string;
+  date?: string;
+
+  @IsOptional()
+  @IsDateString()
+  planDate?: string;
 
   @IsArray()
   @ValidateNested({ each: true })
