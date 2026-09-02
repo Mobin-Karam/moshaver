@@ -18,6 +18,9 @@ export class ExamAttempt {
   @Column({ default: 0 })
   score!: number;
 
+  @Column({ type: "simple-json", default: "[]" })
+  answers!: Array<{ questionId: string; selectedOption?: string | null }>;
+
   @Column()
   startedAt!: Date;
 

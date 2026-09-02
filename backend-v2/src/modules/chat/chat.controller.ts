@@ -12,8 +12,14 @@ export class ChatController {
 
   @Get("admin/chat/conversations")
   @Roles(UserRole.ADMIN)
-  conversations() {
+  adminConversations() {
     return this.chat.conversations().then(ok);
+  }
+
+  @Get("chat/conversations")
+  @Roles(UserRole.STUDENT)
+  studentConversations(@CurrentUser() user: AuthenticatedUser) {
+    return this.chat.conversationsForStudent(user).then(ok);
   }
 
   @Get("chat/conversations/:id/messages")
@@ -26,5 +32,11 @@ export class ChatController {
   @Roles(UserRole.ADMIN, UserRole.STUDENT)
   send(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body("text") text: string) {
     return this.chat.send(user, id, text).then(ok);
+  }
+
+  @Post("chat/conversations/:id/read")
+  @Roles(UserRole.ADMIN, UserRole.STUDENT)
+  read(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) {
+    return this.chat.markRead(user, id).then(ok);
   }
 }

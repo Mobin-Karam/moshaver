@@ -5,15 +5,22 @@ import { Repository } from "typeorm";
 import { PlanStatus } from "../../database/entities/plan.entity";
 import { Student } from "../../database/entities/student.entity";
 import { Task } from "../../database/entities/task.entity";
+import { TopicMastery } from "../../database/entities/topic-mastery.entity";
 import { User, UserRole } from "../../database/entities/user.entity";
 import { ApiException } from "../../common/exceptions/api.exception";
+import { LearningItem, LearningStatus } from "../../database/entities/learning-item.entity";
+import { LearningReview } from "../../database/entities/learning-review.entity";
+import { Session } from "../../database/entities/session.entity";
 
 @Injectable()
 export class StudentsService {
   constructor(
     @InjectRepository(Student) private readonly students: Repository<Student>,
-    @InjectRepository(Task) private readonly tasks: Repository<Task>,
     @InjectRepository(User) private readonly users: Repository<User>,
+    @InjectRepository(TopicMastery) private readonly mastery: Repository<TopicMastery>,
+    @InjectRepository(LearningItem) private readonly learningItems: Repository<LearningItem>,
+    @InjectRepository(LearningReview) private readonly learningReviews: Repository<LearningReview>,
+    @InjectRepository(Session) private readonly sessions: Repository<Session>,
   ) {}
 
   list() {
@@ -91,9 +98,86 @@ export class StudentsService {
   async remove(id: string) {
     const student = await this.findStudent(id);
     if (!student) throw new ApiException(404, "STUDENT_NOT_FOUND", "پرونده دانش‌آموز پیدا نشد.");
-    await this.students.delete(id);
-    if (student.user) await this.users.delete(student.user.id);
-    return { id, deleted: true };
+    await this.students.update(id, { accountStatus: "archived" });
+    if (student.user) await this.sessions.delete({ user: { id: student.user.id } });
+    return { id, archived: true };
+  }
+
+  async lifecycle(id: string, action: "activate" | "deactivate" | "restore" | "force-logout") {
+    const student = await this.findStudent(id);
+    if (!student) throw new ApiException(404, "STUDENT_NOT_FOUND", "پرونده دانش‌آموز پیدا نشد.");
+    if (action === "force-logout") {
+      if (student.user) await this.sessions.delete({ user: { id: student.user.id } });
+      return { id, sessionsRevoked: true };
+    }
+    const accountStatus = action === "deactivate" ? "inactive" : "active";
+    await this.students.update(id, { accountStatus });
+    if (accountStatus !== "active" && student.user) await this.sessions.delete({ user: { id: student.user.id } });
+    return this.findStudent(id);
+  }
+
+  async resetPassword(id: string, password: string) {
+    if (password.length < 8) throw new ApiException(400, "PASSWORD_TOO_SHORT", "رمز عبور باید حداقل ۸ نویسه باشد.");
+    const student = await this.findStudent(id);
+    if (!student?.user) throw new ApiException(404, "STUDENT_USER_NOT_FOUND", "حساب دانش‌آموز پیدا نشد.");
+    await this.users.update(student.user.id, { passwordHash: await bcrypt.hash(password, 10) });
+    await this.sessions.delete({ user: { id: student.user.id } });
+    return { id, passwordReset: true, sessionsRevoked: true };
+  }
+
+  async weeklyForStudent(id: string) {
+    const student = await this.findStudent(id);
+    if (!student) throw new ApiException(404, "STUDENT_NOT_FOUND", "پرونده دانش‌آموز پیدا نشد.");
+    return this.progressForStudent(student);
+  }
+
+  async topicsForStudent(id: string, limit = 8) {
+    await this.requireStudent(id);
+    return this.mastery.find({ where: { studentId: id }, order: { score: "ASC", topic: "ASC" }, take: Math.min(Math.max(limit, 1), 100) });
+  }
+
+  async learningForStudent(id: string) {
+    await this.requireStudent(id);
+    const items = await this.learningItems.find({ where: { student: { id } }, order: { dueDate: "ASC", createdAt: "DESC" } });
+    return { summary: this.learningSummary(items), items: items.map((item) => this.publicLearningItem(item, id)) };
+  }
+
+  async createLearningItem(id: string, body: Partial<LearningItem>) {
+    const student = await this.requireStudent(id);
+    const title = String(body.title || "").trim();
+    if (title.length < 2) throw new ApiException(400, "LEARNING_TITLE_REQUIRED", "عنوان یادگیری الزامی است.");
+    const item = this.learningItems.create({ student, ...this.learningInput(body), title });
+    return this.publicLearningItem(await this.learningItems.save(item), id);
+  }
+
+  async updateLearningItem(studentId: string, itemId: string, body: Partial<LearningItem>) {
+    const item = await this.learningItems.findOne({ where: { id: itemId, student: { id: studentId } }, relations: { student: true } });
+    if (!item) throw new ApiException(404, "LEARNING_ITEM_NOT_FOUND", "مورد یادگیری پیدا نشد.");
+    const previousMastery = item.mastery;
+    const previousIntervalDays = item.intervalDays;
+    Object.assign(item, this.learningInput(body));
+    if (body.title !== undefined) item.title = String(body.title).trim();
+    if (item.status === LearningStatus.DONE && !item.completedAt) item.completedAt = new Date();
+    if (item.status !== LearningStatus.DONE) item.completedAt = null;
+    const saved = await this.learningItems.save(item);
+    if (body.mastery !== undefined && saved.mastery !== previousMastery) {
+      await this.learningReviews.save(this.learningReviews.create({ item: saved, rating: saved.mastery, previousMastery, newMastery: saved.mastery, previousIntervalDays, nextIntervalDays: saved.intervalDays, nextReviewAt: saved.dueDate }));
+      await this.learningItems.increment({ id: saved.id }, "reviewCount", 1);
+      saved.reviewCount += 1;
+    }
+    return this.publicLearningItem(saved, studentId);
+  }
+
+  async deleteLearningItem(studentId: string, itemId: string) {
+    const result = await this.learningItems.delete({ id: itemId, student: { id: studentId } });
+    if (!result.affected) throw new ApiException(404, "LEARNING_ITEM_NOT_FOUND", "مورد یادگیری پیدا نشد.");
+    return { id: itemId, deleted: true };
+  }
+
+  async learningReviewHistory(studentId: string, itemId: string, limit = 50) {
+    const item = await this.learningItems.findOne({ where: { id: itemId, student: { id: studentId } } });
+    if (!item) throw new ApiException(404, "LEARNING_ITEM_NOT_FOUND", "مورد یادگیری پیدا نشد.");
+    return this.learningReviews.find({ where: { item: { id: itemId } }, order: { reviewedAt: "DESC" }, take: Math.min(Math.max(limit, 1), 100) });
   }
 
   async dashboard(userId?: string) {
@@ -128,14 +212,42 @@ export class StudentsService {
   }
 
   async progress(userId?: string) {
-    const today = await this.today(userId);
-    const completed = today.tasks.filter((task) => task.completedAt).length;
-    return { studentId: today.student?.id || null, completed, total: today.tasks.length, percent: today.tasks.length ? Math.round((completed / today.tasks.length) * 100) : 0 };
+    const student = userId ? await this.findByUserId(userId) : null;
+    const today = new Date().toISOString().slice(0, 10);
+    const from = this.addDays(today, -6);
+    const days = (student?.plans || [])
+      .filter((plan) => plan.status === PlanStatus.PUBLISHED && plan.date >= from && plan.date <= today)
+      .sort((left, right) => left.date.localeCompare(right.date))
+      .map((plan) => this.taskMetrics(plan.date, plan.tasks || []));
+    const summary = days.reduce((result, day) => ({ completed: result.completed + day.completed, total: result.total + day.total }), { completed: 0, total: 0 });
+    return {
+      studentId: student?.id || null,
+      completed: summary.completed,
+      total: summary.total,
+      percent: summary.total ? Math.round((summary.completed / summary.total) * 100) : 0,
+      from,
+      to: today,
+      days,
+    };
   }
 
   async reviews(userId?: string) {
     const student = userId ? await this.findByUserId(userId) : null;
-    return { studentId: student?.id || null, items: [] };
+    const items = (student?.plans || [])
+      .flatMap((plan) => (plan.status === PlanStatus.PUBLISHED ? plan.tasks || [] : []))
+      .filter((task) => task.type === "REVIEW")
+      .sort((left, right) => (left.plan?.date || "").localeCompare(right.plan?.date || "") || left.priority - right.priority);
+    return { studentId: student?.id || null, items };
+  }
+
+  async learning(userId?: string) {
+    const student = userId ? await this.findByUserId(userId) : null;
+    const items = student ? await this.mastery.find({ where: { studentId: student.id }, order: { score: "ASC", topic: "ASC" } }) : [];
+    return {
+      studentId: student?.id || null,
+      summary: { total: items.length, averageScore: items.length ? Math.round((items.reduce((sum, item) => sum + item.score, 0) / items.length) * 10) / 10 : 0 },
+      items,
+    };
   }
 
   async dashboardForStudent(studentId: string) {
@@ -168,11 +280,6 @@ export class StudentsService {
     };
   }
 
-  async completeTask(id: string) {
-    await this.tasks.update(id, { completedAt: new Date() });
-    return { id, completedAt: new Date() };
-  }
-
   private findByUserId(userId: string) {
     return this.students.findOne({ where: { user: { id: userId } }, relations: { user: true, plans: { tasks: true } } });
   }
@@ -193,5 +300,47 @@ export class StudentsService {
 
   private sortTasks(tasks: Task[]) {
     return [...tasks].sort((left, right) => left.priority - right.priority || left.startTime.localeCompare(right.startTime) || left.title.localeCompare(right.title));
+  }
+
+  private taskMetrics(date: string, tasks: Task[]) {
+    const completed = tasks.filter((task) => task.completedAt).length;
+    return { date, completed, total: tasks.length, percent: tasks.length ? Math.round((completed / tasks.length) * 100) : 0 };
+  }
+
+  private addDays(isoDate: string, days: number) {
+    const date = new Date(`${isoDate}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+  }
+
+  private async requireStudent(id: string) {
+    const student = await this.students.findOneBy({ id });
+    if (!student) throw new ApiException(404, "STUDENT_NOT_FOUND", "پرونده دانش‌آموز پیدا نشد.");
+    return student;
+  }
+
+  private progressForStudent(student: Student) {
+    const today = new Date().toISOString().slice(0, 10);
+    const from = this.addDays(today, -6);
+    const days = (student.plans || []).filter((plan) => plan.date >= from && plan.date <= today).sort((a, b) => a.date.localeCompare(b.date)).map((plan) => this.taskMetrics(plan.date, plan.tasks || []));
+    const totals = days.reduce((sum, day) => ({ completed: sum.completed + day.completed, total: sum.total + day.total }), { completed: 0, total: 0 });
+    return { studentId: student.id, from, to: today, days, ...totals, percent: totals.total ? Math.round(totals.completed / totals.total * 100) : 0 };
+  }
+
+  private learningInput(body: Partial<LearningItem>) {
+    const status = Object.values(LearningStatus).includes(body.status as LearningStatus) ? body.status : LearningStatus.PENDING;
+    return { subject: String(body.subject || ""), book: String(body.book || ""), chapter: String(body.chapter || ""), lesson: String(body.lesson || ""), topic: String(body.topic || ""), note: String(body.note || ""), hint: String(body.hint || ""), dueDate: /^\d{4}-\d{2}-\d{2}$/.test(String(body.dueDate || "")) ? String(body.dueDate) : new Date().toISOString().slice(0, 10), mastery: Math.min(5, Math.max(0, Number(body.mastery || 0))), intervalDays: Math.max(1, Number(body.intervalDays || 1)), status };
+  }
+
+  private publicLearningItem(item: LearningItem, studentId: string) {
+    return { ...item, student: undefined, studentId };
+  }
+
+  private learningSummary(items: LearningItem[]) {
+    const today = new Date().toISOString().slice(0, 10);
+    const pending = items.filter((item) => item.status === LearningStatus.PENDING);
+    const subjectMap = new Map<string, LearningItem[]>();
+    for (const item of items) subjectMap.set(item.subject || "بدون درس", [...(subjectMap.get(item.subject || "بدون درس") || []), item]);
+    return { totalItems: items.length, pendingItems: pending.length, dueItems: pending.filter((item) => item.dueDate <= today).length, averageMastery: items.length ? Math.round(items.reduce((sum, item) => sum + item.mastery, 0) / items.length * 10) / 10 : 0, attempts: 0, averageExamPercent: 0, lastAttemptAt: null, subjects: [...subjectMap.entries()].map(([subject, rows]) => ({ subject, items: rows.length, due: rows.filter((item) => item.status === LearningStatus.PENDING && item.dueDate <= today).length, mastery: Math.round(rows.reduce((sum, item) => sum + item.mastery, 0) / rows.length * 10) / 10 })), mistakePatterns: [] };
   }
 }

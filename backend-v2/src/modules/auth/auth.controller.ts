@@ -5,6 +5,7 @@ import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { ApiException } from "../../common/exceptions/api.exception";
 import { ok } from "../../common/utils/envelope";
 import { AuthenticatedUser, AuthService } from "./auth.service";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 import { LoginDto } from "./dto/login.dto";
 
 @Controller("auth")
@@ -31,6 +32,12 @@ export class AuthController {
   async me(@CurrentUser() user: AuthenticatedUser | null) {
     if (!user) throw new ApiException(401, "UNAUTHORIZED", "لطفاً وارد حساب شوید.");
     return ok(await this.auth.me(user));
+  }
+
+  @Post("change-password")
+  async changePassword(@CurrentUser() user: AuthenticatedUser | null, @Body() dto: ChangePasswordDto) {
+    if (!user) throw new ApiException(401, "UNAUTHORIZED", "لطفاً وارد حساب شوید.");
+    return this.auth.changePassword(user, dto.currentPassword, dto.newPassword).then(ok);
   }
 
   @Post("logout")

@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { api, ApiError, getBackendTargetUrl, setSelectedBackend } from "./api";
+import {
+  api,
+  ApiError,
+  getApiBaseUrl,
+  getBackendTargetUrl,
+  getSelectedApiVersion,
+  setSelectedApiVersion,
+  setSelectedBackend,
+} from "./api";
 
 const originalFetch = globalThis.fetch;
 
@@ -48,5 +56,38 @@ describe("api client", () => {
 
     setSelectedBackend("local");
     expect(getBackendTargetUrl()).toBe("http://localhost:4000/api/v1");
+  });
+
+  it("switches the same backend between API v1 and API v2", () => {
+    setSelectedBackend("local");
+    setSelectedApiVersion("v2");
+
+    expect(getSelectedApiVersion()).toBe("v2");
+    expect(getBackendTargetUrl()).toBe("http://localhost:4000/api/v2");
+
+    setSelectedApiVersion("v1");
+    expect(getBackendTargetUrl()).toBe("http://localhost:4000/api/v1");
+  });
+
+  it("replaces a configured API version with the runtime selection", () => {
+    setSelectedApiVersion("v2");
+    expect(getApiBaseUrl()).toMatch(/\/api\/v2$/);
+
+    setSelectedApiVersion("v1");
+    expect(getApiBaseUrl()).toMatch(/\/api\/v1$/);
+  });
+
+  it("dispatches requests through the selected API version", async () => {
+    globalThis.fetch = vi.fn(
+      async () => new Response(JSON.stringify({ ok: true, data: {} }), { status: 200 }),
+    ) as typeof fetch;
+    setSelectedApiVersion("v2");
+
+    await api.get("/auth/me");
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/\/api\/v2\/auth\/me$/),
+      expect.any(Object),
+    );
   });
 });

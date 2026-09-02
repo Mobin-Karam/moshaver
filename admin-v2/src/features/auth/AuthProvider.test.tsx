@@ -5,8 +5,10 @@ import { api } from "../../shared/api/api";
 import { AuthProvider, useAuth } from "./AuthProvider";
 
 const originalFetch = globalThis.fetch;
+
 function Probe() {
   const auth = useAuth();
+
   return (
     <div>
       <span>{auth.status}</span>
@@ -14,6 +16,7 @@ function Probe() {
       <button onClick={() => void api.get("/protected").catch(() => undefined)}>
         protected
       </button>
+      <button onClick={auth.stopRestore}>stop restore</button>
     </div>
   );
 }
@@ -22,6 +25,7 @@ beforeEach(() => {
   sessionStorage.clear();
   localStorage.clear();
 });
+
 afterEach(() => {
   globalThis.fetch = originalFetch;
   vi.restoreAllMocks();
@@ -32,17 +36,30 @@ describe("AuthProvider", () => {
     globalThis.fetch = vi.fn(async () => {
       throw new TypeError("offline");
     }) as typeof fetch;
+
     const view = render(
       <AuthProvider>
         <Probe />
       </AuthProvider>,
     );
+
     expect(
       await screen.findByText(
-        "ارتباط با سرور موقتاً برقرار نیست؛ نشست حذف نشده و دوباره تلاش می‌کنیم…",
+        "ارتباط با سرور برقرار نشد؛ تلاش 1 از 3 انجام شد و دوباره تلاش می‌کنیم…",
       ),
     ).toBeInTheDocument();
+
     expect(screen.getByText("checking")).toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "stop restore" }),
+    );
+
+    expect(screen.getByText("anonymous")).toBeInTheDocument();
+    expect(
+      screen.getByText("بازیابی نشست متوقف شد. برای ادامه وارد حساب شوید."),
+    ).toBeInTheDocument();
+
     view.unmount();
   });
 
@@ -59,21 +76,33 @@ describe("AuthProvider", () => {
         : new Response(
             JSON.stringify({
               ok: false,
-              error: { code: "UNAUTHORIZED", message: "نشست پایان یافته است" },
+              error: {
+                code: "UNAUTHORIZED",
+                message: "نشست پایان یافته است",
+              },
             }),
             { status: 401 },
           ),
     ) as typeof fetch;
+
     render(
       <AuthProvider>
         <Probe />
       </AuthProvider>,
     );
+
     expect(await screen.findByText("authenticated")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "protected" }));
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "protected" }),
+    );
+
     await waitFor(() =>
       expect(screen.getByText("anonymous")).toBeInTheDocument(),
     );
-    expect(screen.getByText("نشست پایان یافته است")).toBeInTheDocument();
+
+    expect(
+      screen.getByText("نشست پایان یافته است"),
+    ).toBeInTheDocument();
   });
 });

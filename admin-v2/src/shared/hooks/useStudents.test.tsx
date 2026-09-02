@@ -15,6 +15,7 @@ function wrapper({ children }: { children: ReactNode }) {
 describe("useStudents education context", () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.mocked(api.get).mockReset();
     vi.mocked(api.get).mockResolvedValue([
       { id: "student-1", name: "اول" },
       { id: "student-2", name: "دوم" },
@@ -34,5 +35,45 @@ describe("useStudents education context", () => {
     result.current.setStudentId("student-2");
     await waitFor(() => expect(result.current.studentId).toBe("student-2"));
     expect(localStorage.getItem("admin-selected-student-id")).toBe("student-2");
+  });
+
+  it("synchronizes separate hook consumers in the same browser tab", async () => {
+    const first = renderHook(() => useStudents(), { wrapper });
+    const second = renderHook(() => useStudents(), { wrapper });
+    await waitFor(() => expect(first.result.current.students).toHaveLength(2));
+    first.result.current.setStudentId("student-2");
+    await waitFor(() => expect(second.result.current.studentId).toBe("student-2"));
+  });
+
+  it("loads every students page so planner selection is not limited to 100 accounts", async () => {
+    const firstPage = Array.from({ length: 100 }, (_, index) => ({
+      id: `student-${index + 1}`,
+      name: `دانش‌آموز ${index + 1}`,
+    }));
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({
+        items: firstPage,
+        total: 101,
+        limit: 100,
+        offset: 0,
+        hasMore: true,
+      })
+      .mockResolvedValueOnce({
+        items: [{ id: "student-101", name: "دانش‌آموز ۱۰۱" }],
+        total: 101,
+        limit: 100,
+        offset: 100,
+        hasMore: false,
+      });
+
+    localStorage.setItem("admin-selected-student-id", "student-101");
+    const { result } = renderHook(() => useStudents(), { wrapper });
+
+    await waitFor(() => expect(result.current.students).toHaveLength(101));
+    expect(result.current.studentId).toBe("student-101");
+    expect(api.get).toHaveBeenNthCalledWith(
+      2,
+      "/admin/students?limit=100&offset=100",
+    );
   });
 });

@@ -1,126 +1,94 @@
-<!-- DOCS_NAV_START -->
-[Docs Home](./README.md) | [Runbook](./REPO_AUDIT_AND_RUNBOOK.md) | [Student v2 Gaps](./student-app-v2-gap-analysis.md) | [Student v2 Plan](./student-app-v2-implementation-plan.md) | [Student Core](./student-core-architecture.md) | [Tauri](./tauri-architecture.md)
-<!-- DOCS_NAV_END -->
-# Moshaver Documentation Dashboard
+# Moshaver documentation
 
-Last updated: 2026-08-20
+This directory is the navigation hub for the Moshaver monorepo. Documentation is grouped by intent so a person or an agent can distinguish current architecture from migration plans and historical evidence.
 
-Welcome to the Moshaver documentation hub. This folder is the single place to browse project, migration, release, deployment, and module documentation.
+Last repository inspection: 2026-09-02.
 
-## Start Here
+## Read first
 
-1. [Repo Audit and Runbook](./REPO_AUDIT_AND_RUNBOOK.md)
-2. [Student App v2 Gap Analysis](./student-app-v2-gap-analysis.md)
-3. [Student App v2 Implementation Plan](./student-app-v2-implementation-plan.md)
-4. [Student App v1 Backup Analysis](./student-app-v1-backup-analysis.md)
-5. [Student Core Architecture](./student-core-architecture.md)
-6. [Tauri Student App Architecture](./tauri-architecture.md)
+1. [System map](./architecture/system-map.md) — applications, APIs, data stores, runtime relationships, and version boundaries.
+2. [Repository runbook](./operations/repository-runbook.md) — local commands, validation, deployment entry points, and known script caveats.
+3. Choose the relevant version:
+   - [v1.4 runtime architecture](./architecture/backend-v1-4-runtime.md)
+   - [backend v2 design](./architecture/backend-v2-design.md)
+   - [student v2/Tauri runtime](./architecture/student-v2-tauri-runtime.md)
 
-## Current Reality
+## Directory contract
 
-The active production-capable stack is still the v1 app stack:
+```text
+docs/
+├── architecture/  Current system shape and stable technical boundaries
+├── components/    One document per runnable app or public API
+├── operations/    Run, validate, secure, recover, and deploy the system
+├── migrations/    Compatibility gaps and staged v1-to-v2 work
+├── product/       Product direction, UX principles, and shared assets
+├── releases/      User-facing changelog, release notes, and screenshots
+└── history/       Dated audits, old fixes, and evidence snapshots
+```
 
-- `backend/`
-- `student-app/`
-- `admin-app/`
+Current behavior belongs in `architecture/`, `components/`, or `operations/`. Unfinished work belongs in `migrations/`. Time-bound evidence belongs in `history/`; do not treat it as current without checking the source.
 
-The migration stack exists and builds, but is not yet feature-parity:
+## Architecture
 
-- `student-core/`
-- `student-app-v2/`
-- `backend-v2/`
-- `admin-v2/`
+- [System map](./architecture/system-map.md)
+- [v1.4 runtime architecture](./architecture/backend-v1-4-runtime.md)
+- [Backend v2 design](./architecture/backend-v2-design.md)
+- [Student core boundary](./architecture/student-core-boundary.md)
+- [Student v2 and Tauri runtime](./architecture/student-v2-tauri-runtime.md)
 
-Read [Student App v2 Gap Analysis](./student-app-v2-gap-analysis.md) before replacing any legacy student flow.
+## Components and APIs
 
-## Migration Series
+- [Backend v1.4 service](./components/backend-v1-4-service.md)
+- [Backend v2 service](./components/backend-v2-service.md)
+- [Backend v2 HTTP API](./components/backend-v2-http-api.md)
+- [Admin v2 application](./components/admin-v2-application.md)
 
-- [Migration v1 to v2](./migration-v1-to-v2.md)
-- [Backend v2 Discovery](./backend-v2-discovery.md)
-- [Student App v1 Backup Analysis](./student-app-v1-backup-analysis.md)
-- [Student Core Architecture](./student-core-architecture.md)
-- [Tauri Student App Architecture](./tauri-architecture.md)
-- [Student App v2 Gap Analysis](./student-app-v2-gap-analysis.md)
-- [Student App v2 Implementation Plan](./student-app-v2-implementation-plan.md)
+The v1.4 static Admin and Student applications are described with their backend in the [v1.4 runtime architecture](./architecture/backend-v1-4-runtime.md).
 
-## Operations and Security
+## Operations
 
-- [Security](./reference/SECURITY.md)
-- [Runflare Deploy](./reference/RUNFLARE_DEPLOY.md)
-- [Auth Sync Fix v1.3.3](./reference/AUTH_SYNC_FIX_v1.3.3.md)
-- [Chat SSE](./reference/CHAT_SSE.md)
-- [JSON Import Guide](./reference/JSON_IMPORT_GUIDE.md)
+- [Repository runbook](./operations/repository-runbook.md)
+- [v1.4 security model](./operations/security-v1-4.md)
+- [v1.4 Runflare deployment](./operations/runflare-v1-4-deployment.md)
+- [v1.4 chat and realtime SSE](./operations/chat-realtime-sse-v1-4.md)
+- [Plan import schema version 2](./operations/plan-import-schema-v2.md)
 
-## Product and Planning
+## Migration work
 
-- [UI/UX Plan](./reference/UI_UX_PLAN.md)
-- [Version Roadmap](./reference/VERSION_ROADMAP.md)
+- [Backend v1-to-v2 strategy](./migrations/backend-v1-to-v2-strategy.md)
+- [Backend v2 discovery](./migrations/backend-v2-discovery.md)
+- [Admin v2 API gap plan](./migrations/admin-v2-api-gap-plan.md)
+- [Admin v2 API compatibility](./migrations/admin-v2-api-compatibility.md)
+- [Admin v2 migration guide](./migrations/admin-v2-migration-guide.md)
+- [Student v1 feature inventory](./migrations/student-v1-feature-inventory.md)
+- [Student v1-to-v2 audit](./migrations/student-v1-to-v2-audit.md)
+- [Student v2 parity gaps](./migrations/student-v2-parity-gaps.md)
+- [Student v2 delivery plan](./migrations/student-v2-delivery-plan.md)
 
-## Releases
+## Product and releases
 
-- [Changelog](./releases/CHANGELOG.md)
-- [Release Notes v1.4.0](./releases/RELEASE_NOTES_v1.4.0.md)
-- [Release Notes v1.4.1](./releases/RELEASE_NOTES_v1.4.1.md)
-- [Release Notes v1.4.2](./releases/RELEASE_NOTES_v1.4.2.md)
+- [Interface design principles](./product/interface-design-principles.md)
+- [Version roadmap](./product/version-roadmap.md)
+- [Application icon catalog](./product/application-icon-catalog.md)
+- [Product changelog](./releases/product-changelog.md)
+- [v1.4.0 — Admin and exams](./releases/v1-4-0-admin-exams.md)
+- [v1.4.1 — Inline exams](./releases/v1-4-1-inline-exams.md)
+- [v1.4.2 — Daily motivation](./releases/v1-4-2-daily-motivation.md)
 
-## Module Docs
+## Historical evidence
 
-### Backend v1
+- [v1.4 architecture audit — 2026-08-24](./history/audits/v1-4-architecture-audit-2026-08-24.md)
+- [Repository inventory — 2026-08-24](./history/audits/repository-inventory-2026-08-24.md)
+- [Initial v2 analysis](./history/audits/v2-initial-analysis.md)
+- [Backend v2 test snapshot](./history/audits/backend-v2-test-report.md)
+- [Admin v2 test snapshot](./history/audits/admin-v2-test-report.md)
+- [Auth/sync fix v1.3.3](./history/fixes/auth-sync-v1-3-3.md)
+- [Backend v1 changelog](./history/backend-v1-changelog.md)
 
-- [Backend README](./module-docs/backend/README.md)
-- [Backend Changelog](./module-docs/backend/CHANGELOG.md)
-- [Backend Runflare](./module-docs/backend/RUNFLARE.md)
+## Maintenance rules
 
-### Backend v2
-
-- [Backend v2 README](./module-docs/backend-v2/README.md)
-- [Backend v2 API](./module-docs/backend-v2/API.md)
-- [Backend v2 Architecture](./module-docs/backend-v2/ARCHITECTURE.md)
-- [Backend v2 Test Report](./module-docs/backend-v2/TEST_REPORT.md)
-
-### Admin v2
-
-- [Admin v2 README](./module-docs/admin-v2/README.md)
-- [Admin v2 Migration Guide](./module-docs/admin-v2/MIGRATION_GUIDE.md)
-- [Admin v2 API Compatibility Report](./module-docs/admin-v2/API_COMPATIBILITY_REPORT.md)
-- [Admin v2 Test Report](./module-docs/admin-v2/TEST_REPORT.md)
-
-### Assets
-
-- [Student App Icons](./module-docs/assets/student-app-icons.md)
-- [Admin App Icons](./module-docs/assets/admin-app-icons.md)
-
-## Blog-Style Reading Order
-
-### 1. Understand the Running System
-
-- [Repo Audit and Runbook](./REPO_AUDIT_AND_RUNBOOK.md)
-- [Security](./reference/SECURITY.md)
-- [Runflare Deploy](./reference/RUNFLARE_DEPLOY.md)
-
-### 2. Understand the Migration
-
-- [Migration v1 to v2](./migration-v1-to-v2.md)
-- [Backend v2 Discovery](./backend-v2-discovery.md)
-- [Student App v1 Backup Analysis](./student-app-v1-backup-analysis.md)
-
-### 3. Continue Student App Migration
-
-- [Student Core Architecture](./student-core-architecture.md)
-- [Tauri Student App Architecture](./tauri-architecture.md)
-- [Student App v2 Gap Analysis](./student-app-v2-gap-analysis.md)
-- [Student App v2 Implementation Plan](./student-app-v2-implementation-plan.md)
-
-### 4. Validate Releases
-
-- [Changelog](./releases/CHANGELOG.md)
-- [Release Notes v1.4.2](./releases/RELEASE_NOTES_v1.4.2.md)
-
-## Maintenance Rules
-
-- Put new markdown docs under `docs/`.
-- Keep root `README.md` as the short project landing page only.
-- Keep module-specific docs in `docs/module-docs/<module>/`.
-- Keep release notes in `docs/releases/`.
-- Keep operational references in `docs/reference/`.
-- Add every new document to this dashboard.
+- Use descriptive kebab-case filenames that include the component and version when version-specific.
+- Put verification dates inside snapshot documents and move stale snapshots to `history/`.
+- Update this index and all inbound links when moving a document.
+- Never duplicate an operations guide; keep one canonical document and link to it.
+- Never place credentials, tokens, production database contents, or private `.env` values in documentation.

@@ -1,0 +1,510 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  BookOpen,
+  BookPlus,
+  Edit3,
+  RotateCcw,
+  Save,
+  Search,
+} from "lucide-react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useStudentSelection } from "../../../shared/hooks/useStudentSelection";
+import { fa, normalizePersianText } from "../../../shared/lib/utils";
+import { useModal } from "../../../shared/ui/modal";
+import { notify } from "../../../shared/ui/notifications";
+import { StudentPicker } from "../../../shared/ui/StudentPicker";
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  Field,
+  Input,
+  Select,
+  Textarea,
+} from "../../../shared/ui/ui";
+import {
+  createSubject,
+  getStudentSubjects,
+  getSubjects,
+  updateStudentSubject,
+  updateSubject,
+} from "../api/subjects.api";
+import type { Subject, SubjectsMode as Mode } from "../model/subject.types";
+
+export function SubjectsPage() {
+  const students = useStudentSelection(),
+    qc = useQueryClient(),
+    modal = useModal(),
+    [params, setParams] = useSearchParams();
+  const [mode, setMode] = useState<Mode>(
+      params.get("mode") === "catalog" ? "catalog" : "student",
+    ),
+    [search, setSearch] = useState(params.get("q") || "");
+  const deferredSearch = useDeferredValue(search);
+  const subjects = useQuery({ queryKey: ["subjects"], queryFn: getSubjects });
+  const assigned = useQuery({
+    queryKey: ["student-subjects", students.studentId],
+    enabled: !!students.studentId && mode === "student",
+    queryFn: () => getStudentSubjects(students.studentId),
+  });
+  const create = useMutation({
+    mutationFn: createSubject,
+    onSuccess: () => {
+      notify("درس جدید ساخته شد.");
+      void refreshAll();
+    },
+    onError: (error) =>
+      notify(
+        error instanceof Error ? error.message : "ساخت درس ناموفق بود.",
+        "error",
+      ),
+  });
+  const updateCatalog = useMutation({
+    mutationFn: updateSubject,
+    onSuccess: () => {
+      notify("مشخصات درس به‌روز شد.");
+      void refreshAll();
+    },
+    onError: (error) =>
+      notify(
+        error instanceof Error ? error.message : "ویرایش درس ناموفق بود.",
+        "error",
+      ),
+  });
+  const updateStudent = useMutation({
+    mutationFn: (subject: Subject) =>
+      updateStudentSubject(students.studentId, subject),
+    onSuccess: () => {
+      notify("وضعیت آموزشی دانش‌آموز ذخیره شد.");
+      void qc.invalidateQueries({
+        queryKey: ["student-subjects", students.studentId],
+      });
+    },
+    onError: (error) =>
+      notify(
+        error instanceof Error ? error.message : "ذخیره وضعیت درس ناموفق بود.",
+        "error",
+      ),
+  });
+  const source = mode === "catalog" ? subjects.data : assigned.data;
+  const rows = useMemo(
+    () =>
+      (source || [])
+        .filter((row) =>
+          normalizePersianText(
+            `${row.name} ${row.subject_key || row.subjectKey || ""} ${row.note || ""}`,
+          ).includes(normalizePersianText(deferredSearch)),
+        )
+        .sort(
+          (a, b) =>
+            Number(a.display_order ?? a.displayOrder ?? 0) -
+            Number(b.display_order ?? b.displayOrder ?? 0),
+        ),
+    [deferredSearch, source],
+  );
+  const summary = {
+    total: source?.length || 0,
+    strong: (assigned.data || []).filter((row) => row.status === "green")
+      .length,
+    attention: (assigned.data || []).filter((row) => row.status === "red")
+      .length,
+    average: assigned.data?.length
+      ? Math.round(
+          assigned.data.reduce(
+            (sum, row) => sum + Number(row.progress || 0),
+            0,
+          ) / assigned.data.length,
+        )
+      : 0,
+  };
+  function updateUrl(next: { mode?: Mode; q?: string; studentId?: string }) {
+    setParams(
+      (current) => {
+        const copy = new URLSearchParams(current),
+          nextMode = next.mode ?? mode,
+          nextQuery = next.q ?? search,
+          nextStudent = next.studentId ?? students.studentId;
+        nextMode === "student"
+          ? copy.delete("mode")
+          : copy.set("mode", nextMode);
+        nextQuery.trim() ? copy.set("q", nextQuery.trim()) : copy.delete("q");
+        if (nextStudent) copy.set("studentId", nextStudent);
+        return copy;
+      },
+      { replace: true },
+    );
+  }
+  async function refreshAll() {
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ["subjects"] }),
+      qc.invalidateQueries({ queryKey: ["student-subjects"] }),
+    ]);
+  }
+  function openCreate() {
+    modal.open({
+      title: "درس جدید",
+      description: "درس برای همه دانش‌آموزان به فهرست آموزشی اضافه می‌شود.",
+      content: (
+        <CatalogForm
+          onSubmit={async (value) => {
+            await create.mutateAsync(value);
+            modal.close();
+          }}
+        />
+      ),
+    });
+  }
+  function openCatalogEdit(subject: Subject) {
+    modal.open({
+      title: "ویرایش درس",
+      description: subject.subject_key || subject.subjectKey,
+      content: (
+        <CatalogForm
+          initial={subject}
+          onSubmit={async (value) => {
+            await updateCatalog.mutateAsync({
+              ...subject,
+              ...value,
+              display_order: value.displayOrder,
+            });
+            modal.close();
+          }}
+        />
+      ),
+    });
+  }
+  const activeQuery = mode === "catalog" ? subjects : assigned;
+  return (
+    <div className="grid gap-4">
+      <Card className="sticky top-16 z-10 p-3 shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex rounded-md bg-slate-100 p-1">
+            <button
+              className={`rounded px-3 py-2 text-xs font-bold ${mode === "student" ? "bg-white text-brand shadow-sm" : "text-slate-500"}`}
+              onClick={() => {
+                setMode("student");
+                updateUrl({ mode: "student" });
+              }}
+            >
+              وضعیت دانش‌آموز
+            </button>
+            <button
+              className={`rounded px-3 py-2 text-xs font-bold ${mode === "catalog" ? "bg-white text-brand shadow-sm" : "text-slate-500"}`}
+              onClick={() => {
+                setMode("catalog");
+                updateUrl({ mode: "catalog" });
+              }}
+            >
+              فهرست سراسری
+            </button>
+          </div>
+          {mode === "student" ? (
+            <div className="min-w-56 flex-1 md:max-w-xs">
+              <StudentPicker
+                students={students.students}
+                value={students.studentId}
+                onChange={students.selectStudent}
+              />
+            </div>
+          ) : (
+            <div className="flex-1" />
+          )}
+          <Button onClick={openCreate}>
+            <BookPlus size={16} /> درس جدید
+          </Button>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <label className="flex h-10 min-w-56 flex-1 items-center gap-2 rounded-md border bg-slate-50 px-3">
+            <Search size={16} className="text-slate-400" />
+            <input
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                updateUrl({ q: event.target.value });
+              }}
+              placeholder="جستجوی نام، کلید یا یادداشت درس"
+            />
+          </label>
+          {search ? (
+            <Button
+              className="h-9 px-2"
+              variant="ghost"
+              onClick={() => {
+                setSearch("");
+                updateUrl({ q: "" });
+              }}
+            >
+              <RotateCcw size={15} /> پاک‌کردن
+            </Button>
+          ) : null}
+          <Badge tone="blue">{rows.length.toLocaleString("fa-IR")} نتیجه</Badge>
+        </div>
+      </Card>
+      {mode === "student" ? (
+        <section className="grid grid-cols-2 gap-2 md:grid-cols-4">
+          <Metric label="همه درس‌ها" value={summary.total} />
+          <Metric label="میانگین پیشرفت" value={`${fa(summary.average)}٪`} />
+          <Metric label="وضعیت خوب" value={summary.strong} tone="green" />
+          <Metric label="نیازمند توجه" value={summary.attention} tone="red" />
+        </section>
+      ) : null}
+      <Card>
+        {activeQuery.isLoading ? (
+          <Skeleton />
+        ) : activeQuery.isError ? (
+          <EmptyState
+            title="دریافت اطلاعات درس‌ها ناموفق بود."
+            action={
+              <Button variant="soft" onClick={() => void activeQuery.refetch()}>
+                تلاش دوباره
+              </Button>
+            }
+          />
+        ) : rows.length ? (
+          <div className="grid gap-3">
+            {rows.map((row) =>
+              mode === "catalog" ? (
+                <CatalogRow
+                  key={row.id}
+                  subject={row}
+                  onEdit={() => openCatalogEdit(row)}
+                />
+              ) : (
+                <StudentSubjectEditor
+                  key={`${students.studentId}-${row.id}`}
+                  initial={row}
+                  onSave={(value) => updateStudent.mutate(value)}
+                  saving={
+                    updateStudent.isPending &&
+                    updateStudent.variables?.id === row.id
+                  }
+                />
+              ),
+            )}
+          </div>
+        ) : (
+          <EmptyState
+            title={
+              search ? "درسی با این جستجو پیدا نشد." : "درسی ثبت نشده است."
+            }
+          />
+        )}
+      </Card>
+    </div>
+  );
+}
+
+function CatalogRow({
+  subject,
+  onEdit,
+}: {
+  subject: Subject;
+  onEdit: () => void;
+}) {
+  return (
+    <article className="flex flex-wrap items-center gap-3 rounded-lg border p-3">
+      <span className="grid size-10 place-items-center rounded-full bg-indigo-50 text-brand">
+        <BookOpen size={18} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <strong>{subject.name}</strong>
+        <p className="truncate text-xs text-slate-500" dir="ltr">
+          {subject.subject_key || subject.subjectKey}
+        </p>
+      </div>
+      <Badge>
+        ترتیب {fa(subject.display_order ?? subject.displayOrder ?? 0)}
+      </Badge>
+      <Button variant="soft" onClick={onEdit}>
+        <Edit3 size={15} /> ویرایش
+      </Button>
+    </article>
+  );
+}
+function StudentSubjectEditor({
+  initial,
+  onSave,
+  saving,
+}: {
+  initial: Subject;
+  onSave: (subject: Subject) => void;
+  saving: boolean;
+}) {
+  const [subject, setSubject] = useState(initial);
+  useEffect(() => setSubject(initial), [initial]);
+  const dirty = JSON.stringify(subject) !== JSON.stringify(initial);
+  return (
+    <article
+      className={`grid gap-3 rounded-lg border p-3 lg:grid-cols-[1.1fr_140px_150px_1fr_1.4fr_auto] lg:items-end ${subject.status === "red" ? "border-rose-200 bg-rose-50/30" : ""}`}
+    >
+      <div>
+        <strong>{subject.name}</strong>
+        <p className="text-xs text-slate-500" dir="ltr">
+          {subject.subject_key || subject.subjectKey}
+        </p>
+      </div>
+      <Field label="وضعیت">
+        <Select
+          value={subject.status || "yellow"}
+          onChange={(event) =>
+            setSubject({ ...subject, status: event.target.value })
+          }
+        >
+          <option value="green">خوب</option>
+          <option value="yellow">نیازمند پیگیری</option>
+          <option value="red">ضعیف</option>
+        </Select>
+      </Field>
+      <Field label={`پیشرفت ${fa(subject.progress || 0)}٪`}>
+        <Input
+          type="range"
+          min={0}
+          max={100}
+          value={subject.progress || 0}
+          onChange={(event) =>
+            setSubject({ ...subject, progress: Number(event.target.value) })
+          }
+        />
+      </Field>
+      <Field label="تسلط">
+        <Input
+          value={subject.mastery || ""}
+          onChange={(event) =>
+            setSubject({ ...subject, mastery: event.target.value })
+          }
+          placeholder="مثلاً متوسط"
+        />
+      </Field>
+      <Field label="یادداشت مشاور">
+        <Textarea
+          rows={1}
+          value={subject.note || ""}
+          onChange={(event) =>
+            setSubject({ ...subject, note: event.target.value })
+          }
+        />
+      </Field>
+      <Button
+        loading={saving}
+        variant={dirty ? "primary" : "soft"}
+        disabled={!dirty || saving}
+        onClick={() => onSave(subject)}
+      >
+        <Save size={15} /> ذخیره
+      </Button>
+    </article>
+  );
+}
+function CatalogForm({
+  initial,
+  onSubmit,
+}: {
+  initial?: Subject;
+  onSubmit: (value: {
+    name: string;
+    subjectKey: string;
+    displayOrder: number;
+  }) => Promise<void>;
+}) {
+  const [value, setValue] = useState({
+      name: initial?.name || "",
+      subjectKey: initial?.subject_key || initial?.subjectKey || "",
+      displayOrder: Number(
+        initial?.display_order ?? initial?.displayOrder ?? 99,
+      ),
+    }),
+    [busy, setBusy] = useState(false);
+  return (
+    <form
+      className="grid gap-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setBusy(true);
+        void onSubmit(value).finally(() => setBusy(false));
+      }}
+    >
+      <Field label="نام درس">
+        <Input
+          autoFocus
+          maxLength={150}
+          value={value.name}
+          onChange={(event) => setValue({ ...value, name: event.target.value })}
+        />
+      </Field>
+      <Field label="کلید یکتا">
+        <Input
+          dir="ltr"
+          maxLength={80}
+          disabled={!!initial}
+          value={value.subjectKey}
+          onChange={(event) =>
+            setValue({
+              ...value,
+              subjectKey: event.target.value.trim().replace(/\s+/g, "-"),
+            })
+          }
+          placeholder="mathematics"
+        />
+      </Field>
+      <Field label="ترتیب نمایش">
+        <Input
+          type="number"
+          min={0}
+          value={value.displayOrder}
+          onChange={(event) =>
+            setValue({ ...value, displayOrder: Number(event.target.value) })
+          }
+        />
+      </Field>
+      {initial ? (
+        <p className="text-xs text-slate-500">
+          برای حفظ ارتباط داده‌ها، کلید یکتا پس از ساخت تغییر نمی‌کند.
+        </p>
+      ) : null}
+      <Button
+        type="submit"
+        loading={busy}
+        disabled={
+          busy || value.name.trim().length < 2 || !value.subjectKey.trim()
+        }
+      >
+        {initial ? "ذخیره تغییرات" : "ساخت درس"}
+      </Button>
+    </form>
+  );
+}
+function Metric({
+  label,
+  value,
+  tone = "blue",
+}: {
+  label: string;
+  value: string | number;
+  tone?: "blue" | "green" | "red";
+}) {
+  return (
+    <Card className="p-3">
+      <span className="text-xs text-slate-500">{label}</span>
+      <strong
+        className={`mt-1 block text-xl ${tone === "green" ? "text-emerald-700" : tone === "red" ? "text-rose-700" : "text-slate-800"}`}
+      >
+        {typeof value === "number" ? fa(value) : value}
+      </strong>
+    </Card>
+  );
+}
+function Skeleton() {
+  return (
+    <div className="grid gap-2">
+      {[1, 2, 3, 4].map((item) => (
+        <div
+          key={item}
+          className="h-24 animate-pulse rounded-lg bg-slate-100"
+        />
+      ))}
+    </div>
+  );
+}

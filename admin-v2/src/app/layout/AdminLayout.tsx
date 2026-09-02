@@ -2,12 +2,12 @@ import { ChevronLeft, ChevronRight, Home, LogOut, PanelLeftClose, PanelLeftOpen 
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Button } from "../../shared/ui/ui";
-import { useAuth } from "../../features/auth/AuthProvider";
+import { useAuth } from "../../features/auth";
 import { useModal } from "../../shared/ui/modal";
 import { DevBackendSwitcher } from "../dev/DevBackendSwitcher";
 import { adminBreadcrumbs, adminDestination, adminNavigation, flatAdminNavigation, mainAdminNavigation, resolveAdminNavigation } from "./admin-navigation";
-import { HeaderNotifications } from "../../features/notifications/HeaderNotifications";
-import { useAdminNotifications } from "../../features/notifications/NotificationProvider";
+import { HeaderNotifications, useAdminNotifications } from "../../features/notifications";
+import { ThemeSwitcher } from "../../shared/theme/theme";
 
 export function AdminLayout() {
   const auth = useAuth();
@@ -40,7 +40,7 @@ export function AdminLayout() {
               aria-label={title}
               aria-current={current.section === section ? "page" : undefined}
               className={() =>
-                `flex h-11 items-center rounded-md text-sm font-semibold ${mainCollapsed ? "justify-center px-2" : "gap-3 px-3"} ${current.section === section ? "bg-teal-50 text-brand" : "text-slate-600 hover:bg-slate-50"}`
+                `flex h-11 items-center rounded-md text-sm font-semibold ${mainCollapsed ? "justify-center px-2" : "gap-3 px-3"} ${current.section === section ? "bg-indigo-50 text-brand" : "text-slate-600 hover:bg-slate-50"}`
               }
             >
               <Icon className="shrink-0" size={19} />
@@ -60,6 +60,7 @@ export function AdminLayout() {
             <p className="hidden truncate text-xs text-slate-500 md:block">{current.description}</p>
           </div>
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+            <ThemeSwitcher />
             <HeaderNotifications />
             <DevBackendSwitcher />
             <Button
@@ -93,7 +94,7 @@ export function AdminLayout() {
               end={path === ""}
               aria-current={current.path === path ? "page" : undefined}
               className={() =>
-                `flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold ${current.path === path ? "bg-teal-50 text-brand" : "text-slate-600"}`
+                `flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold ${current.path === path ? "bg-indigo-50 text-brand" : "text-slate-600"}`
               }
             >
               <Icon size={16} />
@@ -102,7 +103,7 @@ export function AdminLayout() {
             </NavLink>
           ))}
         </nav>
-        <main className="w-full p-3 sm:p-4 lg:p-5 xl:p-6">
+        <main className="w-full p-2 sm:p-2 lg:p-2 xl:p-2">
           <Outlet />
         </main>
       </div>

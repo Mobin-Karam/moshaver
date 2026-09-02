@@ -34,7 +34,7 @@ type ModalContextValue = {
   confirm: (options: Omit<ModalOptions, "onConfirm">) => Promise<boolean>;
 };
 
-type ActiveModal = ModalOptions & { resolve?: (result: boolean) => void };
+type ActiveModal = ModalOptions & { resolve?: (result: boolean) => void; parent?: ActiveModal | null };
 const ModalContext = createContext<ModalContextValue | null>(null);
 
 export function ModalProvider({ children }: { children: ReactNode }) {
@@ -42,9 +42,10 @@ export function ModalProvider({ children }: { children: ReactNode }) {
   const activeRef = useRef<ActiveModal | null>(null);
 
   const settle = useCallback((result: boolean) => {
-    activeRef.current?.resolve?.(result);
-    activeRef.current = null;
-    setActive(null);
+    const current = activeRef.current;
+    current?.resolve?.(result);
+    activeRef.current = current?.parent || null;
+    setActive(current?.parent || null);
   }, []);
 
   const value = useMemo<ModalContextValue>(
@@ -74,6 +75,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
             cancelLabel: "انصراف",
             ...options,
             resolve,
+            parent: activeRef.current,
           };
           activeRef.current = next;
           setActive(next);

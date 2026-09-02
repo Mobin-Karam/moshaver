@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BookOpen, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, LockKeyhole, Pause, Play, Square, X } from 'lucide-react';
+import { BookOpen, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Info, LockKeyhole, Pause, Play, Square, X } from 'lucide-react';
 import { planMetrics, taskStatus, type StudentTask, type TaskRuntimeStatus } from '@moshaver/student-core';
 import { useStudentStore } from '../../services/student-store';
 
@@ -11,15 +11,24 @@ export function PlanPage() {
   const loadStatus = useStudentStore((state) => state.loadStatus);
   const activeSession = useStudentStore((state) => state.activeSession);
   const startTask = useStudentStore((state) => state.startTask);
+  const pauseFocus = useStudentStore((state) => state.pauseFocus);
+  const resumeFocus = useStudentStore((state) => state.resumeFocus);
   const finishTask = useStudentStore((state) => state.finishTask);
   const cancelFocus = useStudentStore((state) => state.cancelFocus);
+  const storeError = useStudentStore((state) => state.error);
   const [date, setDate] = useState(plan.isoDate);
   const [now, setNow] = useState(new Date());
   const [finishTaskId, setFinishTaskId] = useState<string | null>(null);
+  const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState({ actualTests: '', difficulty: 'متوسط', note: '' });
+  const [finishError, setFinishError] = useState<string | null>(null);
+  const [isFinishing, setIsFinishing] = useState(false);
   const metrics = planMetrics(plan.tasks);
   const activeTask = useMemo(() => plan.tasks.find((task) => task.id === activeSession?.taskId) ?? null, [activeSession?.taskId, plan.tasks]);
-  const elapsedSeconds = activeSession ? Math.max(0, Math.floor((now.getTime() - new Date(activeSession.startedAt).getTime()) / 1000)) : 0;
+  const detailTask = useMemo(() => plan.tasks.find((task) => task.id === detailTaskId) ?? null, [detailTaskId, plan.tasks]);
+  const elapsedSeconds = activeSession
+    ? activeSession.elapsedSeconds + (activeSession.status === 'running' ? Math.max(0, Math.floor((now.getTime() - new Date(activeSession.startedAt).getTime()) / 1000)) : 0)
+    : 0;
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
@@ -67,6 +76,7 @@ export function PlanPage() {
 
       <section className="space-y-3">
         {loadStatus === 'loading' ? <article className="surface p-4 text-sm text-ink/60">در حال دریافت برنامه...</article> : null}
+        {loadStatus === 'error' && storeError ? <article className="surface space-y-3 p-4 text-sm text-red-700"><p>{storeError}</p><button className="rounded-md bg-ink px-3 py-2 text-white" onClick={() => void loadPlan(date)}>تلاش دوباره</button></article> : null}
         {plan.tasks.length ? plan.tasks.map((task, index) => (
           <TaskCard
             key={task.id}
@@ -79,6 +89,7 @@ export function PlanPage() {
               setFinishTaskId(task.id);
               setFeedback({ actualTests: String(task.testCount || ''), difficulty: 'متوسط', note: '' });
             }}
+            onDetails={() => setDetailTaskId(task.id)}
           />
         )) : <article className="surface p-4 text-sm text-ink/60">برنامه منتشرشده‌ای برای این روز وجود ندارد.</article>}
       </section>
@@ -92,7 +103,10 @@ export function PlanPage() {
               <span className="text-xs text-white/70" dir="ltr">{formatElapsed(elapsedSeconds)}</span>
             </div>
             <div className="flex gap-2">
-              <button className="grid size-10 place-items-center rounded-md bg-white/10" onClick={() => cancelFocus()} aria-label="توقف"><Pause size={18} /></button>
+              {activeSession ? <button className="grid size-10 place-items-center rounded-md bg-white/10" onClick={() => activeSession.status === 'running' ? pauseFocus() : resumeFocus()} aria-label={activeSession.status === 'running' ? 'مکث' : 'ادامه'}>
+                {activeSession.status === 'running' ? <Pause size={18} /> : <Play size={18} />}
+              </button> : null}
+              <button className="grid size-10 place-items-center rounded-md bg-white/10" onClick={cancelFocus} aria-label="لغو"><X size={18} /></button>
               <button className="grid size-10 place-items-center rounded-md bg-mint text-white" onClick={() => {
                 setFinishTaskId(activeTask.id);
                 setFeedback({ actualTests: String(activeTask.testCount || ''), difficulty: 'متوسط', note: '' });
@@ -108,7 +122,12 @@ export function PlanPage() {
             className="surface w-full max-w-3xl space-y-3 p-4"
             onSubmit={(event) => {
               event.preventDefault();
-              void finishTask(finishTaskId, { actualTests: Number(feedback.actualTests || 0), difficulty: feedback.difficulty, note: feedback.note }).then(() => setFinishTaskId(null));
+              setIsFinishing(true);
+              setFinishError(null);
+              void finishTask(finishTaskId, { actualTests: Number(feedback.actualTests || 0), difficulty: feedback.difficulty, note: feedback.note })
+                .then(() => setFinishTaskId(null))
+                .catch((error) => setFinishError(error instanceof Error ? error.message : 'ثبت پایان مطالعه ناموفق بود.'))
+                .finally(() => setIsFinishing(false));
             }}
           >
             <div className="flex items-center justify-between">
@@ -131,15 +150,50 @@ export function PlanPage() {
               <span className="text-sm text-ink/65">یادداشت</span>
               <textarea className="min-h-24 w-full rounded-md border border-black/10 px-3 py-2" value={feedback.note} onChange={(event) => setFeedback((current) => ({ ...current, note: event.target.value }))} />
             </label>
-            <button className="w-full rounded-md bg-ink px-4 py-3 text-white">ثبت پایان مطالعه</button>
+            {finishError ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">{finishError}</p> : null}
+            <button className="w-full rounded-md bg-ink px-4 py-3 text-white disabled:opacity-60" disabled={isFinishing}>
+              {isFinishing ? 'در حال ثبت...' : 'ثبت پایان مطالعه'}
+            </button>
           </form>
+        </div>
+      ) : null}
+
+      {detailTask ? (
+        <div className="fixed inset-0 z-40 grid place-items-end bg-black/35 p-4" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && setDetailTaskId(null)}>
+          <article className="surface w-full max-w-3xl space-y-4 p-4" role="dialog" aria-modal="true" aria-labelledby="task-detail-title">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="text-xs text-ink/60">جزئیات فعالیت</span>
+                <h2 id="task-detail-title" className="mt-1 text-lg font-semibold">{taskTitle(detailTask)}</h2>
+              </div>
+              <button type="button" className="grid size-9 place-items-center rounded-md bg-paper" onClick={() => setDetailTaskId(null)} aria-label="بستن"><X size={18} /></button>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <span className="rounded-md bg-paper px-3 py-2" dir="ltr">{detailTask.start} - {detailTask.end}</span>
+              <span className="rounded-md bg-paper px-3 py-2">{plannedMinutes(detailTask)} دقیقه</span>
+            </div>
+            <p className="rounded-md bg-paper px-3 py-3 text-sm text-ink/70">{detailTask.note || 'برای این فعالیت توضیحی ثبت نشده است.'}</p>
+            <div className="flex gap-2">
+              <button type="button" className="flex flex-1 items-center justify-center gap-2 rounded-md bg-paper px-3 py-3 text-sm" onClick={() => startTask(detailTask.id)}>
+                <Play size={16} /> شروع مطالعه
+              </button>
+              <button type="button" className="flex flex-1 items-center justify-center gap-2 rounded-md bg-ink px-3 py-3 text-sm text-white" onClick={() => {
+                setDetailTaskId(null);
+                setFinishTaskId(detailTask.id);
+                setFeedback({ actualTests: String(detailTask.testCount || ''), difficulty: 'متوسط', note: '' });
+              }}>
+                <CheckCircle2 size={16} /> ثبت انجام شد
+              </button>
+            </div>
+            <p className="flex items-center gap-2 text-xs text-ink/55"><Info size={14} /> وضعیت‌های نیمه‌کامل و ردشده در API فعلی قابل ثبت نیستند.</p>
+          </article>
         </div>
       ) : null}
     </section>
   );
 }
 
-function TaskCard({ task, index, nowTime, running, onStart, onFinish }: { task: StudentTask; index: number; nowTime: string; running: boolean; onStart: () => void; onFinish: () => void }) {
+function TaskCard({ task, index, nowTime, running, onStart, onFinish, onDetails }: { task: StudentTask; index: number; nowTime: string; running: boolean; onStart: () => void; onFinish: () => void; onDetails: () => void }) {
   const status = running ? 'running' : statusForTask(task, nowTime, index);
   return (
     <article className={`surface relative overflow-hidden p-4 ${status === 'locked' ? 'opacity-60' : ''}`}>
@@ -164,6 +218,7 @@ function TaskCard({ task, index, nowTime, running, onStart, onFinish }: { task: 
             <span className="rounded-md bg-paper px-2 py-1">{task.testCount || 0} تست</span>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
+            <button className="flex items-center justify-center gap-2 rounded-md border border-black/10 px-3 py-2 text-sm" onClick={onDetails}><Info size={15} /> جزئیات</button>
             <button className="rounded-md bg-paper px-3 py-2 text-sm disabled:opacity-50" disabled={status === 'locked' || status === 'done'} onClick={onStart}><Play size={15} className="inline" /> شروع</button>
             <button className="rounded-md bg-ink px-3 py-2 text-sm text-white disabled:opacity-50" disabled={status === 'locked' || status === 'done'} onClick={onFinish}>اتمام</button>
           </div>

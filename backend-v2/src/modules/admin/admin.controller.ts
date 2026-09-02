@@ -44,6 +44,38 @@ export class AdminController {
     return this.students.remove(id).then(ok);
   }
 
+  @Post("students/:id/reset-password")
+  resetPassword(@Param("id") id: string, @Body() body: { password: string }) {
+    return this.students.resetPassword(id, String(body.password || "")).then(ok);
+  }
+
+  @Post("students/:id/:action")
+  lifecycle(@Param("id") id: string, @Param("action") action: "activate" | "deactivate" | "restore" | "force-logout") {
+    if (!["activate", "deactivate", "restore", "force-logout"].includes(action)) throw new Error("Unsupported lifecycle action");
+    return this.students.lifecycle(id, action).then(ok);
+  }
+
+  @Get("students/:id/progress/weekly")
+  weekly(@Param("id") id: string) { return this.students.weeklyForStudent(id).then(ok); }
+
+  @Get("students/:id/performance/topics")
+  topics(@Param("id") id: string, @Query("limit") limit?: string) { return this.students.topicsForStudent(id, Number(limit || 8)).then(ok); }
+
+  @Get("students/:id/learning")
+  learning(@Param("id") id: string) { return this.students.learningForStudent(id).then(ok); }
+
+  @Post("students/:id/learning")
+  createLearning(@Param("id") id: string, @Body() body: Record<string, unknown>) { return this.students.createLearningItem(id, body).then(ok); }
+
+  @Patch("students/:id/learning/:itemId")
+  updateLearning(@Param("id") id: string, @Param("itemId") itemId: string, @Body() body: Record<string, unknown>) { return this.students.updateLearningItem(id, itemId, body).then(ok); }
+
+  @Delete("students/:id/learning/:itemId")
+  deleteLearning(@Param("id") id: string, @Param("itemId") itemId: string) { return this.students.deleteLearningItem(id, itemId).then(ok); }
+
+  @Get("students/:id/learning/:itemId/reviews")
+  learningReviews(@Param("id") id: string, @Param("itemId") itemId: string, @Query("limit") limit?: string) { return this.students.learningReviewHistory(id, itemId, Number(limit || 50)).then(ok); }
+
   @Get("students/:id/analytics")
   analytics(@Param("id") id: string) {
     return this.students.dashboardForStudent(id).then(ok);
@@ -73,6 +105,36 @@ export class AdminController {
   @Post("plans")
   upsertPlan(@Body() dto: ImportPlanDto) {
     return this.plans.upsertPlan(dto).then(ok);
+  }
+
+  @Patch("plans/:id")
+  updatePlan(@Param("id") id: string, @Body() body: Partial<ImportPlanDto>) {
+    return this.plans.updatePlan(id, body).then(ok);
+  }
+
+  @Delete("plans/:id")
+  deletePlan(@Param("id") id: string) {
+    return this.plans.deletePlan(id).then(ok);
+  }
+
+  @Post("plans/:id/duplicate")
+  duplicatePlan(@Param("id") id: string, @Body() body: { planDate: string }) {
+    return this.plans.duplicatePlan(id, body.planDate).then(ok);
+  }
+
+  @Post("plans/:id/tasks")
+  addTask(@Param("id") id: string, @Body() body: ImportPlanDto["tasks"][number]) {
+    return this.plans.addTask(id, body).then(ok);
+  }
+
+  @Patch("tasks/:id")
+  updateTask(@Param("id") id: string, @Body() body: Partial<ImportPlanDto["tasks"][number]> & { planId?: string }) {
+    return this.plans.updateTask(id, body).then(ok);
+  }
+
+  @Delete("tasks/:id")
+  deleteTask(@Param("id") id: string) {
+    return this.plans.deleteTask(id).then(ok);
   }
 
   @Post("plans/publish-range")

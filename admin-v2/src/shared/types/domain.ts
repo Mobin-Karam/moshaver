@@ -26,6 +26,7 @@ export interface Student {
   rank_goal?: string;
   active?: number | boolean;
   account_status?: "active" | "inactive" | "archived";
+  accountStatus?: "active" | "inactive" | "archived";
   account_active?: number | boolean;
   last_seen_at?: string;
   attempt_count?: number;
@@ -51,6 +52,12 @@ export interface PlanTask {
   quizId?: string | null;
   sortOrder?: number;
   completedAt?: string | null;
+  completion?: {
+    status?: "done" | "partial" | string;
+    actualMinutes?: number;
+    actualTests?: number;
+    note?: string;
+  } | null;
 }
 
 export interface Plan {

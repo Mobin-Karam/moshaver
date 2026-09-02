@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { IsNull, Repository } from "typeorm";
 import { ApiException } from "../../common/exceptions/api.exception";
 import { ChatMessage, ChatMessageType } from "../../database/entities/chat-message.entity";
 import { Student } from "../../database/entities/student.entity";
@@ -26,12 +26,28 @@ export class ChatService {
       return {
         id: student.id,
         student: this.publicStudent(student),
-        unread: 0,
+        unread: rows.filter((message) => message.sender.id === userId && !message.readAt).length,
         lastMessage: last ? this.publicMessage(last) : null,
         presence: { online: false, state: "offline" },
         pinned: false,
       };
     });
+  }
+
+  async conversationsForStudent(user: AuthenticatedUser) {
+    const student = await this.students.findOne({ where: { user: { id: user.id } }, relations: { user: true } });
+    if (!student?.user) throw new ApiException(404, "STUDENT_NOT_FOUND", "دانش‌آموز پیدا نشد.");
+    const admin = await this.users.findOne({ where: { role: UserRole.ADMIN }, order: { createdAt: "ASC" } });
+    if (!admin) throw new ApiException(404, "ADMIN_NOT_FOUND", "مشاور پیدا نشد.");
+    const rows = await this.messages.find({ where: [{ sender: { id: student.user.id }, receiverId: admin.id }, { sender: { id: admin.id }, receiverId: student.user.id }], relations: { sender: true }, order: { createdAt: "DESC" } });
+    return [{
+      id: student.id,
+      student: this.publicStudent(student),
+      unread: rows.filter((message) => message.sender.id === admin.id && !message.readAt).length,
+      lastMessage: rows[0] ? this.publicMessage(rows[0]) : null,
+      presence: { online: false, state: "offline" },
+      pinned: false,
+    }];
   }
 
   async messagesForConversation(user: AuthenticatedUser, conversationId: string) {
@@ -51,12 +67,20 @@ export class ChatService {
     return message;
   }
 
+  async markRead(user: AuthenticatedUser, conversationId: string) {
+    const peer = await this.peerForConversation(user, conversationId);
+    const result = await this.messages.update({ sender: { id: peer.id }, receiverId: user.id, readAt: IsNull() }, { readAt: new Date() });
+    return { conversationId, updated: result.affected || 0, unread: 0 };
+  }
+
   private async peerForConversation(user: AuthenticatedUser, conversationId: string) {
     if (user.role === UserRole.ADMIN) {
       const student = await this.students.findOne({ where: { id: conversationId }, relations: { user: true } });
       if (!student?.user) throw new ApiException(404, "CONVERSATION_NOT_FOUND", "گفتگو پیدا نشد.");
       return student.user;
     }
+    const student = await this.students.findOne({ where: { id: conversationId, user: { id: user.id } }, relations: { user: true } });
+    if (!student) throw new ApiException(404, "CONVERSATION_NOT_FOUND", "گفتگو پیدا نشد.");
     const admin = await this.users.findOne({ where: { role: UserRole.ADMIN }, order: { createdAt: "ASC" } });
     if (!admin) throw new ApiException(404, "ADMIN_NOT_FOUND", "مشاور پیدا نشد.");
     return admin;
@@ -74,6 +98,8 @@ export class ChatService {
       senderRole: message.sender.role === UserRole.ADMIN ? "admin" : "student",
       senderId: message.sender.id,
       createdAt: message.createdAt,
+      isRead: Boolean(message.readAt),
+      readAt: message.readAt || null,
     };
   }
 }

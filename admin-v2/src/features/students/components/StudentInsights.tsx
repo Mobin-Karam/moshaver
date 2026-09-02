@@ -1,0 +1,2 @@
+import { Card } from "../../../shared/ui/ui";
+export function StudentInsights({values}:{values:{label:string;value:number}[]}){return <Card><h3 className="mb-3 font-bold">تصویر کامل دانش‌آموز</h3><div className="grid gap-3 md:grid-cols-5">{values.map((x)=><div key={x.label} className="rounded-md bg-slate-50 p-3 text-center"><span className="block text-xs text-slate-500">{x.label}</span><strong className="mt-1 block text-xl">{x.value}</strong></div>)}</div></Card>}

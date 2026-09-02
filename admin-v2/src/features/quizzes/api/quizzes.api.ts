@@ -1,0 +1,10 @@
+import { api } from "../../../shared/api/api";
+import type { QuestionDraft } from "../../questions/question-model";
+import type { Quiz, QuizDraft, QuizQuestion } from "../model/quiz.types";
+export const getQuizzes=()=>api.get<Quiz[]>("/admin/quizzes");
+export const getQuizQuestions=(quizId:string)=>api.get<QuizQuestion[]>(`/admin/quizzes/${quizId}/questions`);
+export const createQuiz=(body:QuizDraft)=>api.post<{id:string}>("/admin/quizzes",body);
+export const updateQuiz=(id:string,body:QuizDraft|Partial<Quiz>)=>api.patch(`/admin/quizzes/${id}`,body);
+export const createQuizQuestion=(quizId:string,body:QuestionDraft)=>api.post(`/admin/quizzes/${quizId}/questions`,body);
+export const updateQuizQuestion=(id:string,body:QuestionDraft)=>api.patch(`/admin/questions/${id}`,body);
+export const deleteQuizQuestion=(id:string)=>api.delete(`/admin/questions/${id}`);

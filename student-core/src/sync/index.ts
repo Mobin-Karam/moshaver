@@ -55,7 +55,7 @@ export async function pushChanges(
 
   for (const item of pending) {
     try {
-      await network.request(item.method, item.path, item.body);
+      await network.request(item.method, item.path, item.body, { skipSyncQueue: true });
       await sync.remove(item.id);
       pushed += 1;
     } catch {
@@ -78,6 +78,74 @@ export async function syncNow(
     return "online";
   } catch {
     return "failed";
+  }
+}
+
+export type SyncStatusListener = (status: SyncStatus) => void;
+
+export class SyncWorker {
+  private running = false;
+  private flushing: Promise<{ pushed: number; failed: number }> | null = null;
+  private status: SyncStatus = "offline";
+  private readonly listeners = new Set<SyncStatusListener>();
+
+  constructor(
+    private readonly sync: SyncProvider,
+    private readonly network: NetworkProvider,
+    private readonly isOnline: () => boolean = () => true,
+  ) {}
+
+  getStatus(): SyncStatus {
+    return this.status;
+  }
+
+  subscribe(listener: SyncStatusListener): () => void {
+    this.listeners.add(listener);
+    listener(this.status);
+    return () => this.listeners.delete(listener);
+  }
+
+  start(): void {
+    this.running = true;
+    if (this.isOnline()) void this.flush();
+    else this.setStatus("offline");
+  }
+
+  stop(): void {
+    this.running = false;
+  }
+
+  async flush(): Promise<{ pushed: number; failed: number }> {
+    if (!this.running || !this.isOnline()) {
+      this.setStatus("offline");
+      return { pushed: 0, failed: 0 };
+    }
+    if (this.flushing) return this.flushing;
+
+    this.setStatus("syncing");
+    this.flushing = pushChanges(this.sync, this.network)
+      .then((result) => {
+        this.setStatus(result.failed ? "failed" : "online");
+        return result;
+      })
+      .catch((error) => {
+        this.setStatus("failed");
+        throw error;
+      })
+      .finally(() => {
+        this.flushing = null;
+      });
+    return this.flushing;
+  }
+
+  setOffline(): void {
+    this.setStatus("offline");
+  }
+
+  private setStatus(status: SyncStatus): void {
+    if (this.status === status) return;
+    this.status = status;
+    for (const listener of this.listeners) listener(status);
   }
 }
 

@@ -3,6 +3,9 @@ import { User } from "./user.entity";
 import { Plan } from "./plan.entity";
 import { ExamAttempt } from "./exam-attempt.entity";
 import { Notification } from "./notification.entity";
+import { DailyReport } from "./daily-report.entity";
+import { RecoveryRequest } from "./recovery-request.entity";
+import { LearningItem } from "./learning-item.entity";
 
 @Entity("students")
 export class Student {
@@ -34,6 +37,9 @@ export class Student {
   @Column({ default: "" })
   dailyCapacity!: string;
 
+  @Column({ default: "active" })
+  accountStatus!: "active" | "inactive" | "archived";
+
   @CreateDateColumn()
   createdAt!: Date;
 
@@ -48,4 +54,13 @@ export class Student {
 
   @OneToMany(() => Notification, (notification) => notification.student)
   notifications!: Notification[];
+
+  @OneToMany(() => DailyReport, (report) => report.student)
+  dailyReports!: DailyReport[];
+
+  @OneToMany(() => RecoveryRequest, (request) => request.student)
+  recoveryRequests!: RecoveryRequest[];
+
+  @OneToMany(() => LearningItem, (item) => item.student)
+  learningItems!: LearningItem[];
 }
