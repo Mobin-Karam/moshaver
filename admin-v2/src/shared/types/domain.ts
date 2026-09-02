@@ -26,6 +26,7 @@ export interface Student {
   rank_goal?: string;
   active?: number | boolean;
   account_status?: "active" | "inactive" | "archived";
+  accountStatus?: "active" | "inactive" | "archived";
   account_active?: number | boolean;
   last_seen_at?: string;
   attempt_count?: number;

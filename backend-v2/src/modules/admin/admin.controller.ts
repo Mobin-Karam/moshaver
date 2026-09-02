@@ -44,6 +44,38 @@ export class AdminController {
     return this.students.remove(id).then(ok);
   }
 
+  @Post("students/:id/reset-password")
+  resetPassword(@Param("id") id: string, @Body() body: { password: string }) {
+    return this.students.resetPassword(id, String(body.password || "")).then(ok);
+  }
+
+  @Post("students/:id/:action")
+  lifecycle(@Param("id") id: string, @Param("action") action: "activate" | "deactivate" | "restore" | "force-logout") {
+    if (!["activate", "deactivate", "restore", "force-logout"].includes(action)) throw new Error("Unsupported lifecycle action");
+    return this.students.lifecycle(id, action).then(ok);
+  }
+
+  @Get("students/:id/progress/weekly")
+  weekly(@Param("id") id: string) { return this.students.weeklyForStudent(id).then(ok); }
+
+  @Get("students/:id/performance/topics")
+  topics(@Param("id") id: string, @Query("limit") limit?: string) { return this.students.topicsForStudent(id, Number(limit || 8)).then(ok); }
+
+  @Get("students/:id/learning")
+  learning(@Param("id") id: string) { return this.students.learningForStudent(id).then(ok); }
+
+  @Post("students/:id/learning")
+  createLearning(@Param("id") id: string, @Body() body: Record<string, unknown>) { return this.students.createLearningItem(id, body).then(ok); }
+
+  @Patch("students/:id/learning/:itemId")
+  updateLearning(@Param("id") id: string, @Param("itemId") itemId: string, @Body() body: Record<string, unknown>) { return this.students.updateLearningItem(id, itemId, body).then(ok); }
+
+  @Delete("students/:id/learning/:itemId")
+  deleteLearning(@Param("id") id: string, @Param("itemId") itemId: string) { return this.students.deleteLearningItem(id, itemId).then(ok); }
+
+  @Get("students/:id/learning/:itemId/reviews")
+  learningReviews(@Param("id") id: string, @Param("itemId") itemId: string, @Query("limit") limit?: string) { return this.students.learningReviewHistory(id, itemId, Number(limit || 50)).then(ok); }
+
   @Get("students/:id/analytics")
   analytics(@Param("id") id: string) {
     return this.students.dashboardForStudent(id).then(ok);

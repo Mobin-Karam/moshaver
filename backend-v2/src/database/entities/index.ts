@@ -4,6 +4,8 @@ export { DailyReport } from "./daily-report.entity";
 export { ExamAttempt } from "./exam-attempt.entity";
 export { Exam } from "./exam.entity";
 export { Mistake } from "./mistake.entity";
+export { LearningItem } from "./learning-item.entity";
+export { LearningReview } from "./learning-review.entity";
 export { Notification } from "./notification.entity";
 export { Plan } from "./plan.entity";
 export { Question } from "./question.entity";

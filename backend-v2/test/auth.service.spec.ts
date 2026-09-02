@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { AuthService } from "../src/modules/auth/auth.service";
 import { Session } from "../src/database/entities/session.entity";
 import { User, UserRole } from "../src/database/entities/user.entity";
+import { Student } from "../src/database/entities/student.entity";
 
 function repo<T>(items: T[] = []) {
   return {
@@ -24,6 +25,7 @@ describe("AuthService", () => {
         AuthService,
         { provide: getRepositoryToken(User), useValue: repo([user]) },
         { provide: getRepositoryToken(Session), useValue: repo() },
+        { provide: getRepositoryToken(Student), useValue: repo() },
         { provide: ConfigService, useValue: { get: (_key: string, fallback: unknown) => fallback } },
       ],
     }).compile();
@@ -42,6 +44,7 @@ describe("AuthService", () => {
         AuthService,
         { provide: getRepositoryToken(User), useValue: users },
         { provide: getRepositoryToken(Session), useValue: sessions },
+        { provide: getRepositoryToken(Student), useValue: repo([{ accountStatus: "active", user: { id: "u1" } }] as any[]) },
         { provide: ConfigService, useValue: { get: (_key: string, fallback: unknown) => fallback } },
       ],
     }).compile();
@@ -63,6 +66,7 @@ describe("AuthService", () => {
         AuthService,
         { provide: getRepositoryToken(User), useValue: repo([user]) },
         { provide: getRepositoryToken(Session), useValue: sessions },
+        { provide: getRepositoryToken(Student), useValue: repo() },
         { provide: ConfigService, useValue: { get: (_key: string, fallback: unknown) => fallback } },
       ],
     }).compile();
@@ -82,6 +86,7 @@ describe("AuthService", () => {
         AuthService,
         { provide: getRepositoryToken(User), useValue: repo() },
         { provide: getRepositoryToken(Session), useValue: sessions },
+        { provide: getRepositoryToken(Student), useValue: repo() },
         { provide: ConfigService, useValue: { get: (_key: string, fallback: unknown) => fallback } },
       ],
     }).compile();

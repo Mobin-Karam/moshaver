@@ -96,6 +96,7 @@ body {
 
   .dark .bg-white { background-color: rgb(var(--surface-card)); }
   .dark .bg-white\/90 { background-color: rgb(var(--surface-card) / 94%); }
+  .dark .bg-white\/95 { background-color: rgb(var(--surface-card) / 97%); }
   .dark .bg-white\/80 { background-color: rgb(var(--surface-card) / 86%); }
   .dark .bg-white\/70 { background-color: rgb(var(--surface-card) / 78%); }
   .dark .bg-slate-50 { background-color: rgb(var(--surface-muted)); }

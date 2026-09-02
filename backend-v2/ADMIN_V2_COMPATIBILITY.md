@@ -20,8 +20,6 @@ path after either `/api/v1` or `/api/v2`. Response bodies use the shared
 
 ## Remaining parity work
 
-- Student lifecycle actions, password reset and detailed performance endpoints
-- Learning items and review history
 - Subject catalog and student-subject state
 - Quiz CRUD and quiz-question management
 - Exam syllabus and retry-request workflows
@@ -30,6 +28,12 @@ path after either `/api/v1` or `/api/v2`. Response bodies use the shared
 - Realtime student-monitor snapshot
 - Audit history, application releases, import history and database operations
 - Full dashboard/advisor-inbox metrics instead of placeholder summaries
+
+Student lifecycle actions, password reset/session revocation, weekly/topic detail,
+and durable learning-item CRUD/review history are now implemented. They remain
+behind the production cutover gate until disposable API and browser smokes pass.
+The ordered gap matrix is maintained in
+`docs/migrations/admin-v2-api-gap-plan.md`.
 
 These remaining routes must not be treated as complete merely because the v1
 service remains available beside v2. Keep `VITE_API_VERSION=v1` as the
