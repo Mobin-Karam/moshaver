@@ -1,20 +1,21 @@
 ---
 name: security-analysis
-description: Audit authentication, authorization, permissions, tokens, and security risks.
+description: Audit relevant application security surfaces and produce prioritized, evidence-based remediation guidance.
 ---
 
-Analyze:
+# Security Analysis Skill
 
-- JWT
-- OAuth
-- Cookies
-- Sessions
-- RBAC
-- Permissions
-- Validation
-- Secrets
+## Inspect when applicable
+- authentication/session/token lifecycle
+- authorization, roles, ownership, tenant/workspace isolation
+- input validation and output encoding
+- SQL/command/template/header injection
+- XSS, CSRF, SSRF, open redirects
+- file upload/path traversal
+- secrets and sensitive logs
+- cryptographic usage
+- CORS/security headers
+- dependency/supply-chain configuration
+- CI/cloud permissions
 
-
-Create:
-
-docs/audit/security/
+Report realistic exploit path, impact, evidence, and remediation. Do not report theoretical categories that the code does not expose.

@@ -1,77 +1,11 @@
 ---
-description: Rules for Next.js and React frontend implementation.
-applyTo: "cloud-frontend/**/*.{ts,tsx,js,jsx,css,json}"
+description: Cross-framework frontend and browser UI guidance.
+applyTo: "**/*.html,**/*.css,**/*.scss,**/*.sass,**/*.less,**/*.vue,**/*.svelte,**/*.jsx,**/*.tsx"
 ---
+# Frontend / UI
 
-# Frontend Engineering Rules
-
-The frontend uses technologies such as:
-
-- Next.js App Router
-- React
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
-- Radix UI
-- TanStack React Query
-- Zustand
-- React Hook Form
-- Zod
-- Sonner
-- Lucide React
-
-Verify the installed packages before relying on them.
-
-## Architecture
-
-Follow the existing separation between:
-
-- Routes and pages
-- Layouts
-- Feature components
-- Shared UI components
-- Hooks
-- API clients
-- Schemas and types
-- State stores
-- Translation resources
-
-Do not place API logic directly inside large UI components.
-
-## UI requirements
-
-Every feature must consider:
-
-- Loading state
-- Empty state
-- Error state
-- Disabled state
-- Mobile state
-- Desktop state
-- Light mode
-- Dark mode
-- RTL
-- LTR
-- Keyboard navigation
-- Accessible labels
-
-## Forms
-
-Use:
-
-- React Hook Form for form state
-- Zod for validation
-- Existing reusable input components
-- Friendly API error mapping
-
-Prevent duplicate submission.
-
-## Data access
-
-Use the existing API client and React Query conventions.
-
-After mutations:
-
-- Invalidate the correct query keys.
-- Avoid invalidating unrelated data.
-- Handle optimistic updates only when safe.
+- Detect the UI framework, routing, state/data-fetching, form, styling, component, localization, and testing conventions.
+- Use the existing design system and reusable components.
+- Consider loading, empty, error, retry, disabled, responsive, keyboard, focus, accessibility, theme, and localization states when relevant.
+- Verify the actual backend/API contract before changing API-dependent UI.
+- Avoid introducing a new state manager or UI library for a small isolated change.
