@@ -1,6 +1,7 @@
 import type { ChatMessage, Conversation } from "../../../shared/types/domain";
 
-export type ConversationFilter = "all" | "unread" | "direct" | "group";
+export type ConversationFilter = "all" | "unread" | "direct" | "group" | "favorites" | "drafts" | "online";
+export type ConversationSort = "recent" | "unread" | "online" | "name";
 export type MessageAction = "edit" | "delete" | "react";
 
 export type ConversationPage = {
