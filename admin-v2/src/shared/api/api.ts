@@ -26,7 +26,8 @@ export class ApiError extends Error {
 
 const CSRF_KEY = "moshaver_admin_csrf";
 const DEV_BACKEND_KEY = "moshaver_admin_backend";
-const defaultBase = "/api/v1";
+const API_VERSION_KEY = "moshaver_admin_api_version";
+export type ApiVersion = "v1" | "v2";
 type AuthFailureListener = (error: ApiError) => void;
 const authFailureListeners = new Set<AuthFailureListener>();
 
@@ -36,6 +37,26 @@ export const backendTargets = {
 } as const;
 
 export type BackendTarget = keyof typeof backendTargets;
+
+function configuredApiVersion(): ApiVersion {
+  return import.meta.env.VITE_API_VERSION === "v2" ? "v2" : "v1";
+}
+
+export function getSelectedApiVersion(): ApiVersion {
+  if (typeof window === "undefined") return configuredApiVersion();
+  const saved = window.localStorage.getItem(API_VERSION_KEY);
+  return saved === "v1" || saved === "v2" ? saved : configuredApiVersion();
+}
+
+export function setSelectedApiVersion(version: ApiVersion) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(API_VERSION_KEY, version);
+  document.cookie = `${API_VERSION_KEY}=${version}; Path=/; SameSite=Lax; Max-Age=31536000`;
+}
+
+function versionedPath() {
+  return `/api/${getSelectedApiVersion()}`;
+}
 
 function isBackendTarget(value: string | null): value is BackendTarget {
   return value === "local" || value === "remote";
@@ -55,16 +76,22 @@ export function setSelectedBackend(target: BackendTarget | null) {
 }
 
 export function getApiBaseUrl() {
-  return (import.meta.env.VITE_API_URL as string | undefined) || defaultBase;
+  const configured = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "");
+  if (!configured) return versionedPath();
+  // The configured URL selects the host/proxy, while the runtime switcher owns
+  // the API version. Keeping the configured suffix here used to pin every
+  // request to v1 even after the user selected v2.
+  if (/\/api\/v[12]$/.test(configured)) {
+    return configured.replace(/\/api\/v[12]$/, versionedPath());
+  }
+  return `${configured}${versionedPath()}`;
 }
 
 export function getBackendTargetUrl() {
   const selected = getSelectedBackend();
-  if (selected) return `${backendTargets[selected]}${defaultBase}`;
+  if (selected) return `${backendTargets[selected]}${versionedPath()}`;
   return getApiBaseUrl();
 }
-
-export const apiBaseUrl = getApiBaseUrl();
 
 function csrf() {
   return sessionStorage.getItem(CSRF_KEY) || "";

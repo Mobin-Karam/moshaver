@@ -7,6 +7,7 @@ import { LessThan, Not, Repository } from "typeorm";
 import { ApiException } from "../../common/exceptions/api.exception";
 import { Session } from "../../database/entities/session.entity";
 import { User } from "../../database/entities/user.entity";
+import { Student } from "../../database/entities/student.entity";
 
 export type AuthenticatedUser = {
   id: string;
@@ -20,6 +21,7 @@ export class AuthService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
     @InjectRepository(Session) private readonly sessions: Repository<Session>,
+    @InjectRepository(Student) private readonly students: Repository<Student>,
     private readonly config: ConfigService,
   ) {}
 
@@ -27,6 +29,11 @@ export class AuthService {
     const user = await this.users.findOne({ where: { username } });
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
       throw new ApiException(401, "UNAUTHORIZED", "نام کاربری یا رمز عبور نادرست است.");
+    }
+    if (user.role === "STUDENT") {
+      const student = await this.students.findOne({ where: { user: { id: user.id } } });
+      if (!student || student.accountStatus !== "active")
+        throw new ApiException(403, "ACCOUNT_INACTIVE", "حساب دانش‌آموز غیرفعال یا بایگانی شده است.");
     }
 
     const token = crypto.randomBytes(32).toString("base64url");

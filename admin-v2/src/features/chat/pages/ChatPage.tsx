@@ -182,7 +182,7 @@ export function ChatPage() {
 
   return (
     <div className="grid h-[calc(100dvh-132px)] min-h-0 overflow-hidden lg:h-[calc(100dvh-96px)]">
-      <section className="grid min-h-0 gap-3 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)]">
+      <section className="grid min-h-0 gap-3 lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)]">
         <ConversationSidebar
           visible={!showMessages}
           items={filtered}
@@ -204,13 +204,13 @@ export function ChatPage() {
           onGroupCreated={(id) => { void conversations.refetch().then(() => { setConversationId(id); setShowMessages(true); }); }}
         />
 
-        <Card className={`${showMessages ? "flex" : "hidden lg:flex"} min-h-0 flex-col overflow-hidden p-0`}>
+        <Card className={`${showMessages ? "flex" : "hidden lg:flex"} min-h-0 flex-col overflow-hidden border-slate-200/90 p-0 shadow-[0_12px_35px_rgba(31,49,46,0.08)]`}>
           {active ? <>
             <ChatHeader conversation={active} group={groupDetail.data} groupLoading={groupDetail.isLoading} markingRead={markRead.isPending} onBack={() => { setShowMessages(false); selection.clear(); }} onMarkRead={() => markRead.mutate(active.id)} onGroupChanged={() => void conversations.refetch()} />
-            <div ref={scrollRef} onScroll={(event) => { const node = event.currentTarget; const nearBottom = isNearBottom(node); shouldStickRef.current = nearBottom; if (nearBottom) setNewMessageCount(0); if (node.scrollTop < 500) loadOlder(); }} className="min-h-0 flex-1 space-y-2 overflow-auto overscroll-contain bg-[#efeae2] p-3 sm:p-4">
+            <div ref={scrollRef} role="log" aria-live="polite" aria-label="پیام‌های گفتگو" onScroll={(event) => { const node = event.currentTarget; const nearBottom = isNearBottom(node); shouldStickRef.current = nearBottom; if (nearBottom) setNewMessageCount(0); if (node.scrollTop < 500) loadOlder(); }} className="chat-canvas min-h-0 flex-1 space-y-2 overflow-auto overscroll-contain px-2 py-3 sm:px-5 sm:py-4">
               {messages.hasNextPage ? <div ref={olderSentinelRef} className="flex min-h-8 justify-center"><Button className="h-8" variant="soft" loading={messages.isFetchingNextPage} onClick={loadOlder}><ChevronUp size={15} /> {messages.isFetchingNextPage ? "در حال دریافت تاریخچه" : "پیام‌های قدیمی‌تر"}</Button></div> : <div ref={olderSentinelRef} className="text-center text-[10px] text-slate-400">ابتدای گفتگو</div>}
               {messages.isLoading ? <MessageSkeleton /> : messages.isError ? <EmptyState title="دریافت پیام‌ها ناموفق بود." action={<Button variant="soft" onClick={() => void messages.refetch()}><WifiOff size={15} /> تلاش دوباره</Button>} /> : messageItems.length ? <MessageList items={messageItems} authUserId={auth.user?.id} isGroup={active.type === "group"} group={groupDetail.data} setReplyTo={(message) => { setReplyTo(message); setEditing(null); }} setEditing={(message) => { setEditing(message); setReplyTo(null); setText(message.text); }} act={(method, path, body) => { if (method === "delete" && !path.includes("/reactions/")) void modal.confirm({ title: "حذف پیام؟", description: "متن پیام برای اعضای گفتگو حذف خواهد شد.", tone: "danger", confirmLabel: "حذف پیام" }).then((ok) => { if (ok) messageAction.mutate({ method, path, body }); }); else messageAction.mutate({ method, path, body }); }} /> : <EmptyState title="هنوز پیامی ثبت نشده است." />}
-              {newMessageCount ? <button type="button" className="sticky bottom-2 mx-auto flex items-center gap-1 rounded-full bg-brand px-3 py-2 text-xs font-bold text-white shadow-lg" onClick={() => { const node = scrollRef.current; if (node) node.scrollTop = node.scrollHeight; shouldStickRef.current = true; setNewMessageCount(0); }}><ArrowDown size={15} /> {toFa(newMessageCount)} پیام جدید</button> : null}
+              {newMessageCount ? <button type="button" className="sticky bottom-2 mx-auto flex items-center gap-1 rounded-full bg-brand px-3 py-2 text-xs font-bold text-white shadow-lg ring-4 ring-white/60 transition hover:-translate-y-0.5 dark:ring-black/20" onClick={() => { const node = scrollRef.current; if (node) node.scrollTop = node.scrollHeight; shouldStickRef.current = true; setNewMessageCount(0); }}><ArrowDown size={15} /> {toFa(newMessageCount)} پیام جدید</button> : null}
             </div>
             <MessageComposer
               conversationId={active.id}

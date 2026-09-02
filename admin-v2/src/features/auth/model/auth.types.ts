@@ -13,6 +13,7 @@ export type AuthState = {
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   restore: () => Promise<void>;
+  stopRestore: () => void;
   hasRole: (role: User["role"]) => boolean;
 };
 

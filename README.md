@@ -47,31 +47,31 @@ Moshaver یک پلتفرم سبک و سریع است که شامل:
 <tr>
 
 <td align="center">
-<img src="docs/releases/01.png" width="180">
+<img src="docs/releases/assets/student-home.png" width="180">
 <br>
 داشبورد دانش‌آموز
 </td>
 
 <td align="center">
-<img src="docs/releases/02.png" width="180">
+<img src="docs/releases/assets/student-plan.png" width="180">
 <br>
 برنامه روزانه
 </td>
 
 <td align="center">
-<img src="docs/releases/03.png" width="180">
+<img src="docs/releases/assets/student-exam.png" width="180">
 <br>
 سیستم آزمون
 </td>
 
 <td align="center">
-<img src="docs/releases/04.png" width="180">
+<img src="docs/releases/assets/student-chat.png" width="180">
 <br>
 چت با مشاور
 </td>
 
 <td align="center">
-<img src="docs/releases/05.png" width="180">
+<img src="docs/releases/assets/admin-dashboard.png" width="180">
 <br>
 پروفایل دانش‌آموز
 </td>
@@ -537,13 +537,13 @@ docs/README.md
 راهنمای عملیات:
 
 ```
-docs/REPO_AUDIT_AND_RUNBOOK.md
+docs/operations/repository-runbook.md
 ```
 
 راهنمای Deploy:
 
 ```
-docs/reference/RUNFLARE_DEPLOY.md
+docs/operations/runflare-v1-4-deployment.md
 ```
 
 ---

@@ -2,4 +2,4 @@ export type DatabaseMeta = { status?: string; database?: string; version?: strin
 export type Session = { id: string; current?: boolean; ipAddress?: string; userAgent?: string; lastSeenAt?: string };
 export type HistoryRow = Record<string, unknown>;
 export type ReleaseDraft = { app: string; version: string; notes: string };
-export type PasswordDraft = { currentPassword: string; newPassword: string };
+export type PasswordDraft = { currentPassword: string; newPassword: string; confirmPassword: string };

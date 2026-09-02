@@ -38,8 +38,10 @@ export class PlansService {
   }
 
   async upsertPlan(dto: ImportPlanDto) {
+    const date = dto.date || dto.planDate;
+    if (!date) throw new Error("Plan date is required.");
     const student = await this.students.findOneByOrFail({ id: dto.studentId });
-    const existing = await this.plans.findOne({ where: { student: { id: dto.studentId }, date: dto.date }, relations: { tasks: true } });
+    const existing = await this.plans.findOne({ where: { student: { id: dto.studentId }, date }, relations: { tasks: true } });
     if (existing) {
       await this.tasks.delete({ plan: { id: existing.id } });
       existing.status = dto.publish ? PlanStatus.PUBLISHED : existing.status;
@@ -50,12 +52,69 @@ export class PlansService {
     const plan = await this.plans.save(
       this.plans.create({
         student,
-        date: dto.date,
+        date,
         status: dto.publish ? PlanStatus.PUBLISHED : PlanStatus.DRAFT,
         tasks: this.createTasks(dto.tasks || []),
       }),
     );
     return this.presentPlan(plan);
+  }
+
+  async updatePlan(id: string, body: Partial<ImportPlanDto>) {
+    const plan = await this.plans.findOneOrFail({ where: { id }, relations: { tasks: true, student: true } });
+    const date = body.date || body.planDate;
+    if (date) plan.date = date;
+    if (typeof body.publish === "boolean") plan.status = body.publish ? PlanStatus.PUBLISHED : PlanStatus.DRAFT;
+    await this.plans.save(plan);
+    return this.findPresentedPlan(id);
+  }
+
+  async deletePlan(id: string) {
+    await this.plans.delete(id);
+    return { id, deleted: true };
+  }
+
+  async duplicatePlan(id: string, planDate: string) {
+    const source = await this.plans.findOneOrFail({ where: { id }, relations: { tasks: true, student: true } });
+    return this.upsertPlan({
+      studentId: source.student.id,
+      date: planDate,
+      publish: source.status === PlanStatus.PUBLISHED,
+      tasks: source.tasks.map((task) => ({
+        type: task.type,
+        title: task.title,
+        subject: task.subject,
+        description: task.description,
+        startTime: task.startTime,
+        endTime: task.endTime,
+        duration: task.duration,
+        testCount: task.testCount,
+        priority: task.priority,
+        note: task.note,
+      })),
+    });
+  }
+
+  async addTask(planId: string, body: ImportPlanDto["tasks"][number]) {
+    const plan = await this.plans.findOneOrFail({ where: { id: planId } });
+    await this.tasks.save(this.tasks.create({ ...this.taskValues(body), plan }));
+    return this.findPresentedPlan(planId);
+  }
+
+  async updateTask(id: string, body: Partial<ImportPlanDto["tasks"][number]> & { planId?: string }) {
+    const task = await this.tasks.findOneOrFail({ where: { id }, relations: { plan: true } });
+    const previousPlanId = task.plan.id;
+    if (body.planId && body.planId !== previousPlanId)
+      task.plan = await this.plans.findOneOrFail({ where: { id: body.planId } });
+    Object.assign(task, this.taskValues(body, task));
+    await this.tasks.save(task);
+    return this.findPresentedPlan(task.plan.id);
+  }
+
+  async deleteTask(id: string) {
+    const task = await this.tasks.findOneOrFail({ where: { id }, relations: { plan: true } });
+    await this.tasks.delete(id);
+    return this.findPresentedPlan(task.plan.id);
   }
 
   async publishRange(studentId: string, from: string, to: string, published: boolean) {
@@ -90,18 +149,31 @@ export class PlansService {
   private createTasks(tasks: ImportPlanDto["tasks"]) {
     return tasks.map((task, index) =>
       this.tasks.create({
-        type: task.type || TaskType.STUDY,
-        title: task.title,
-        subject: task.subject || "",
-        description: task.description || task.note || "",
-        startTime: task.startTime || "",
-        endTime: task.endTime || "",
-        duration: Number(task.duration || durationMinutes(task.startTime, task.endTime) || 0),
-        testCount: Number(task.testCount || 0),
-        note: task.note || "",
-        priority: Number(task.priority ?? index),
+        ...this.taskValues({ ...task, priority: task.priority ?? index }),
       }),
     );
+  }
+
+  private taskValues(task: Partial<ImportPlanDto["tasks"][number]>, current?: Task) {
+    const start = task.startTime ?? task.start ?? current?.startTime ?? "";
+    const end = task.endTime ?? task.end ?? current?.endTime ?? "";
+    return {
+      type: normalizeTaskType(task.type ?? current?.type),
+      title: task.title ?? current?.title ?? "فعالیت",
+      subject: task.subject ?? current?.subject ?? "",
+      description: task.description ?? task.note ?? current?.description ?? "",
+      startTime: start,
+      endTime: end,
+      duration: Number(task.duration ?? current?.duration ?? durationMinutes(start, end) ?? 0),
+      testCount: Number(task.testCount ?? current?.testCount ?? 0),
+      note: task.note ?? current?.note ?? "",
+      priority: Number(task.priority ?? current?.priority ?? 0),
+    };
+  }
+
+  private async findPresentedPlan(id: string) {
+    const plan = await this.plans.findOneOrFail({ where: { id }, relations: { tasks: true } });
+    return this.presentPlan(plan);
   }
 
   private presentPlan(plan: Plan) {

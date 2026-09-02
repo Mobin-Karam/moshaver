@@ -17,7 +17,8 @@ export function StudentPicker({ students, value, onChange }: { students: Student
     return students.filter((student) => {
       const searchable = normalizePersianText([student.name, student.username, student.user?.username, student.grade, student.major, student.targetField, student.target_major].filter(Boolean).join(" "));
       const risk = Number(student.due_learning_count || 0) > 0 || (student.average_percent != null && Number(student.average_percent) < 50);
-      const active = student.account_status !== "inactive" && student.account_status !== "archived" && student.active !== false && student.active !== 0;
+      const status = student.accountStatus ?? student.account_status;
+      const active = status !== "inactive" && status !== "archived" && student.active !== false && student.active !== 0;
       return (!term || searchable.includes(term)) && (filter === "all" || filter === "attention" && risk || filter === "active" && active || filter === "inactive" && !active);
     });
   }, [filter, query, students]);
@@ -43,7 +44,7 @@ export function StudentPicker({ students, value, onChange }: { students: Student
 }
 
 function StudentOption({ student, selected, onClick }: { student: Student; selected: boolean; onClick: () => void }) {
-  const attention = hasAttention(student), inactive = student.account_status === "inactive" || student.account_status === "archived" || student.active === false || student.active === 0;
+  const attention = hasAttention(student), status = student.accountStatus ?? student.account_status, inactive = status === "inactive" || status === "archived" || student.active === false || student.active === 0;
   return <button type="button" role="option" aria-selected={selected} className={cn("mb-1 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-right transition last:mb-0", selected ? "bg-indigo-50 text-brand" : "hover:bg-slate-50")} onClick={onClick}><StudentAvatar student={student} /><span className="min-w-0 flex-1"><strong className="block truncate text-sm">{student.name}</strong><small className="block truncate text-[10px] text-slate-400">{[student.user?.username || student.username, student.grade, student.major].filter(Boolean).join(" · ") || "بدون جزئیات"}</small></span>{attention ? <span className="flex shrink-0 items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-[10px] font-bold text-rose-700"><AlertTriangle size={11} /> {Number(student.due_learning_count || 0) ? `${Number(student.due_learning_count).toLocaleString("fa-IR")} مرور` : "ریسک"}</span> : inactive ? <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] text-slate-500">غیرفعال</span> : null}{selected ? <Check size={16} className="shrink-0" /> : null}</button>;
 }
 function StudentAvatar({ student, small = false }: { student: Student | null; small?: boolean }) { return <span className={cn("grid shrink-0 place-items-center rounded-full bg-sky-50 font-black text-sky-700", small ? "size-6 text-[10px]" : "size-8 text-xs")}>{student?.name?.trim()?.[0] || <UserRound size={small ? 12 : 15} />}</span>; }

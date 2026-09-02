@@ -12,9 +12,10 @@ export function ConversationListItem({ item, active, onSelect }: {
     <button
       onClick={() => onSelect(item)}
       style={{ contentVisibility: "auto", containIntrinsicSize: "64px" }}
-      className={`flex w-full items-center gap-3 border-b p-3 text-right transition hover:bg-slate-50 ${active ? "bg-indigo-50" : ""}`}
+      className={`relative flex w-full items-center gap-3 border-b border-slate-100 p-3 text-right transition hover:bg-slate-50 ${active ? "bg-teal-50/80 dark:bg-teal-950/40" : ""}`}
     >
-      <span className={`relative grid size-10 shrink-0 place-items-center rounded-full text-sm font-bold text-white ${item.type === "group" ? "bg-indigo-600" : "bg-brand"}`}>
+      {active ? <i className="absolute inset-y-2 right-0 w-1 rounded-l-full bg-brand" aria-hidden="true" /> : null}
+      <span className={`relative grid size-10 shrink-0 place-items-center rounded-xl text-sm font-bold text-white shadow-sm ${item.type === "group" ? "bg-violet-600" : "bg-brand"}`}>
         {item.type === "group" ? <Users size={18} /> : (item.student?.name || "د").slice(0, 1)}
         {item.presence?.online ? <i className="absolute bottom-0 left-0 size-3 rounded-full border-2 border-white bg-emerald-500" /> : null}
       </span>

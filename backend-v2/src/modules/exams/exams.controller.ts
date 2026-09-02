@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { ok } from "../../common/utils/envelope";
@@ -66,6 +66,18 @@ export class ExamsController {
     return this.exams.list().then(ok);
   }
 
+  @Patch("admin/exams/:id")
+  @Roles(UserRole.ADMIN)
+  update(@Param("id") id: string, @Body() body: Record<string, unknown>) {
+    return this.exams.update(id, body).then(ok);
+  }
+
+  @Delete("admin/exams/:id")
+  @Roles(UserRole.ADMIN)
+  remove(@Param("id") id: string) {
+    return this.exams.remove(id).then(ok);
+  }
+
   @Get("admin/exams/:id/questions")
   @Roles(UserRole.ADMIN)
   listQuestions(@Param("id") id: string) {
@@ -76,6 +88,39 @@ export class ExamsController {
   @Roles(UserRole.ADMIN)
   addQuestion(@Param("id") id: string, @Body() dto: CreateQuestionDto & { question?: string; correctOption?: string }) {
     return this.exams.addQuestion(id, dto).then(ok);
+  }
+
+  @Patch("admin/questions/:id")
+  @Roles(UserRole.ADMIN)
+  updateQuestion(@Param("id") id: string, @Body() body: Record<string, unknown>) {
+    return this.exams.updateQuestion(id, body).then(ok);
+  }
+
+  @Delete("admin/questions/:id")
+  @Roles(UserRole.ADMIN)
+  deleteQuestion(@Param("id") id: string) {
+    return this.exams.deleteQuestion(id).then(ok);
+  }
+
+  @Delete("admin/exams/:examId/questions/:id")
+  @Roles(UserRole.ADMIN)
+  deleteExamQuestion(@Param("examId") examId: string, @Param("id") id: string) {
+    return this.exams.deleteQuestion(id, examId).then(ok);
+  }
+
+  @Get("admin/students/:studentId/attempts")
+  @Roles(UserRole.ADMIN)
+  studentAttempts(@Param("studentId") studentId: string) {
+    return this.exams.historyForStudent(studentId).then(ok);
+  }
+
+  @Get("admin/students/:studentId/attempts/:attemptId")
+  @Roles(UserRole.ADMIN)
+  studentAttempt(
+    @Param("studentId") studentId: string,
+    @Param("attemptId") attemptId: string,
+  ) {
+    return this.exams.attemptForStudent(studentId, attemptId).then(ok);
   }
 
   @Post("admin/questions/import")

@@ -6,6 +6,6 @@ export const getImportHistory = () => api.get<HistoryRow[]>("/admin/import/histo
 export const getReleases = () => api.get<HistoryRow[]>("/admin/app-releases");
 export const getAudit = () => api.get<HistoryRow[]>("/admin/audit");
 export const restoreDatabase = (file: File) => api.uploadBinary("/admin/system/database-restore", file);
-export const changeAdminPassword = (body: PasswordDraft) => api.post("/auth/change-password", body);
+export const changeAdminPassword = (body: PasswordDraft) => api.post("/auth/change-password", { currentPassword: body.currentPassword, newPassword: body.newPassword });
 export const saveAppRelease = (release: ReleaseDraft) => api.put(`/admin/app-releases/${encodeURIComponent(release.app)}`, { version: release.version, notes: release.notes });
 export const downloadDatabaseBackup = () => api.download("/admin/system/database-backup");

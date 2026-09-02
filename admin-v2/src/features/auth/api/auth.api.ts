@@ -6,7 +6,10 @@ import type {
 } from "../model/auth.types";
 
 export function getCurrentUser() {
-  return api.get<User>("/auth/me");
+  return request<User>("GET", "/auth/me", undefined, {
+    timeoutMs: 7_000,
+    suppressAuthFailure: true,
+  });
 }
 
 export function loginRequest(

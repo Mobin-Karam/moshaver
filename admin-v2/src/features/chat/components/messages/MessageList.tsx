@@ -1,5 +1,5 @@
 import { Check, CheckCheck, Pencil, Reply, Trash2 } from "lucide-react";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import type { ChatMessage } from "../../../../shared/types/domain";
 import { formatTime, toFa } from "../../lib/chat-formatters";
 import { showDateSeparator } from "../../lib/chat-helpers";
@@ -39,8 +39,13 @@ export function MessageList({
     const canEdit = !message.deletedAt && ready && canUseMessageAction("edit", mine, group);
     const canDelete = !message.deletedAt && ready && canUseMessageAction("delete", mine, group);
     const canReact = !message.deletedAt && ready && canUseMessageAction("react", mine, group);
+    const previous = items[index - 1];
+    const next = items[index + 1];
+    const sameSender = (candidate?: ChatMessage) => !!candidate && candidate.senderUserId === message.senderUserId && candidate.senderRole === message.senderRole && candidate.type !== "system";
+    const startsGroup = !sameSender(previous) || showDateSeparator(previous, message);
+    const endsGroup = !sameSender(next) || (!!next && showDateSeparator(message, next));
     return (
-      <div key={message.id} style={{ contentVisibility: "auto", containIntrinsicSize: "72px" }}>
+      <div key={message.id} className={startsGroup ? "mt-3" : "mt-1"} style={{ contentVisibility: "auto", containIntrinsicSize: "64px" }}>
         {showDateSeparator(items[index - 1], message) ? (
           <DateSeparator value={message.createdAt} />
         ) : null}
@@ -48,6 +53,8 @@ export function MessageList({
           message={message}
           mine={mine}
           group={isGroup}
+          startsGroup={startsGroup}
+          endsGroup={endsGroup}
           referenced={message.replyToId ? byId.get(message.replyToId) : undefined}
           onReply={() => setReplyTo(message)}
           onEdit={canEdit ? () => setEditing(message) : undefined}
@@ -68,6 +75,8 @@ export function MessageBubble({
   message,
   mine,
   group,
+  startsGroup = true,
+  endsGroup = true,
   referenced,
   onReply,
   onEdit,
@@ -77,6 +86,8 @@ export function MessageBubble({
   message: ChatMessage;
   mine: boolean;
   group: boolean;
+  startsGroup?: boolean;
+  endsGroup?: boolean;
   referenced?: ChatMessage;
   onReply: () => void;
   onEdit?: () => void;
@@ -89,13 +100,13 @@ export function MessageBubble({
     !!message.reactions?.find((item) => item.emoji === emoji)?.reacted;
   return (
     <div className={`group/message flex ${mine ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[88%] rounded-lg px-3 py-2 text-sm shadow-sm sm:max-w-[76%] ${mine ? "bg-indigo-100" : "bg-white"} ${message.pending ? "opacity-70" : ""}`}>
-        {group && !mine ? <strong className="mb-1 block text-xs text-indigo-700">{message.senderName || "عضو گروه"}</strong> : null}
-        {message.replyToId ? <div className="mb-2 rounded border-r-2 border-brand bg-black/5 px-2 py-1 text-xs text-slate-600">↩ {referenced ? `${referenced.senderName || "عضو"}: ${referenced.text || "پیام ساختاریافته"}` : "پیام قبلی"}</div> : null}
+      <div className={`relative max-w-[92%] border px-3 py-2 text-sm shadow-[0_1px_2px_rgba(24,45,39,0.08)] sm:max-w-[72%] lg:max-w-[68%] ${mine ? "chat-bubble-outgoing border-teal-200/70 rounded-2xl rounded-bl-md dark:border-teal-800" : "chat-bubble-incoming border-slate-200/80 rounded-2xl rounded-br-md"} ${!startsGroup ? (mine ? "rounded-bl-2xl" : "rounded-br-2xl") : ""} ${!endsGroup ? (mine ? "rounded-tl-md" : "rounded-tr-md") : ""} ${message.pending ? "opacity-70" : ""}`}>
+        {group && !mine && startsGroup ? <strong className="mb-1 block text-xs text-violet-700 dark:text-violet-300">{message.senderName || "عضو گروه"}</strong> : null}
+        {message.replyToId ? <div className="mb-2 rounded-lg border-r-2 border-brand bg-black/[0.035] px-2.5 py-1.5 text-xs text-slate-600 dark:bg-white/[0.045]">↩ {referenced ? `${referenced.senderName || "عضو"}: ${referenced.text || "پیام ساختاریافته"}` : "پیام قبلی"}</div> : null}
         <MessageBody message={message} />
-        {message.reactions?.length ? <div className="mt-2 flex flex-wrap gap-1">{message.reactions.map((reaction) => <button type="button" key={reaction.emoji} aria-label={`${reaction.emoji}، ${toFa(reaction.count)} واکنش`} disabled={!onReact} className={`rounded-full border px-2 py-0.5 text-xs disabled:cursor-default ${reaction.reacted ? "border-brand bg-indigo-50" : "bg-white"}`} onClick={() => onReact?.(reaction.emoji, !!reaction.reacted)}>{reaction.emoji} {toFa(reaction.count)}</button>)}</div> : null}
+        {message.reactions?.length ? <div className="mt-2 flex flex-wrap gap-1">{message.reactions.map((reaction) => <button type="button" key={reaction.emoji} aria-label={`${reaction.emoji}، ${toFa(reaction.count)} واکنش`} disabled={!onReact} className={`rounded-full border px-2 py-0.5 text-xs shadow-sm disabled:cursor-default ${reaction.reacted ? "border-brand bg-teal-50 dark:bg-teal-950" : "bg-white"}`} onClick={() => onReact?.(reaction.emoji, !!reaction.reacted)}>{reaction.emoji} {toFa(reaction.count)}</button>)}</div> : null}
         <span className="mt-1 flex items-center justify-end gap-1 text-[10px] text-slate-400" dir="ltr">{message.pending ? "در حال ارسال" : formatTime(message.createdAt)}{message.editedAt ? " • ویرایش‌شده" : ""}{mine && !message.pending ? message.seen ? <CheckCheck size={13} className="text-sky-600" /> : <Check size={13} /> : null}</span>
-        {!message.pending ? <div className="mt-1 flex items-center justify-end gap-2 border-t border-black/5 pt-1 text-[11px] text-slate-500 opacity-100 sm:opacity-0 sm:transition sm:group-hover/message:opacity-100"><button type="button" aria-label="پاسخ به پیام" onClick={onReply}><Reply size={13} /></button>{onReact ? ["❤️", "👍", "👏"].map((emoji) => <button type="button" aria-label={`واکنش ${emoji}`} key={emoji} onClick={() => onReact(emoji, reacted(emoji))}>{emoji}</button>) : null}{onEdit ? <button type="button" aria-label="ویرایش پیام" onClick={onEdit}><Pencil size={13} /></button> : null}{onDelete ? <button type="button" aria-label="حذف پیام" className="text-rose-700" onClick={onDelete}><Trash2 size={13} /></button> : null}</div> : null}
+        {!message.pending ? <div className="mt-1 flex items-center justify-end gap-1 border-t border-black/5 pt-1 text-[11px] text-slate-500 opacity-100 sm:opacity-0 sm:transition sm:group-hover/message:opacity-100 sm:group-focus-within/message:opacity-100"><MessageActionButton label="پاسخ به پیام" onClick={onReply}><Reply size={13} /></MessageActionButton>{onReact ? ["❤️", "👍", "👏"].map((emoji) => <MessageActionButton label={`واکنش ${emoji}`} key={emoji} onClick={() => onReact(emoji, reacted(emoji))}>{emoji}</MessageActionButton>) : null}{onEdit ? <MessageActionButton label="ویرایش پیام" onClick={onEdit}><Pencil size={13} /></MessageActionButton> : null}{onDelete ? <MessageActionButton label="حذف پیام" className="text-rose-700" onClick={onDelete}><Trash2 size={13} /></MessageActionButton> : null}</div> : null}
       </div>
     </div>
   );
@@ -112,9 +123,13 @@ export function MessageBody({ message }: { message: ChatMessage }) {
 }
 
 export function StructuredMessage({ type, payload, label }: { type: string; payload: Record<string, unknown>; label: string }) {
-  return <div data-message-type={type} className="grid gap-1 rounded-md border border-indigo-100 bg-indigo-50 p-3 text-xs text-indigo-950"><strong>{label}</strong>{payload.title ? <b>{String(payload.title)}</b> : null}{payload.subject ? <span>درس: {String(payload.subject)}</span> : null}{payload.percent != null ? <span>نتیجه: {String(payload.percent)}٪</span> : null}{payload.studyMinutes != null ? <span>مطالعه امروز: {String(payload.studyMinutes)} دقیقه</span> : null}{payload.totalMinutes != null ? <span>مجموع مطالعه: {String(payload.totalMinutes)} دقیقه</span> : null}{payload.testCount != null ? <span>تعداد تست: {String(payload.testCount)}</span> : null}{payload.reviews != null ? <span>مرورهای سررسید: {String(payload.reviews)}</span> : null}{payload.minutes != null ? <span>مدت: {String(payload.minutes)} دقیقه</span> : null}</div>;
+  return <div data-message-type={type} className="grid gap-1 rounded-lg border border-violet-200 bg-violet-50/80 p-3 text-xs text-violet-950 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-100"><strong>{label}</strong>{payload.title ? <b>{String(payload.title)}</b> : null}{payload.subject ? <span>درس: {String(payload.subject)}</span> : null}{payload.percent != null ? <span>نتیجه: {String(payload.percent)}٪</span> : null}{payload.studyMinutes != null ? <span>مطالعه امروز: {String(payload.studyMinutes)} دقیقه</span> : null}{payload.totalMinutes != null ? <span>مجموع مطالعه: {String(payload.totalMinutes)} دقیقه</span> : null}{payload.testCount != null ? <span>تعداد تست: {String(payload.testCount)}</span> : null}{payload.reviews != null ? <span>مرورهای سررسید: {String(payload.reviews)}</span> : null}{payload.minutes != null ? <span>مدت: {String(payload.minutes)} دقیقه</span> : null}</div>;
 }
 
 export function MessageSkeleton() {
-  return <div className="grid gap-3">{["w-2/5", "mr-auto w-3/5", "w-1/2", "mr-auto w-2/5"].map((width, index) => <div key={index} className={`h-14 animate-pulse rounded-lg bg-white/70 ${width}`} />)}</div>;
+  return <div className="grid gap-3">{["w-2/5", "mr-auto w-3/5", "w-1/2", "mr-auto w-2/5"].map((width, index) => <div key={index} className={`chat-surface h-14 animate-pulse rounded-2xl opacity-70 ${width}`} />)}</div>;
+}
+
+function MessageActionButton({ label, className = "", onClick, children }: { label: string; className?: string; onClick: () => void; children: ReactNode }) {
+  return <button type="button" aria-label={label} title={label} className={`grid min-h-7 min-w-7 place-items-center rounded-md px-1 transition hover:bg-black/5 focus-visible:bg-black/5 dark:hover:bg-white/10 ${className}`} onClick={onClick}>{children}</button>;
 }

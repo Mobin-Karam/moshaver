@@ -71,6 +71,27 @@ export class ExamsService {
     return this.exams.save(exam).then((saved) => this.exams.findOneOrFail({ where: { id: saved.id }, relations: { questions: true } })).then((saved) => this.publicExam(saved));
   }
 
+  async update(id: string, body: Record<string, unknown>) {
+    const exam = await this.exams.findOneOrFail({ where: { id }, relations: { questions: true } });
+    if (typeof body.title === "string") exam.title = body.title;
+    if (typeof body.subject === "string") exam.subject = body.subject;
+    const duration = body.durationMinutes ?? body.duration;
+    if (duration !== undefined) exam.duration = Math.max(1, Number(duration));
+    const attempts = body.maxAttempts ?? body.attemptLimit;
+    if (attempts !== undefined) exam.attemptLimit = Math.max(1, Number(attempts));
+    if (body.openAt !== undefined || body.startTime !== undefined)
+      exam.startTime = nullableDate(body.openAt ?? body.startTime);
+    if (body.closeAt !== undefined || body.endTime !== undefined)
+      exam.endTime = nullableDate(body.closeAt ?? body.endTime);
+    await this.exams.save(exam);
+    return this.publicExam(exam);
+  }
+
+  async remove(id: string) {
+    await this.exams.delete(id);
+    return { id, deleted: true };
+  }
+
   async start(examId: string, userId: string) {
     const exam = await this.exams.findOneOrFail({ where: { id: examId }, relations: { questions: true } });
     const student = await this.studentForUser(userId);
@@ -151,6 +172,46 @@ export class ExamsService {
     return this.publicQuestion(saved);
   }
 
+  async updateQuestion(id: string, body: Record<string, unknown>) {
+    const question = await this.questions.findOneOrFail({ where: { id } });
+    if (typeof body.text === "string" || typeof body.question === "string")
+      question.text = String(body.text ?? body.question);
+    if (Array.isArray(body.options)) question.options = body.options.map(String);
+    if (typeof body.correctAnswer === "string" || typeof body.correctOption === "string")
+      question.correctAnswer = String(body.correctAnswer ?? body.correctOption);
+    if (typeof body.explanation === "string") question.explanation = body.explanation;
+    return this.publicQuestion(await this.questions.save(question));
+  }
+
+  async deleteQuestion(id: string, examId?: string) {
+    const question = await this.questions.findOneOrFail({ where: { id }, relations: { exam: true } });
+    if (examId && question.exam.id !== examId)
+      throw new ApiException(404, "NOT_FOUND", "سؤال برای این آزمون پیدا نشد.");
+    await this.questions.delete(id);
+    return { id, deleted: true };
+  }
+
+  async historyForStudent(studentId: string) {
+    const attempts = await this.attempts.find({
+      where: { student: { id: studentId } },
+      relations: { exam: true },
+      order: { startedAt: "DESC" },
+    });
+    return attempts.map((attempt) => this.publicAttempt(attempt));
+  }
+
+  async attemptForStudent(studentId: string, attemptId: string) {
+    const attempt = await this.attempts.findOneOrFail({
+      where: { id: attemptId, student: { id: studentId } },
+      relations: { exam: { questions: true }, student: true },
+    });
+    return {
+      ...this.publicAttempt(attempt),
+      studentId,
+      result: this.result(attempt, attempt.answers || []),
+    };
+  }
+
   importQuestions(examId: string, questions: CreateExamDto["questions"] = []) {
     return this.exams.findOneByOrFail({ id: examId }).then((exam) =>
       this.questions.save(questions.map((question) => this.questions.create({ ...this.normalizeQuestion(question), exam }))),
@@ -183,4 +244,10 @@ export class ExamsService {
     while (normalized.length < 4) normalized.push("");
     return normalized as [string, string, string, string];
   }
+}
+
+function nullableDate(value: unknown) {
+  if (!value) return null;
+  const date = new Date(String(value));
+  return Number.isNaN(date.getTime()) ? null : date;
 }

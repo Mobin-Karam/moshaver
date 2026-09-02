@@ -35,7 +35,7 @@ export function MessageComposer({
     }
   }
   return (
-    <div className="shrink-0 border-t bg-white">
+    <div className="chat-surface shrink-0 border-t border-slate-200/80 shadow-[0_-8px_24px_rgba(31,49,46,0.04)]">
       <QuickReplies onSelect={(item) => onChange(value.trim() ? `${value.trim()}\n${item}` : item)} />
       {editing ? <EditPreview message={editing} onClose={onCancelContext} /> : replyTo ? <ReplyPreview message={replyTo} onClose={onCancelContext} /> : null}
       <form
@@ -46,7 +46,7 @@ export function MessageComposer({
           <Textarea
             key={conversationId}
             aria-label="متن پیام"
-            className="max-h-28 min-h-11 resize-none py-2"
+            className="max-h-28 min-h-11 resize-none rounded-xl py-2 shadow-inner"
             rows={1}
             maxLength={3000}
             value={value}
@@ -60,7 +60,7 @@ export function MessageComposer({
           </span>
         </div>
         <button
-          className="grid size-11 place-items-center rounded-md bg-brand text-white disabled:opacity-50"
+          className="grid size-11 place-items-center rounded-xl bg-brand text-white shadow-sm transition hover:brightness-90 active:scale-95 disabled:opacity-50"
           disabled={!value.trim() || busy || disabled}
           aria-label={editing ? "ذخیره ویرایش پیام" : "ارسال پیام"}
         >
