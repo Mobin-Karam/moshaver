@@ -3,3 +3,5 @@ export { CreateGroupButton, GroupInfoButton } from "./components/group/GroupChat
 export * from "./model/chat.types";
 export * from "./model/group.types";
 export * from "./model/permissions";
+export { useConversationFavorites } from "./hooks/useConversationFavorites";
+export { useMessageSearch } from "./hooks/useMessageSearch";
