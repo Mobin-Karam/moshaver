@@ -12,6 +12,7 @@ describe("admin navigation metadata", () => {
     expect(mainAdminNavigation.map((item) => item.path)).toEqual(["", "planner", "live", "students", "system"]);
     expect(mainAdminNavigation.map((item) => item.title)).toEqual(["خانه", "آموزش", "ارتباط", "مدیریت", "سامانه"]);
   });
+
   it("resolves browser URLs, nested learning locations, and aliases", () => {
     expect(normalizeAdminPath("/admin/exams/42?tab=questions")).toBe("exams/42");
     expect(resolveAdminNavigation("/admin/exams/42").path).toBe("exams");
@@ -19,8 +20,13 @@ describe("admin navigation metadata", () => {
     expect(resolveAdminNavigation("/admin/students/s-1/learning").path).toBe("learning");
     expect(adminBreadcrumbs("/admin/students/s-1/learning").at(-1)?.title).toBe("سیستم یادگیری");
   });
-  it("builds breadcrumbs from the section and route hierarchy", () => {
+
+  it("avoids duplicate breadcrumb destinations on section landing pages", () => {
     expect(adminBreadcrumbs("")).toEqual([{ title: "خانه", path: "" }]);
+    expect(adminBreadcrumbs("planner")).toEqual([
+      { title: "خانه", path: "" },
+      { title: "آموزش", path: "planner" },
+    ]);
     expect(adminBreadcrumbs("exams")).toEqual([
       { title: "خانه", path: "" },
       { title: "آموزش", path: "planner" },
@@ -28,6 +34,7 @@ describe("admin navigation metadata", () => {
     ]);
     expect(adminBreadcrumbs("settings").map((item) => item.title)).toEqual(["خانه", "سامانه", "تنظیمات"]);
   });
+
   it("carries student context only between Education destinations", () => {
     expect(adminDestination("exams", "آموزش", "student 1")).toBe("/admin/exams?studentId=student%201");
     expect(adminDestination("chat", "ارتباط", "student-1")).toBe("/admin/chat");
