@@ -50,7 +50,8 @@ export function normalizeAdminPath(pathname: string) {
 }
 
 function routeMatches(pattern: string, path: string) {
-  const expected = pattern.split("/").filter(Boolean), actual = path.split("/").filter(Boolean);
+  const expected = pattern.split("/").filter(Boolean);
+  const actual = path.split("/").filter(Boolean);
   if (!expected.length) return !actual.length;
   if (actual.length < expected.length) return false;
   return expected.every((part, index) => part.startsWith(":") || part === actual[index]);
@@ -71,10 +72,23 @@ export function adminDestination(path: string, section: string, studentId = "") 
 export function adminBreadcrumbs(path: string) {
   const current = resolveAdminNavigation(path);
   if (!current.path) return [{ title: "خانه", path: "" }];
+
   const group = adminNavigation.find((item) => item.section === current.section);
+  const sectionPath = group?.items[0].path || current.path;
+
+  // The first destination in a section is already its landing page. Showing
+  // both the section and page as separate breadcrumb links would produce two
+  // adjacent crumbs pointing to the same URL.
+  if (current.path === sectionPath) {
+    return [
+      { title: "خانه", path: "" },
+      { title: current.section, path: current.path },
+    ];
+  }
+
   return [
     { title: "خانه", path: "" },
-    { title: current.section, path: group?.items[0].path || current.path },
+    { title: current.section, path: sectionPath },
     { title: current.title, path: current.path },
   ];
 }

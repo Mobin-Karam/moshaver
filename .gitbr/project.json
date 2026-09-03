@@ -1,0 +1,21 @@
+{
+  "team": {
+    "members": [
+      {
+        "name": "Ali",
+        "email": "ali@ga.com",
+        "ssh": "",
+        "role": "maintainer"
+      }
+    ]
+  },
+  "server": {},
+  "preferences": {},
+  "commands": {},
+  "ai": {
+    "instructions": [],
+    "exclude": []
+  },
+  "safety": {},
+  "metadata": {}
+}
