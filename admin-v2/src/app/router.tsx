@@ -12,6 +12,7 @@ import { ReportsPage } from "../features/reports";
 import { SettingsPage } from "../features/settings";
 import { LivePage } from "../features/live";
 import { SystemPage } from "../features/system";
+import { FollowUpPage } from "../features/followup";
 
 const PlannerPage = lazy(() => import("../features/planner").then((module) => ({ default: module.PlannerPage })));
 const LearningPage = lazy(() => import("../features/learning").then((module) => ({ default: module.LearningPage })));
@@ -75,6 +76,7 @@ export const router = createBrowserRouter([
           { path: "quizzes", element: <EducationScreen><QuizzesPage /></EducationScreen> },
           { path: "chat", element: <ChatPage /> },
           { path: "notifications", element: <NotificationsPage /> },
+          { path: "follow-up", element: <FollowUpPage /> },
           { path: "reports", element: <ReportsPage /> },
           { path: "subjects", element: <EducationScreen><SubjectsPage /></EducationScreen> },
           { path: "system", element: <SystemPage /> },

@@ -172,6 +172,35 @@ export function useNotificationRealtime({
           ) {
             playSound(true);
           }
+
+          if ([
+            "recovery.requested",
+            "issue.created",
+            "exam.retry_requested",
+            "review.created",
+          ].includes(type)) {
+            void queryClient.invalidateQueries({ queryKey: ["inbox"] });
+          }
+
+          if ([
+            "recovery.requested",
+            "report.submitted",
+            "plan.published",
+            "plan.updated",
+            "chat.message.created",
+            "exam.updated",
+          ].includes(type)) {
+            void queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] });
+          }
+
+          if ([
+            "review.created",
+            "quiz.completed",
+            "presence.changed",
+            "study.finished",
+          ].includes(type)) {
+            void queryClient.invalidateQueries({ queryKey: ["admin-attention"] });
+          }
         },
       );
 

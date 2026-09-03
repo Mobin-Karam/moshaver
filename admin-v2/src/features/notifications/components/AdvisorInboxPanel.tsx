@@ -1,21 +1,16 @@
-import type {
-  ComponentProps,
-} from "react";
+import type { ComponentProps } from "react";
+import { Inbox, RefreshCw } from "lucide-react";
 import { StudentPicker } from "../../../shared/ui/StudentPicker";
-import {
-  Badge,
-  Button,
-  Card,
-  EmptyState,
-} from "../../../shared/ui/ui";
-import { summarizeAdvisorInboxValue } from "../lib/notification-utils";
-import type { AdvisorInboxRow } from "../model/notification.types";
+import { Badge, Button, Card, EmptyState } from "../../../shared/ui/ui";
+import type {
+  AdvisorInboxRow,
+  RecoveryActionInput,
+  TaskIssueActionInput,
+} from "../model/notification.types";
 import { NotificationSkeletons } from "./NotificationSkeletons";
+import { AdvisorInboxItem } from "./AdvisorInboxItem";
 
-type StudentPickerProps =
-  ComponentProps<
-    typeof StudentPicker
-  >;
+type StudentPickerProps = ComponentProps<typeof StudentPicker>;
 
 export function AdvisorInboxPanel({
   mobilePanel,
@@ -24,111 +19,81 @@ export function AdvisorInboxPanel({
   studentId,
   loading,
   error,
+  recoveryPendingId,
+  issuePendingId,
   onStudentChange,
   onRetry,
+  onRecovery,
+  onIssue,
 }: {
-  mobilePanel:
-    | "notifications"
-    | "inbox";
+  mobilePanel: "notifications" | "inbox";
   rows: AdvisorInboxRow[];
-  students:
-    StudentPickerProps["students"];
+  students: StudentPickerProps["students"];
   studentId: string;
   loading: boolean;
   error: boolean;
-  onStudentChange: (
-    id: string,
-  ) => void;
+  recoveryPendingId: string;
+  issuePendingId: string;
+  onStudentChange: (id: string) => void;
   onRetry: () => void;
+  onRecovery: (input: RecoveryActionInput) => Promise<boolean>;
+  onIssue: (input: TaskIssueActionInput) => Promise<boolean>;
 }) {
+  const actionableCount = rows.filter((row) => row.actionable).length;
+
   return (
     <Card
       className={[
-        mobilePanel ===
-        "notifications"
-          ? "hidden lg:flex"
-          : "flex",
-        "min-h-0 flex-col overflow-hidden p-3",
+        mobilePanel === "notifications" ? "hidden lg:flex" : "flex",
+        "min-h-0 flex-col overflow-hidden p-0 dark:border-slate-800 dark:bg-slate-900",
       ].join(" ")}
     >
-      <header className="mb-3">
+      <header className="shrink-0 border-b border-slate-100 p-3 dark:border-slate-800">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="font-bold">
-            صندوق پیگیری
-          </h3>
-
-          <Badge
-            tone={
-              rows.length
-                ? "red"
-                : "green"
-            }
-          >
-            {rows.length.toLocaleString(
-              "fa-IR",
-            )}
-          </Badge>
+          <div>
+            <div className="flex items-center gap-2">
+              <Inbox size={17} className="text-brand" />
+              <h3 className="font-bold text-slate-900 dark:text-white">صندوق پیگیری</h3>
+            </div>
+            <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
+              مشکلات و ریکاوری‌ها از همین صفحه قابل پاسخ و بستن هستند.
+            </p>
+          </div>
+          <div className="flex gap-1.5">
+            {actionableCount ? <Badge tone="red">{actionableCount.toLocaleString("fa-IR")} عملیاتی</Badge> : null}
+            <Badge tone={rows.length ? "amber" : "green"}>{rows.length.toLocaleString("fa-IR")}</Badge>
+          </div>
         </div>
 
         <div className="mt-3">
-          <StudentPicker
-            students={students}
-            value={studentId}
-            onChange={
-              onStudentChange
-            }
-          />
+          <StudentPicker students={students} value={studentId} onChange={onStudentChange} />
         </div>
       </header>
 
       {loading ? (
-        <NotificationSkeletons />
+        <div className="p-3"><NotificationSkeletons /></div>
       ) : error ? (
-        <EmptyState
-          title="صندوق پیگیری دریافت نشد."
-          action={
-            <Button
-              variant="soft"
-              onClick={onRetry}
-            >
-              تلاش دوباره
-            </Button>
-          }
-        />
+        <div className="p-3">
+          <EmptyState
+            title="صندوق پیگیری دریافت نشد."
+            action={<Button variant="soft" onClick={onRetry}><RefreshCw size={15} /> تلاش دوباره</Button>}
+          />
+        </div>
       ) : rows.length ? (
-        <div className="grid gap-2 overflow-y-auto">
-          {rows.map(
-            (row, index) => (
-              <div
-                key={index}
-                className="rounded-lg border p-3"
-              >
-                <span className="flex items-center justify-between gap-2">
-                  <strong className="text-sm">
-                    {row.type}
-                  </strong>
-
-                  <Badge
-                    tone={row.tone}
-                  >
-                    {(index +
-                      1).toLocaleString(
-                      "fa-IR",
-                    )}
-                  </Badge>
-                </span>
-
-                <p className="mt-1 text-xs leading-5 text-slate-500">
-                  {summarizeAdvisorInboxValue(
-                    row.value,
-                  )}
-                </p>
-              </div>
-            ),
-          )}
+        <div className="grid min-h-0 gap-2 overflow-y-auto overscroll-contain p-3">
+          {rows.map((row) => (
+            <AdvisorInboxItem
+              key={row.key}
+              row={row}
+              recoveryPendingId={recoveryPendingId}
+              issuePendingId={issuePendingId}
+              onRecovery={onRecovery}
+              onIssue={onIssue}
+            />
+          ))}
         </div>
       ) : (
-        <EmptyState title="مورد فعالی وجود ندارد." />
+        <div className="p-3"><EmptyState title="مورد فعالی برای این دانش‌آموز وجود ندارد." /></div>
       )}
     </Card>
   );

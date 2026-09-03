@@ -1,40 +1,22 @@
 import { DashboardContent } from "../components/DashboardContent";
-import { DashboardStudentPicker } from "../components/DashboardStudentPicker";
 import { useDashboardData } from "../hooks/useDashboardData";
-import { useDashboardStudent } from "../hooks/useDashboardStudent";
 
 export function DashboardPage() {
-  const student =
-    useDashboardStudent();
-
-  const dashboard =
-    useDashboardData(
-      student.studentId,
-    );
+  const dashboard = useDashboardData();
 
   return (
-    <div className="grid gap-5">
-      <DashboardStudentPicker
-        students={student.students}
-        value={student.studentId}
-        onChange={student.selectStudent}
-      />
-
-      <DashboardContent
-        overviewLoading={
-          dashboard.overview.isLoading
-        }
-        metrics={dashboard.metrics}
-        health={
-          dashboard.overview.data?.health
-        }
-        inboxCount={
-          dashboard.inboxCount
-        }
-        attentionItems={
-          dashboard.attentionItems
-        }
-      />
-    </div>
+    <DashboardContent
+      summary={dashboard.summary.data}
+      summaryLoading={dashboard.summary.isLoading}
+      summaryError={dashboard.summary.isError}
+      attention={dashboard.attentionStudents}
+      attentionLoading={dashboard.attention.isLoading}
+      attentionError={dashboard.attention.isError}
+      followUp={dashboard.followUp}
+      refreshing={dashboard.refreshing}
+      onRefresh={() => void dashboard.refresh()}
+      onRetrySummary={() => void dashboard.summary.refetch()}
+      onRetryAttention={() => void dashboard.attention.refetch()}
+    />
   );
 }

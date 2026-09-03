@@ -131,6 +131,18 @@ export function NotificationsPage() {
           onStudentChange={
             students.selectStudent
           }
+          recoveryPendingId={
+            advisor.recoveryPendingId
+          }
+          issuePendingId={
+            advisor.issuePendingId
+          }
+          onRecovery={
+            advisor.updateRecovery
+          }
+          onIssue={
+            advisor.updateIssue
+          }
           onRetry={() => {
             void advisor.inbox.refetch();
           }}

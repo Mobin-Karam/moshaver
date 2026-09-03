@@ -1,8 +1,10 @@
 export { DashboardPage } from "./pages/DashboardPage";
 
 export type {
-  AdvisorInbox,
-  AttentionItem,
-  DashboardMetrics,
-  DashboardOverview,
+  AdminDashboardSummary,
+  AttentionReason,
+  AttentionSeverity,
+  AttentionStudent,
+  DashboardRecentReport,
+  FollowUpMetric,
 } from "./model/dashboard.types";

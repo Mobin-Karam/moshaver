@@ -1,28 +1,16 @@
 import { api } from "../../../shared/api/api";
-import type { Conversation } from "../../../shared/types/domain";
 import type {
-  AdvisorInbox,
-  DashboardOverview,
+  AdminDashboardSummary,
+  AttentionStudent,
 } from "../model/dashboard.types";
 
-export function getDashboardOverview(
-  studentId: string,
-) {
-  return api.get<DashboardOverview>(
-    `/admin/students/${studentId}/overview`,
-  );
+export function getAdminDashboard() {
+  return api.get<AdminDashboardSummary>("/admin/dashboard");
 }
 
-export function getAdvisorInbox(
-  studentId: string,
-) {
-  return api.get<AdvisorInbox>(
-    `/admin/advisor-inbox?studentId=${encodeURIComponent(studentId)}`,
-  );
-}
-
-export function getDashboardChatConversations() {
-  return api.get<Conversation[]>(
-    "/admin/chat/conversations",
+export function getAdminAttention(limit = 50) {
+  const safeLimit = Math.min(100, Math.max(1, limit));
+  return api.get<AttentionStudent[]>(
+    `/admin/attention?limit=${safeLimit}`,
   );
 }

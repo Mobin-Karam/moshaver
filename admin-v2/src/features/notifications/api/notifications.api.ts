@@ -4,7 +4,11 @@ import type {
   PushPreferences,
   PushStatus,
 } from "../model/notification-model";
-import type { AdvisorInbox } from "../model/notification.types";
+import type {
+  AdvisorInbox,
+  RecoveryActionInput,
+  TaskIssueActionInput,
+} from "../model/notification.types";
 
 export function getNotificationsPage(
   before?: string,
@@ -43,6 +47,23 @@ export function getAdvisorInbox(
     `/admin/advisor-inbox?studentId=${encodeURIComponent(
       studentId,
     )}`,
+  );
+}
+
+
+export function updateRecoveryRequest(input: RecoveryActionInput) {
+  const { id, ...body } = input;
+  return api.patch<{ id: string; status: string }>(
+    `/admin/recovery-requests/${encodeURIComponent(id)}`,
+    body,
+  );
+}
+
+export function updateTaskIssue(input: TaskIssueActionInput) {
+  const { id, ...body } = input;
+  return api.patch<{ id: string; status: string }>(
+    `/admin/task-issues/${encodeURIComponent(id)}`,
+    body,
   );
 }
 
