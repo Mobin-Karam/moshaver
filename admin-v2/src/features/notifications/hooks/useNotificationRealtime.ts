@@ -1,9 +1,7 @@
 import { useEffect } from "react";
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { api } from "../../../shared/api/api";
-import {
-  notifications as sonner,
-} from "../../../shared/ui/notifications";
+import { notifications as sonner } from "../../../shared/ui/notifications";
 import {
   notificationAdminUrl,
   type AdminNotification,
@@ -21,191 +19,137 @@ export function useNotificationRealtime({
   queryClient: QueryClient;
   soundEnabled: boolean;
   chatSoundEnabled: boolean;
-  playSound: (
-    chat?: boolean,
-  ) => void;
+  playSound: (chat?: boolean) => void;
 }) {
   useEffect(() => {
-    if (!authenticated) {
+    if (!authenticated || typeof window === "undefined") {
       return;
     }
 
-    const source =
-      api.openEvents(
-        (type, data) => {
+    let source: ReturnType<typeof api.openEvents> | null = null;
+
+    try {
+      source = api.openEvents((type, data) => {
+        if (type === "notification.created") {
+          const item = data as AdminNotification;
+
+          queryClient.setQueryData<InfiniteData<NotificationPage>>(
+            ["notifications"],
+            (current) => {
+              if (
+                !current?.pages.length ||
+                current.pages.some((page) =>
+                  page.items.some((existing) => existing.id === item.id),
+                )
+              ) {
+                return current;
+              }
+
+              const pages = [...current.pages];
+              const first = pages[0];
+
+              pages[0] = {
+                ...first,
+                unreadCount: Number(first.unreadCount || 0) + 1,
+                items: [{ ...item, isRead: false }, ...first.items].slice(0, 20),
+              };
+
+              return { ...current, pages };
+            },
+          );
+
+          sonner.info(item.title || "اعلان جدید", {
+            id: item.id,
+            description: item.body,
+            duration: 6500,
+            action: {
+              label: "مشاهده",
+              onClick: () => window.location.assign(notificationAdminUrl(item.url)),
+            },
+          });
+
+          window.setTimeout(
+            () =>
+              void queryClient.invalidateQueries({
+                queryKey: ["notifications"],
+              }),
+            500,
+          );
+
+          if (item.type !== "message" && soundEnabled) {
+            playSound(false);
+          }
+
           if (
-            type ===
-            "notification.created"
+            typeof document !== "undefined" &&
+            document.hidden &&
+            "Notification" in window &&
+            Notification.permission === "granted"
           ) {
-            const item =
-              data as AdminNotification;
-
-            queryClient.setQueryData<
-              InfiniteData<NotificationPage>
-            >(
-              ["notifications"],
-              (current) => {
-                if (
-                  !current?.pages
-                    .length ||
-                  current.pages.some(
-                    (page) =>
-                      page.items.some(
-                        (
-                          existing,
-                        ) =>
-                          existing.id ===
-                          item.id,
-                      ),
-                  )
-                ) {
-                  return current;
-                }
-
-                const pages = [
-                  ...current.pages,
-                ];
-
-                const first =
-                  pages[0];
-
-                pages[0] = {
-                  ...first,
-                  unreadCount:
-                    Number(
-                      first.unreadCount ||
-                        0,
-                    ) + 1,
-                  items: [
-                    {
-                      ...item,
-                      isRead: false,
-                    },
-                    ...first.items,
-                  ].slice(0, 20),
-                };
-
-                return {
-                  ...current,
-                  pages,
-                };
-              },
-            );
-
-            sonner.info(
-              item.title ||
-                "اعلان جدید",
-              {
-                id: item.id,
-                description:
-                  item.body,
-                duration: 6500,
-                action: {
-                  label:
-                    "مشاهده",
-                  onClick: () =>
-                    window.location.assign(
-                      notificationAdminUrl(
-                        item.url,
-                      ),
-                    ),
+            try {
+              const systemNotification = new Notification(
+                item.title || "اعلان مشاور",
+                {
+                  body: item.body || "",
+                  tag: item.id,
                 },
-              },
-            );
+              );
 
-            window.setTimeout(
-              () =>
-                void queryClient.invalidateQueries(
-                  {
-                    queryKey: [
-                      "notifications",
-                    ],
-                  },
-                ),
-              500,
-            );
-
-            if (
-              item.type !==
-              "message"
-            ) {
-              playSound(false);
-            }
-
-            if (
-              document.hidden &&
-              "Notification" in
-                window &&
-              Notification.permission ===
-                "granted"
-            ) {
-              const systemNotification =
-                new Notification(
-                  item.title ||
-                    "اعلان مشاور",
-                  {
-                    body:
-                      item.body ||
-                      "",
-                    tag: item.id,
-                  },
-                );
-
-              systemNotification.onclick =
-                () => {
-                  window.focus();
-
-                  window.location.assign(
-                    notificationAdminUrl(
-                      item.url,
-                    ),
-                  );
-
-                  systemNotification.close();
-                };
+              systemNotification.onclick = () => {
+                window.focus();
+                window.location.assign(notificationAdminUrl(item.url));
+                systemNotification.close();
+              };
+            } catch {
+              // Browser/system notifications are optional.
             }
           }
+        }
 
-          if (
-            type ===
-            "chat.message.created"
-          ) {
-            playSound(true);
-          }
+        if (type === "chat.message.created" && chatSoundEnabled) {
+          playSound(true);
+        }
 
-          if ([
+        if (
+          [
             "recovery.requested",
             "issue.created",
             "exam.retry_requested",
             "review.created",
-          ].includes(type)) {
-            void queryClient.invalidateQueries({ queryKey: ["inbox"] });
-          }
+          ].includes(type)
+        ) {
+          void queryClient.invalidateQueries({ queryKey: ["inbox"] });
+        }
 
-          if ([
+        if (
+          [
             "recovery.requested",
             "report.submitted",
             "plan.published",
             "plan.updated",
             "chat.message.created",
             "exam.updated",
-          ].includes(type)) {
-            void queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] });
-          }
+          ].includes(type)
+        ) {
+          void queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] });
+        }
 
-          if ([
+        if (
+          [
             "review.created",
             "quiz.completed",
             "presence.changed",
             "study.finished",
-          ].includes(type)) {
-            void queryClient.invalidateQueries({ queryKey: ["admin-attention"] });
-          }
-        },
-      );
+          ].includes(type)
+        ) {
+          void queryClient.invalidateQueries({ queryKey: ["admin-attention"] });
+        }
+      });
+    } catch {
+      // Realtime is an enhancement. The normal query remains the source of truth.
+    }
 
-    return () =>
-      source.close();
+    return () => source?.close();
   }, [
     authenticated,
     soundEnabled,

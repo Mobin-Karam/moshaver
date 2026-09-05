@@ -9,8 +9,12 @@ export type NotificationContextValue = {
   unread: number;
   loading: boolean;
   error: boolean;
+  errorMessage: string | null;
+  forbidden: boolean;
   hasMore: boolean;
   loadingMore: boolean;
+  refreshing: boolean;
+  markingAllRead: boolean;
   soundEnabled: boolean;
   chatSoundEnabled: boolean;
 

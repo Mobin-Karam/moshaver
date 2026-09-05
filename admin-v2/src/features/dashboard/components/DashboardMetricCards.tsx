@@ -2,24 +2,49 @@ import {
   CalendarCheck2,
   ClipboardCheck,
   GraduationCap,
+  RefreshCw,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
-import { Card } from "../../../shared/ui/ui";
+
+import { Button, Card, Badge } from "../../../shared/ui/ui";
+
 import { fa } from "../../../shared/lib/utils";
+
 import type { AdminDashboardSummary } from "../model/dashboard.types";
 
 type Metric = {
   label: string;
+
   value: number;
+
   hint: string;
+
   icon: LucideIcon;
+
+  status: string;
+
+  tone: "green" | "blue" | "amber" | "red";
+};
+
+const icons = {
+  green: "bg-brand/10 text-brand",
+
+  blue: "bg-blue-500/10 text-blue-600",
+
+  amber: "bg-amber-500/10 text-amber-600",
+
+  red: "bg-rose-500/10 text-rose-600",
 };
 
 export function DashboardMetricCards({
   summary,
+  refreshing,
+  onRefresh,
 }: {
   summary: AdminDashboardSummary;
+  refreshing?: boolean;
+  onRefresh: () => void;
 }) {
   const metrics: Metric[] = [
     {
@@ -27,55 +52,166 @@ export function DashboardMetricCards({
       value: summary.students,
       hint: "حساب‌های فعال سامانه",
       icon: UsersRound,
+      status: "فعال",
+      tone: "green",
     },
+
     {
-      label: "برنامه منتشرشده امروز",
+      label: "برنامه امروز",
       value: summary.todayPlans,
-      hint: "برنامه‌های آماده اجرای امروز",
+      hint: "برنامه آماده اجرا",
       icon: CalendarCheck2,
+      status: "امروز",
+      tone: "blue",
     },
+
     {
       label: "گزارش امروز",
       value: summary.todayReports,
-      hint: "گزارش‌های روزانه ثبت‌شده",
+      hint: "گزارش ثبت شده",
       icon: ClipboardCheck,
+      status: "دریافت شده",
+      tone: "amber",
     },
+
     {
       label: "آزمون پیش‌رو",
       value: summary.upcomingExams,
-      hint: "آزمون‌های امروز و آینده",
+      hint: "آزمون‌های آینده",
       icon: GraduationCap,
+      status: "در انتظار",
+      tone: "red",
     },
   ];
 
   return (
-    <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {metrics.map((metric) => {
-        const Icon = metric.icon;
+    <div
+      className="
+grid
+gap-4
+
+sm:grid-cols-2
+
+xl:grid-cols-[160px_repeat(4,minmax(0,1fr))]
+
+"
+    >
+      <Card
+        className="
+flex
+items-center
+justify-center
+"
+      >
+        <Button
+          variant="soft"
+          loading={refreshing}
+          onClick={onRefresh}
+          className="
+h-12
+px-5
+"
+        >
+          <RefreshCw size={17} />
+          بروزرسانی
+        </Button>
+      </Card>
+
+      {metrics.map((item) => {
+        const Icon = item.icon;
+
         return (
           <Card
-            key={metric.label}
-            className="group relative overflow-hidden border-slate-200/80 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+            key={item.label}
+            className="
+group
+p-5
+
+hover:-translate-y-1
+
+hover:shadow-md
+
+"
           >
-            <div className="flex items-start justify-between gap-3">
+            <div
+              className="
+flex
+items-start
+justify-between
+"
+            >
               <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  {metric.label}
-                </span>
-                <strong className="mt-2 block text-3xl font-black tabular-nums text-slate-900 dark:text-white">
-                  {fa(metric.value)}
+                <p
+                  className="
+text-xs
+font-semibold
+text-slate-500
+dark:text-slate-400
+"
+                >
+                  {item.label}
+                </p>
+
+                <strong
+                  className="
+mt-3
+block
+
+text-4xl
+
+font-black
+
+tracking-tight
+
+text-[rgb(var(--color-ink))]
+
+"
+                >
+                  {fa(item.value)}
                 </strong>
               </div>
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600 transition group-hover:bg-brand/10 group-hover:text-brand dark:bg-slate-800 dark:text-slate-300">
-                <Icon size={19} />
-              </span>
+
+              <div
+                className={`
+grid
+size-11
+place-items-center
+rounded-2xl
+
+transition
+
+group-hover:scale-110
+
+${icons[item.tone]}
+
+`}
+              >
+                <Icon size={22} />
+              </div>
             </div>
-            <p className="mt-3 text-[11px] leading-5 text-slate-400 dark:text-slate-500">
-              {metric.hint}
-            </p>
+
+            <div
+              className="
+mt-5
+flex
+items-center
+justify-between
+"
+            >
+              <p
+                className="
+text-[11px]
+text-slate-400
+"
+              >
+                {item.hint}
+              </p>
+
+              <Badge tone={item.tone}>● {item.status}</Badge>
+            </div>
           </Card>
         );
       })}
-    </section>
+    </div>
   );
 }

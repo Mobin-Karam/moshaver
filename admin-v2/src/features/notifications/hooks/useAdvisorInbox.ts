@@ -11,6 +11,7 @@ import {
   updateTaskIssue,
 } from "../api/notifications.api";
 import { buildAdvisorInboxRows } from "../lib/notification-utils";
+import { shouldRetryNotificationRequest } from "../lib/api-error";
 import type {
   RecoveryActionInput,
   TaskIssueActionInput,
@@ -24,6 +25,8 @@ export function useAdvisorInbox(studentId: string) {
     enabled: !!studentId,
     queryFn: () => getAdvisorInbox(studentId),
     staleTime: 10_000,
+    retry: shouldRetryNotificationRequest,
+    refetchOnWindowFocus: false,
   });
 
   const refreshRelated = async () => {

@@ -37,23 +37,19 @@ export function DashboardContent({
 }) {
   return (
     <div className="grid gap-4">
-      <div className="flex items-center justify-end gap-3">
-
-        <Button className="h-9 px-3 text-xs" variant="soft" loading={refreshing} onClick={onRefresh}>
-          <RefreshCw size={15} />
-          بروزرسانی
-        </Button>
-      </div>
-
       {summaryLoading ? (
         <LoadingState label="در حال دریافت نمای کلی مدیریت…" />
       ) : summaryError || !summary ? (
         <EmptyState
           title="اطلاعات داشبورد مدیریت دریافت نشد."
-          action={<Button variant="soft" onClick={onRetrySummary}><AlertCircle size={15} /> تلاش دوباره</Button>}
+          action={
+            <Button variant="soft" onClick={onRetrySummary}>
+              <AlertCircle size={15} /> تلاش دوباره
+            </Button>
+          }
         />
       ) : (
-        <DashboardMetricCards summary={summary} />
+        <DashboardMetricCards refreshing={refreshing} onRefresh={onRefresh} summary={summary} />
       )}
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -66,7 +62,9 @@ export function DashboardContent({
         <DashboardFollowUpCard items={followUp} />
       </section>
 
-      {summary ? <RecentReportsCard reports={summary.recentReports ?? []} /> : null}
+      {summary ? (
+        <RecentReportsCard reports={summary.recentReports ?? []} />
+      ) : null}
     </div>
   );
 }

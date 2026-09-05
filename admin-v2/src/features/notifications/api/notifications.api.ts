@@ -28,7 +28,7 @@ export function markNotificationRead(
   id: string,
 ) {
   return api.put(
-    `/notifications/${id}/read`,
+    `/notifications/${encodeURIComponent(id)}/read`,
     {},
   );
 }

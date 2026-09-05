@@ -45,13 +45,31 @@ export function CreateGroupButton({
       onClick={() =>
         modal.open({
           title: "ساخت گفتگوی گروهی",
+
+          description:
+            "یک گفتگوی گروهی جدید بسازید و اعضای موردنظر را اضافه کنید.",
+
           size: "lg",
+
           content: (
             <CreateGroupForm
               onCancel={modal.close}
               onCreated={(id) => {
                 modal.close();
+
+                notifications.success("گفتگوی گروهی با موفقیت ساخته شد.", {
+                  description: "گروه جدید آماده استفاده است.",
+                });
+
                 onCreated(id);
+              }}
+              onError={(error) => {
+                notifications.error("ساخت گفتگوی گروهی انجام نشد.", {
+                  description:
+                    error instanceof Error
+                      ? error.message
+                      : "خطای ناشناخته رخ داد.",
+                });
               }}
             />
           ),
@@ -65,45 +83,68 @@ export function CreateGroupButton({
 
 export function CreateGroupForm({
   onCancel,
+
   onCreated,
+
+  onError,
 }: {
   onCancel: () => void;
+
   onCreated: (id: string) => void;
+
+  onError?: (error: unknown) => void;
 }) {
   const [title, setTitle] = useState("");
+
   const [description, setDescription] = useState("");
+
   const [search, setSearch] = useState("");
-  const deferredSearch = useDebouncedValue(search.trim(), 250);
+
   const [selected, setSelected] = useState<ChatUser[]>([]);
+
+  const deferredSearch = useDebouncedValue(search.trim(), 250);
+
   const users = useQuery({
     queryKey: ["chat-users", deferredSearch],
+
     enabled: deferredSearch.length > 1,
+
     queryFn: () =>
       api.get<ChatUser[]>(
         `/chat/users?limit=15&search=${encodeURIComponent(deferredSearch)}`,
       ),
   });
+
   const create = useMutation({
     mutationFn: () =>
       api.post<GroupDetail>("/chat/groups", {
         title: title.trim(),
+
         description: description.trim(),
+
         memberIds: selected.map((item) => item.id),
       }),
+
     onSuccess: (group) => {
-      notifications.success("گروه ساخته شد.");
       onCreated(group.id);
     },
-    onError: (error) =>
-      notifications.error(
-        error instanceof Error ? error.message : "ساخت گروه ناموفق بود.",
-      ),
+
+    onError: (error) => {
+      onError?.(error);
+    },
   });
+
   return (
     <form
-      className="grid gap-3"
+      className="
+      grid
+      gap-4
+      "
       onSubmit={(event) => {
         event.preventDefault();
+
+        if (create.isPending) return;
+
         create.mutate();
       }}
     >
@@ -116,6 +157,7 @@ export function CreateGroupForm({
           onChange={(event) => setTitle(event.target.value)}
         />
       </Field>
+
       <Field label="توضیحات">
         <Textarea
           rows={3}
@@ -124,57 +166,111 @@ export function CreateGroupForm({
           onChange={(event) => setDescription(event.target.value)}
         />
       </Field>
+
       <Field label="افزودن اعضای اولیه">
         <Input
           value={search}
+          placeholder="
+          نام یا نام کاربری
+          "
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="نام یا نام کاربری"
         />
       </Field>
-      {selected.length ? (
-        <div className="flex flex-wrap gap-2">
+
+      {selected.length > 0 && (
+        <div
+          className="
+        flex
+        flex-wrap
+        gap-2
+        "
+        >
           {selected.map((user) => (
             <button
               type="button"
               key={user.id}
-              className="rounded-full bg-indigo-50 px-3 py-1 text-xs text-brand"
-              onClick={() =>
+              className="
+              rounded-full
+              bg-brand-soft
+              px-3
+              py-1
+              text-xs
+              text-brand
+              "
+              onClick={() => {
                 setSelected((items) =>
                   items.filter((item) => item.id !== user.id),
-                )
-              }
+                );
+              }}
             >
               {user.name} ×
             </button>
           ))}
         </div>
-      ) : null}
+      )}
+
       {users.data?.length ? (
-        <div className="max-h-40 overflow-auto rounded-md border">
+        <div
+          className="
+          max-h-40
+          overflow-auto
+          rounded-lg
+          border
+          "
+        >
           {users.data
+
             .filter((user) => !selected.some((item) => item.id === user.id))
+
             .map((user) => (
               <button
-                type="button"
                 key={user.id}
-                className="flex w-full items-center justify-between border-b p-2 text-right text-sm hover:bg-slate-50"
-                onClick={() => setSelected((items) => [...items, user])}
+                type="button"
+                className="
+                flex
+                w-full
+                items-center
+                justify-between
+                border-b
+                p-3
+                text-right
+                text-sm
+                hover:bg-slate-50
+                "
+                onClick={() => {
+                  setSelected((items) => [...items, user]);
+                }}
               >
                 <span>{user.name}</span>
+
                 <small dir="ltr">@{user.username}</small>
               </button>
             ))}
         </div>
       ) : null}
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="ghost" onClick={onCancel}>
+
+      <div
+        className="
+        flex
+        justify-end
+        gap-2
+        "
+      >
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={create.isPending}
+          onClick={onCancel}
+        >
           انصراف
         </Button>
+
         <Button
+          type="submit"
           loading={create.isPending}
           disabled={title.trim().length < 2 || create.isPending}
         >
-          ساخت گروه
+          {create.isPending ? "در حال ساخت..." : "ساخت گروه"}
         </Button>
       </div>
     </form>

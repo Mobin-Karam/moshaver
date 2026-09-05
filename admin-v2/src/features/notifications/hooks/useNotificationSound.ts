@@ -1,122 +1,77 @@
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useStoredBoolean } from "./useStoredBoolean";
 
 export function useNotificationSound() {
-  const [
-    soundEnabled,
-    setSoundEnabled,
-  ] = useStoredBoolean(
+  const [soundEnabled, setSoundEnabled] = useStoredBoolean(
     "admin-notification-sound",
     true,
   );
 
-  const [
-    chatSoundEnabled,
-    setChatSoundEnabled,
-  ] = useStoredBoolean(
+  const [chatSoundEnabled, setChatSoundEnabled] = useStoredBoolean(
     "admin-chat-sound",
     true,
   );
 
-  const lastSoundAt =
-    useRef(0);
+  const lastSoundAt = useRef(0);
 
-  function playSound(
-    chat = false,
-  ) {
-    if (
-      chat
-        ? !chatSoundEnabled
-        : !soundEnabled
-    ) {
-      return;
-    }
-
-    const now = Date.now();
-
-    if (
-      now -
-        lastSoundAt.current <
-      500
-    ) {
-      return;
-    }
-
-    lastSoundAt.current = now;
-
-    try {
-      const AudioContextClass =
-        window.AudioContext ||
-        (
-          window as typeof window & {
-            webkitAudioContext?: typeof AudioContext;
-          }
-        ).webkitAudioContext;
-
-      if (!AudioContextClass) {
+  const playSound = useCallback(
+    (chat = false) => {
+      if (chat ? !chatSoundEnabled : !soundEnabled) {
         return;
       }
 
-      const context =
-        new AudioContextClass();
+      if (typeof window === "undefined") {
+        return;
+      }
 
-      const oscillator =
-        context.createOscillator();
+      const now = Date.now();
+      if (now - lastSoundAt.current < 500) {
+        return;
+      }
 
-      const gain =
-        context.createGain();
+      lastSoundAt.current = now;
 
-      oscillator.type = "sine";
+      try {
+        const AudioContextClass =
+          window.AudioContext ||
+          (
+            window as typeof window & {
+              webkitAudioContext?: typeof AudioContext;
+            }
+          ).webkitAudioContext;
 
-      oscillator.frequency.setValueAtTime(
-        chat ? 720 : 560,
-        context.currentTime,
-      );
+        if (!AudioContextClass) {
+          return;
+        }
 
-      oscillator.frequency.exponentialRampToValueAtTime(
-        chat ? 920 : 760,
-        context.currentTime +
-          0.12,
-      );
+        const context = new AudioContextClass();
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
 
-      gain.gain.setValueAtTime(
-        0.0001,
-        context.currentTime,
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.12,
-        context.currentTime +
-          0.02,
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.0001,
-        context.currentTime +
-          0.22,
-      );
-
-      oscillator
-        .connect(gain)
-        .connect(
-          context.destination,
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(chat ? 720 : 560, context.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          chat ? 920 : 760,
+          context.currentTime + 0.12,
         );
 
-      oscillator.start();
+        gain.gain.setValueAtTime(0.0001, context.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.22);
 
-      oscillator.stop(
-        context.currentTime +
-          0.24,
-      );
+        oscillator.connect(gain).connect(context.destination);
+        oscillator.start();
+        oscillator.stop(context.currentTime + 0.24);
 
-      oscillator.onended =
-        () => {
-          void context.close();
+        oscillator.onended = () => {
+          void context.close().catch(() => undefined);
         };
-    } catch {
-      /* sound is optional */
-    }
-  }
+      } catch {
+        // Sound is optional and browser autoplay policies may reject it.
+      }
+    },
+    [chatSoundEnabled, soundEnabled],
+  );
 
   return {
     soundEnabled,

@@ -1,21 +1,522 @@
 import { useEffect, useState, type DragEvent } from "react";
-import { Copy, Pencil, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock3, Copy, Edit3, FileText, GripVertical, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import type { Plan, PlanTask } from "../../../shared/types/domain";
 import { useLocale } from "../../../shared/ui/locale";
 import { Badge } from "../../../shared/ui/ui";
 import { fa, todayIso } from "../../../shared/lib/utils";
 import type { PlannerMode } from "../model/planner.types";
-import { addMinutes, dateRange, isTaskComplete, minutesBetween, monthCells, parseDraggedTask, taskTypeLabel } from "../lib/planner-model";
+import {
+  addMinutes,
+  dateRange,
+  isTaskComplete,
+  minutesBetween,
+  monthCells,
+  parseDraggedTask,
+  taskTypeLabel,
+} from "../lib/planner-model";
 
 export type CanvasProps = {
-  mode: PlannerMode; date: string; range: { from:string; to:string }; plans: Plan[]; loading:boolean;
-  onSelectDay:(date:string)=>void; onCreate:(date:string)=>void; onQuickAdd:(date:string,start?:string)=>void;
-  onEditTask:(plan:Plan,task:PlanTask)=>void; onEditPlan:(plan:Plan)=>void; onDuplicatePlan:(plan:Plan)=>void; onDeletePlan:(plan:Plan)=>void;
-  onMoveTask:(taskId:string,planDate:string,start:string,end:string)=>void;
+  mode: PlannerMode;
+  date: string;
+  range: { from: string; to: string };
+  plans: Plan[];
+  loading: boolean;
+  onSelectDay: (date: string) => void;
+  onCreate: (date: string) => void;
+  onQuickAdd: (date: string, start?: string) => void;
+  onEditTask: (plan: Plan, task: PlanTask) => void;
+  onEditPlan: (plan: Plan) => void;
+  onDuplicatePlan: (plan: Plan) => void;
+  onDeletePlan: (plan: Plan) => void;
+  onMoveTask: (
+    taskId: string,
+    planDate: string,
+    start: string,
+    end: string,
+  ) => void;
 };
-export function PlannerCanvas(props:CanvasProps){const{formatDate}=useLocale();const map=new Map(props.plans.map((p)=>[p.planDate,p]));if(props.loading)return <PlannerSkeleton/>;if(props.mode==="list")return <VirtualList plans={props.plans} onEdit={props.onEditTask}/>;if(props.mode==="month")return <div className="h-full overflow-auto overscroll-contain"><div className="grid min-h-full grid-cols-2 gap-px bg-slate-200 sm:grid-cols-4 xl:grid-cols-7">{monthCells(props.range.from,props.range.to).map((day,index)=>day?<button key={day} className={`min-h-24 bg-white p-2 text-right hover:bg-indigo-50 ${day===todayIso()?"ring-2 ring-inset ring-brand":""}`} onClick={()=>props.onSelectDay(day)}><strong className="text-xs">{formatDate(day,{day:"numeric",month:"short",year:undefined})}</strong><span className="mt-2 block text-xs text-slate-500">{fa(map.get(day)?.tasks.length||0)} فعالیت</span>{map.get(day)?.tasks.slice(0,2).map((t)=><small key={t.id} className="mt-1 block truncate rounded bg-slate-100 px-1">{t.start} {t.title||t.subject}</small>)}</button>:<div key={`empty-${index}`} className="bg-slate-50"/>)}</div></div>;
-const days=props.mode==="day"?[props.date]:dateRange(props.range.from,props.range.to);return <div className="h-full overflow-y-auto overflow-x-hidden overscroll-contain"><div className={props.mode==="day"?"grid min-h-full grid-cols-1":"grid min-h-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"}>{days.map((day)=><DayColumn key={day} day={day} plan={map.get(day)} formatDate={formatDate} actions={props}/>)}</div></div>}
-function DayColumn({day,plan,formatDate,actions}:{day:string;plan?:Plan;formatDate:(value?:string|Date,options?:Intl.DateTimeFormatOptions)=>string;actions:CanvasProps}){function drop(event:DragEvent,targetStart?:string){event.preventDefault();event.stopPropagation();const data=parseDraggedTask(event.dataTransfer.getData("application/x-moshaver-task"));if(!data)return;const duration=Math.max(15,minutesBetween(data.start,data.end));const start=targetStart||data.start;actions.onMoveTask(data.id,day,start,addMinutes(start,duration))}return <section onDragOver={(e)=>e.preventDefault()} onDrop={(e)=>drop(e)} className="min-w-0 border-l border-slate-200 bg-slate-50/40 xl:min-h-full"><header className={`sticky top-0 z-10 border-b border-slate-200 px-2 py-2 ${day===todayIso()?"bg-indigo-50":"bg-white"}`}><div className="flex items-start gap-1"><button className="min-w-0 flex-1 text-right" onClick={()=>actions.onSelectDay(day)}><strong className="block truncate text-xs">{formatDate(day,{weekday:"short",day:"numeric",month:"short",year:undefined})}</strong><span className="text-[10px] text-slate-400">{fa(plan?.tasks.length||0)} فعالیت{plan?` · ${plan.published?"منتشر":"پیش‌نویس"}`:""}</span></button>{plan?<div className="flex shrink-0 opacity-70 transition hover:opacity-100"><button className="rounded p-1 hover:bg-slate-100" aria-label="ویرایش برنامه روز" onClick={()=>actions.onEditPlan(plan)}><Pencil size={12}/></button><button className="rounded p-1 hover:bg-slate-100" aria-label="کپی برنامه روز" onClick={()=>actions.onDuplicatePlan(plan)}><Copy size={12}/></button><button className="rounded p-1 text-rose-600 hover:bg-rose-50" aria-label="حذف برنامه روز" onClick={()=>actions.onDeletePlan(plan)}><Trash2 size={12}/></button></div>:null}</div></header><div className="grid content-start gap-1.5 p-2">{plan?.tasks.length?plan.tasks.map((task)=><CompactTask key={task.id} task={task} plan={plan} onEdit={actions.onEditTask}/>):<button className="rounded-lg border border-dashed border-slate-200 py-5 text-xs text-slate-400 hover:border-brand hover:text-brand" onClick={()=>plan?actions.onQuickAdd(day):actions.onCreate(day)}>+ برنامه این روز</button>}<div className="sticky bottom-2 mt-1 grid grid-cols-3 gap-1 rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-200">{["08:00","14:00","19:00"].map((start)=><button key={start} className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold text-brand hover:bg-indigo-50" onClick={()=>actions.onQuickAdd(day,start)} onDragOver={(e)=>e.preventDefault()} onDrop={(e)=>drop(e,start)}><Plus size={11}/><span dir="ltr">{start}</span></button>)}</div></div></section>}
-function CompactTask({task,plan,onEdit}:{task:PlanTask;plan:Plan;onEdit:(plan:Plan,task:PlanTask)=>void}){const status=isTaskComplete(task)?"انجام‌شده":"برنامه‌ریزی";return <button draggable onDragStart={(e)=>e.dataTransfer.setData("application/x-moshaver-task",JSON.stringify({id:task.id,start:task.start,end:task.end}))} onClick={()=>onEdit(plan,task)} className="group min-w-0 rounded-md border border-slate-200 bg-white p-1.5 text-right shadow-sm transition hover:border-brand hover:shadow"><div className="flex min-w-0 items-center gap-1"><span className="font-mono text-[10px] text-slate-400" dir="ltr">{task.start}</span><Badge tone={task.type==="exam"?"red":task.type==="test"?"amber":"neutral"}>{task.type==="exam"?"بالا":task.type==="test"?"متوسط":"عادی"}</Badge></div><strong className="mt-0.5 block truncate text-[11px]">{task.title||task.subject||task.type}</strong><small className="mt-0.5 block truncate text-[9px] text-slate-400">{status}</small><div className="grid max-h-0 overflow-hidden text-[10px] text-slate-500 opacity-0 transition-all group-hover:mt-1 group-hover:max-h-12 group-hover:opacity-100">{task.subject} {task.note}</div></button>}
-function VirtualList({plans,onEdit}:{plans:Plan[];onEdit:(plan:Plan,task:PlanTask)=>void}){const tasks=plans.flatMap((plan)=>plan.tasks.map((task)=>({plan,task})));const[start,setStart]=useState(0);useEffect(()=>setStart((c)=>Math.min(c,Math.max(0,tasks.length-1))),[tasks.length]);const row=58,visible=14;return <div className="h-full overflow-auto" onScroll={(e)=>setStart(Math.floor(e.currentTarget.scrollTop/row))}><div style={{height:tasks.length*row,position:"relative"}}>{tasks.slice(start,start+visible+4).map(({plan,task},index)=><button key={task.id} onClick={()=>onEdit(plan,task)} className="absolute right-0 grid w-full grid-cols-[80px_72px_minmax(0,1fr)] items-center gap-2 border-b border-slate-100 px-3 text-right hover:bg-slate-50 sm:grid-cols-[110px_90px_minmax(0,1fr)_auto] sm:gap-3 sm:px-4" style={{height:row,top:(start+index)*row}}><span className="text-xs text-slate-500">{plan.planDate}</span><span className="font-mono text-xs" dir="ltr">{task.start}–{task.end}</span><strong className="truncate text-sm">{task.subject?`${task.subject} — `:""}{task.title||task.type}</strong><span className="hidden sm:inline-flex"><Badge>{taskTypeLabel(task.type)}</Badge></span></button>)}</div></div>}
-function PlannerSkeleton(){return <div className="grid h-full grid-cols-7 gap-px bg-slate-200">{[1,2,3,4,5,6,7].map((day)=><div key={day} className="bg-white p-2"><div className="h-8 animate-pulse rounded bg-slate-100"/>{[1,2,3].map((x)=><div key={x} className="mt-2 h-16 animate-pulse rounded bg-slate-100"/>)}</div>)}</div>}
+export function PlannerCanvas(props: CanvasProps) {
+  const { formatDate } = useLocale();
+  const map = new Map(props.plans.map((p) => [p.planDate, p]));
+  if (props.loading) return <PlannerSkeleton />;
+  if (props.mode === "list")
+    return <VirtualList plans={props.plans} onEdit={props.onEditTask} />;
+  if (props.mode === "month")
+    return (
+      <div className="h-full overflow-auto overscroll-contain">
+        <div className="grid min-h-full grid-cols-2 gap-px bg-slate-200 sm:grid-cols-4 xl:grid-cols-7">
+          {monthCells(props.range.from, props.range.to).map((day, index) =>
+            day ? (
+              <button
+                key={day}
+                className={`min-h-24 bg-white p-2 text-right hover:bg-indigo-50 ${day === todayIso() ? "ring-2 ring-inset ring-brand" : ""}`}
+                onClick={() => props.onSelectDay(day)}
+              >
+                <strong className="text-xs">
+                  {formatDate(day, {
+                    day: "numeric",
+                    month: "short",
+                    year: undefined,
+                  })}
+                </strong>
+                <span className="mt-2 block text-xs text-slate-500">
+                  {fa(map.get(day)?.tasks.length || 0)} فعالیت
+                </span>
+                {map
+                  .get(day)
+                  ?.tasks.slice(0, 2)
+                  .map((t) => (
+                    <small
+                      key={t.id}
+                      className="mt-1 block truncate rounded bg-slate-100 px-1"
+                    >
+                      {t.start} {t.title || t.subject}
+                    </small>
+                  ))}
+              </button>
+            ) : (
+              <div key={`empty-${index}`} className="bg-slate-50" />
+            ),
+          )}
+        </div>
+      </div>
+    );
+  const days =
+    props.mode === "day"
+      ? [props.date]
+      : dateRange(props.range.from, props.range.to);
+  return (
+    <div className="h-full overflow-y-auto overflow-x-hidden overscroll-contain">
+      <div
+        className={
+          props.mode === "day"
+            ? "grid min-h-full grid-cols-1"
+            : "grid min-h-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
+        }
+      >
+        {days.map((day) => (
+          <DayColumn
+            key={day}
+            day={day}
+            plan={map.get(day)}
+            formatDate={formatDate}
+            actions={props}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+function DayColumn({
+  day,
+  plan,
+  formatDate,
+  actions,
+}: {
+  day: string;
+  plan?: Plan;
+  formatDate: (
+    value?: string | Date,
+    options?: Intl.DateTimeFormatOptions,
+  ) => string;
+  actions: CanvasProps;
+}) {
+  function drop(event: DragEvent, targetStart?: string) {
+    event.preventDefault();
+    event.stopPropagation();
+    const data = parseDraggedTask(
+      event.dataTransfer.getData("application/x-moshaver-task"),
+    );
+    if (!data) return;
+    const duration = Math.max(15, minutesBetween(data.start, data.end));
+    const start = targetStart || data.start;
+    actions.onMoveTask(data.id, day, start, addMinutes(start, duration));
+  }
+  return (
+    <section
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => drop(e)}
+      className="min-w-0 border-l border-slate-200 bg-slate-50/40 xl:min-h-full"
+    >
+      <header
+        className={`sticky top-0 z-10 border-b border-slate-200 px-2 py-2 ${day === todayIso() ? "bg-indigo-50" : "bg-white"}`}
+      >
+        <div className="flex items-start gap-1">
+          <button
+            className="min-w-0 flex-1 text-right"
+            onClick={() => actions.onSelectDay(day)}
+          >
+            <strong className="block truncate text-xs">
+              {formatDate(day, {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+                year: undefined,
+              })}
+            </strong>
+            <span className="text-[10px] text-slate-400">
+              {fa(plan?.tasks.length || 0)} فعالیت
+              {plan ? ` · ${plan.published ? "منتشر" : "پیش‌نویس"}` : ""}
+            </span>
+          </button>
+          {plan ? (
+            <div className="flex shrink-0 opacity-70 transition hover:opacity-100">
+              <button
+                className="rounded p-1 hover:bg-slate-100"
+                aria-label="ویرایش برنامه روز"
+                onClick={() => actions.onEditPlan(plan)}
+              >
+                <Pencil size={12} />
+              </button>
+              <button
+                className="rounded p-1 hover:bg-slate-100"
+                aria-label="کپی برنامه روز"
+                onClick={() => actions.onDuplicatePlan(plan)}
+              >
+                <Copy size={12} />
+              </button>
+              <button
+                className="rounded p-1 text-rose-600 hover:bg-rose-50"
+                aria-label="حذف برنامه روز"
+                onClick={() => actions.onDeletePlan(plan)}
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </header>
+      <div className="grid content-start gap-1.5 p-2">
+        {plan?.tasks.length ? (
+          plan.tasks.map((task) => (
+            <CompactTask
+              key={task.id}
+              task={task}
+              plan={plan}
+              onEdit={actions.onEditTask}
+            />
+          ))
+        ) : (
+          <button
+            className="rounded-lg border border-dashed border-slate-200 py-5 text-xs text-slate-400 hover:border-brand hover:text-brand"
+            onClick={() =>
+              plan ? actions.onQuickAdd(day) : actions.onCreate(day)
+            }
+          >
+            + برنامه این روز
+          </button>
+        )}
+        <div className="sticky bottom-2 mt-1 grid grid-cols-3 gap-1 rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-200">
+          {["08:00", "14:00", "19:00"].map((start) => (
+            <button
+              key={start}
+              className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold text-brand hover:bg-indigo-50"
+              onClick={() => actions.onQuickAdd(day, start)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => drop(e, start)}
+            >
+              <Plus size={11} />
+              <span dir="ltr">{start}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CompactTask({
+  task,
+  plan,
+  onEdit,
+}: {
+  task: PlanTask;
+  plan: Plan;
+  onEdit: (plan: Plan, task: PlanTask) => void;
+}) {
+  const completed = isTaskComplete(task);
+
+  const overdue =
+    !completed && task.end && new Date(`${task.end}T23:59:59`) < new Date();
+
+  const priority =
+    task.type === "exam" ? "high" : task.type === "test" ? "medium" : "normal";
+
+  return (
+    <button
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+
+        e.dataTransfer.setData(
+          "application/x-moshaver-task",
+          JSON.stringify({
+            id: task.id,
+            start: task.start,
+            end: task.end,
+          }),
+        );
+      }}
+      onClick={() => onEdit(plan, task)}
+      className={[
+        "group relative min-w-0 rounded-lg border p-2 text-right",
+        "transition-all duration-200",
+        "hover:-translate-y-0.5 hover:shadow-md",
+        "focus:outline-none focus:ring-2 focus:ring-brand/40",
+
+        completed
+          ? [
+              "border-emerald-300",
+              "bg-emerald-50",
+              "dark:border-emerald-700",
+              "dark:bg-emerald-950/30",
+            ]
+          : overdue
+            ? [
+                "border-red-300",
+                "bg-red-50",
+                "dark:border-red-700",
+                "dark:bg-red-950/30",
+              ]
+            : [
+                "border-slate-200",
+                "bg-white",
+                "dark:border-slate-700",
+                "dark:bg-slate-900",
+              ],
+      ].join(" ")}
+    >
+      {/* top row */}
+      <div className="flex items-center justify-between gap-1">
+        <div className="flex items-center gap-1">
+          <GripVertical
+            size={12}
+            className="
+              opacity-0
+              transition
+              group-hover:opacity-60
+              text-slate-400
+            "
+          />
+
+          <Clock3
+            size={11}
+            className={completed ? "text-emerald-600" : "text-slate-400"}
+          />
+
+          <span
+            dir="ltr"
+            className="
+              font-mono
+              text-[10px]
+              text-slate-400
+            "
+          >
+            {task.start}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1">
+          {overdue && <AlertTriangle size={12} className="text-red-500" />}
+
+          {completed && (
+            <CheckCircle2
+              size={13}
+              className="
+                text-emerald-600
+                animate-in
+                zoom-in
+              "
+            />
+          )}
+        </div>
+      </div>
+
+      {/* title */}
+      <div
+        className="
+          mt-1
+          flex
+          items-center
+          gap-1
+        "
+      >
+        <span
+          className={[
+            "h-2 w-2 rounded-full",
+            priority === "high"
+              ? "bg-red-500"
+              : priority === "medium"
+                ? "bg-amber-500"
+                : "bg-slate-400",
+          ].join(" ")}
+        />
+
+        <strong
+          title={task.title || task.subject}
+          className={[
+            "truncate text-[11px]",
+            completed
+              ? "text-emerald-800 line-through"
+              : "text-slate-800 dark:text-slate-100",
+          ].join(" ")}
+        >
+          {task.title || task.subject || task.type}
+        </strong>
+      </div>
+
+      {/* status */}
+      <div className="mt-1 flex items-center justify-between">
+        <span
+          className={[
+            "rounded-full px-1.5 py-0.5 text-[9px]",
+            completed
+              ? "bg-emerald-100 text-emerald-700"
+              : overdue
+                ? "bg-red-100 text-red-700"
+                : "bg-slate-100 text-slate-600",
+          ].join(" ")}
+        >
+          {completed ? "✓ انجام‌شده" : overdue ? "تاخیر" : "برنامه‌ریزی"}
+        </span>
+
+        <span className="text-[9px] text-slate-400">
+          {task.duration ? `${task.duration} دقیقه` : ""}
+        </span>
+      </div>
+
+      {/* hover actions */}
+      <div
+        className="
+          absolute
+          left-1
+          top-1
+          flex
+          gap-1
+          opacity-0
+          transition
+          group-hover:opacity-100
+        "
+      >
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(plan, task);
+          }}
+          className="
+            rounded
+            bg-white
+            p-1
+            shadow
+            hover:bg-slate-100
+          "
+        >
+          <Edit3 size={11} />
+        </span>
+
+        <span
+          className="
+            rounded
+            bg-white
+            p-1
+            shadow
+            hover:bg-slate-100
+          "
+        >
+          <MoreHorizontal size={11} />
+        </span>
+      </div>
+
+      {/* expandable info */}
+      <div
+        className="
+          grid
+          max-h-0
+          overflow-hidden
+          text-[10px]
+          text-slate-500
+          opacity-0
+          transition-all
+          group-hover:
+          mt-1
+          group-hover:
+          group-hover:
+        "
+      >
+        <div className="flex items-center gap-1">
+          <FileText size={10} />
+          {task.subject}
+        </div>
+
+        {task.note && <div className="truncate">{task.note}</div>}
+      </div>
+    </button>
+  );
+}
+
+function VirtualList({
+  plans,
+  onEdit,
+}: {
+  plans: Plan[];
+  onEdit: (plan: Plan, task: PlanTask) => void;
+}) {
+  const tasks = plans.flatMap((plan) =>
+    plan.tasks.map((task) => ({ plan, task })),
+  );
+  const [start, setStart] = useState(0);
+  useEffect(
+    () => setStart((c) => Math.min(c, Math.max(0, tasks.length - 1))),
+    [tasks.length],
+  );
+  const row = 58,
+    visible = 14;
+  return (
+    <div
+      className="h-full overflow-auto"
+      onScroll={(e) => setStart(Math.floor(e.currentTarget.scrollTop / row))}
+    >
+      <div style={{ height: tasks.length * row, position: "relative" }}>
+        {tasks
+          .slice(start, start + visible + 4)
+          .map(({ plan, task }, index) => (
+            <button
+              key={task.id}
+              onClick={() => onEdit(plan, task)}
+              className="absolute right-0 grid w-full grid-cols-[80px_72px_minmax(0,1fr)] items-center gap-2 border-b border-slate-100 px-3 text-right hover:bg-slate-50 sm:grid-cols-[110px_90px_minmax(0,1fr)_auto] sm:gap-3 sm:px-4"
+              style={{ height: row, top: (start + index) * row }}
+            >
+              <span className="text-xs text-slate-500">{plan.planDate}</span>
+              <span className="font-mono text-xs" dir="ltr">
+                {task.start}–{task.end}
+              </span>
+              <strong className="truncate text-sm">
+                {task.subject ? `${task.subject} — ` : ""}
+                {task.title || task.type}
+              </strong>
+              <span className="hidden sm:inline-flex">
+                <Badge>{taskTypeLabel(task.type)}</Badge>
+              </span>
+            </button>
+          ))}
+      </div>
+    </div>
+  );
+}
+function PlannerSkeleton() {
+  return (
+    <div className="grid h-full grid-cols-7 gap-px bg-slate-200">
+      {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+        <div key={day} className="bg-white p-2">
+          <div className="h-8 animate-pulse rounded bg-slate-100" />
+          {[1, 2, 3].map((x) => (
+            <div
+              key={x}
+              className="mt-2 h-16 animate-pulse rounded bg-slate-100"
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}

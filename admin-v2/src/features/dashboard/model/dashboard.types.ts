@@ -4,6 +4,8 @@ export type AdminDashboardSummary = {
   todayReports: number;
   upcomingExams: number;
   pendingRecoveries: number;
+  refreshing?: boolean;
+  onRefresh?: () => void;
   missedTasks: number;
   unreadChat: number;
   recentReports: DashboardRecentReport[];
@@ -37,7 +39,11 @@ export type DashboardRecentReport = {
 export type AttentionSeverity = "red" | "yellow" | "green";
 
 export type AttentionReason = {
-  code: "overdue_reviews" | "weak_exam_performance" | "no_recent_activity" | string;
+  code:
+    | "overdue_reviews"
+    | "weak_exam_performance"
+    | "no_recent_activity"
+    | string;
   value: number;
   label: string;
 };

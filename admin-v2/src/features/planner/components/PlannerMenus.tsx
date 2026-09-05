@@ -4,8 +4,207 @@ import type { Plan, PlanTask } from "../../../shared/types/domain";
 import { todayIso } from "../../../shared/lib/utils";
 import type { PlannerMode, TaskFilter } from "../model/planner.types";
 import { filterLabel } from "../lib/planner-model";
-export function ViewSwitch({value,onChange}:{value:PlannerMode;onChange:(mode:PlannerMode)=>void}){return <div className="flex rounded-lg bg-slate-100 p-1">{(["day","week","month","list"] as PlannerMode[]).map((mode)=><button key={mode} className={`h-7 rounded-md px-2 text-xs font-semibold ${value===mode?"bg-white text-brand shadow-sm":"text-slate-500"}`} onClick={()=>onChange(mode)}>{{day:"روز",week:"هفته",month:"ماه",list:"فهرست"}[mode]}</button>)}</div>}
-export function FilterMenu({value,onChange}:{value:TaskFilter;onChange:(value:TaskFilter)=>void}){return <div className="absolute left-0 top-11 z-40 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"><strong className="block px-2 py-1 text-xs">وضعیت برنامه</strong>{(["all","published","draft","incomplete"] as TaskFilter[]).map((item)=><button key={item} className={`mt-1 block w-full rounded-md px-3 py-2 text-right text-sm ${value===item?"bg-indigo-50 text-brand":"hover:bg-slate-50"}`} onClick={()=>onChange(item)}>{filterLabel(item)}</button>)}</div>}
-export function MoreMenu({onClose,onPlan,onPublish,onTransfer}:{onClose:()=>void;onPlan:()=>void;onPublish:(value:boolean)=>void;onTransfer:()=>void}){return <div className="absolute left-0 top-11 z-40 w-60 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"><button className="block w-full rounded-md px-3 py-2 text-right text-sm hover:bg-slate-50" onClick={onPlan}>تنظیمات برنامه روز</button><button className="block w-full rounded-md px-3 py-2 text-right text-sm hover:bg-slate-50" onClick={()=>onPublish(true)}>انتشار بازه</button><button className="block w-full rounded-md px-3 py-2 text-right text-sm hover:bg-slate-50" onClick={()=>onPublish(false)}>پیش‌نویس کردن بازه</button><button className="block w-full rounded-md px-3 py-2 text-right text-sm hover:bg-slate-50" onClick={onTransfer}>ورود / خروج JSON</button><button className="mt-1 block w-full border-t px-3 py-2 text-right text-xs text-slate-400" onClick={onClose}>بستن</button></div>}
-export function CommandPalette({plans,onClose,onDate,onView,onTask,onCreate}:{plans:Plan[];onClose:()=>void;onDate:(date:string)=>void;onView:(mode:PlannerMode)=>void;onTask:(plan:Plan,task:PlanTask)=>void;onCreate:()=>void}){const[query,setQuery]=useState("");const input=useRef<HTMLInputElement>(null);useEffect(()=>input.current?.focus(),[]);const tasks=plans.flatMap((plan)=>plan.tasks.map((task)=>({plan,task}))).filter((x)=>[x.task.title,x.task.subject,x.plan.planDate].join(" ").includes(query)).slice(0,12);return <div className="fixed inset-0 z-[60] grid place-items-start bg-slate-950/55 px-4 pt-[12vh]" onMouseDown={(e)=>{if(e.target===e.currentTarget)onClose()}}><section role="dialog" aria-modal="true" aria-label="فرمان‌های برنامه‌ریز" className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl"><label className="flex h-14 items-center gap-3 border-b px-4"><Command size={20} className="text-brand"/><input ref={input} className="min-w-0 flex-1 outline-none" value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="جستجوی فعالیت، تاریخ یا فرمان…" onKeyDown={(e)=>e.key==="Escape"&&onClose()}/><kbd className="text-xs text-slate-400">Esc</kbd></label><div className="max-h-[55vh] overflow-auto p-2"><div className="grid grid-cols-2 gap-2"><PaletteButton icon={Plus} label="فعالیت جدید" onClick={onCreate}/><PaletteButton icon={Calendar} label="رفتن به امروز" onClick={()=>onDate(todayIso())}/>{(["day","week","month","list"] as PlannerMode[]).map((mode)=><PaletteButton key={mode} icon={CalendarDays} label={`نمای ${{day:"روز",week:"هفته",month:"ماه",list:"فهرست"}[mode]}`} onClick={()=>onView(mode)}/>)}</div>{query?<><h4 className="px-2 pb-1 pt-4 text-xs text-slate-400">نتایج</h4>{tasks.map(({plan,task})=><button key={task.id} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-right hover:bg-slate-50" onClick={()=>onTask(plan,task)}><span className="font-mono text-xs text-slate-400">{task.start}</span><strong className="truncate text-sm">{task.title||task.subject||task.type}</strong><small className="mr-auto text-slate-400">{plan.planDate}</small></button>)}</>:null}</div></section></div>}
-function PaletteButton({icon:Icon,label,onClick}:{icon:typeof Plus;label:string;onClick:()=>void}){return <button className="flex items-center gap-2 rounded-lg border border-slate-200 p-3 text-sm hover:border-brand hover:bg-indigo-50" onClick={onClick}><Icon size={16}/>{label}</button>}
+
+export function ViewSwitch({
+  value,
+  onChange,
+}: {
+  value: PlannerMode;
+  onChange: (mode: PlannerMode) => void;
+}) {
+  return (
+    <div className="flex rounded-lg bg-slate-100 p-1">
+      {(["day", "week", "month", "list"] as PlannerMode[]).map((mode) => (
+        <button
+          key={mode}
+          className={`h-7 rounded-md px-2 text-xs font-semibold ${value === mode ? "bg-white text-brand shadow-sm" : "text-slate-500"}`}
+          onClick={() => onChange(mode)}
+        >
+          {{ day: "روز", week: "هفته", month: "ماه", list: "فهرست" }[mode]}
+        </button>
+      ))}
+    </div>
+  );
+}
+export function FilterMenu({
+  value,
+  onChange,
+}: {
+  value: TaskFilter;
+  onChange: (value: TaskFilter) => void;
+}) {
+  return (
+    <div className="w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+      <strong className="block px-2 py-1 text-xs">وضعیت برنامه</strong>
+      {(["all", "published", "draft", "incomplete"] as TaskFilter[]).map(
+        (item) => (
+          <button
+            key={item}
+            className={`mt-1 block w-full rounded-md px-3 py-2 text-right text-sm ${value === item ? "bg-indigo-50 text-brand" : "hover:bg-slate-50"}`}
+            onClick={() => onChange(item)}
+          >
+            {filterLabel(item)}
+          </button>
+        ),
+      )}
+    </div>
+  );
+}
+export function MoreMenu({
+  onClose,
+  onPlan,
+  onPublish,
+  onTransfer,
+}: {
+  onClose: () => void;
+  onPlan: () => void;
+  onPublish: (value: boolean) => void;
+  onTransfer: () => void;
+}) {
+  return (
+    <div className="absolute left-0 top-11 z-40 w-60 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+      <button
+        className="block w-full rounded-md px-3 py-2 text-right text-sm hover:bg-slate-50"
+        onClick={onPlan}
+      >
+        تنظیمات برنامه روز
+      </button>
+      <button
+        className="block w-full rounded-md px-3 py-2 text-right text-sm hover:bg-slate-50"
+        onClick={() => onPublish(true)}
+      >
+        انتشار بازه
+      </button>
+      <button
+        className="block w-full rounded-md px-3 py-2 text-right text-sm hover:bg-slate-50"
+        onClick={() => onPublish(false)}
+      >
+        پیش‌نویس کردن بازه
+      </button>
+      <button
+        className="block w-full rounded-md px-3 py-2 text-right text-sm hover:bg-slate-50"
+        onClick={onTransfer}
+      >
+        ورود / خروج JSON
+      </button>
+      <button
+        className="mt-1 block w-full border-t px-3 py-2 text-right text-xs text-slate-400"
+        onClick={onClose}
+      >
+        بستن
+      </button>
+    </div>
+  );
+}
+export function CommandPalette({
+  plans,
+  onClose,
+  onDate,
+  onView,
+  onTask,
+  onCreate,
+}: {
+  plans: Plan[];
+  onClose: () => void;
+  onDate: (date: string) => void;
+  onView: (mode: PlannerMode) => void;
+  onTask: (plan: Plan, task: PlanTask) => void;
+  onCreate: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const input = useRef<HTMLInputElement>(null);
+  useEffect(() => input.current?.focus(), []);
+  const tasks = plans
+    .flatMap((plan) => plan.tasks.map((task) => ({ plan, task })))
+    .filter((x) =>
+      [x.task.title, x.task.subject, x.plan.planDate].join(" ").includes(query),
+    )
+    .slice(0, 12);
+  return (
+    <div
+      className="fixed inset-0 z-[60] grid place-items-start bg-slate-950/55 px-4 pt-[12vh]"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-label="فرمان‌های برنامه‌ریز"
+        className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+      >
+        <label className="flex h-14 items-center gap-3 border-b px-4">
+          <Command size={20} className="text-brand" />
+          <input
+            ref={input}
+            className="min-w-0 flex-1 outline-none"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="جستجوی فعالیت، تاریخ یا فرمان…"
+            onKeyDown={(e) => e.key === "Escape" && onClose()}
+          />
+          <kbd className="text-xs text-slate-400">Esc</kbd>
+        </label>
+        <div className="max-h-[55vh] overflow-auto p-2">
+          <div className="grid grid-cols-2 gap-2">
+            <PaletteButton icon={Plus} label="فعالیت جدید" onClick={onCreate} />
+            <PaletteButton
+              icon={Calendar}
+              label="رفتن به امروز"
+              onClick={() => onDate(todayIso())}
+            />
+            {(["day", "week", "month", "list"] as PlannerMode[]).map((mode) => (
+              <PaletteButton
+                key={mode}
+                icon={CalendarDays}
+                label={`نمای ${{ day: "روز", week: "هفته", month: "ماه", list: "فهرست" }[mode]}`}
+                onClick={() => onView(mode)}
+              />
+            ))}
+          </div>
+          {query ? (
+            <>
+              <h4 className="px-2 pb-1 pt-4 text-xs text-slate-400">نتایج</h4>
+              {tasks.map(({ plan, task }) => (
+                <button
+                  key={task.id}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-right hover:bg-slate-50"
+                  onClick={() => onTask(plan, task)}
+                >
+                  <span className="font-mono text-xs text-slate-400">
+                    {task.start}
+                  </span>
+                  <strong className="truncate text-sm">
+                    {task.title || task.subject || task.type}
+                  </strong>
+                  <small className="mr-auto text-slate-400">
+                    {plan.planDate}
+                  </small>
+                </button>
+              ))}
+            </>
+          ) : null}
+        </div>
+      </section>
+    </div>
+  );
+}
+function PaletteButton({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: typeof Plus;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className="flex items-center gap-2 rounded-lg border border-slate-200 p-3 text-sm hover:border-brand hover:bg-indigo-50"
+      onClick={onClick}
+    >
+      <Icon size={16} />
+      {label}
+    </button>
+  );
+}

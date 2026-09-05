@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ChevronLeft, ChevronRight, ChevronsUpDown, Filter, MoreHorizontal, Plus, Search, X } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsUpDown,
+  Filter,
+  MoreHorizontal,
+  Plus,
+  Search,
+  X,
+} from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import type { Plan, PlanTask } from "../../../shared/types/domain";
 import { useStudentSelection } from "../../../shared/hooks/useStudentSelection";
@@ -12,46 +22,733 @@ import { useLocale } from "../../../shared/ui/locale";
 import { useModal } from "../../../shared/ui/modal";
 import { notify } from "../../../shared/ui/notifications";
 import { Badge, Button, Card, EmptyState } from "../../../shared/ui/ui";
-import { createPlan, deletePlan, deletePlannerTask, duplicatePlan, getPlanForDate, getPlannerExams, getPlans, movePlannerTask, publishPlanRange, savePlannerTask, updatePlan } from "../api/planner.api";
+import {
+  createPlan,
+  deletePlan,
+  deletePlannerTask,
+  duplicatePlan,
+  getPlanForDate,
+  getPlannerExams,
+  getPlans,
+  movePlannerTask,
+  publishPlanRange,
+  savePlannerTask,
+  updatePlan,
+} from "../api/planner.api";
 import { PlannerCanvas } from "../components/PlannerCanvas";
-import { DateAction, PlanForm, TaskDrawer, TaskForm, toPlanDraft, toTaskDraft } from "../components/PlannerForms";
-import { CommandPalette, FilterMenu, MoreMenu, ViewSwitch } from "../components/PlannerMenus";
+import {
+  DateAction,
+  PlanForm,
+  TaskDrawer,
+  TaskForm,
+  toPlanDraft,
+  toTaskDraft,
+} from "../components/PlannerForms";
+import {
+  CommandPalette,
+  FilterMenu,
+  MoreMenu,
+  ViewSwitch,
+} from "../components/PlannerMenus";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
-import { addMinutes, comparePlanTasks, errorMessage, filterLabel, filterPlans, optimisticMove, parseFilter, parseMode, planWarnings, plannerRange, replacePlan, shiftView, sortPlanTasks, summarizePlans } from "../lib/planner-model";
-import type { PlannerMode, TaskDraft, TaskFilter } from "../model/planner.types";
+import {
+  addMinutes,
+  comparePlanTasks,
+  errorMessage,
+  filterLabel,
+  filterPlans,
+  optimisticMove,
+  parseFilter,
+  parseMode,
+  planWarnings,
+  plannerRange,
+  replacePlan,
+  shiftView,
+  sortPlanTasks,
+  summarizePlans,
+} from "../lib/planner-model";
+import type {
+  PlannerMode,
+  TaskDraft,
+  TaskFilter,
+} from "../model/planner.types";
+import { PlannerMoreMenu } from "../components/PlannerMoreMenu";
+import { PlannerFilterPopover } from "../components/PlannerFilterPopover";
 
-export function PlannerPage(){
- const students=useStudentSelection(),modal=useModal(),qc=useQueryClient(),{profile}=useLocale(),[params,setParams]=useSearchParams();
- const[date,setDateState]=useState(params.get("date")||todayIso());
- const[mode,setModeState]=useState<PlannerMode>(parseMode(params.get("view")));
- const[search,setSearch]=useState(params.get("q")||"");
- const[filter,setFilter]=useState<TaskFilter>(parseFilter(params.get("filter")));
- const[filtersOpen,setFiltersOpen]=useState(false),[summaryOpen,setSummaryOpen]=useState(true),[warningsOpen,setWarningsOpen]=useState(true),[moreOpen,setMoreOpen]=useState(false),[paletteOpen,setPaletteOpen]=useState(false);
- const[drawer,setDrawer]=useState<{plan:Plan;task?:PlanTask}|null>(null);
- const deferredSearch=useDebouncedValue(search,220);
- function syncUrl(next:{date?:string;mode?:PlannerMode;filter?:TaskFilter;search?:string}){setParams((current)=>{const copy=new URLSearchParams(current);if(next.date!==undefined)copy.set("date",next.date);if(next.mode!==undefined)copy.set("view",next.mode);if(students.studentId)copy.set("studentId",students.studentId);if(next.filter!==undefined)next.filter==="all"?copy.delete("filter"):copy.set("filter",next.filter);if(next.search!==undefined)next.search?copy.set("q",next.search):copy.delete("q");return copy},{replace:true})}
- const setDate=(next:string)=>{setDateState(next);syncUrl({date:next})};const setMode=(next:PlannerMode)=>{setModeState(next);syncUrl({mode:next})};const setTaskFilter=(next:TaskFilter)=>{setFilter(next);syncUrl({filter:next})};
- useEffect(()=>{setDateState(params.get("date")||todayIso());setModeState(parseMode(params.get("view")));setSearch(params.get("q")||"");setFilter(parseFilter(params.get("filter")))},[params]);
- const range=useMemo(()=>plannerRange(date,mode,profile.locale,profile.calendar),[date,mode,profile.calendar,profile.locale]);
- const plansKey=["plans",students.studentId,range.from,range.to,deferredSearch,filter];
- const plans=useQuery({queryKey:plansKey,enabled:!!students.studentId,queryFn:()=>getPlans(students.studentId,range.from,range.to,deferredSearch,filter),select:sortPlanTasks});
- useEffect(()=>{if(!students.studentId)return;[-1,1].forEach((direction)=>{const adjacentDate=shiftView(date,mode,direction,profile.locale,profile.calendar),adjacent=plannerRange(adjacentDate,mode,profile.locale,profile.calendar);void qc.prefetchQuery({queryKey:["plans",students.studentId,adjacent.from,adjacent.to,deferredSearch,filter],queryFn:()=>getPlans(students.studentId,adjacent.from,adjacent.to,deferredSearch,filter),staleTime:60000})})},[date,deferredSearch,filter,mode,profile.calendar,profile.locale,qc,students.studentId]);
- const exams=useQuery({queryKey:["exams",students.studentId],enabled:!!students.studentId,queryFn:()=>getPlannerExams(students.studentId)});
- const visiblePlans=useMemo(()=>filterPlans(plans.data??[],deferredSearch,filter),[deferredSearch,filter,plans.data]);const totals=summarizePlans(visiblePlans),warnings=planWarnings(plans.data??[]),refresh=()=>qc.invalidateQueries({queryKey:["plans"]});
- const savePlan=useMutation({mutationFn:(body:ReturnType<typeof toPlanDraft>)=>createPlan(students.studentId,body),onSuccess:refresh});
- const patchPlan=useMutation({mutationFn:({id,body}:{id:string;body:Partial<ReturnType<typeof toPlanDraft>>})=>updatePlan(id,body),onSuccess:refresh});
- const removePlan=useMutation({mutationFn:deletePlan,onSuccess:refresh});const duplicate=useMutation({mutationFn:({id,planDate}:{id:string;planDate:string})=>duplicatePlan(id,planDate),onSuccess:refresh});
- const saveTask=useMutation({mutationFn:({planId,task}:{planId:string;task:TaskDraft&{id?:string}})=>savePlannerTask(planId,task),onMutate:async({planId,task})=>{const key=plansKey;await qc.cancelQueries({queryKey:key});const previous=qc.getQueryData<Plan[]>(key);qc.setQueryData<Plan[]>(key,(current)=>current?.map((plan)=>plan.id!==planId?plan:{...plan,tasks:task.id?plan.tasks.map((item)=>item.id===task.id?{...item,...task}:item).sort(comparePlanTasks):[...plan.tasks,{...task,id:`optimistic-${Date.now()}`} as PlanTask].sort(comparePlanTasks)}));return{previous,key}},onSuccess:(updated)=>{if(updated&&typeof updated==="object"&&"id" in updated)qc.setQueryData<Plan[]>(plansKey,(current)=>replacePlan(current,updated as Plan));else refresh()},onError:(_e,_v,c)=>{if(c?.previous)qc.setQueryData(c.key,c.previous)},onSettled:refresh});
- const removeTask=useMutation({mutationFn:deletePlannerTask,onMutate:async(id)=>{const key=plansKey;await qc.cancelQueries({queryKey:key});const previous=qc.getQueryData<Plan[]>(key);qc.setQueryData<Plan[]>(key,(current)=>current?.map((p)=>({...p,tasks:p.tasks.filter((t)=>t.id!==id)})));return{previous,key}},onError:(_e,_id,c)=>{if(c?.previous)qc.setQueryData(c.key,c.previous)},onSettled:refresh});
- const moveTask=useMutation({mutationFn:({taskId,planId,start,end}:{taskId:string;planId:string;start:string;end:string})=>movePlannerTask(taskId,planId,start,end),onMutate:async(move)=>{const key=plansKey;await qc.cancelQueries({queryKey:key});const previous=qc.getQueryData<Plan[]>(key);qc.setQueryData<Plan[]>(key,(current)=>optimisticMove(current||[],move));return{previous,key}},onError:(_e,_m,c)=>{if(c?.previous)qc.setQueryData(c.key,c.previous)},onSettled:refresh,meta:{successMessage:"زمان فعالیت جابه‌جا شد."}});
- const publishRange=useMutation({mutationFn:(published:boolean)=>publishPlanRange(students.studentId,range.from,range.to,published),onSuccess:refresh});
- function openPlan(planDate:string,plan?:Plan){modal.open({title:plan?"ویرایش مشخصات روز":"ساخت برنامه روز",size:"lg",content:<PlanForm initial={toPlanDraft(planDate,plan)} lockDate={Boolean(plan)} busy={savePlan.isPending||patchPlan.isPending} onCancel={modal.close} onSubmit={(body)=>(plan?patchPlan.mutateAsync({id:plan.id,body}):savePlan.mutateAsync(body)).then(modal.close)}/>})}
- function openDuplicate(plan:Plan){modal.open({title:"کپی برنامه به روز دیگر",content:<DateAction initial={addDays(plan.planDate,1)} onCancel={modal.close} onSubmit={(planDate)=>duplicate.mutateAsync({id:plan.id,planDate}).then(()=>{setDate(planDate);modal.close()})}/>})}
- async function openPlanSettings(planDate:string){try{const existing=plans.data?.find((p)=>p.planDate===planDate)||(await getPlanForDate(students.studentId,planDate));openPlan(planDate,existing||undefined)}catch(reason){notify(errorMessage(reason,"دریافت برنامه روز انجام نشد."),"error")}}
- async function ensurePlan(planDate:string){const existing=plans.data?.find((p)=>p.planDate===planDate);if(existing)return existing;const stored=await getPlanForDate(students.studentId,planDate);if(stored)return stored;return savePlan.mutateAsync(toPlanDraft(planDate))}
- async function quickAdd(planDate:string,start="08:00"){const plan=await ensurePlan(planDate);setDrawer({plan,task:{id:"",start,end:addMinutes(start,60),type:"study",title:"",subject:"",pages:"",testCount:0,note:"",sortOrder:plan.tasks.length+1} as PlanTask})}
- function requestQuickAdd(planDate:string,start="08:00"){void quickAdd(planDate,start).catch((reason)=>notify(errorMessage(reason,"ساخت فعالیت انجام نشد."),"error"))}
- function confirmDelete(title:string,description:string,action:()=>void){void modal.confirm({title,description,tone:"danger",confirmLabel:"حذف"}).then((ok)=>ok&&action())}
- useEffect(()=>{function keydown(event:KeyboardEvent){const target=event.target as HTMLElement|null;if(target?.matches("input,textarea,select,[contenteditable=true]"))return;if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="k"){event.preventDefault();setPaletteOpen(true);return}if(event.key.toLowerCase()==="n"){event.preventDefault();requestQuickAdd(date)}else if(event.key.toLowerCase()==="t")setDate(todayIso());else if(event.key==="ArrowRight")setDate(shiftView(date,mode,-1,profile.locale,profile.calendar));else if(event.key==="ArrowLeft")setDate(shiftView(date,mode,1,profile.locale,profile.calendar));else if(event.key==="Escape"){setFiltersOpen(false);setMoreOpen(false);setPaletteOpen(false);setDrawer(null)}}window.addEventListener("keydown",keydown);return()=>window.removeEventListener("keydown",keydown)});
- return <div className="grid gap-3"><header className="sticky top-0 z-20 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-sm backdrop-blur-sm"><div className="flex flex-wrap items-center gap-2"><div className="w-44 shrink-0"><StudentPicker students={students.students} value={students.studentId} onChange={students.selectStudent}/></div><div className="flex items-center rounded-lg bg-slate-100 p-1"><Button className="h-8 px-2" variant="ghost" aria-label="بازه قبل" onClick={()=>setDate(shiftView(date,mode,-1,profile.locale,profile.calendar))}><ChevronRight size={16}/></Button><DatePicker className="h-8 w-36 border-0 bg-transparent" value={date} onChange={setDate}/><Button className="h-8 px-2" variant="ghost" aria-label="بازه بعد" onClick={()=>setDate(shiftView(date,mode,1,profile.locale,profile.calendar))}><ChevronLeft size={16}/></Button></div><Button className="h-9 px-3" variant="soft" onClick={()=>setDate(todayIso())}>امروز</Button><ViewSwitch value={mode} onChange={setMode}/><label className="flex h-9 min-w-44 flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3"><Search size={15}/><input className="min-w-0 flex-1 bg-transparent text-sm outline-none" value={search} onChange={(e)=>{setSearch(e.target.value);syncUrl({search:e.target.value})}} placeholder="جستجوی فعالیت…"/><kbd className="hidden rounded bg-white px-1 text-[10px] text-slate-400 lg:inline">⌘K</kbd></label><div className="relative"><Button className="h-9 px-3" variant="soft" onClick={()=>setFiltersOpen((v)=>!v)}><Filter size={15}/>فیلتر{filter!=="all"?<Badge tone="blue">۱</Badge>:null}</Button>{filtersOpen?<FilterMenu value={filter} onChange={(value)=>{setTaskFilter(value);setFiltersOpen(false)}}/>:null}</div><Button className="h-9" disabled={!students.studentId} onClick={()=>requestQuickAdd(date)}><Plus size={16}/>فعالیت جدید</Button><div className="relative"><Button className="h-9 px-3" variant="ghost" onClick={()=>setMoreOpen((v)=>!v)}><MoreHorizontal size={18}/></Button>{moreOpen?<MoreMenu onClose={()=>setMoreOpen(false)} onPlan={()=>{setMoreOpen(false);void openPlanSettings(date)}} onPublish={(published)=>{setMoreOpen(false);void modal.confirm({title:published?"انتشار برنامه‌های بازه؟":"پیش‌نویس کردن بازه؟",description:`${range.from} تا ${range.to}`}).then((ok)=>ok&&publishRange.mutate(published))}} onTransfer={()=>{setMoreOpen(false);modal.open({title:"ورود و خروج JSON",size:"xl",content:<DataTransferWorkspace studentId={students.studentId} scope="all" title="انتقال برنامه‌ها و آزمون‌های مرتبط" description="ورود، اعتبارسنجی و خروجی استاندارد بازه" exportFrom={range.from} exportTo={range.to} showPlanReplacement showExamReplacement onImported={()=>void refresh()}/>})}}/>:null}</div></div>{filter!=="all"?<div className="mt-2 flex items-center gap-2"><span className="text-xs text-slate-400">فیلتر فعال:</span><button className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-1 text-xs text-brand" onClick={()=>setTaskFilter("all")}>{filterLabel(filter)}<X size={12}/></button></div>:null}</header><section className="flex min-h-10 flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2"><button className="flex items-center gap-2 text-xs font-bold" onClick={()=>setSummaryOpen((v)=>!v)}><ChevronsUpDown size={14}/>خلاصه بازه</button>{summaryOpen?<div className="flex flex-wrap items-center gap-4 text-xs"><span><b>{fa(visiblePlans.length)}</b> روز</span><span><b>{fa(totals.tasks)}</b> فعالیت</span><span><b>{fa(Math.round((totals.minutes/60)*10)/10)}</b> ساعت</span><span><b>{fa(totals.tests)}</b> تست</span></div>:null}{warnings.length&&warningsOpen?<button className="mr-auto flex max-w-full items-center gap-2 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-800" onClick={()=>setWarningsOpen(false)}><AlertTriangle size={14}/><span className="truncate">{warnings[0]}</span>{warnings.length>1?<Badge tone="amber">+{fa(warnings.length-1)}</Badge>:null}<X size={12}/></button>:null}</section>{plans.isError?<div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800" role="alert"><span>برنامه‌های این بازه دریافت نشدند؛ داده قبلی، در صورت وجود، حفظ شده است.</span><Button className="h-8" variant="danger" onClick={()=>void plans.refetch()}>تلاش دوباره</Button></div>:null}<Card className="h-[calc(100vh-235px)] min-h-[480px] overflow-hidden p-0">{!students.studentId?<div className="grid h-full place-items-center p-6"><EmptyState title="دانش‌آموزی انتخاب نشده است" action={<p className="text-sm text-slate-500">برای مشاهده یا ساخت برنامه، ابتدا دانش‌آموز را از نوار بالا انتخاب کنید.</p>}/></div>:<PlannerCanvas mode={mode} date={date} range={range} plans={visiblePlans} loading={plans.isLoading} onSelectDay={(next)=>{setDate(next);setMode("day")}} onCreate={openPlan} onQuickAdd={requestQuickAdd} onEditTask={(plan,task)=>setDrawer({plan,task})} onMoveTask={(taskId,planDate,start,end)=>void ensurePlan(planDate).then((plan)=>moveTask.mutateAsync({taskId,planId:plan.id,start,end})).catch(()=>undefined)} onEditPlan={(plan)=>openPlan(plan.planDate,plan)} onDuplicatePlan={openDuplicate} onDeletePlan={(plan)=>confirmDelete("حذف برنامه روز؟","همه فعالیت‌های این روز حذف می‌شوند.",()=>removePlan.mutate(plan.id))}/>}</Card>{drawer?<TaskDrawer title={drawer.task?.id?"ویرایش فعالیت":"فعالیت جدید"} onClose={()=>setDrawer(null)} onDelete={drawer.task?.id?()=>confirmDelete("حذف فعالیت؟","این فعالیت از برنامه حذف می‌شود.",()=>{removeTask.mutate(drawer.task!.id);setDrawer(null)}):undefined}><TaskForm initial={toTaskDraft(drawer.task?.id?drawer.task:undefined,drawer.plan.tasks.length)} exams={exams.data??[]} studentId={students.studentId} busy={saveTask.isPending} onCancel={()=>setDrawer(null)} onSubmit={(body)=>saveTask.mutateAsync({planId:drawer.plan.id,task:{...body,id:drawer.task?.id||undefined}}).then(()=>setDrawer(null))}/></TaskDrawer>:null}{paletteOpen?<CommandPalette plans={plans.data??[]} onClose={()=>setPaletteOpen(false)} onDate={(next)=>{setDate(next);setPaletteOpen(false)}} onView={(next)=>{setMode(next);setPaletteOpen(false)}} onTask={(plan,task)=>{setDrawer({plan,task});setPaletteOpen(false)}} onCreate={()=>{requestQuickAdd(date);setPaletteOpen(false)}}/>:null}</div>
+export function PlannerPage() {
+  const students = useStudentSelection(),
+    modal = useModal(),
+    qc = useQueryClient(),
+    { profile } = useLocale(),
+    [params, setParams] = useSearchParams();
+  const [date, setDateState] = useState(params.get("date") || todayIso());
+  const [mode, setModeState] = useState<PlannerMode>(
+    parseMode(params.get("view")),
+  );
+  const [search, setSearch] = useState(params.get("q") || "");
+  const [filter, setFilter] = useState<TaskFilter>(
+    parseFilter(params.get("filter")),
+  );
+  const [filtersOpen, setFiltersOpen] = useState(false),
+    [summaryOpen, setSummaryOpen] = useState(true),
+    [warningsOpen, setWarningsOpen] = useState(true),
+    [moreOpen, setMoreOpen] = useState(false),
+    [paletteOpen, setPaletteOpen] = useState(false);
+  const [drawer, setDrawer] = useState<{ plan: Plan; task?: PlanTask } | null>(
+    null,
+  );
+  const deferredSearch = useDebouncedValue(search, 220);
+  function syncUrl(next: {
+    date?: string;
+    mode?: PlannerMode;
+    filter?: TaskFilter;
+    search?: string;
+  }) {
+    setParams(
+      (current) => {
+        const copy = new URLSearchParams(current);
+        if (next.date !== undefined) copy.set("date", next.date);
+        if (next.mode !== undefined) copy.set("view", next.mode);
+        if (students.studentId) copy.set("studentId", students.studentId);
+        if (next.filter !== undefined)
+          next.filter === "all"
+            ? copy.delete("filter")
+            : copy.set("filter", next.filter);
+        if (next.search !== undefined)
+          next.search ? copy.set("q", next.search) : copy.delete("q");
+        return copy;
+      },
+      { replace: true },
+    );
+  }
+  const setDate = (next: string) => {
+    setDateState(next);
+    syncUrl({ date: next });
+  };
+  const setMode = (next: PlannerMode) => {
+    setModeState(next);
+    syncUrl({ mode: next });
+  };
+  const setTaskFilter = (next: TaskFilter) => {
+    setFilter(next);
+    syncUrl({ filter: next });
+  };
+  useEffect(() => {
+    setDateState(params.get("date") || todayIso());
+    setModeState(parseMode(params.get("view")));
+    setSearch(params.get("q") || "");
+    setFilter(parseFilter(params.get("filter")));
+  }, [params]);
+  const range = useMemo(
+    () => plannerRange(date, mode, profile.locale, profile.calendar),
+    [date, mode, profile.calendar, profile.locale],
+  );
+  const plansKey = [
+    "plans",
+    students.studentId,
+    range.from,
+    range.to,
+    deferredSearch,
+    filter,
+  ];
+  const plans = useQuery({
+    queryKey: plansKey,
+    enabled: !!students.studentId,
+    queryFn: () =>
+      getPlans(
+        students.studentId,
+        range.from,
+        range.to,
+        deferredSearch,
+        filter,
+      ),
+    select: sortPlanTasks,
+  });
+  useEffect(() => {
+    if (!students.studentId) return;
+    [-1, 1].forEach((direction) => {
+      const adjacentDate = shiftView(
+          date,
+          mode,
+          direction,
+          profile.locale,
+          profile.calendar,
+        ),
+        adjacent = plannerRange(
+          adjacentDate,
+          mode,
+          profile.locale,
+          profile.calendar,
+        );
+      void qc.prefetchQuery({
+        queryKey: [
+          "plans",
+          students.studentId,
+          adjacent.from,
+          adjacent.to,
+          deferredSearch,
+          filter,
+        ],
+        queryFn: () =>
+          getPlans(
+            students.studentId,
+            adjacent.from,
+            adjacent.to,
+            deferredSearch,
+            filter,
+          ),
+        staleTime: 60000,
+      });
+    });
+  }, [
+    date,
+    deferredSearch,
+    filter,
+    mode,
+    profile.calendar,
+    profile.locale,
+    qc,
+    students.studentId,
+  ]);
+  const exams = useQuery({
+    queryKey: ["exams", students.studentId],
+    enabled: !!students.studentId,
+    queryFn: () => getPlannerExams(students.studentId),
+  });
+  const visiblePlans = useMemo(
+    () => filterPlans(plans.data ?? [], deferredSearch, filter),
+    [deferredSearch, filter, plans.data],
+  );
+  const totals = summarizePlans(visiblePlans),
+    warnings = planWarnings(plans.data ?? []),
+    refresh = () => qc.invalidateQueries({ queryKey: ["plans"] });
+  const savePlan = useMutation({
+    mutationFn: (body: ReturnType<typeof toPlanDraft>) =>
+      createPlan(students.studentId, body),
+    onSuccess: refresh,
+  });
+  const patchPlan = useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: Partial<ReturnType<typeof toPlanDraft>>;
+    }) => updatePlan(id, body),
+    onSuccess: refresh,
+  });
+  const removePlan = useMutation({
+    mutationFn: deletePlan,
+    onSuccess: refresh,
+  });
+  const duplicate = useMutation({
+    mutationFn: ({ id, planDate }: { id: string; planDate: string }) =>
+      duplicatePlan(id, planDate),
+    onSuccess: refresh,
+  });
+  const saveTask = useMutation({
+    mutationFn: ({
+      planId,
+      task,
+    }: {
+      planId: string;
+      task: TaskDraft & { id?: string };
+    }) => savePlannerTask(planId, task),
+    onMutate: async ({ planId, task }) => {
+      const key = plansKey;
+      await qc.cancelQueries({ queryKey: key });
+      const previous = qc.getQueryData<Plan[]>(key);
+      qc.setQueryData<Plan[]>(key, (current) =>
+        current?.map((plan) =>
+          plan.id !== planId
+            ? plan
+            : {
+                ...plan,
+                tasks: task.id
+                  ? plan.tasks
+                      .map((item) =>
+                        item.id === task.id ? { ...item, ...task } : item,
+                      )
+                      .sort(comparePlanTasks)
+                  : [
+                      ...plan.tasks,
+                      { ...task, id: `optimistic-${Date.now()}` } as PlanTask,
+                    ].sort(comparePlanTasks),
+              },
+        ),
+      );
+      return { previous, key };
+    },
+    onSuccess: (updated) => {
+      if (updated && typeof updated === "object" && "id" in updated)
+        qc.setQueryData<Plan[]>(plansKey, (current) =>
+          replacePlan(current, updated as Plan),
+        );
+      else refresh();
+    },
+    onError: (_e, _v, c) => {
+      if (c?.previous) qc.setQueryData(c.key, c.previous);
+    },
+    onSettled: refresh,
+  });
+  const removeTask = useMutation({
+    mutationFn: deletePlannerTask,
+    onMutate: async (id) => {
+      const key = plansKey;
+      await qc.cancelQueries({ queryKey: key });
+      const previous = qc.getQueryData<Plan[]>(key);
+      qc.setQueryData<Plan[]>(key, (current) =>
+        current?.map((p) => ({
+          ...p,
+          tasks: p.tasks.filter((t) => t.id !== id),
+        })),
+      );
+      return { previous, key };
+    },
+    onError: (_e, _id, c) => {
+      if (c?.previous) qc.setQueryData(c.key, c.previous);
+    },
+    onSettled: refresh,
+  });
+  const moveTask = useMutation({
+    mutationFn: ({
+      taskId,
+      planId,
+      start,
+      end,
+    }: {
+      taskId: string;
+      planId: string;
+      start: string;
+      end: string;
+    }) => movePlannerTask(taskId, planId, start, end),
+    onMutate: async (move) => {
+      const key = plansKey;
+      await qc.cancelQueries({ queryKey: key });
+      const previous = qc.getQueryData<Plan[]>(key);
+      qc.setQueryData<Plan[]>(key, (current) =>
+        optimisticMove(current || [], move),
+      );
+      return { previous, key };
+    },
+    onError: (_e, _m, c) => {
+      if (c?.previous) qc.setQueryData(c.key, c.previous);
+    },
+    onSettled: refresh,
+    meta: { successMessage: "زمان فعالیت جابه‌جا شد." },
+  });
+  const publishRange = useMutation({
+    mutationFn: (published: boolean) =>
+      publishPlanRange(students.studentId, range.from, range.to, published),
+    onSuccess: refresh,
+  });
+  function openPlan(planDate: string, plan?: Plan) {
+    modal.open({
+      title: plan ? "ویرایش مشخصات روز" : "ساخت برنامه روز",
+      size: "lg",
+      content: (
+        <PlanForm
+          initial={toPlanDraft(planDate, plan)}
+          lockDate={Boolean(plan)}
+          busy={savePlan.isPending || patchPlan.isPending}
+          onCancel={modal.close}
+          onSubmit={(body) =>
+            (plan
+              ? patchPlan.mutateAsync({ id: plan.id, body })
+              : savePlan.mutateAsync(body)
+            ).then(modal.close)
+          }
+        />
+      ),
+    });
+  }
+  function openDuplicate(plan: Plan) {
+    modal.open({
+      title: "کپی برنامه به روز دیگر",
+      content: (
+        <DateAction
+          initial={addDays(plan.planDate, 1)}
+          onCancel={modal.close}
+          onSubmit={(planDate) =>
+            duplicate.mutateAsync({ id: plan.id, planDate }).then(() => {
+              setDate(planDate);
+              modal.close();
+            })
+          }
+        />
+      ),
+    });
+  }
+  async function openPlanSettings(planDate: string) {
+    try {
+      const existing =
+        plans.data?.find((p) => p.planDate === planDate) ||
+        (await getPlanForDate(students.studentId, planDate));
+      openPlan(planDate, existing || undefined);
+    } catch (reason) {
+      notify(errorMessage(reason, "دریافت برنامه روز انجام نشد."), "error");
+    }
+  }
+  async function ensurePlan(planDate: string) {
+    const existing = plans.data?.find((p) => p.planDate === planDate);
+    if (existing) return existing;
+    const stored = await getPlanForDate(students.studentId, planDate);
+    if (stored) return stored;
+    return savePlan.mutateAsync(toPlanDraft(planDate));
+  }
+  async function quickAdd(planDate: string, start = "08:00") {
+    const plan = await ensurePlan(planDate);
+    setDrawer({
+      plan,
+      task: {
+        id: "",
+        start,
+        end: addMinutes(start, 60),
+        type: "study",
+        title: "",
+        subject: "",
+        pages: "",
+        testCount: 0,
+        note: "",
+        sortOrder: plan.tasks.length + 1,
+      } as PlanTask,
+    });
+  }
+  function requestQuickAdd(planDate: string, start = "08:00") {
+    void quickAdd(planDate, start).catch((reason) =>
+      notify(errorMessage(reason, "ساخت فعالیت انجام نشد."), "error"),
+    );
+  }
+  function confirmDelete(
+    title: string,
+    description: string,
+    action: () => void,
+  ) {
+    void modal
+      .confirm({ title, description, tone: "danger", confirmLabel: "حذف" })
+      .then((ok) => ok && action());
+  }
+  useEffect(() => {
+    function keydown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      if (target?.matches("input,textarea,select,[contenteditable=true]"))
+        return;
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setPaletteOpen(true);
+        return;
+      }
+      if (event.key.toLowerCase() === "n") {
+        event.preventDefault();
+        requestQuickAdd(date);
+      } else if (event.key.toLowerCase() === "t") setDate(todayIso());
+      else if (event.key === "ArrowRight")
+        setDate(shiftView(date, mode, -1, profile.locale, profile.calendar));
+      else if (event.key === "ArrowLeft")
+        setDate(shiftView(date, mode, 1, profile.locale, profile.calendar));
+      else if (event.key === "Escape") {
+        setFiltersOpen(false);
+        setMoreOpen(false);
+        setPaletteOpen(false);
+        setDrawer(null);
+      }
+    }
+    window.addEventListener("keydown", keydown);
+    return () => window.removeEventListener("keydown", keydown);
+  });
+  return (
+    <div className="grid gap-3">
+      <header className="sticky top-0 z-20 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-sm backdrop-blur-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="w-44 shrink-0">
+            <StudentPicker
+              students={students.students}
+              value={students.studentId}
+              onChange={students.selectStudent}
+            />
+          </div>
+          <div className="flex items-center rounded-lg bg-slate-100 p-1">
+            <Button
+              className="h-8 px-2"
+              variant="ghost"
+              aria-label="بازه قبل"
+              onClick={() =>
+                setDate(
+                  shiftView(date, mode, -1, profile.locale, profile.calendar),
+                )
+              }
+            >
+              <ChevronRight size={16} />
+            </Button>
+            <DatePicker
+              className="h-8 w-36 border-0 bg-transparent"
+              value={date}
+              onChange={setDate}
+            />
+            <Button
+              className="h-8 px-2"
+              variant="ghost"
+              aria-label="بازه بعد"
+              onClick={() =>
+                setDate(
+                  shiftView(date, mode, 1, profile.locale, profile.calendar),
+                )
+              }
+            >
+              <ChevronLeft size={16} />
+            </Button>
+          </div>
+          <Button
+            className="h-9 px-3"
+            variant="soft"
+            onClick={() => setDate(todayIso())}
+          >
+            امروز
+          </Button>
+          <ViewSwitch value={mode} onChange={setMode} />
+          <label className="flex h-9 min-w-44 flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3">
+            <Search size={15} />
+            <input
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                syncUrl({ search: e.target.value });
+              }}
+              placeholder="جستجوی فعالیت…"
+            />
+            <kbd className="hidden rounded bg-white px-1 text-[10px] text-slate-400 lg:inline">
+              ⌘K
+            </kbd>
+          </label>
+          <PlannerFilterPopover
+            value={filter}
+            onChange={(value) => {
+              setTaskFilter(value);
+            }}
+          />
+          <Button
+            className="h-9"
+            disabled={!students.studentId}
+            onClick={() => requestQuickAdd(date)}
+          >
+            <Plus size={16} />
+            فعالیت جدید
+          </Button>
+          <PlannerMoreMenu
+            onClose={() => setMoreOpen(false)}
+            onPlan={() => {
+              setMoreOpen(false);
+              void openPlanSettings(date);
+            }}
+            onPublish={(published) => {
+              setMoreOpen(false);
+              void modal
+                .confirm({
+                  title: published
+                    ? "انتشار برنامه‌های بازه؟"
+                    : "پیش‌نویس کردن بازه؟",
+                  description: `${range.from} تا ${range.to}`,
+                })
+                .then((ok) => ok && publishRange.mutate(published));
+            }}
+            onTransfer={() => {
+              setMoreOpen(false);
+              modal.open({
+                title: "ورود و خروج JSON",
+                size: "xl",
+                content: (
+                  <DataTransferWorkspace
+                    studentId={students.studentId}
+                    scope="all"
+                    title="انتقال برنامه‌ها و آزمون‌های مرتبط"
+                    description="ورود، اعتبارسنجی و خروجی استاندارد بازه"
+                    exportFrom={range.from}
+                    exportTo={range.to}
+                    showPlanReplacement
+                    showExamReplacement
+                    onImported={() => void refresh()}
+                  />
+                ),
+              });
+            }}
+          />
+        </div>
+        {filter !== "all" ? (
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-xs text-slate-400">فیلتر فعال:</span>
+            <button
+              className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-1 text-xs text-brand"
+              onClick={() => setTaskFilter("all")}
+            >
+              {filterLabel(filter)}
+              <X size={12} />
+            </button>
+          </div>
+        ) : null}
+      </header>
+      <section className="flex min-h-10 flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2">
+        <button
+          className="flex items-center gap-2 text-xs font-bold"
+          onClick={() => setSummaryOpen((v) => !v)}
+        >
+          <ChevronsUpDown size={14} />
+          خلاصه بازه
+        </button>
+        {summaryOpen ? (
+          <div className="flex flex-wrap items-center gap-4 text-xs">
+            <span>
+              <b>{fa(visiblePlans.length)}</b> روز
+            </span>
+            <span>
+              <b>{fa(totals.tasks)}</b> فعالیت
+            </span>
+            <span>
+              <b>{fa(Math.round((totals.minutes / 60) * 10) / 10)}</b> ساعت
+            </span>
+            <span>
+              <b>{fa(totals.tests)}</b> تست
+            </span>
+          </div>
+        ) : null}
+        {warnings.length && warningsOpen ? (
+          <button
+            className="mr-auto flex max-w-full items-center gap-2 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-800"
+            onClick={() => setWarningsOpen(false)}
+          >
+            <AlertTriangle size={14} />
+            <span className="truncate">{warnings[0]}</span>
+            {warnings.length > 1 ? (
+              <Badge tone="amber">+{fa(warnings.length - 1)}</Badge>
+            ) : null}
+            <X size={12} />
+          </button>
+        ) : null}
+      </section>
+      {plans.isError ? (
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800"
+          role="alert"
+        >
+          <span>
+            برنامه‌های این بازه دریافت نشدند؛ داده قبلی، در صورت وجود، حفظ شده
+            است.
+          </span>
+          <Button
+            className="h-8"
+            variant="danger"
+            onClick={() => void plans.refetch()}
+          >
+            تلاش دوباره
+          </Button>
+        </div>
+      ) : null}
+      <Card className="h-[calc(100vh-235px)] min-h-[480px] overflow-hidden p-0">
+        {!students.studentId ? (
+          <div className="grid h-full place-items-center p-6">
+            <EmptyState
+              title="دانش‌آموزی انتخاب نشده است"
+              action={
+                <p className="text-sm text-slate-500">
+                  برای مشاهده یا ساخت برنامه، ابتدا دانش‌آموز را از نوار بالا
+                  انتخاب کنید.
+                </p>
+              }
+            />
+          </div>
+        ) : (
+          <PlannerCanvas
+            mode={mode}
+            date={date}
+            range={range}
+            plans={visiblePlans}
+            loading={plans.isLoading}
+            onSelectDay={(next) => {
+              setDate(next);
+              setMode("day");
+            }}
+            onCreate={openPlan}
+            onQuickAdd={requestQuickAdd}
+            onEditTask={(plan, task) => setDrawer({ plan, task })}
+            onMoveTask={(taskId, planDate, start, end) =>
+              void ensurePlan(planDate)
+                .then((plan) =>
+                  moveTask.mutateAsync({ taskId, planId: plan.id, start, end }),
+                )
+                .catch(() => undefined)
+            }
+            onEditPlan={(plan) => openPlan(plan.planDate, plan)}
+            onDuplicatePlan={openDuplicate}
+            onDeletePlan={(plan) =>
+              confirmDelete(
+                "حذف برنامه روز؟",
+                "همه فعالیت‌های این روز حذف می‌شوند.",
+                () => removePlan.mutate(plan.id),
+              )
+            }
+          />
+        )}
+      </Card>
+      {drawer ? (
+        <TaskDrawer
+          title={drawer.task?.id ? "ویرایش فعالیت" : "فعالیت جدید"}
+          onClose={() => setDrawer(null)}
+          onDelete={
+            drawer.task?.id
+              ? () =>
+                  confirmDelete(
+                    "حذف فعالیت؟",
+                    "این فعالیت از برنامه حذف می‌شود.",
+                    () => {
+                      removeTask.mutate(drawer.task!.id);
+                      setDrawer(null);
+                    },
+                  )
+              : undefined
+          }
+        >
+          <TaskForm
+            initial={toTaskDraft(
+              drawer.task?.id ? drawer.task : undefined,
+              drawer.plan.tasks.length,
+            )}
+            exams={exams.data ?? []}
+            studentId={students.studentId}
+            busy={saveTask.isPending}
+            onCancel={() => setDrawer(null)}
+            onSubmit={(body) =>
+              saveTask
+                .mutateAsync({
+                  planId: drawer.plan.id,
+                  task: { ...body, id: drawer.task?.id || undefined },
+                })
+                .then(() => setDrawer(null))
+            }
+          />
+        </TaskDrawer>
+      ) : null}
+      {paletteOpen ? (
+        <CommandPalette
+          plans={plans.data ?? []}
+          onClose={() => setPaletteOpen(false)}
+          onDate={(next) => {
+            setDate(next);
+            setPaletteOpen(false);
+          }}
+          onView={(next) => {
+            setMode(next);
+            setPaletteOpen(false);
+          }}
+          onTask={(plan, task) => {
+            setDrawer({ plan, task });
+            setPaletteOpen(false);
+          }}
+          onCreate={() => {
+            requestQuickAdd(date);
+            setPaletteOpen(false);
+          }}
+        />
+      ) : null}
+    </div>
+  );
 }

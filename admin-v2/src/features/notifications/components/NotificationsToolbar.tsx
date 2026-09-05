@@ -5,10 +5,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import {
-  Button,
-  Card,
-} from "../../../shared/ui/ui";
+import { Button, Card } from "../../../shared/ui/ui";
 import { useAdminNotifications } from "../hooks/useAdminNotifications";
 import { ToggleButton } from "./ToggleButton";
 
@@ -17,93 +14,51 @@ export function NotificationsToolbar({
 }: {
   onOpenSettings: () => void;
 }) {
-  const notifications =
-    useAdminNotifications();
+  const notifications = useAdminNotifications();
 
   return (
-    <Card className="flex shrink-0 flex-wrap items-center gap-2 p-2 sm:gap-3">
+    <Card className="flex shrink-0 flex-wrap items-center gap-2 p-2 sm:gap-3 dark:border-slate-800 dark:bg-slate-900">
       <div className="flex min-w-40 flex-1 items-center gap-2">
-        <span className="grid size-9 place-items-center rounded-full bg-rose-50 text-rose-700">
+        <span className="grid size-9 place-items-center rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300">
           <BellRing size={18} />
         </span>
-
         <div>
-          <strong className="block leading-5">
-            {notifications.unread.toLocaleString(
-              "fa-IR",
-            )}
+          <strong className="block leading-5 text-slate-900 dark:text-white">
+            {notifications.unread.toLocaleString("fa-IR")}
           </strong>
-
-          <span className="text-[11px] text-slate-500">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">
             خوانده‌نشده
           </span>
         </div>
       </div>
 
       <ToggleButton
-        active={
-          notifications.soundEnabled
-        }
+        active={notifications.soundEnabled}
         onClick={() => {
-          const enabled =
-            !notifications.soundEnabled;
-
-          notifications.setSoundEnabled(
-            enabled,
-          );
-
+          const enabled = !notifications.soundEnabled;
+          notifications.setSoundEnabled(enabled);
           if (enabled) {
-            notifications.testSound(
-              false,
-            );
+            notifications.testSound(false);
           }
         }}
-        icon={
-          notifications.soundEnabled ? (
-            <Volume2
-              size={16}
-            />
-          ) : (
-            <VolumeX
-              size={16}
-            />
-          )
-        }
+        icon={notifications.soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
         label="صدای اعلان"
       />
 
       <ToggleButton
-        active={
-          notifications.chatSoundEnabled
-        }
+        active={notifications.chatSoundEnabled}
         onClick={() => {
-          const enabled =
-            !notifications.chatSoundEnabled;
-
-          notifications.setChatSoundEnabled(
-            enabled,
-          );
-
+          const enabled = !notifications.chatSoundEnabled;
+          notifications.setChatSoundEnabled(enabled);
           if (enabled) {
-            notifications.testSound(
-              true,
-            );
+            notifications.testSound(true);
           }
         }}
-        icon={
-          <MessageSquare
-            size={16}
-          />
-        }
+        icon={<MessageSquare size={16} />}
         label="صدای پیام"
       />
 
-      <Button
-        variant="soft"
-        onClick={
-          onOpenSettings
-        }
-      >
+      <Button variant="soft" onClick={onOpenSettings}>
         <Settings2 size={16} />
         تنظیمات دستگاه
       </Button>

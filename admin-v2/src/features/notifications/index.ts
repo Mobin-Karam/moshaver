@@ -4,6 +4,7 @@ export {
 } from "./components/NotificationProvider";
 export { useAdminNotifications } from "./hooks/useAdminNotifications";
 export { NotificationsPage } from "./pages/NotificationsPage";
+export { NotificationSettings } from "./components/NotificationSettings";
 
 export {
   notificationAdminUrl,
@@ -17,3 +18,5 @@ export type {
   PushPreferences,
   PushStatus,
 } from "./model/notification-model";
+
+export type { NotificationContextValue } from "./model/notification.types";
