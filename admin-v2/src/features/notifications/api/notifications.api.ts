@@ -11,13 +11,13 @@ import type {
 } from "../model/notification.types";
 
 export function getNotificationsPage(
-  before?: string,
+  cursor?: string,
 ) {
   return api.get<NotificationPage>(
     `/notifications?limit=20${
-      before
-        ? `&before=${encodeURIComponent(
-            before,
+      cursor
+        ? `&cursor=${encodeURIComponent(
+            cursor,
           )}`
         : ""
     }`,

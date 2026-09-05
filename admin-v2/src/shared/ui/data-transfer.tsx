@@ -68,7 +68,7 @@ export function DataTransferWorkspace(props: Props) {
     [result, setResult] = useState<ImportResult | null>(null);
   const preview = useMutation({
     mutationFn: (data: unknown) =>
-      api.post<TransferPreview>("/admin/import/preview", {
+      api.post<TransferPreview>("/import/preview", {
         studentId: props.studentId,
         data,
       }),
@@ -76,7 +76,7 @@ export function DataTransferWorkspace(props: Props) {
   });
   const commit = useMutation({
     mutationFn: ({ data, published }: { data: unknown; published: boolean }) =>
-      api.post<ImportResult>("/admin/import/commit", {
+      api.post<ImportResult>("/import/commit", {
         studentId: props.studentId,
         data,
         publishImported: published,
@@ -171,8 +171,8 @@ export function DataTransferWorkspace(props: Props) {
     preview.reset();
     if (fileRef.current) fileRef.current.value = "";
   }
-  const exportPath = `/admin/export/json?studentId=${encodeURIComponent(props.studentId)}&scope=${props.scope}${props.exportFrom ? `&from=${props.exportFrom}` : ""}${props.exportTo ? `&to=${props.exportTo}` : ""}`;
-  const templatePath = `/admin/import/template?studentId=${encodeURIComponent(props.studentId)}&scope=${props.scope}`;
+  const exportPath = `/export/json?studentId=${encodeURIComponent(props.studentId)}&scope=${props.scope}${props.exportFrom ? `&from=${props.exportFrom}` : ""}${props.exportTo ? `&to=${props.exportTo}` : ""}`;
+  const templatePath = `/import/template?studentId=${encodeURIComponent(props.studentId)}&scope=${props.scope}`;
   const filename = `moshaver-${props.scope}-${props.exportFrom || "all"}-${props.exportTo || "all"}.json`;
 
   return (

@@ -1,0 +1,1 @@
+import { Column,Entity,PrimaryColumn,UpdateDateColumn } from "typeorm";@Entity("app_versions")export class AppVersion{@PrimaryColumn({length:40})app!:string;@Column({length:40})version!:string;@Column({default:""})notes!:string;@UpdateDateColumn()updatedAt!:Date;}

@@ -14,18 +14,18 @@ export type AuditEntry = {
 };
 
 export const getAppVersions = () =>
-  api.get<AppVersion[]>("/admin/app-versions");
+  api.get<AppVersion[]>("/app-versions");
 
 export const updateAppVersion = (
   app: string,
   version: string,
 ) =>
-  api.put(`/admin/app-versions/${app}`, {
+  api.put(`/app-versions/${app}`, {
     version,
   });
 
 export const getAuditLogs = () =>
-  api.get<AuditEntry[]>("/admin/audit");
+  api.get<AuditEntry[]>("/audit");
 
 export const getSessions = () =>
   api.get("/admin/sessions");

@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Student } from "./student.entity";
 import { Task } from "./task.entity";
 
@@ -25,6 +25,8 @@ export class Plan {
 
   @CreateDateColumn()
   createdAt!: Date;
+  @UpdateDateColumn() updatedAt!: Date;
+  @Column({ type: "datetime", nullable: true }) deletedAt?: Date | null;
 
   @OneToMany(() => Task, (task) => task.plan, { cascade: true })
   tasks!: Task[];

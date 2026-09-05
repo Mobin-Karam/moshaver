@@ -8,7 +8,7 @@ import { apiClient } from './services/api-client';
 import { TauriSQLiteProvider } from './native/tauri-sqlite-provider';
 import { SQLiteSyncProvider } from './sync/sqlite-sync-provider';
 import { WebSyncProvider } from './sync/sync-status';
-import { SyncWorker } from '@moshaver/student-core';
+import { pullChanges, SyncWorker } from '@moshaver/student-core';
 import { registerWebUpdateAdapter } from './pwa/web-update-adapter';
 import { registerNotificationClickHandler } from './services/notification-service';
 import { HomePage } from './features/home/HomePage';
@@ -43,6 +43,19 @@ function App() {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  useEffect(() => {
+    if (authStatus !== 'authenticated') return;
+    const source = apiClient.openEvents((type) => {
+      window.dispatchEvent(new CustomEvent('moshaver:v2-event', { detail: { type } }));
+      const state = useStudentStore.getState();
+      if (type.startsWith('notification.')) void state.loadNotifications();
+      if (type.startsWith('plan.') || type.startsWith('task.')) void state.loadDashboard();
+      if (type.startsWith('exam.')) void state.loadExams();
+      if (type.startsWith('learning.') || type.startsWith('relationship.')) void Promise.all([state.loadLearning(), state.loadProfileDomains()]);
+    });
+    return () => source.close();
+  }, [authStatus]);
 
   if (authStatus === 'checking') {
     return (
@@ -103,7 +116,14 @@ async function initializeSync() {
   const syncProvider = '__TAURI_INTERNALS__' in window
     ? new SQLiteSyncProvider(await new TauriSQLiteProvider().raw())
     : new WebSyncProvider();
-  const worker = new SyncWorker(syncProvider, apiClient, () => navigator.onLine);
+  const reconcile = async () => {
+    await pullChanges(syncProvider, apiClient, async () => {
+      const state = useStudentStore.getState();
+      if (state.authStatus !== 'authenticated') return;
+      await Promise.all([state.loadDashboard(), state.loadPlan(new Date().toISOString().slice(0, 10)), state.loadExams(), state.loadNotifications(), state.loadLearning()]);
+    });
+  };
+  const worker = new SyncWorker(syncProvider, apiClient, () => navigator.onLine, reconcile);
   apiClient.configureSync(syncProvider);
   worker.subscribe((status) => useStudentStore.getState().setSyncStatus(status));
   const onOnline = () => void worker.flush();

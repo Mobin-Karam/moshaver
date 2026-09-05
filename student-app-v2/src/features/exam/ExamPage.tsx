@@ -76,7 +76,7 @@ export function ExamPage() {
     setError('');
     try {
       const answers = buildAttemptAnswers(run.quiz.questions.map((item) => item.id), selected);
-      const next = await apiClient.request<Result, { answers: typeof answers }>('POST', `/student/exams/${run.runId}/submit`, { answers });
+      const next = await apiClient.request<Result, { answers: typeof answers }>('POST', `/student/exams/${run.quiz.examId}/submit`, { answers });
       setResult(next);
       setRun(null);
       clearDraft();

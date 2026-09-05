@@ -1,4 +1,4 @@
-import { IsArray, IsDateString, IsNumber, IsOptional, IsString, Min, ValidateNested } from "class-validator";
+import { IsArray, IsDateString, IsNumber, IsOptional, IsString, IsUUID, Min, ValidateNested } from "class-validator";
 import { Type } from "class-transformer";
 
 export class CreateQuestionDto {
@@ -74,6 +74,10 @@ export class CreateExamDto {
   studentId?: string;
 
   @IsOptional()
+  @IsUUID()
+  organizationId?: string;
+
+  @IsOptional()
   published?: boolean;
 
   @IsOptional()
@@ -82,3 +86,5 @@ export class CreateExamDto {
   @Type(() => CreateQuestionDto)
   questions?: CreateQuestionDto[];
 }
+
+export class AssignExamDto { @IsArray() @IsUUID("4", { each: true }) studentIds!: string[]; }

@@ -1,0 +1,2 @@
+import { Column,CreateDateColumn,Entity,Index,ManyToOne,PrimaryGeneratedColumn } from "typeorm";import { Student } from "./student.entity";
+@Entity("activity_events")export class ActivityEvent{@PrimaryGeneratedColumn("uuid")id!:string;@Index()@ManyToOne(()=>Student,{onDelete:"CASCADE"})student!:Student;@Column({length:48})type!:string;@Column({length:40,default:""})resourceType!:string;@Column({length:100,default:""})resourceId!:string;@Column({type:"simple-json",nullable:true})data?:Record<string,unknown>|null;@CreateDateColumn()createdAt!:Date;}

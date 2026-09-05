@@ -7,6 +7,8 @@ import { RecoveryRequest, RecoveryRequestStatus } from "../../database/entities/
 import { Student } from "../../database/entities/student.entity";
 import { CreateDailyReportDto } from "./dto/create-daily-report.dto";
 import { CreateRecoveryRequestDto } from "./dto/create-recovery-request.dto";
+import { AuthorizationService, UserContext } from "../authorization/authorization.service";
+import { User } from "../../database/entities/user.entity";
 
 @Injectable()
 export class ReportsService {
@@ -14,6 +16,8 @@ export class ReportsService {
     @InjectRepository(DailyReport) private readonly reports: Repository<DailyReport>,
     @InjectRepository(RecoveryRequest) private readonly recoveries: Repository<RecoveryRequest>,
     @InjectRepository(Student) private readonly students: Repository<Student>,
+    private readonly authorization: AuthorizationService,
+    @InjectRepository(User) private readonly users: Repository<User>,
   ) {}
 
   async saveReport(userId: string, dto: CreateDailyReportDto) {
@@ -36,6 +40,30 @@ export class ReportsService {
   async listRecovery(userId: string) {
     const student = await this.studentForUser(userId);
     return this.recoveries.find({ where: { student: { id: student.id } }, order: { createdAt: "DESC" }, take: 50 });
+  }
+
+  async reportsForStudent(context: UserContext, studentId: string) {
+    if (!await this.authorization.canAccessStudent(context, studentId, "reports.read")) throw new ApiException(403, "STUDENT_FORBIDDEN", "به این دانش‌آموز دسترسی ندارید.");
+    return this.reports.find({ where: { student: { id: studentId } }, order: { planDate: "DESC" }, take: 100 });
+  }
+
+  async recoveryForActor(context: UserContext) {
+    if (context.roles.includes("STUDENT")) return this.listRecovery(context.id);
+    this.authorization.requireCapability(context, "recovery_requests.read");
+    const rows = await this.recoveries.find({ relations: { student: true }, order: { createdAt: "DESC" }, take: 100 });
+    const allowed = [];
+    for (const row of rows) if (await this.authorization.canAccessStudent(context, row.student.id, "recovery_requests.read")) allowed.push(row);
+    return allowed;
+  }
+
+  async moderateRecovery(context: UserContext, id: string, status: RecoveryRequestStatus) {
+    this.authorization.requireCapability(context, "recovery_requests.manage");
+    if (![RecoveryRequestStatus.RESOLVED, RecoveryRequestStatus.DISMISSED].includes(status)) throw new ApiException(400, "STATUS_INVALID", "وضعیت معتبر نیست.");
+    const row = await this.recoveries.findOne({ where: { id }, relations: { student: true } });
+    if (!row) throw new ApiException(404, "RECOVERY_NOT_FOUND", "درخواست پیدا نشد.");
+    if (!await this.authorization.canAccessStudent(context, row.student.id, "recovery_requests.manage")) throw new ApiException(403, "STUDENT_FORBIDDEN", "دسترسی ندارید.");
+    row.status = status;
+    return this.recoveries.save(row);
   }
 
   private async studentForUser(userId: string) {

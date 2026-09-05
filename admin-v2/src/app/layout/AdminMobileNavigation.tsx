@@ -1,8 +1,9 @@
 import { Search, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
-import { adminDestination, adminNavigation, mainAdminNavigation } from "./admin-navigation";
+import { adminDestination, navigationForCapabilities } from "./admin-navigation";
 import type { AdminCurrentNavigation } from "./layout-types";
+import { useAuth } from "../../features/auth";
 
 function focusableElements(root: HTMLElement | null) {
   if (!root) return [] as HTMLElement[];
@@ -28,6 +29,8 @@ export function AdminMobileDrawer({
   onClose: () => void;
   onOpenSearch: () => void;
 }) {
+  const auth = useAuth();
+  const visibleNavigation = navigationForCapabilities(auth.capabilities);
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const dialogRef = useRef<HTMLElement | null>(null);
 
@@ -123,7 +126,7 @@ export function AdminMobileDrawer({
         </div>
 
         <nav className="flex-1 overflow-y-auto overscroll-contain p-3" aria-label="همه مسیرهای مدیریت">
-          {adminNavigation.map((group) => (
+          {visibleNavigation.map((group) => (
             <section key={group.section} className="mb-4 last:mb-0">
               <p className="mb-1.5 px-2 text-[10px] font-black tracking-wide text-slate-400">{group.section}</p>
               <div className="grid gap-1">
@@ -170,13 +173,15 @@ export function AdminMobileBottomNav({
   current: AdminCurrentNavigation;
   selectedStudentId: string;
 }) {
+  const auth = useAuth();
+  const visibleMainNavigation = navigationForCapabilities(auth.capabilities).map((group) => ({ ...group.items[0], section:group.section }));
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-slate-200 bg-white/95 px-1 pt-1 shadow-[0_-8px_24px_rgba(15,23,42,0.05)] backdrop-blur lg:hidden"
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.25rem)" }}
       aria-label="مسیرهای اصلی مدیریت"
     >
-      {mainAdminNavigation.map(({ path, title, section, icon: Icon }) => {
+      {visibleMainNavigation.map(({ path, title, section, icon: Icon }) => {
         const active = current.section === section;
         const destinationPath = active ? current.path : path;
         return (

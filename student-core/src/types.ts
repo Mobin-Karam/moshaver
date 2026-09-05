@@ -109,13 +109,7 @@ export interface ChatMessage {
   deletedAt?: string | null;
 }
 
-export interface NotificationItem {
-  id: ID;
-  title: string;
-  body: string;
-  isRead: boolean;
-  createdAt?: string;
-}
+export type { NotificationContract as NotificationItem, ApiErrorContract, SyncPullContract } from '@moshaver/api-contract';
 
 export interface ApiError {
   status: number;

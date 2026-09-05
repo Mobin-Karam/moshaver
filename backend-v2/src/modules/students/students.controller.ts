@@ -1,10 +1,11 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { ok } from "../../common/utils/envelope";
 import { UserRole } from "../../database/entities/user.entity";
 import { AuthenticatedUser } from "../auth/auth.service";
 import { StudentsService } from "./students.service";
+import { CreateLearningItemDto, ReviewLearningItemDto, UpdateLearningItemDto } from "./dto/learning.dto";
 
 @Controller("student")
 @Roles(UserRole.STUDENT)
@@ -76,6 +77,21 @@ export class StudentParityController {
   learningItems(@CurrentUser() user: AuthenticatedUser) {
     return this.students.learning(user?.id).then((data) => ok(data.items));
   }
+
+  @Post("learning/items")
+  async createLearning(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateLearningItemDto) { return ok(await this.students.createLearningItem(await this.students.studentIdForUser(user.id), dto)); }
+
+  @Patch("learning/items/:id")
+  async updateLearning(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: UpdateLearningItemDto) { return ok(await this.students.updateLearningItem(await this.students.studentIdForUser(user.id), id, dto)); }
+
+  @Delete("learning/items/:id")
+  async deleteLearning(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) { return ok(await this.students.deleteLearningItem(await this.students.studentIdForUser(user.id), id)); }
+
+  @Post("learning/items/:id/review")
+  async reviewLearning(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: ReviewLearningItemDto) { return ok(await this.students.reviewLearningItem(await this.students.studentIdForUser(user.id), id, dto.rating)); }
+
+  @Get("learning/items/:id/reviews")
+  async learningHistory(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) { return ok(await this.students.learningReviewHistory(await this.students.studentIdForUser(user.id), id)); }
 }
 
 @Controller("students")

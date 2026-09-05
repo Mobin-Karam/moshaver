@@ -36,4 +36,6 @@ export class SQLiteSyncProvider implements SyncProvider {
   async remove(id: string): Promise<void> {
     await this.db.execute('delete from sync_queue where id = $1', [id]);
   }
+  async getCursor(): Promise<string | null> { const rows = await this.db.select<Array<{value:string}>>('select value from settings where key = $1 limit 1', ['sync_cursor']); return rows[0]?.value || null; }
+  async setCursor(cursor: string): Promise<void> { await this.db.execute('insert into settings(key,value,updated_at) values($1,$2,$3) on conflict(key) do update set value=excluded.value,updated_at=excluded.updated_at', ['sync_cursor', cursor, new Date().toISOString()]); }
 }

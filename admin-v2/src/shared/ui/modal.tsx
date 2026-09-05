@@ -139,6 +139,7 @@ function ModalSurface({
   onConfirm: () => void;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const titleId = useRef(`modal-title-${Math.random().toString(36).slice(2)}`);
 
   const previousFocus = useRef<HTMLElement | null>(null);
 
@@ -240,6 +241,7 @@ function ModalSurface({
         ref={panelRef}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId.current}
         tabIndex={-1}
         className={cn(
           `
@@ -273,6 +275,7 @@ px-5 py-4
         >
           <div className="flex-1">
             <h2
+              id={titleId.current}
               className={cn(
                 "text-lg font-black",
                 modal.tone === "danger" && "text-rosewood",

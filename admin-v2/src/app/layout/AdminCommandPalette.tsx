@@ -2,8 +2,9 @@ import { Clock3, CornerDownLeft, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../features/auth";
 import { normalizePersianText } from "../../shared/lib/utils";
-import { adminDestination, flatAdminNavigation } from "./admin-navigation";
+import { adminDestination, navigationForCapabilities } from "./admin-navigation";
 import { readStoredList, writeStoredList } from "./layout-storage";
 import type { AdminCurrentNavigation } from "./layout-types";
 
@@ -39,6 +40,8 @@ export function AdminCommandPalette({
   onClose: () => void;
 }) {
   const navigate = useNavigate();
+  const auth = useAuth();
+  const availableNavigation = useMemo(() => navigationForCapabilities(auth.capabilities).flatMap((group) => group.items.map((item) => ({ ...item, section: group.section }))), [auth.capabilities]);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const dialogRef = useRef<HTMLElement | null>(null);
   const [query, setQuery] = useState("");
@@ -58,22 +61,22 @@ export function AdminCommandPalette({
     () =>
       recentTokens.flatMap((token) => {
         const path = tokenPath(token);
-        const item = flatAdminNavigation.find((candidate) => candidate.path === path);
+        const item = availableNavigation.find((candidate) => candidate.path === path);
         return item ? [item] : [];
       }),
-    [recentTokens],
+    [recentTokens, availableNavigation],
   );
 
   const normalizedQuery = normalizePersianText(query.trim().toLowerCase());
   const results = useMemo(() => {
-    if (!normalizedQuery) return recentItems.length ? recentItems : flatAdminNavigation.slice(0, 8);
-    return flatAdminNavigation.filter((item) => {
+    if (!normalizedQuery) return recentItems.length ? recentItems : availableNavigation.slice(0, 8);
+    return availableNavigation.filter((item) => {
       const haystack = normalizePersianText(
         `${item.title} ${item.description} ${item.section} ${item.path}`.toLowerCase(),
       );
       return haystack.includes(normalizedQuery);
     });
-  }, [normalizedQuery, recentItems]);
+  }, [normalizedQuery, recentItems, availableNavigation]);
 
   useEffect(() => {
     if (!open) return;

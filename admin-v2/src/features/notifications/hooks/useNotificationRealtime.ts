@@ -64,7 +64,7 @@ export function useNotificationRealtime({
             duration: 6500,
             action: {
               label: "مشاهده",
-              onClick: () => window.location.assign(notificationAdminUrl(item.url)),
+              onClick: () => window.location.assign(notificationAdminUrl(item.url ?? undefined)),
             },
           });
 
@@ -97,7 +97,7 @@ export function useNotificationRealtime({
 
               systemNotification.onclick = () => {
                 window.focus();
-                window.location.assign(notificationAdminUrl(item.url));
+                window.location.assign(notificationAdminUrl(item.url ?? undefined));
                 systemNotification.close();
               };
             } catch {

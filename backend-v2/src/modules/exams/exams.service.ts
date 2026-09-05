@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Optional } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { IsNull, Repository } from "typeorm";
 import { ExamAttempt } from "../../database/entities/exam-attempt.entity";
@@ -7,6 +7,10 @@ import { Question } from "../../database/entities/question.entity";
 import { Student } from "../../database/entities/student.entity";
 import { CreateExamDto, CreateQuestionDto } from "./dto/create-exam.dto";
 import { ApiException } from "../../common/exceptions/api.exception";
+import { ExamAssignment } from "../../database/entities/exam-assignment.entity";
+import { User } from "../../database/entities/user.entity";
+import { DataSource, In } from "typeorm";
+import { Organization } from "../../database/entities/organization.entity";
 
 type QuestionInput = CreateQuestionDto & { question?: string; correctOption?: string };
 
@@ -17,6 +21,9 @@ export class ExamsService {
     @InjectRepository(Question) private readonly questions: Repository<Question>,
     @InjectRepository(ExamAttempt) private readonly attempts: Repository<ExamAttempt>,
     @InjectRepository(Student) private readonly students: Repository<Student>,
+    @Optional() @InjectRepository(ExamAssignment) private readonly assignments?: Repository<ExamAssignment>,
+    @Optional() @InjectRepository(User) private readonly users?: Repository<User>,
+    @Optional() private readonly dataSource?: DataSource,
   ) {}
 
   async list(includeAnswers = true) {
@@ -24,14 +31,33 @@ export class ExamsService {
     return exams.map((exam) => this.publicExam(exam, includeAnswers));
   }
 
+  async listScoped(organizationIds: string[], platform: boolean, includeAnswers = true) {
+    const exams = await this.exams.find({ where: platform ? {} : { organization: { id: In(organizationIds) } }, relations: { questions: true, organization: true } });
+    return exams.map((exam) => this.publicExam(exam, includeAnswers));
+  }
+
+  async organizationIdForExam(id: string) {
+    const exam = await this.exams.findOneOrFail({ where: { id }, relations: { organization: true } });
+    return exam.organization?.id ?? null;
+  }
+
+  async examIdForQuestion(id: string) {
+    const question = await this.questions.findOneOrFail({ where: { id }, relations: { exam: true } });
+    return question.exam.id;
+  }
+
   async listForStudent(userId: string) {
     const student = await this.studentForUser(userId);
-    const exams = await this.exams.find({ relations: { questions: true, attempts: { student: true } } });
+    const assigned = this.assignments ? await this.assignments.find({ where: { student: { id: student.id } }, relations: { exam: true } }) : [];
+    const ids = assigned.map((item) => item.exam.id);
+    if (this.assignments && !ids.length) return [];
+    const exams = await this.exams.find({ where: this.assignments ? { id: In(ids) } : {}, relations: { questions: true, attempts: { student: true } } });
     return exams.map((exam) => this.publicExam(exam, false, student.id));
   }
 
   async detail(examId: string, userId: string) {
     const student = await this.studentForUser(userId);
+    await this.requireAssignment(examId, student.id);
     const exam = await this.exams.findOneOrFail({ where: { id: examId }, relations: { questions: true, attempts: { student: true } } });
     return this.publicExam(exam, false, student.id);
   }
@@ -58,7 +84,12 @@ export class ExamsService {
     return this.attemptProgress({ ...attempt, answers: validAnswers } as ExamAttempt);
   }
 
-  create(dto: CreateExamDto & { durationMinutes?: number; maxAttempts?: number; openAt?: string; closeAt?: string; isoDate?: string }) {
+  async create(dto: CreateExamDto & { durationMinutes?: number; maxAttempts?: number; openAt?: string; closeAt?: string; isoDate?: string }, actorUserId?: string) {
+    const [organization, createdBy] = await Promise.all([
+      dto.organizationId ? this.exams.manager.findOneBy(Organization, { id: dto.organizationId }) : Promise.resolve(null),
+      actorUserId ? this.exams.manager.findOneBy(User, { id: actorUserId }) : Promise.resolve(null),
+    ]);
+    if (dto.organizationId && !organization) throw new ApiException(404, "ORGANIZATION_NOT_FOUND", "سازمان یافت نشد.");
     const exam = this.exams.create({
       title: dto.title,
       subject: dto.subject || "",
@@ -67,8 +98,11 @@ export class ExamsService {
       startTime: dto.startTime || dto.openAt ? new Date(dto.startTime || dto.openAt || "") : null,
       endTime: dto.endTime || dto.closeAt ? new Date(dto.endTime || dto.closeAt || "") : null,
       questions: (dto.questions || []).map((question) => this.questions.create(this.normalizeQuestion(question))),
+      organization,
+      createdBy,
     });
-    return this.exams.save(exam).then((saved) => this.exams.findOneOrFail({ where: { id: saved.id }, relations: { questions: true } })).then((saved) => this.publicExam(saved));
+    const saved = await this.exams.save(exam);
+    return this.publicExam(await this.exams.findOneOrFail({ where: { id: saved.id }, relations: { questions: true } }));
   }
 
   async update(id: string, body: Record<string, unknown>) {
@@ -95,6 +129,7 @@ export class ExamsService {
   async start(examId: string, userId: string) {
     const exam = await this.exams.findOneOrFail({ where: { id: examId }, relations: { questions: true } });
     const student = await this.studentForUser(userId);
+    await this.requireAssignment(examId, student.id);
     const active = await this.attempts.findOne({ where: { exam: { id: examId }, student: { id: student.id }, finishedAt: IsNull() }, relations: { exam: { questions: true } }, order: { startedAt: "DESC" } });
     if (active) return this.attemptProgress(active);
     const used = await this.attempts.count({ where: { exam: { id: examId }, student: { id: student.id } } });
@@ -115,6 +150,14 @@ export class ExamsService {
     const finishedAt = new Date();
     await this.attempts.update(attemptId, { answers: finalAnswers, score, finishedAt });
     return this.result({ ...attempt, answers: finalAnswers, score, finishedAt } as ExamAttempt, finalAnswers);
+  }
+
+  async submitExam(examId: string, answers: Array<{ questionId: string; selectedOption?: string | null }> = [], userId: string) {
+    const student = await this.studentForUser(userId);
+    await this.requireAssignment(examId, student.id);
+    const attempt = await this.attempts.findOne({ where: { exam: { id: examId }, student: { id: student.id }, finishedAt: IsNull() }, order: { startedAt: "DESC" } });
+    if (!attempt) throw new ApiException(409, "NO_ACTIVE_ATTEMPT", "تلاش فعالی برای این آزمون وجود ندارد.");
+    return this.submit(attempt.id, answers, userId);
   }
 
   private result(attempt: ExamAttempt, answers: Array<{ questionId: string; selectedOption?: string | null }>) {
@@ -148,8 +191,8 @@ export class ExamsService {
     };
   }
 
-  private publicAttempt(attempt: ExamAttempt) {
-    return { id: attempt.id, examId: attempt.exam.id, title: attempt.exam.title, score: attempt.score, startedAt: attempt.startedAt, finishedAt: attempt.finishedAt || null, answeredCount: (attempt.answers || []).filter((answer) => answer.selectedOption).length };
+  private publicAttempt(attempt: ExamAttempt, fallbackExamId?: string) {
+    return { id: attempt.id, examId: attempt.exam?.id ?? fallbackExamId, title: attempt.exam?.title ?? "", score: attempt.score, startedAt: attempt.startedAt, finishedAt: attempt.finishedAt || null, answeredCount: (attempt.answers || []).filter((answer) => answer.selectedOption).length };
   }
 
   private publicExam(exam: Exam, includeAnswers = true, studentId?: string) {
@@ -157,7 +200,7 @@ export class ExamsService {
     return {
       id: exam.id, title: exam.title, subject: exam.subject, duration: exam.duration, durationMinutes: exam.duration, attemptLimit: exam.attemptLimit, maxAttempts: exam.attemptLimit, startTime: exam.startTime, endTime: exam.endTime, openAt: exam.startTime?.toISOString(), closeAt: exam.endTime?.toISOString(), isoDate: exam.startTime?.toISOString().slice(0, 10) || new Date().toISOString().slice(0, 10), published: true,
       questions: includeAnswers ? exam.questions?.map((question) => this.publicQuestion(question)) || [] : undefined,
-      delivery: { questionCount: exam.questions?.length || 0, allowedAttempts: exam.attemptLimit, attemptsUsed: studentId ? studentAttempts.length : 0, lastAttempt: studentAttempts[0] ? this.publicAttempt(studentAttempts[0]) : null },
+      delivery: { questionCount: exam.questions?.length || 0, allowedAttempts: exam.attemptLimit, attemptsUsed: studentId ? studentAttempts.length : 0, lastAttempt: studentAttempts[0] ? this.publicAttempt(studentAttempts[0], exam.id) : null },
     };
   }
 
@@ -216,6 +259,34 @@ export class ExamsService {
     return this.exams.findOneByOrFail({ id: examId }).then((exam) =>
       this.questions.save(questions.map((question) => this.questions.create({ ...this.normalizeQuestion(question), exam }))),
     );
+  }
+
+  async assign(examId: string, studentIds: string[], actorUserId: string) {
+    if (!this.assignments || !this.users || !this.dataSource) throw new ApiException(503, "ASSIGNMENTS_UNAVAILABLE", "تخصیص آزمون در دسترس نیست.");
+    return this.dataSource.transaction(async (manager) => {
+      const exam = await manager.findOne(Exam, { where: { id: examId } });
+      const actor = await manager.findOne(User, { where: { id: actorUserId } });
+      const students = await manager.find(Student, { where: { id: In([...new Set(studentIds)]) } });
+      if (!exam || !actor || students.length !== new Set(studentIds).size) throw new ApiException(404, "NOT_FOUND", "آزمون، کاربر یا دانش‌آموز یافت نشد.");
+      for (const student of students) {
+        const exists = await manager.findOne(ExamAssignment, { where: { exam: { id: examId }, student: { id: student.id } } });
+        if (!exists) await manager.save(ExamAssignment, manager.create(ExamAssignment, { exam, student, assignedBy: actor }));
+      }
+      return { examId, studentIds: students.map((student) => student.id) };
+    });
+  }
+
+  async unassign(examId: string, studentId: string) {
+    if (!this.assignments) throw new ApiException(503, "ASSIGNMENTS_UNAVAILABLE", "تخصیص آزمون در دسترس نیست.");
+    const result = await this.assignments.delete({ exam: { id: examId }, student: { id: studentId } });
+    if (!result.affected) throw new ApiException(404, "NOT_FOUND", "تخصیص آزمون یافت نشد.");
+    return { examId, studentId, removed: true };
+  }
+
+  private async requireAssignment(examId: string, studentId: string) {
+    if (!this.assignments) return;
+    const assignment = await this.assignments.findOne({ where: { exam: { id: examId }, student: { id: studentId } } });
+    if (!assignment) throw new ApiException(404, "EXAM_NOT_ASSIGNED", "آزمون برای این دانش‌آموز در دسترس نیست.");
   }
 
   private normalizeQuestion(question: QuestionInput) {

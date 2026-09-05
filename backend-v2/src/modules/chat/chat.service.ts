@@ -1,105 +1,25 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { IsNull, Repository } from "typeorm";
-import { ApiException } from "../../common/exceptions/api.exception";
-import { ChatMessage, ChatMessageType } from "../../database/entities/chat-message.entity";
-import { Student } from "../../database/entities/student.entity";
-import { User, UserRole } from "../../database/entities/user.entity";
-import { AuthenticatedUser } from "../auth/auth.service";
-import { RealtimeService } from "../realtime/realtime.service";
-
+import { Injectable,Optional } from "@nestjs/common";import { InjectRepository } from "@nestjs/typeorm";import { DataSource,In,IsNull,Repository } from "typeorm";
+import { ApiException } from "../../common/exceptions/api.exception";import { ChatMessage,ChatMessageType } from "../../database/entities/chat-message.entity";import { Conversation,ConversationMember,MessageReaction,OrganizationMembership,Student,User,UserRelationship } from "../../database/entities";import { ConversationMemberRole } from "../../database/entities/conversation-member.entity";import { ConversationType } from "../../database/entities/conversation.entity";import { MembershipStatus } from "../../database/entities/organization-membership.entity";import { RelationshipStatus } from "../../database/entities/user-relationship.entity";import { AuthenticatedUser } from "../auth/auth.service";import { RealtimeService } from "../realtime/realtime.service";import { NotificationsService } from "../notifications/notifications.service";
 @Injectable()
-export class ChatService {
-  constructor(
-    @InjectRepository(ChatMessage) private readonly messages: Repository<ChatMessage>,
-    @InjectRepository(Student) private readonly students: Repository<Student>,
-    @InjectRepository(User) private readonly users: Repository<User>,
-    private readonly realtime: RealtimeService,
-  ) {}
-
-  async conversations() {
-    const students = await this.students.find({ relations: { user: true }, order: { createdAt: "DESC" } });
-    const rows = await this.messages.find({ relations: { sender: true }, order: { createdAt: "DESC" } });
-    return students.map((student) => {
-      const userId = student.user?.id;
-      const last = rows.find((message) => message.receiverId === userId || message.sender.id === userId);
-      return {
-        id: student.id,
-        student: this.publicStudent(student),
-        unread: rows.filter((message) => message.sender.id === userId && !message.readAt).length,
-        lastMessage: last ? this.publicMessage(last) : null,
-        presence: { online: false, state: "offline" },
-        pinned: false,
-      };
-    });
-  }
-
-  async conversationsForStudent(user: AuthenticatedUser) {
-    const student = await this.students.findOne({ where: { user: { id: user.id } }, relations: { user: true } });
-    if (!student?.user) throw new ApiException(404, "STUDENT_NOT_FOUND", "دانش‌آموز پیدا نشد.");
-    const admin = await this.users.findOne({ where: { role: UserRole.ADMIN }, order: { createdAt: "ASC" } });
-    if (!admin) throw new ApiException(404, "ADMIN_NOT_FOUND", "مشاور پیدا نشد.");
-    const rows = await this.messages.find({ where: [{ sender: { id: student.user.id }, receiverId: admin.id }, { sender: { id: admin.id }, receiverId: student.user.id }], relations: { sender: true }, order: { createdAt: "DESC" } });
-    return [{
-      id: student.id,
-      student: this.publicStudent(student),
-      unread: rows.filter((message) => message.sender.id === admin.id && !message.readAt).length,
-      lastMessage: rows[0] ? this.publicMessage(rows[0]) : null,
-      presence: { online: false, state: "offline" },
-      pinned: false,
-    }];
-  }
-
-  async messagesForConversation(user: AuthenticatedUser, conversationId: string) {
-    const peer = await this.peerForConversation(user, conversationId);
-    const rows = await this.messages.find({ where: [{ sender: { id: user.id }, receiverId: peer.id }, { sender: { id: peer.id }, receiverId: user.id }], relations: { sender: true }, order: { createdAt: "ASC" } });
-    return rows.map((message) => this.publicMessage(message));
-  }
-
-  async send(user: AuthenticatedUser, conversationId: string, text: string) {
-    const content = String(text || "").trim();
-    if (!content) throw new ApiException(400, "MESSAGE_REQUIRED", "متن پیام الزامی است.");
-    const sender = await this.users.findOneByOrFail({ id: user.id });
-    const peer = await this.peerForConversation(user, conversationId);
-    const saved = await this.messages.save(this.messages.create({ sender, receiverId: peer.id, type: ChatMessageType.TEXT, content }));
-    const message = this.publicMessage({ ...saved, sender });
-    this.realtime.publish("chat.message", { conversationId, message });
-    return message;
-  }
-
-  async markRead(user: AuthenticatedUser, conversationId: string) {
-    const peer = await this.peerForConversation(user, conversationId);
-    const result = await this.messages.update({ sender: { id: peer.id }, receiverId: user.id, readAt: IsNull() }, { readAt: new Date() });
-    return { conversationId, updated: result.affected || 0, unread: 0 };
-  }
-
-  private async peerForConversation(user: AuthenticatedUser, conversationId: string) {
-    if (user.role === UserRole.ADMIN) {
-      const student = await this.students.findOne({ where: { id: conversationId }, relations: { user: true } });
-      if (!student?.user) throw new ApiException(404, "CONVERSATION_NOT_FOUND", "گفتگو پیدا نشد.");
-      return student.user;
-    }
-    const student = await this.students.findOne({ where: { id: conversationId, user: { id: user.id } }, relations: { user: true } });
-    if (!student) throw new ApiException(404, "CONVERSATION_NOT_FOUND", "گفتگو پیدا نشد.");
-    const admin = await this.users.findOne({ where: { role: UserRole.ADMIN }, order: { createdAt: "ASC" } });
-    if (!admin) throw new ApiException(404, "ADMIN_NOT_FOUND", "مشاور پیدا نشد.");
-    return admin;
-  }
-
-  private publicStudent(student: Student) {
-    return { id: student.id, name: student.name, grade: student.grade, major: student.major, dailyCapacity: student.dailyCapacity };
-  }
-
-  private publicMessage(message: ChatMessage) {
-    return {
-      id: message.id,
-      text: message.content,
-      type: message.type,
-      senderRole: message.sender.role === UserRole.ADMIN ? "admin" : "student",
-      senderId: message.sender.id,
-      createdAt: message.createdAt,
-      isRead: Boolean(message.readAt),
-      readAt: message.readAt || null,
-    };
-  }
+export class ChatService{
+ constructor(@InjectRepository(ChatMessage)private messages:Repository<ChatMessage>,@InjectRepository(Student)private students:Repository<Student>,@InjectRepository(User)private users:Repository<User>,private realtime:RealtimeService,@InjectRepository(Conversation)private conversationsRepo:Repository<Conversation>,@InjectRepository(ConversationMember)private members:Repository<ConversationMember>,@InjectRepository(MessageReaction)private reactions:Repository<MessageReaction>,@InjectRepository(UserRelationship)private relationships:Repository<UserRelationship>,@InjectRepository(OrganizationMembership)private orgMembers:Repository<OrganizationMembership>,private db:DataSource,@Optional()private notifications?:NotificationsService){}
+ async conversations(user:AuthenticatedUser){const memberships=await this.members.find({where:{user:{id:user.id},leftAt:IsNull()},relations:{conversation:{members:{user:true}}}});const out=[];for(const member of memberships){const last=await this.messages.findOne({where:{conversation:{id:member.conversation.id}},relations:{sender:true},order:{createdAt:"DESC"}});const unread=await this.messages.createQueryBuilder("m").where("m.conversationId=:id AND m.senderId<>:userId AND m.readAt IS NULL AND m.deletedAt IS NULL",{id:member.conversation.id,userId:user.id}).getCount();out.push({...this.publicConversation(member.conversation,user.id),lastMessage:last?this.publicMessage(last):null,unread,muted:member.muted});}return out;}
+ conversationsForStudent(user:AuthenticatedUser){return this.conversations(user);}
+ async createDirect(user:AuthenticatedUser,peerUserId:string){if(peerUserId===user.id)throw new ApiException(400,"INVALID_PEER","گفتگو با خودتان ممکن نیست.");const peer=await this.users.findOneByOrFail({id:peerUserId});if(!await this.directAllowed(user.id,peerUserId))throw new ApiException(403,"CHAT_POLICY_DENIED","این ارتباط برای گفتگوی مستقیم مجاز نیست.");const mine=await this.members.find({where:{user:{id:user.id},leftAt:IsNull()},relations:{conversation:{members:{user:true}}}});const existing=mine.find(m=>m.conversation.type===ConversationType.DIRECT&&m.conversation.members.some(x=>x.user.id===peerUserId));if(existing)return this.publicConversation(existing.conversation,user.id);return this.db.transaction(async manager=>{const conversation=await manager.save(Conversation,manager.create(Conversation,{type:ConversationType.DIRECT,title:"",owner:await manager.findOneByOrFail(User,{id:user.id})}));await manager.save(ConversationMember,[manager.create(ConversationMember,{conversation,user:await manager.findOneByOrFail(User,{id:user.id})}),manager.create(ConversationMember,{conversation,user:peer})]);return this.publicConversation({...conversation,members:await manager.find(ConversationMember,{where:{conversation:{id:conversation.id}},relations:{user:true}})},user.id);});}
+ async createGroup(user:AuthenticatedUser,title:string,userIds:string[]){const ids=[...new Set([user.id,...userIds])];if(!title.trim()||ids.length<2)throw new ApiException(400,"INVALID_GROUP","عنوان و حداقل دو عضو لازم است.");for(const id of ids)if(id!==user.id&&!await this.directAllowed(user.id,id))throw new ApiException(403,"CHAT_POLICY_DENIED","یکی از اعضا برای گفتگو مجاز نیست.");return this.db.transaction(async manager=>{const owner=await manager.findOneByOrFail(User,{id:user.id});const users=await manager.findBy(User,{id:In(ids)});if(users.length!==ids.length)throw new ApiException(404,"USER_NOT_FOUND","کاربر پیدا نشد.");const conversation=await manager.save(Conversation,manager.create(Conversation,{type:ConversationType.GROUP,title:title.trim(),owner}));await manager.save(ConversationMember,users.map(x=>manager.create(ConversationMember,{conversation,user:x,role:x.id===user.id?ConversationMemberRole.OWNER:ConversationMemberRole.MEMBER})));return{id:conversation.id,type:conversation.type,title:conversation.title};});}
+ async messagesForConversation(user:AuthenticatedUser,id:string){await this.requireMember(user.id,id);const rows=await this.messages.find({where:{conversation:{id}},relations:{sender:true,replyTo:true},order:{createdAt:"ASC"}});return rows.map(x=>this.publicMessage(x));}
+ async send(user:AuthenticatedUser,id:string,text:string,input:{replyToId?:string;mentions?:string[];type?:ChatMessageType}={}){const membership=await this.requireMember(user.id,id);const content=String(text||"").trim();if(!content)throw new ApiException(400,"MESSAGE_REQUIRED","متن پیام الزامی است.");const conversation=membership.conversation;const sender=await this.users.findOneByOrFail({id:user.id});const active=await this.members.find({where:{conversation:{id},leftAt:IsNull()},relations:{user:true}});const allowedIds=new Set(active.map(x=>x.user.id));const mentions=[...new Set(input.mentions||[])].filter(x=>allowedIds.has(x));const replyTo=input.replyToId?await this.messages.findOne({where:{id:input.replyToId,conversation:{id}}}):null;if(input.replyToId&&!replyTo)throw new ApiException(404,"REPLY_NOT_FOUND","پیام مرجع پیدا نشد.");const saved=await this.messages.save(this.messages.create({conversation,sender,receiverId:"",type:input.type||ChatMessageType.TEXT,content,mentions,replyTo}));const message=this.publicMessage({...saved,sender,replyTo});const recipientIds=active.filter(x=>x.user.id!==user.id).map(x=>x.user.id);this.realtime.emitToUsers(active.map(x=>x.user.id),"chat.message",{conversationId:id,message});if(this.notifications)await this.notifications.createForUsers(recipientIds,{type:"chat",category:"messages",title:conversation.title||"پیام جدید",body:content.slice(0,240),url:`/chat?conversationId=${encodeURIComponent(id)}`,data:{conversationId:id,messageId:saved.id},dedupeKey:`chat:${saved.id}`});return message;}
+ async markRead(user:AuthenticatedUser,id:string){const member=await this.requireMember(user.id,id);const now=new Date();member.lastReadAt=now;await this.members.save(member);const result=await this.messages.createQueryBuilder().update(ChatMessage).set({readAt:now}).where("conversationId=:id AND senderId<>:userId AND readAt IS NULL",{id,userId:user.id}).execute();return{conversationId:id,updated:result.affected||0,unread:0};}
+ async edit(user:AuthenticatedUser,id:string,messageId:string,text:string){await this.requireMember(user.id,id);const message=await this.messages.findOne({where:{id:messageId,conversation:{id},sender:{id:user.id}},relations:{sender:true}});if(!message||message.deletedAt)throw new ApiException(404,"MESSAGE_NOT_FOUND","پیام پیدا نشد.");message.content=String(text||"").trim();if(!message.content)throw new ApiException(400,"MESSAGE_REQUIRED","متن پیام الزامی است.");message.editedAt=new Date();return this.messages.save(message).then(x=>this.publicMessage(x));}
+ async removeMessage(user:AuthenticatedUser,id:string,messageId:string,moderate=false){const member=await this.requireMember(user.id,id);const message=await this.messages.findOne({where:{id:messageId,conversation:{id}},relations:{sender:true}});if(!message)throw new ApiException(404,"MESSAGE_NOT_FOUND","پیام پیدا نشد.");if(message.sender.id!==user.id&&!(moderate&&[ConversationMemberRole.OWNER,ConversationMemberRole.ADMIN].includes(member.role)))throw new ApiException(403,"MESSAGE_FORBIDDEN","اجازه حذف پیام را ندارید.");message.deletedAt=new Date();message.content="";await this.messages.save(message);return{id:messageId,deleted:true};}
+ async react(user:AuthenticatedUser,id:string,messageId:string,emoji:string){await this.requireMember(user.id,id);const message=await this.messages.findOne({where:{id:messageId,conversation:{id}}});if(!message)throw new ApiException(404,"MESSAGE_NOT_FOUND","پیام پیدا نشد.");const account=await this.users.findOneByOrFail({id:user.id});const existing=await this.reactions.findOne({where:{message:{id:messageId},user:{id:user.id},emoji}});if(existing){await this.reactions.delete(existing.id);return{active:false};}await this.reactions.save(this.reactions.create({message,user:account,emoji:emoji.slice(0,32)}));return{active:true};}
+ async setMute(user:AuthenticatedUser,id:string,muted:boolean){const member=await this.requireMember(user.id,id);member.muted=muted;await this.members.save(member);return{id,muted};}
+ async leave(user:AuthenticatedUser,id:string){const member=await this.requireMember(user.id,id);if(member.role===ConversationMemberRole.OWNER)throw new ApiException(409,"TRANSFER_OWNER_REQUIRED","ابتدا مالکیت گروه را منتقل کنید.");member.leftAt=new Date();await this.members.save(member);return{id,left:true};}
+ async transferOwner(user:AuthenticatedUser,id:string,targetUserId:string){const member=await this.requireManager(user.id,id,true);const target=await this.members.findOne({where:{conversation:{id},user:{id:targetUserId},leftAt:IsNull()},relations:{conversation:true,user:true}});if(!target)throw new ApiException(404,"MEMBER_NOT_FOUND","عضو پیدا نشد.");member.role=ConversationMemberRole.ADMIN;target.role=ConversationMemberRole.OWNER;member.conversation.owner=target.user;await this.db.transaction(async m=>{await m.save(Conversation,member.conversation);await m.save(ConversationMember,[member,target]);});return{id,ownerId:targetUserId};}
+ async updateMember(user:AuthenticatedUser,id:string,targetUserId:string,body:{role?:ConversationMemberRole;remove?:boolean}){await this.requireManager(user.id,id);const target=await this.members.findOne({where:{conversation:{id},user:{id:targetUserId},leftAt:IsNull()},relations:{conversation:true,user:true}});if(!target||target.role===ConversationMemberRole.OWNER)throw new ApiException(409,"MEMBER_FORBIDDEN","عضو قابل تغییر نیست.");if(body.remove)target.leftAt=new Date();else if(body.role)target.role=body.role;await this.members.save(target);return{id,userId:targetUserId,role:target.role,removed:!!body.remove};}
+ private async requireMember(userId:string,id:string){const member=await this.members.findOne({where:{conversation:{id},user:{id:userId},leftAt:IsNull()},relations:{conversation:{members:{user:true}},user:true}});if(!member)throw new ApiException(404,"CONVERSATION_NOT_FOUND","گفتگو پیدا نشد.");return member;}
+ private async requireManager(userId:string,id:string,ownerOnly=false){const m=await this.requireMember(userId,id);if(ownerOnly?m.role!==ConversationMemberRole.OWNER:![ConversationMemberRole.OWNER,ConversationMemberRole.ADMIN].includes(m.role))throw new ApiException(403,"GROUP_FORBIDDEN","اجازه مدیریت گروه را ندارید.");return m;}
+ private async directAllowed(a:string,b:string){const [ua,ub]=await Promise.all([this.users.findOne({where:{id:a},relations:{student:true}}),this.users.findOne({where:{id:b},relations:{student:true}})]);if(!ua||!ub)return false;if(ua.student||ub.student){const student=ua.student||ub.student!;const staffId=ua.student?b:a;return this.relationships.exist({where:{fromUser:{id:staffId},toStudent:{id:student.id},status:RelationshipStatus.ACTIVE}});}const ma=await this.orgMembers.find({where:{user:{id:a},status:MembershipStatus.ACTIVE},relations:{organization:true}});const ids=ma.map(x=>x.organization.id);return ids.length?this.orgMembers.exist({where:{user:{id:b},organization:{id:In(ids)},status:MembershipStatus.ACTIVE}}):false;}
+ private publicConversation(c:Conversation,userId:string){return{id:c.id,type:c.type,title:c.title,participants:(c.members||[]).filter(x=>!x.leftAt).map(x=>({id:x.user.id,name:[x.user.firstName,x.user.lastName].filter(Boolean).join(" ")||x.user.username,role:x.user.role,isSelf:x.user.id===userId})),ownerId:c.owner?.id||null};}
+ private publicMessage(m:ChatMessage){return{id:m.id,text:m.deletedAt?"":m.content,type:m.type,senderRole:m.sender.role,senderId:m.sender.id,createdAt:m.createdAt,isRead:!!m.readAt,readAt:m.readAt||null,editedAt:m.editedAt||null,deletedAt:m.deletedAt||null,mentions:m.mentions||[],replyToId:m.replyTo?.id||null};}
 }

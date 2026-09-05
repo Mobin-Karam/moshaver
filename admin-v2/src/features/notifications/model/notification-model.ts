@@ -1,17 +1,6 @@
-export type AdminNotification = {
-  id: string;
-  title: string;
-  body?: string;
-  isRead?: boolean;
-  createdAt?: string;
-  type?:
-    | "message"
-    | "exam"
-    | "lesson"
-    | "announcement"
-    | string;
-  url?: string;
-};
+import type { NotificationContract } from "@moshaver/api-contract";
+
+export type AdminNotification = Partial<NotificationContract> & Pick<NotificationContract, "id" | "title">;
 
 export type NotificationPage = {
   items: AdminNotification[];

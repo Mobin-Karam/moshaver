@@ -1,4 +1,4 @@
-import type { User } from "../../../shared/types/domain";
+import type { AccountContext, OrganizationSummary, User } from "../../../shared/types/domain";
 
 export type AuthStatus =
   | "checking"
@@ -15,6 +15,12 @@ export type AuthState = {
   restore: () => Promise<void>;
   stopRestore: () => void;
   hasRole: (role: User["role"]) => boolean;
+  context: AccountContext | null;
+  can: (capability: string) => boolean;
+  activeRole: AccountContext["roles"][number] | null;
+  capabilities: string[];
+  setActiveRole: (role: AccountContext["roles"][number]) => void;
+  setActiveOrganization: (organization: OrganizationSummary | null) => void;
 };
 
 export type LoginResponse = {

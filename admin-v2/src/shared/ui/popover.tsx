@@ -158,10 +158,10 @@ export function ViewportPopover({
 
     document.addEventListener("keydown", keyboard);
 
-    const observer = new ResizeObserver(place);
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(place);
 
     if (panel.current) {
-      observer.observe(panel.current);
+      observer?.observe(panel.current);
     }
 
     return () => {
@@ -173,7 +173,7 @@ export function ViewportPopover({
 
       document.removeEventListener("keydown", keyboard);
 
-      observer.disconnect();
+      observer?.disconnect();
     };
   }, [open, place, change]);
 

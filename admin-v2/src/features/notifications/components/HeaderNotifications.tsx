@@ -114,7 +114,7 @@ export function HeaderNotifications() {
                   notifications.markRead(item.id);
                 }
                 setOpen(false);
-                navigate(notificationAdminUrl(item.url));
+                navigate(notificationAdminUrl(item.url ?? undefined));
               }}
             >
               <span className="flex items-start justify-between gap-2">

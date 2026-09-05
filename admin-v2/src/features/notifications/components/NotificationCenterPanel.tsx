@@ -180,7 +180,7 @@ export function NotificationCenterPanel({
                 if (!item.isRead) {
                   notifications.markRead(item.id);
                 }
-                navigate(notificationAdminUrl(item.url));
+                navigate(notificationAdminUrl(item.url ?? undefined));
               }}
             >
               <span className="flex items-center gap-2">

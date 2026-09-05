@@ -1,11 +1,11 @@
 import { api } from "../../../shared/api/api";
 import type { DatabaseMeta, HistoryRow, PasswordDraft, ReleaseDraft, Session } from "../model/system.types";
-export const getDatabaseMeta = () => api.get<DatabaseMeta>("/admin/system/database");
+export const getDatabaseMeta = () => api.get<DatabaseMeta>("/system/database");
 export const getSessions = () => api.get<Session[]>("/auth/sessions");
-export const getImportHistory = () => api.get<HistoryRow[]>("/admin/import/history");
-export const getReleases = () => api.get<HistoryRow[]>("/admin/app-releases");
-export const getAudit = () => api.get<HistoryRow[]>("/admin/audit");
-export const restoreDatabase = (file: File) => api.uploadBinary("/admin/system/database-restore", file);
+export const getImportHistory = () => api.get<HistoryRow[]>("/import/history");
+export const getReleases = () => api.get<HistoryRow[]>("/app-releases");
+export const getAudit = () => api.get<HistoryRow[]>("/audit");
+export const restoreDatabase = (file: File) => api.uploadBinary("/system/database-restore", file);
 export const changeAdminPassword = (body: PasswordDraft) => api.post("/auth/change-password", { currentPassword: body.currentPassword, newPassword: body.newPassword });
-export const saveAppRelease = (release: ReleaseDraft) => api.put(`/admin/app-releases/${encodeURIComponent(release.app)}`, { version: release.version, notes: release.notes });
-export const downloadDatabaseBackup = () => api.download("/admin/system/database-backup");
+export const saveAppRelease = (release: ReleaseDraft) => api.put(`/app-releases/${encodeURIComponent(release.app)}`, { version: release.version, notes: release.notes });
+export const downloadDatabaseBackup = () => api.download("/system/database-backup");

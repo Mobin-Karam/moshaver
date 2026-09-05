@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { adminDestination, mainAdminNavigation } from "./admin-navigation";
+import { adminDestination, navigationForCapabilities } from "./admin-navigation";
+import { useAuth } from "../../features/auth";
 
 export function AdminMainSidebar({
   collapsed,
@@ -17,6 +18,8 @@ export function AdminMainSidebar({
   onToggle: () => void;
   onOpenSearch: () => void;
 }) {
+  const auth = useAuth();
+  const visibleMainNavigation = navigationForCapabilities(auth.capabilities).map((group) => ({ ...group.items[0], section:group.section }));
   return (
     <aside
       className={`fixed inset-y-0 right-0 z-50 hidden flex-col border-l border-slate-200 bg-white shadow-sm transition-[width,padding] duration-200 motion-reduce:transition-none lg:flex ${collapsed ? "w-[4.5rem] p-2" : "w-64 p-3"}`}
@@ -64,7 +67,7 @@ export function AdminMainSidebar({
       </button>
 
       <nav className="grid min-h-0 flex-1 content-start gap-1 overflow-y-auto overscroll-contain pb-2">
-        {mainAdminNavigation.map(({ path, title, section, icon: Icon }) => {
+        {visibleMainNavigation.map(({ path, title, section, icon: Icon }) => {
           const active = currentSection === section;
           return (
             <NavLink

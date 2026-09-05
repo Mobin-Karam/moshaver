@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useAdminNotifications } from "../../features/notifications";
+import { useAuth } from "../../features/auth";
 import { AdminCommandPalette } from "./AdminCommandPalette";
 import { AdminContextSidebar } from "./AdminContextSidebar";
 import { AdminHeader } from "./AdminHeader";
 import { AdminMainSidebar } from "./AdminMainSidebar";
 import { AdminMobileBottomNav, AdminMobileDrawer } from "./AdminMobileNavigation";
-import { adminBreadcrumbs, adminNavigation, resolveAdminNavigation } from "./admin-navigation";
+import { adminBreadcrumbs, navigationForCapabilities, resolveAdminNavigation } from "./admin-navigation";
 import { adminContentOffsetClass } from "./layout-geometry";
 import { usePersistentCollapse } from "./layout-storage";
 
@@ -31,6 +32,7 @@ function isEditableTarget(target: EventTarget | null) {
 }
 
 export function AdminLayout() {
+  const auth = useAuth();
   const notificationState = useAdminNotifications();
   const location = useLocation();
   const [mainCollapsed, setMainCollapsed] = usePersistentCollapse("admin-main-sidebar-collapsed");
@@ -40,7 +42,7 @@ export function AdminLayout() {
 
   const current = resolveAdminNavigation(location.pathname);
   const breadcrumbs = adminBreadcrumbs(location.pathname);
-  const contextual = adminNavigation.find((group) => group.section === current.section)?.items || [];
+  const contextual = navigationForCapabilities(auth.capabilities).find((group) => group.section === current.section)?.items || [];
   const showContextRail = contextual.length > 1;
   const selectedStudentId = readSelectedStudentId(location.search);
   const contentOffset = adminContentOffsetClass({ showContextRail, mainCollapsed, contextCollapsed });

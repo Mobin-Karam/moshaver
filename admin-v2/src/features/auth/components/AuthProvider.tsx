@@ -11,10 +11,12 @@ import {
   api,
   ApiError,
   onAuthFailure,
+  setApiWorkContext,
 } from "../../../shared/api/api";
-import type { User } from "../../../shared/types/domain";
+import type { AccountContext, OrganizationSummary, User } from "../../../shared/types/domain";
 import {
   getCurrentUser,
+  getAccountContext,
   loginRequest,
   logoutRequest,
 } from "../api/auth.api";
@@ -40,6 +42,8 @@ export function AuthProvider({
   children: ReactNode;
 }) {
   const [user, setUser] = useState<User | null>(null);
+  const [accountContext, setAccountContext] = useState<AccountContext | null>(null);
+  const [activeRole, setActiveRoleState] = useState<AccountContext["roles"][number] | null>(null);
   const [status, setStatus] = useState<AuthStatus>("checking");
   const [message, setMessage] = useState("در حال بررسی نشست امن…");
   const operation = useRef(0);
@@ -52,6 +56,9 @@ export function AuthProvider({
       operation.current += 1;
       api.setCsrf();
       setUser(null);
+      setAccountContext(null);
+      setActiveRoleState(null);
+      setApiWorkContext();
       setStatus("anonymous");
       setMessage(text);
 
@@ -73,11 +80,14 @@ export function AuthProvider({
     setMessage("در حال بررسی نشست امن…");
 
     try {
-      const me = normalizeUser(await getCurrentUser());
+      const raw = await getCurrentUser();
+      const context = await getAccountContext().catch(() => null);
+      const me = normalizeUser(context ? { ...context.user, role: context.roles[0] ?? raw.role } : raw);
 
       if (current !== operation.current) return;
 
-      if (me.role !== "admin") {
+      const nonStudent = context ? context.roles.some((role) => role !== "STUDENT") : me.role === "admin";
+      if (!nonStudent) {
         try {
           await logoutRequest();
         } catch {
@@ -91,6 +101,10 @@ export function AuthProvider({
       lastCheck.current = Date.now();
       restoreAttempts.current = 0;
       setUser(me);
+      setAccountContext(context);
+      const role = context?.roles.find((item) => item !== "STUDENT") ?? null;
+      setActiveRoleState(role);
+      setApiWorkContext(role ?? undefined, context?.activeOrganization?.id);
       setStatus("authenticated");
       setMessage("");
     } catch (error) {
@@ -240,8 +254,10 @@ export function AuthProvider({
         if (current !== operation.current) return;
 
         const normalizedUser = normalizeUser(data.user);
-
-        if (normalizedUser.role !== "admin") {
+        const context = await getAccountContext().catch(() => null);
+        const contextUser = context ? normalizeUser({ ...context.user, role: context.roles[0] ?? normalizedUser.role }) : normalizedUser;
+        const nonStudent = context ? context.roles.some((role) => role !== "STUDENT") : normalizedUser.role === "admin";
+        if (!nonStudent) {
           try {
             await logoutRequest();
           } catch {
@@ -254,7 +270,11 @@ export function AuthProvider({
 
         sessionStorage.removeItem(PENDING_LOGOUT_KEY);
         api.setCsrf(data.csrfToken);
-        setUser(normalizedUser);
+        setUser(contextUser);
+        setAccountContext(context);
+        const role = context?.roles.find((item) => item !== "STUDENT") ?? null;
+        setActiveRoleState(role);
+        setApiWorkContext(role ?? undefined, context?.activeOrganization?.id);
         setStatus("authenticated");
         restoreAttempts.current = 0;
         lastCheck.current = Date.now();
@@ -280,7 +300,23 @@ export function AuthProvider({
       },
 
       hasRole(role) {
-        return user?.role === role;
+        return accountContext?.roles.some((item) => item.toLowerCase() === String(role).toLowerCase()) ?? user?.role === role;
+      },
+      context: accountContext,
+      can(capability) {
+        const scoped = accountContext?.workContexts?.find((item) => item.role === activeRole);
+        return (scoped?.capabilities ?? accountContext?.capabilities ?? []).includes(capability);
+      },
+      activeRole,
+      capabilities: accountContext?.workContexts?.find((item) => item.role === activeRole)?.capabilities ?? accountContext?.capabilities ?? [],
+      setActiveRole(role) {
+        if (!accountContext?.roles.includes(role)) return;
+        setActiveRoleState(role);
+        setApiWorkContext(role, accountContext.activeOrganization?.id);
+      },
+      setActiveOrganization(organization: OrganizationSummary | null) {
+        setAccountContext((current) => current ? { ...current, activeOrganization: organization } : current);
+        setApiWorkContext(activeRole ?? undefined, organization?.id);
       },
     }),
     [
@@ -289,6 +325,8 @@ export function AuthProvider({
       restore,
       status,
       user,
+      accountContext,
+      activeRole,
     ],
   );
 

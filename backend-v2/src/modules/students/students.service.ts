@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Optional } from "@nestjs/common";
 import bcrypt from "bcryptjs";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { PlanStatus } from "../../database/entities/plan.entity";
 import { Student } from "../../database/entities/student.entity";
 import { Task } from "../../database/entities/task.entity";
@@ -21,6 +21,7 @@ export class StudentsService {
     @InjectRepository(LearningItem) private readonly learningItems: Repository<LearningItem>,
     @InjectRepository(LearningReview) private readonly learningReviews: Repository<LearningReview>,
     @InjectRepository(Session) private readonly sessions: Repository<Session>,
+    @Optional() private readonly dataSource?: DataSource,
   ) {}
 
   list() {
@@ -178,6 +179,31 @@ export class StudentsService {
     const item = await this.learningItems.findOne({ where: { id: itemId, student: { id: studentId } } });
     if (!item) throw new ApiException(404, "LEARNING_ITEM_NOT_FOUND", "مورد یادگیری پیدا نشد.");
     return this.learningReviews.find({ where: { item: { id: itemId } }, order: { reviewedAt: "DESC" }, take: Math.min(Math.max(limit, 1), 100) });
+  }
+
+  async studentIdForUser(userId: string) {
+    const student = await this.findByUserId(userId);
+    if (!student) throw new ApiException(404, "STUDENT_NOT_FOUND", "پرونده دانش‌آموز پیدا نشد.");
+    return student.id;
+  }
+
+  async reviewLearningItem(studentId: string, itemId: string, rating: number) {
+    const run = async (items: Repository<LearningItem>, reviews: Repository<LearningReview>) => {
+      const item = await items.findOne({ where: { id: itemId, student: { id: studentId } }, relations: { student: true } });
+      if (!item) throw new ApiException(404, "LEARNING_ITEM_NOT_FOUND", "مورد یادگیری پیدا نشد.");
+      const previousMastery = item.mastery;
+      const previousIntervalDays = item.intervalDays;
+      const safeRating = Math.min(5, Math.max(0, Number(rating)));
+      item.mastery = Math.round((previousMastery * 0.6 + safeRating * 0.4) * 10) / 10;
+      item.intervalDays = safeRating < 2 ? 1 : Math.max(1, Math.round(previousIntervalDays * (safeRating >= 4 ? 2 : 1.4)));
+      item.dueDate = this.addDays(new Date().toISOString().slice(0, 10), item.intervalDays);
+      item.reviewCount += 1;
+      item.status = LearningStatus.PENDING;
+      const saved = await items.save(item);
+      const review = await reviews.save(reviews.create({ item: saved, rating: safeRating, previousMastery, newMastery: saved.mastery, previousIntervalDays, nextIntervalDays: saved.intervalDays, nextReviewAt: saved.dueDate }));
+      return { item: this.publicLearningItem(saved, studentId), review };
+    };
+    return this.dataSource ? this.dataSource.transaction((manager) => run(manager.getRepository(LearningItem), manager.getRepository(LearningReview))) : run(this.learningItems, this.learningReviews);
   }
 
   async dashboard(userId?: string) {

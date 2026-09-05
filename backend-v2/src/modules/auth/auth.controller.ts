@@ -16,8 +16,8 @@ export class AuthController {
   ) {}
 
   @Post("login")
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: FastifyReply) {
-    const result = await this.auth.login(dto.username, dto.password);
+  async login(@Body() dto: LoginDto, @Req() req: FastifyRequest, @Res({ passthrough: true }) res: FastifyReply) {
+    const result = await this.auth.login(dto.username, dto.password, req.ip);
     res.setCookie(this.config.get<string>("cookieName", "moshaver_v2_session"), result.token, {
       path: "/",
       httpOnly: true,
@@ -33,6 +33,7 @@ export class AuthController {
     if (!user) throw new ApiException(401, "UNAUTHORIZED", "لطفاً وارد حساب شوید.");
     return ok(await this.auth.me(user));
   }
+
 
   @Post("change-password")
   async changePassword(@CurrentUser() user: AuthenticatedUser | null, @Body() dto: ChangePasswordDto) {

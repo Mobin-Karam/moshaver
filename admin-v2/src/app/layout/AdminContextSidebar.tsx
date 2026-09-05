@@ -19,7 +19,7 @@ export function AdminContextSidebar({
   items: ReadonlyArray<{
     path: string;
     title: string;
-    icon: ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
+    icon: ComponentType<{ size?: string | number; className?: string; strokeWidth?: string | number }>;
   }>;
   unreadNotifications: number;
   selectedStudentId: string;

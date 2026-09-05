@@ -25,11 +25,36 @@ import { StudySessionsModule } from "./modules/study-sessions/study-sessions.mod
 import { TasksModule } from "./modules/tasks/tasks.module";
 import { MistakesModule } from "./modules/mistakes/mistakes.module";
 import { ReportsModule } from "./modules/reports/reports.module";
+import { AuthorizationModule } from "./modules/authorization/authorization.module";
+import { HealthModule } from "./modules/health/health.module";
+import { CapabilitiesGuard } from "./common/guards/capabilities.guard";
+import { OrganizationsModule } from "./modules/organizations/organizations.module";
+import { RelationshipsModule } from "./modules/relationships/relationships.module";
+import { UsersModule } from "./modules/users/users.module";
+import { SubjectsModule } from "./modules/subjects/subjects.module";
+import { AssessmentsModule } from "./modules/assessments/assessments.module";
+import { GuardianModule } from "./modules/guardian/guardian.module";
+import { DashboardModule } from "./modules/dashboard/dashboard.module";
+import { ActivityModule } from "./modules/activity/activity.module";
+import { ImportExportModule } from "./modules/import-export/import-export.module";
+import { SystemModule } from "./modules/system/system.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [appConfig, authConfig, databaseConfig] }),
     TypeOrmModule.forRoot(dataSourceOptions),
+    AuthorizationModule,
+    HealthModule,
+    OrganizationsModule,
+    RelationshipsModule,
+    UsersModule,
+    SubjectsModule,
+    AssessmentsModule,
+    GuardianModule,
+    DashboardModule,
+    ActivityModule,
+    ImportExportModule,
+    SystemModule,
     AuthModule,
     AdminModule,
     StudentsModule,
@@ -50,6 +75,7 @@ import { ReportsModule } from "./modules/reports/reports.module";
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_GUARD, useClass: AuthSessionGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: CapabilitiesGuard },
     { provide: APP_GUARD, useClass: CsrfGuard },
   ],
 })

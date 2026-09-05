@@ -21,7 +21,7 @@ async function loadAllStudents() {
 
   while (true) {
     const page = await api.get<Student[] | StudentsPage>(
-      `/admin/students?limit=${STUDENTS_PAGE_SIZE}&offset=${offset}`,
+      `/students?limit=${STUDENTS_PAGE_SIZE}&offset=${offset}`,
     );
     if (Array.isArray(page)) return page;
 

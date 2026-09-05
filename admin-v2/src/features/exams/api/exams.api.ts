@@ -14,7 +14,7 @@ export function getExams(
   studentId: string,
 ) {
   return api.get<Exam[]>(
-    `/admin/exams?studentId=${encodeURIComponent(studentId)}`,
+    `/exams?studentId=${encodeURIComponent(studentId)}`,
   );
 }
 
@@ -31,7 +31,7 @@ export function createExam(
   body: ExamDraft,
 ) {
   return api.post(
-    "/admin/exams",
+    "/exams",
     {
       ...body,
       studentId,
@@ -44,7 +44,7 @@ export function updateExam(
   body: Partial<ExamDraft>,
 ) {
   return api.patch(
-    `/admin/exams/${examId}`,
+    `/exams/${examId}`,
     body,
   );
 }
@@ -53,7 +53,7 @@ export function deleteExam(
   examId: string,
 ) {
   return api.delete(
-    `/admin/exams/${examId}`,
+    `/exams/${examId}`,
   );
 }
 

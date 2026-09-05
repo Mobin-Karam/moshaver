@@ -1,5 +1,5 @@
 import { api, request } from "../../../shared/api/api";
-import type { User } from "../../../shared/types/domain";
+import type { AccountContext, User } from "../../../shared/types/domain";
 import type {
   BackendHealth,
   LoginResponse,
@@ -11,6 +11,8 @@ export function getCurrentUser() {
     suppressAuthFailure: true,
   });
 }
+
+export function getAccountContext() { return request<AccountContext>("GET", "/me/context", undefined, { suppressAuthFailure: true }); }
 
 export function loginRequest(
   username: string,

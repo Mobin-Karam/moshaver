@@ -9,6 +9,10 @@ export function MorePage() {
   const syncStatus = useStudentStore((state) => state.syncStatus);
   const logout = useStudentStore((state) => state.logout);
   const notifications = useStudentStore((state) => state.notifications);
+  const subjects = useStudentStore((state) => state.subjects);
+  const relationships = useStudentStore((state) => state.relationships);
+  const mistakes = useStudentStore((state) => state.mistakes);
+  const loadProfileDomains = useStudentStore((state) => state.loadProfileDomains);
   const loadNotifications = useStudentStore((state) => state.loadNotifications);
   const markNotificationRead = useStudentStore((state) => state.markNotificationRead);
   const markAllNotificationsRead = useStudentStore((state) => state.markAllNotificationsRead);
@@ -26,7 +30,8 @@ export function MorePage() {
   useEffect(() => {
     void loadNotifications();
     void loadAuthSessions();
-  }, [loadAuthSessions, loadNotifications]);
+    void loadProfileDomains();
+  }, [loadAuthSessions, loadNotifications, loadProfileDomains]);
 
   return (
     <section className="space-y-4">
@@ -34,6 +39,14 @@ export function MorePage() {
       <article className="surface p-4">
         <h2 className="font-semibold">{student?.name || user?.username || 'دانش‌آموز'}</h2>
         <p className="mt-2 text-sm text-ink/65">{[student?.grade, student?.major].filter(Boolean).join(' | ') || 'پرونده دانش‌آموز'}</p>
+      </article>
+      <article className="surface p-4">
+        <h2 className="font-semibold">درس‌ها و ارتباطات پرونده</h2>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <div className="rounded-md bg-paper p-3"><strong className="text-sm">درس‌های فعال</strong><p className="mt-1 text-sm text-ink/65">{subjects.filter((item) => item.enabled).map((item) => item.displayName || item.subject.name).join('، ') || 'درسی ثبت نشده است.'}</p></div>
+          <div className="rounded-md bg-paper p-3"><strong className="text-sm">ارتباط‌های فعال</strong><p className="mt-1 text-sm text-ink/65">{relationships.filter((item) => item.status === 'ACTIVE').map((item) => `${item.type}: ${[item.fromUser?.firstName, item.fromUser?.lastName].filter(Boolean).join(' ') || item.fromUser?.username || 'کاربر'}`).join('، ') || 'ارتباط فعالی ثبت نشده است.'}</p></div>
+        </div>
+        <div className="mt-2 rounded-md bg-paper p-3"><strong className="text-sm">اشتباه‌های نیازمند مرور</strong><p className="mt-1 text-sm text-ink/65">{mistakes.length ? `${mistakes.length.toLocaleString('fa-IR')} مورد در دفترچه اشتباهات` : 'موردی ثبت نشده است.'}</p></div>
       </article>
             <Link to="/learning" className="surface flex items-center justify-between gap-3 p-4">
               <div>
@@ -47,7 +60,7 @@ export function MorePage() {
           <MoonStar className="mt-0.5 shrink-0 text-mint" size={20} />
           <div className="min-w-0 flex-1">
             <h2 className="font-semibold">گزارش شبانه</h2>
-            <p className="mt-1 text-sm text-ink/60">گزارش فعلاً به‌صورت پیش‌نویس روی همین دستگاه ذخیره می‌شود؛ endpoint سرور هنوز ارائه نشده است.</p>
+            <p className="mt-1 text-sm text-ink/60">پیش‌نویس ابتدا روی دستگاه حفظ و سپس با API v2 ثبت می‌شود.</p>
             <NightReportForm draft={nightReportDraft} onSave={saveNightReportDraft} onSubmit={submitNightReport} />
           </div>
         </div>
@@ -57,7 +70,7 @@ export function MorePage() {
           <RotateCcw className="mt-0.5 shrink-0 text-ink/45" size={20} />
           <div className="min-w-0 flex-1">
             <h2 className="font-semibold">درخواست جبران</h2>
-            <p className="mt-1 text-sm text-ink/60">درخواست فعلاً به‌صورت پیش‌نویس روی همین دستگاه ذخیره می‌شود؛ endpoint سرور هنوز ارائه نشده است.</p>
+            <p className="mt-1 text-sm text-ink/60">پیش‌نویس ابتدا روی دستگاه حفظ و سپس با API v2 ارسال می‌شود.</p>
             <RecoveryRequestForm draft={recoveryRequestDraft} onSave={saveRecoveryRequestDraft} onSubmit={submitRecoveryRequest} />
           </div>
         </div>
@@ -67,7 +80,7 @@ export function MorePage() {
           <KeyRound className="mt-0.5 shrink-0 text-ink/45" size={20} />
           <div>
             <h2 className="font-semibold">رمز عبور</h2>
-            <p className="mt-1 text-sm text-ink/60">تغییر رمز عبور از سمت دانش‌آموز در backend-v2 ارائه نشده است.</p>
+            <p className="mt-1 text-sm text-ink/60">تغییر رمز حساب از مسیر امن API v2 انجام می‌شود و نشست‌های دیگر را می‌بندد.</p>
           </div>
         </div>
       </article>

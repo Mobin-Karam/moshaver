@@ -34,7 +34,7 @@ export function AlarmPanel() {
         <div className="rounded-2xl border border-amber-300 bg-amber-50 p-3 dark:border-amber-800/70 dark:bg-amber-950/30">
           <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300"><BellRing className="animate-pulse" size={18} /><strong className="text-xs">{active.label}</strong><span dir="ltr" className="mr-auto font-mono text-sm font-black">{String(active.hour).padStart(2, "0")}:{String(active.minute).padStart(2, "0")}</span></div>
           <div className="mt-3 flex gap-2">
-            <button type="button" onClick={snooze} className="h-9 flex-1 rounded-lg bg-amber-600 px-3 text-xs font-bold text-white hover:bg-amber-700">تعویق {active.snoozeMinutes} دقیقه</button>
+            <button type="button" onClick={() => snooze()} className="h-9 flex-1 rounded-lg bg-amber-600 px-3 text-xs font-bold text-white hover:bg-amber-700">تعویق {active.snoozeMinutes} دقیقه</button>
             <button type="button" onClick={dismiss} className="h-9 flex-1 rounded-lg border border-amber-300 bg-white px-3 text-xs font-bold text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">بستن</button>
           </div>
         </div>

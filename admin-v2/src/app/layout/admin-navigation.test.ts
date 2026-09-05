@@ -1,16 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { adminBreadcrumbs, adminDestination, adminNavigation, flatAdminNavigation, mainAdminNavigation, normalizeAdminPath, resolveAdminNavigation } from "./admin-navigation";
+import { adminBreadcrumbs, adminDestination, adminNavigation, flatAdminNavigation, mainAdminNavigation, navigationForCapabilities, normalizeAdminPath, resolveAdminNavigation } from "./admin-navigation";
 
 describe("admin navigation metadata", () => {
   it("defines a title and description for every admin destination", () => {
     expect(flatAdminNavigation.map((item) => item.path)).toEqual([
       "", "planner", "learning", "exams", "questions", "quizzes", "subjects",
-      "live", "chat", "notifications", "students", "reports", "system", "settings",
+      "live", "chat", "notifications", "students", "users", "organizations", "reports", "system", "settings",
     ]);
     expect(flatAdminNavigation.every((item) => item.title && item.description)).toBe(true);
     expect(adminNavigation.every((group) => group.items.length > 0)).toBe(true);
     expect(mainAdminNavigation.map((item) => item.path)).toEqual(["", "planner", "live", "students", "system"]);
     expect(mainAdminNavigation.map((item) => item.title)).toEqual(["خانه", "آموزش", "ارتباط", "مدیریت", "سامانه"]);
+  });
+
+  it("hides protected destinations from unrelated work contexts", () => {
+    const guardian = navigationForCapabilities(["students.read", "plans.read", "reports.read", "chat.read"] as const).flatMap((group) => group.items.map((item) => item.path));
+    expect(guardian).toContain("students");
+    expect(guardian).not.toContain("users");
+    expect(guardian).not.toContain("system");
+    const platform = navigationForCapabilities(["users.read", "organization.read", "database.read"] as const).flatMap((group) => group.items.map((item) => item.path));
+    expect(platform).toEqual(expect.arrayContaining(["users", "organizations", "system"]));
   });
 
   it("resolves browser URLs, nested learning locations, and aliases", () => {

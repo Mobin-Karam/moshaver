@@ -29,7 +29,10 @@ interface BackendUser {
   username: string;
   role: string;
   csrfToken?: string;
+  roles?: string[];
 }
+
+interface BackendAccountContext { user: BackendUser; roles: string[]; capabilities: string[]; }
 
 interface BackendStudent {
   id: string;
@@ -111,6 +114,9 @@ export interface StudentNotification {
   message: string;
   readAt?: string | null;
 }
+export interface StudentSubject { subject: { id: string; code: string; name: string }; enabled: boolean; displayName?: string; weeklyTargetMinutes?: number; }
+export interface StudentRelationship { id: string; type: string; status: string; fromUser?: { id: string; username?: string; firstName?: string; lastName?: string }; }
+export interface StudentMistake { id: string; subject?: string; topic?: string; note?: string; status?: string; }
 
 export interface AuthSession {
   id: string;
@@ -144,6 +150,9 @@ interface StudentState {
   plan: StudentPlan;
   exams: ExamSummary[];
   notifications: StudentNotification[];
+  subjects: StudentSubject[];
+  relationships: StudentRelationship[];
+  mistakes: StudentMistake[];
     progress: StudentProgress | null;
     reviews: StudentReviewItem[];
     learningLoadStatus: LoadStatus;
@@ -160,6 +169,7 @@ interface StudentState {
   loadPlan(date: string): Promise<void>;
   loadExams(): Promise<void>;
   loadNotifications(): Promise<void>;
+  loadProfileDomains(): Promise<void>;
     loadLearning(): Promise<void>;
   markNotificationRead(id: string): Promise<void>;
   markAllNotificationsRead(): Promise<void>;
@@ -229,6 +239,9 @@ export const useStudentStore = create<StudentState>((set, get) => ({
   student: null,
   exams: [],
   notifications: [],
+  subjects: [],
+  relationships: [],
+  mistakes: [],
     progress: null,
     reviews: [],
     learningLoadStatus: 'idle',
@@ -243,13 +256,15 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     try {
       const user = await apiClient.request<BackendUser>('GET', '/auth/me');
       apiClient.setCsrfToken(user.csrfToken);
-      if (user.role !== 'STUDENT') {
+      const context = await apiClient.request<BackendAccountContext>('GET', '/me/context');
+      if (!context.roles.includes('STUDENT')) {
         await apiClient.request('POST', '/auth/logout').catch(() => undefined);
         apiClient.setCsrfToken(null);
         set({ authStatus: 'anonymous', user: null, student: null, plan: emptyPlan(), error: 'این نسخه فقط برای دانش‌آموز است.' });
         return;
       }
-      set({ authStatus: 'authenticated', user });
+      set({ authStatus: 'authenticated', user: { ...user, roles: context.roles } });
+      await get().loadProfileDomains();
       await get().loadDashboard();
       await get().loadExams();
       await get().loadNotifications();
@@ -269,13 +284,15 @@ export const useStudentStore = create<StudentState>((set, get) => ({
         { username, password },
       );
       apiClient.setCsrfToken(session.csrfToken);
-      if (session.user.role !== 'STUDENT') {
+      const context = await apiClient.request<BackendAccountContext>('GET', '/me/context');
+      if (!context.roles.includes('STUDENT')) {
         await apiClient.request('POST', '/auth/logout').catch(() => undefined);
         apiClient.setCsrfToken(null);
         set({ authStatus: 'anonymous', loadStatus: 'error', user: null, error: 'این حساب دانش‌آموز نیست.' });
         return;
       }
-      set({ authStatus: 'authenticated', user: session.user, loadStatus: 'idle' });
+      set({ authStatus: 'authenticated', user: { ...session.user, roles: context.roles }, loadStatus: 'idle' });
+      await get().loadProfileDomains();
       await get().loadDashboard();
       await get().loadExams();
       await get().loadNotifications();
@@ -289,7 +306,7 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     set({ loadStatus: 'loading', error: null });
     await apiClient.request('POST', '/auth/logout').catch(() => undefined);
     apiClient.setCsrfToken(null);
-    set({ authStatus: 'anonymous', loadStatus: 'idle', user: null, student: null, plan: emptyPlan(), exams: [], notifications: [], authSessions: [], error: null });
+    set({ authStatus: 'anonymous', loadStatus: 'idle', user: null, student: null, plan: emptyPlan(), exams: [], notifications: [], subjects: [], relationships: [], mistakes: [], authSessions: [], error: null });
   },
   async loadDashboard() {
     set({ loadStatus: 'loading', error: null });
@@ -346,6 +363,19 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       void notifyNewNotifications(notifications);
     } catch (error) {
       set({ notifications: [], error: readableError(error) });
+    }
+  },
+  async loadProfileDomains() {
+    try {
+      const student = await apiClient.request<BackendStudent>('GET', '/students/me');
+      const [subjects, relationships, mistakes] = await Promise.all([
+        apiClient.request<StudentSubject[]>('GET', `/students/${encodeURIComponent(student.id)}/subjects`),
+        apiClient.request<StudentRelationship[]>('GET', '/relationships'),
+        apiClient.request<StudentMistake[]>('GET', '/student/mistakes'),
+      ]);
+      set({ student, subjects, relationships, mistakes });
+    } catch (error) {
+      set({ error: readableError(error) });
     }
   },
   async loadLearning() {

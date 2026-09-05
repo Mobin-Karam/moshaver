@@ -30,6 +30,13 @@ const API_VERSION_KEY = "moshaver_admin_api_version";
 export type ApiVersion = "v1" | "v2";
 type AuthFailureListener = (error: ApiError) => void;
 const authFailureListeners = new Set<AuthFailureListener>();
+let activeOrganizationId = "";
+let activeWorkRole = "";
+
+export function setApiWorkContext(role?: string, organizationId?: string) {
+  activeWorkRole = role?.trim() || "";
+  activeOrganizationId = organizationId?.trim() || "";
+}
 
 export const backendTargets = {
   local: "http://localhost:4000",
@@ -39,7 +46,7 @@ export const backendTargets = {
 export type BackendTarget = keyof typeof backendTargets;
 
 function configuredApiVersion(): ApiVersion {
-  return import.meta.env.VITE_API_VERSION === "v2" ? "v2" : "v1";
+  return import.meta.env.VITE_API_VERSION === "v1" ? "v1" : "v2";
 }
 
 export function getSelectedApiVersion(): ApiVersion {
@@ -138,6 +145,8 @@ export async function request<T>(
     options.timeoutMs ?? 20_000,
   );
   const headers = new Headers({ Accept: "application/json" });
+  if (activeWorkRole) headers.set("X-Work-Role", activeWorkRole);
+  if (activeOrganizationId) headers.set("X-Organization-Id", activeOrganizationId);
   if (body !== undefined) headers.set("Content-Type", "application/json");
   const token = csrf();
   if (isMutating(method) && token) headers.set("X-CSRF-Token", token);

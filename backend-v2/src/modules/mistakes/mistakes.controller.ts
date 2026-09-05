@@ -5,6 +5,8 @@ import { ok } from "../../common/utils/envelope";
 import { UserRole } from "../../database/entities/user.entity";
 import { AuthenticatedUser } from "../auth/auth.service";
 import { MistakesService } from "./mistakes.service";
+import { RequireCapabilities } from "../../common/decorators/capabilities.decorator";
+import { UserContext } from "../authorization/authorization.service";
 
 @Controller(["mistakes", "student/mistakes"])
 @Roles(UserRole.STUDENT)
@@ -24,5 +26,16 @@ export class MistakesController {
   @Patch(":id")
   update(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() body: { reason?: string; resolved?: boolean }) {
     return this.mistakes.update(user.id, id, body).then(ok);
+  }
+}
+
+@Controller("students/:studentId/mistakes")
+export class StaffMistakesController {
+  constructor(private readonly mistakes: MistakesService) {}
+  private context(user: AuthenticatedUser): UserContext { return { ...user, roles: user.roles ?? [user.role], capabilities: user.capabilities ?? [], membershipIds: user.membershipIds ?? [], organizationIds: user.organizationIds ?? [] }; }
+  @Get()
+  @RequireCapabilities("mistakes.read")
+  list(@CurrentUser() user: AuthenticatedUser, @Param("studentId") studentId: string, @Query("limit") limit?: string) {
+    return this.mistakes.listForStaff(this.context(user), studentId, limit).then(ok);
   }
 }

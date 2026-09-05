@@ -1,21 +1,30 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Optional } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ApiException } from "../../common/exceptions/api.exception";
 import { Mistake } from "../../database/entities/mistake.entity";
 import { Student } from "../../database/entities/student.entity";
+import { AuthorizationService, UserContext } from "../authorization/authorization.service";
 
 @Injectable()
 export class MistakesService {
   constructor(
     @InjectRepository(Mistake) private readonly mistakes: Repository<Mistake>,
     @InjectRepository(Student) private readonly students: Repository<Student>,
+    @Optional() private readonly authorization?: AuthorizationService,
   ) {}
 
   async list(userId: string, limit?: string) {
     const student = await this.studentForUser(userId);
     const size = Math.min(200, Math.max(1, Number(limit) || 80));
     return this.mistakes.find({ where: { studentId: student.id }, order: { id: "DESC" }, take: size });
+  }
+
+  async listForStaff(context: UserContext, studentId: string, limit?: string) {
+    if (!this.authorization || !await this.authorization.canAccessStudent(context, studentId, "mistakes.read"))
+      throw new ApiException(403, "STUDENT_FORBIDDEN", "به این دانش‌آموز دسترسی ندارید.");
+    const size = Math.min(200, Math.max(1, Number(limit) || 80));
+    return this.mistakes.find({ where: { studentId }, order: { id: "DESC" }, take: size });
   }
 
   async detail(userId: string, id: string) {

@@ -1,0 +1,2 @@
+import { Column,Entity,JoinColumn,OneToOne,PrimaryGeneratedColumn,UpdateDateColumn } from "typeorm";import { Student } from "./student.entity";import { Task } from "./task.entity";
+@Entity("student_presence")export class StudentPresence{@PrimaryGeneratedColumn("uuid")id!:string;@OneToOne(()=>Student,{onDelete:"CASCADE"})@JoinColumn()student!:Student;@Column({length:24,default:"idle"})state!:string;@OneToOne(()=>Task,{nullable:true,onDelete:"SET NULL"})@JoinColumn()currentTask?:Task|null;@Column({type:"datetime"})lastSeenAt!:Date;@UpdateDateColumn()updatedAt!:Date;}

@@ -52,10 +52,10 @@ describe("api client", () => {
 
   it("uses the selected dev backend when one is set", () => {
     setSelectedBackend("remote");
-    expect(getBackendTargetUrl()).toBe("https://api.mahakaram.ir/api/v1");
+    expect(getBackendTargetUrl()).toBe("https://api.mahakaram.ir/api/v2");
 
     setSelectedBackend("local");
-    expect(getBackendTargetUrl()).toBe("http://localhost:4000/api/v1");
+    expect(getBackendTargetUrl()).toBe("http://localhost:4000/api/v2");
   });
 
   it("switches the same backend between API v1 and API v2", () => {

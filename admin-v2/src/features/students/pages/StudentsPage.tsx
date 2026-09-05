@@ -6,6 +6,7 @@ import type { Student } from "../../../shared/types/domain";
 import { useStudents } from "../../../shared/hooks/useStudents";
 import { normalizePersianText } from "../../../shared/lib/utils";
 import { useModal } from "../../../shared/ui/modal";
+import { useAuth } from "../../auth";
 import { Button, Card } from "../../../shared/ui/ui";
 import {
   archiveStudent,
@@ -134,6 +135,7 @@ function FeedbackBanner({
 }
 
 export function StudentsPage() {
+  const auth = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const studentStore = useStudents();
   const [search, setSearch] = useState(() => searchParams.get("q") || "");
@@ -448,7 +450,7 @@ export function StudentsPage() {
   }
 
   const create = useMutation({
-    mutationFn: createStudent,
+    mutationFn: (draft: StudentForm) => createStudent(draft, auth.context?.activeOrganization?.id),
     onSuccess: (student) => {
       replaceCachedStudent(student);
       commitSelection(student);

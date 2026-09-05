@@ -11,29 +11,32 @@ import {
   Settings,
   Sparkles,
   UsersRound,
+  Building2,
 } from "lucide-react";
 
 export const adminNavigation = [
   { section: "خانه", items: [{ path: "", title: "داشبورد", description: "نمای کلی امروز، سلامت سیستم و موارد نیازمند توجه", icon: LayoutDashboard }] },
   { section: "آموزش", items: [
-    { path: "planner", title: "برنامه‌ریز", description: "مدیریت برنامه روزانه، هفتگی و وظایف دانش‌آموز", icon: CalendarDays },
-    { path: "learning", title: "سیستم یادگیری", description: "مدیریت مرورهای فاصله‌دار، تسلط و الگوهای خطای دانش‌آموز", icon: Sparkles, aliases: ["education", "students/:studentId/learning"] },
-    { path: "exams", title: "آزمون‌ها", description: "زمان‌بندی، انتشار، تلاش مجدد، بودجه و سؤال‌ها", icon: BookOpenCheck },
-    { path: "questions", title: "بانک سؤال", description: "ساخت، بازبینی و مرتب‌سازی سؤال‌های هر آزمون", icon: GraduationCap },
-    { path: "quizzes", title: "آزمونک‌ها", description: "مدیریت آزمونک‌ها، سؤال‌ها و وضعیت انتشار", icon: BookOpenCheck },
-    { path: "subjects", title: "درس‌ها", description: "مدیریت درس‌ها و شناسه‌های آموزشی", icon: BookOpen },
+    { path: "planner", title: "برنامه‌ریز", description: "مدیریت برنامه روزانه، هفتگی و وظایف دانش‌آموز", icon: CalendarDays, capability:"plans.read" },
+    { path: "learning", title: "سیستم یادگیری", description: "مدیریت مرورهای فاصله‌دار، تسلط و الگوهای خطای دانش‌آموز", icon: Sparkles, capability:"students.read", aliases: ["education", "students/:studentId/learning"] },
+    { path: "exams", title: "آزمون‌ها", description: "زمان‌بندی، انتشار، تلاش مجدد، بودجه و سؤال‌ها", icon: BookOpenCheck, capability:"exams.read" },
+    { path: "questions", title: "بانک سؤال", description: "ساخت، بازبینی و مرتب‌سازی سؤال‌های هر آزمون", icon: GraduationCap, capability:"questions.read" },
+    { path: "quizzes", title: "آزمونک‌ها", description: "مدیریت آزمونک‌ها، سؤال‌ها و وضعیت انتشار", icon: BookOpenCheck, capability:"quizzes.read" },
+    { path: "subjects", title: "درس‌ها", description: "مدیریت درس‌ها و شناسه‌های آموزشی", icon: BookOpen, capability:"subjects.read" },
   ] },
   { section: "ارتباط", items: [
-    { path: "live", title: "فعالیت زنده", description: "پایش وضعیت و فعالیت جاری همه دانش‌آموزان", icon: Activity },
-    { path: "chat", title: "گفتگو", description: "پیام‌های مستقیم و گروهی، حضور و پیگیری گفتگوها", icon: MessageSquare },
+    { path: "live", title: "فعالیت زنده", description: "پایش وضعیت و فعالیت جاری همه دانش‌آموزان", icon: Activity, capability:"student.live.read" },
+    { path: "chat", title: "گفتگو", description: "پیام‌های مستقیم و گروهی، حضور و پیگیری گفتگوها", icon: MessageSquare, capability:"chat.read" },
     { path: "notifications", title: "مرکز اعلان‌ها", description: "ارسال و پیگیری اعلان‌های دانش‌آموزان", icon: Bell },
   ] },
   { section: "مدیریت", items: [
-    { path: "students", title: "دانش‌آموزان", description: "مدیریت حساب، وضعیت و دسترسی دانش‌آموزان", icon: UsersRound },
-    { path: "reports", title: "گزارش‌ها", description: "گزارش عملکرد، مطالعه و روند پیشرفت دانش‌آموز", icon: LayoutDashboard },
+    { path: "students", title: "دانش‌آموزان", description: "مدیریت حساب، وضعیت و دسترسی دانش‌آموزان", icon: UsersRound, capability:"students.read" },
+    { path: "users", title: "کاربران و کارکنان", description: "مدیریت حساب‌ها، نقش‌ها و عضویت‌های سازمان", icon: UsersRound, capability:"users.read" },
+    { path: "organizations", title: "سازمان‌ها", description: "مدیریت سازمان‌ها و زمینه فعال", icon: Building2, capability:"organization.read" },
+    { path: "reports", title: "گزارش‌ها", description: "گزارش عملکرد، مطالعه و روند پیشرفت دانش‌آموز", icon: LayoutDashboard, capability:"reports.read" },
   ] },
   { section: "سامانه", items: [
-    { path: "system", title: "سیستم و امنیت", description: "پشتیبان‌گیری، سلامت سرویس و رویدادهای امنیتی", icon: Database },
+    { path: "system", title: "سیستم و امنیت", description: "پشتیبان‌گیری، سلامت سرویس و رویدادهای امنیتی", icon: Database, capability:"database.read" },
     { path: "settings", title: "تنظیمات", description: "موقعیت، تقویم، نشست‌ها و اتصال API", icon: Settings },
   ] },
 ] as const;
@@ -44,6 +47,10 @@ export const mainAdminNavigation = adminNavigation.map((group) => ({
   title: group.section,
   section: group.section,
 }));
+
+export function navigationForCapabilities(capabilities: readonly string[]) {
+  return adminNavigation.map((group) => ({ ...group, items: group.items.filter((item) => !("capability" in item) || capabilities.includes(item.capability)) })).filter((group) => group.items.length);
+}
 
 export function normalizeAdminPath(pathname: string) {
   return pathname.replace(/^https?:\/\/[^/]+/i, "").split(/[?#]/)[0].replace(/^\/admin\/?/, "").replace(/^\/+|\/+$/g, "");

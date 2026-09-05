@@ -5,9 +5,19 @@ import { ChatMessage } from "./chat-message.entity";
 import { AuditLog } from "./audit-log.entity";
 
 export enum UserRole {
+  /** @deprecated migration compatibility only */
   ADMIN = "ADMIN",
   STUDENT = "STUDENT",
+  GUARDIAN = "GUARDIAN",
+  ADVISOR = "ADVISOR",
+  TEACHER = "TEACHER",
+  MENTOR = "MENTOR",
+  CONTENT_MANAGER = "CONTENT_MANAGER",
+  ORGANIZATION_ADMIN = "ORGANIZATION_ADMIN",
+  PLATFORM_ADMIN = "PLATFORM_ADMIN",
 }
+
+export enum UserStatus { ACTIVE = "ACTIVE", DISABLED = "DISABLED", ARCHIVED = "ARCHIVED" }
 
 @Entity("users")
 export class User {
@@ -21,8 +31,15 @@ export class User {
   @Column()
   passwordHash!: string;
 
-  @Column({ type: "varchar", length: 24 })
+  /** @deprecated Read only as a bridge for pre-RBAC databases. */
+  @Column({ type: "varchar", length: 24, nullable: true })
   role!: UserRole;
+
+  @Column({ length: 100, default: "" }) firstName!: string;
+  @Column({ length: 100, default: "" }) lastName!: string;
+  @Column({ type: "varchar", length: 20, default: UserStatus.ACTIVE }) status!: UserStatus;
+  @Column({ length: 12, default: "fa-IR" }) locale!: string;
+  @Column({ length: 64, default: "Asia/Tehran" }) timezone!: string;
 
   @CreateDateColumn()
   createdAt!: Date;

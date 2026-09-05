@@ -73,7 +73,7 @@ describe("useStudents education context", () => {
     expect(result.current.studentId).toBe("student-101");
     expect(api.get).toHaveBeenNthCalledWith(
       2,
-      "/admin/students?limit=100&offset=100",
+      "/students?limit=100&offset=100",
     );
   });
 });

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { AlertTriangle, History } from "lucide-react";
 import { getSelectedApiVersion } from "../../../shared/api/api";
+import { useAuth } from "../../auth/hooks/useAuth";
 import { useModal } from "../../../shared/ui/modal";
 import { notify } from "../../../shared/ui/notifications";
 import { Button, Card } from "../../../shared/ui/ui";
@@ -13,8 +14,8 @@ import { SystemHistory } from "../components/SystemHistory";
 import { SystemMetric } from "../components/SystemMetric";
 import { SystemSessionsPanel } from "../components/SystemSessionsPanel";
 export function SystemPage() {
- const qc = useQueryClient(); const modal = useModal();
- const systemAvailable=getSelectedApiVersion()==="v1";
+ const qc = useQueryClient(); const modal = useModal(); const auth = useAuth();
+ const systemAvailable=auth.can("database.read")||auth.can("release.read")||auth.can("audit.read");
  const [file,setFile] = useState<File|null>(null); const [passwords,setPasswords] = useState({currentPassword:"",newPassword:"",confirmPassword:""}); const [release,setRelease] = useState({app:"admin",version:"",notes:""}); const[historyTab,setHistoryTab]=useState<"audit"|"imports"|"releases">("audit");
  const database = useQuery({queryKey:["system-database"],queryFn:getDatabaseMeta,enabled:systemAvailable}); const sessions=useQuery({queryKey:["sessions"],queryFn:getSessions}); const imports=useQuery({queryKey:["import-history"],queryFn:getImportHistory,enabled:systemAvailable&&historyTab==="imports"}); const releases=useQuery({queryKey:["app-releases"],queryFn:getReleases,enabled:systemAvailable&&historyTab==="releases"}); const audit=useQuery({queryKey:["audit"],queryFn:getAudit,enabled:systemAvailable&&historyTab==="audit"});
  const restore=useMutation({mutationFn:()=>{if(!file) throw new Error("فایل انتخاب نشده است."); return restoreDatabase(file);},onSuccess:()=>{setFile(null);notify("نسخه پشتیبان اعتبارسنجی و برای بازیابی ثبت شد.");void qc.invalidateQueries({queryKey:["system-database"]})},onError:(error)=>notify(error instanceof Error?error.message:"بازیابی پایگاه داده انجام نشد.","error")});
