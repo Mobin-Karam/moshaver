@@ -89,7 +89,8 @@ export class ExamsService {
 
   async saveProgress(attemptId: string, answers: AttemptAnswer[], userId: string) {
     const student = await this.studentForUser(userId);
-    const attempt = await this.attempts.findOneOrFail({ where: { id: attemptId, student: { id: student.id } }, relations: { exam: { questions: true } } });
+    const attempt = await this.attempts.findOne({ where: { id: attemptId, student: { id: student.id } }, relations: { exam: { questions: true } } });
+    if (!attempt) throw new ApiException(404, "ATTEMPT_NOT_FOUND", "تلاش آزمون پیدا نشد.");
     if (attempt.finishedAt || this.isExpired(attempt)) throw new ApiException(409, "ATTEMPT_CLOSED", "زمان آزمون به پایان رسیده است.");
     const questionIds = new Set(attempt.exam.questions.map((question) => question.id));
     const incoming = answers.filter((answer) => questionIds.has(answer.questionId));
@@ -188,7 +189,8 @@ export class ExamsService {
 
   async submit(attemptId: string, answers: AttemptAnswer[] = [], userId: string) {
     const student = await this.studentForUser(userId);
-    const attempt = await this.attempts.findOneOrFail({ where: { id: attemptId, student: { id: student.id } }, relations: { exam: { questions: true } } });
+    const attempt = await this.attempts.findOne({ where: { id: attemptId, student: { id: student.id } }, relations: { exam: { questions: true } } });
+    if (!attempt) throw new ApiException(404, "ATTEMPT_NOT_FOUND", "تلاش آزمون پیدا نشد.");
     if (attempt.finishedAt) return this.result(attempt, attempt.answers || []);
     const finalAnswers = this.isExpired(attempt)
       ? attempt.answers || []
@@ -273,7 +275,9 @@ export class ExamsService {
   }
 
   private async studentForUser(userId: string) {
-    return this.students.findOneOrFail({ where: { user: { id: userId } } });
+    const student = await this.students.findOne({ where: { user: { id: userId } } });
+    if (!student) throw new ApiException(404, "STUDENT_NOT_FOUND", "پرونده دانش‌آموز پیدا نشد.");
+    return student;
   }
 
   private isExpired(attempt: ExamAttempt) {
@@ -316,9 +320,26 @@ export class ExamsService {
     if (changedEarlierAnswer) throw new ApiException(409, "BACK_NAVIGATION_FORBIDDEN", "بازگشت و تغییر پاسخ سؤال‌های قبلی در این آزمون مجاز نیست.");
   }
 
-  private publicAttempt(attempt: ExamAttempt, fallbackExamId?: string) {
-    const status = attempt.finishedAt ? this.resultStatus(attempt.exam) : "active";
-    return { id: attempt.id, examId: attempt.exam?.id ?? fallbackExamId, title: attempt.exam?.title ?? "", status, score: status === "released" ? attempt.score : null, startedAt: attempt.startedAt, finishedAt: attempt.finishedAt || null, answeredCount: (attempt.answers || []).filter((answer) => answer.selectedOption).length };
+  private publicAttempt(attempt: ExamAttempt, fallbackExam?: Exam | string) {
+    const exam = attempt.exam || (typeof fallbackExam === "object" ? fallbackExam : undefined);
+    const status = attempt.finishedAt ? this.resultStatus(exam) : "active";
+    return { id: attempt.id, examId: exam?.id ?? (typeof fallbackExam === "string" ? fallbackExam : undefined), title: exam?.title ?? "", status, score: status === "released" ? attempt.score : null, subjectSummary: status === "released" && exam ? this.subjectSummary(exam, attempt.answers || []) : undefined, startedAt: attempt.startedAt, finishedAt: attempt.finishedAt || null, answeredCount: (attempt.answers || []).filter((answer) => answer.selectedOption).length };
+  }
+
+  private subjectSummary(exam: Exam, answers: AttemptAnswer[]) {
+    const selected = new Map(answers.map((answer) => [answer.questionId, answer.selectedOption]));
+    const rows = new Map<string, { correct: number; wrong: number; unanswered: number; total: number }>();
+    for (const question of exam.questions || []) {
+      const subject = question.subject || exam.subject || "عمومی";
+      const row = rows.get(subject) || { correct: 0, wrong: 0, unanswered: 0, total: 0 };
+      const answer = selected.get(question.id);
+      row.total += 1;
+      if (!answer) row.unanswered += 1;
+      else if (answer === question.correctAnswer) row.correct += 1;
+      else row.wrong += 1;
+      rows.set(subject, row);
+    }
+    return [...rows.entries()].map(([subject, row]) => ({ subject, ...row, percentage: row.total ? Math.round(row.correct / row.total * 100) : 0 }));
   }
 
   private publicExam(exam: Exam, includeAnswers = true, studentId?: string) {
@@ -349,7 +370,7 @@ export class ExamsService {
     return {
       id: exam.id, title: exam.title, subject: exam.subject, subjects: [...new Set([exam.subject, ...(exam.questions || []).map((question) => question.subject)].filter(Boolean))], mode: exam.mode || "standard", instructions: exam.instructions || [], allowBackNavigation: exam.allowBackNavigation ?? true, scoring: this.normalizeScoring(exam.scoring), resultPolicy: exam.resultPolicy || "immediate", resultReleaseAt: exam.resultReleaseAt?.toISOString() || null, resultsReleased: exam.resultsReleased, sections: exam.sections || [], duration: exam.duration, durationMinutes: exam.duration, attemptLimit: exam.attemptLimit, maxAttempts: exam.attemptLimit, startTime: exam.startTime, endTime: exam.endTime, openAt: exam.startTime?.toISOString(), closeAt: exam.endTime?.toISOString(), isoDate: exam.startTime?.toISOString().slice(0, 10) || new Date().toISOString().slice(0, 10), published: exam.published,
       questions: includeAnswers ? exam.questions?.map((question) => this.publicQuestion(question)) || [] : undefined,
-      delivery: { questionCount: exam.questions?.length || 0, allowedAttempts: exam.attemptLimit, attemptsUsed: studentId ? attemptsUsed : 0, activeAttemptId: activeAttempt?.id || null, canStart, reason, state, lastAttempt: studentAttempts[0] ? this.publicAttempt(studentAttempts[0], exam.id) : null },
+      delivery: { questionCount: exam.questions?.length || 0, allowedAttempts: exam.attemptLimit, attemptsUsed: studentId ? attemptsUsed : 0, activeAttemptId: activeAttempt?.id || null, canStart, reason, state, lastAttempt: studentAttempts[0] ? this.publicAttempt(studentAttempts[0], exam) : null },
     };
   }
 
@@ -507,10 +528,11 @@ export class ExamsService {
 
   async resultForStudent(attemptId: string, userId: string) {
     const student = await this.studentForUser(userId);
-    const attempt = await this.attempts.findOneOrFail({
+    const attempt = await this.attempts.findOne({
       where: { id: attemptId, student: { id: student.id } },
       relations: { exam: { questions: true } },
     });
+    if (!attempt) throw new ApiException(404, "ATTEMPT_NOT_FOUND", "تلاش آزمون پیدا نشد.");
     if (!attempt.finishedAt)
       throw new ApiException(409, "ATTEMPT_ACTIVE", "این تلاش هنوز به پایان نرسیده است.");
     return this.result(attempt, attempt.answers || []);

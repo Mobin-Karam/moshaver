@@ -30,6 +30,17 @@ async function requestAs(actor, method, path, body, role = "PLATFORM_ADMIN") {
   if (!response.ok || !payload?.ok) throw new Error(`${method} ${path}: ${response.status} ${JSON.stringify(payload)}`);
   return payload.data;
 }
+async function raw(actor, method, path, body, role) {
+  const headers = { cookie: actor.cookie, accept: "application/json" };
+  if (role) headers["x-work-role"] = role;
+  if (body !== undefined) { headers["content-type"] = "application/json"; headers["x-csrf-token"] = actor.csrf; }
+  const response = await fetch(`${base}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  return { status: response.status, payload: await response.json().catch(() => null) };
+}
+function assert(condition, name, evidence) {
+  if (!condition) throw new Error(`${name}: ${JSON.stringify(evidence)}`);
+  console.log(`PASS ${name}`);
+}
 
 const context = await request("GET", "/me/context");
 if (!context.roles.includes("STUDENT")) throw new Error("student context missing");
@@ -52,6 +63,64 @@ const run = await request("POST", `/student/exams/${exam.id}/start`, {});
 await request("PATCH", `/student/exams/attempts/${run.runId}`, { answers: [{ questionId: run.quiz.questions[0].id, selectedOption: "b" }] });
 const result = await request("POST", `/student/exams/${exam.id}/submit`, { answers: [{ questionId: run.quiz.questions[0].id, selectedOption: "b" }] });
 if (result.score !== 100) throw new Error(`server scoring mismatch: ${JSON.stringify(result)}`);
+const duplicate = await raw(session, "POST", `/student/exams/${exam.id}/submit`, { answers: [] });
+assert(duplicate.status === 409, "duplicate final submission is rejected", duplicate);
+const studentB = await loginAs("e2e.student.b");
+const enumerated = await raw(studentB, "GET", `/student/exams/attempts/${run.runId}`);
+assert([404, 409].includes(enumerated.status), "cross-account attempt enumeration is denied", enumerated);
+const guardian = await loginAs("e2e.guardian.a");
+const guardianSubmit = await raw(guardian, "POST", `/student/exams/${exam.id}/submit`, { answers: [] }, "GUARDIAN");
+assert(guardianSubmit.status === 403, "guardian cannot submit a student exam", guardianSubmit);
+const guardianExams = await requestAs(guardian, "GET", `/guardian/students/${student.id}/exams`, undefined, "GUARDIAN");
+assert(guardianExams.some((item) => item.id === exam.id && item.delivery?.state === "released" && item.delivery?.lastAttempt?.score === 100 && item.delivery?.lastAttempt?.subjectSummary?.length === 1), "guardian sees only the released result and subject summary", guardianExams);
+
+const mock = await requestAs(platform, "POST", "/exams", {
+  title: `Konkur journey ${Date.now()}`,
+  subject: "تجربی",
+  mode: "konkur",
+  durationMinutes: 30,
+  attemptLimit: 1,
+  allowBackNavigation: false,
+  resultPolicy: "manual",
+  resultsReleased: false,
+  scoring: { correct: 3, wrong: -1, unanswered: 0, negativeMarking: true },
+  sections: [{ id: "biology", name: "زیست‌شناسی", questionIds: [] }, { id: "chemistry", name: "شیمی", questionIds: [] }],
+  questions: [
+    { question: "پرسش زیست", options: ["۱", "۲", "۳", "۴"], correctOption: "a", subject: "زیست‌شناسی", topic: "سلول", sectionId: "biology" },
+    { question: "پرسش شیمی", options: ["۱", "۲", "۳", "۴"], correctOption: "b", subject: "شیمی", topic: "ساختار اتم", sectionId: "chemistry" },
+  ],
+});
+await requestAs(platform, "POST", `/exams/${mock.id}/assignments`, { studentIds: [student.id] });
+await requestAs(platform, "PATCH", `/exams/${mock.id}`, { published: true });
+const firstRun = await request("POST", `/student/exams/${mock.id}/start`, {});
+const resumedRun = await request("POST", `/student/exams/${mock.id}/start`, {});
+assert(firstRun.runId === resumedRun.runId, "active exam resumes without creating a second attempt", resumedRun);
+await request("POST", `/student/exams/${mock.id}/submit`, { answers: [
+  { questionId: firstRun.quiz.questions[0].id, selectedOption: "b", visited: true, revision: 1, clientUpdatedAt: new Date().toISOString() },
+  { questionId: firstRun.quiz.questions[1].id, selectedOption: "b", visited: true, revision: 1, clientUpdatedAt: new Date().toISOString() },
+] });
+const withheld = await request("GET", `/student/exams/attempts/${firstRun.runId}`);
+assert(withheld.status === "withheld" && withheld.score === null && withheld.review === undefined, "manual policy withholds score and answer key", withheld);
+const guardianWithheld = await requestAs(guardian, "GET", `/guardian/students/${student.id}/exams`, undefined, "GUARDIAN");
+const guardianMock = guardianWithheld.find((item) => item.id === mock.id);
+assert(guardianMock?.delivery?.state === "withheld" && guardianMock.delivery.lastAttempt?.score === null, "guardian cannot see an unreleased score or answer key", guardianMock);
+await requestAs(platform, "PATCH", `/exams/${mock.id}`, { resultsReleased: true });
+const released = await request("GET", `/student/exams/attempts/${firstRun.runId}`);
+assert(released.status === "released" && released.subjects?.length === 2 && released.review?.length === 2, "released Konkur result includes subject analysis and review", released);
+await request("PATCH", `/student/mistakes/question/${firstRun.quiz.questions[0].id}`, { reason: "بی‌دقتی" });
+
+const expiredExam = await requestAs(platform, "POST", "/exams", { title: `Expired ${Date.now()}`, subject: "E2E", durationMinutes: 5, endTime: new Date(Date.now() - 1_000).toISOString(), published: true, questions: [{ question: "expired", options: ["۱", "۲", "۳", "۴"], correctOption: "a" }] });
+await requestAs(platform, "POST", `/exams/${expiredExam.id}/assignments`, { studentIds: [student.id] });
+const expiredStart = await raw(session, "POST", `/student/exams/${expiredExam.id}/start`, {});
+assert(expiredStart.status === 409, "expired exam cannot be started", expiredStart);
+
+const timeoutExam = await requestAs(platform, "POST", "/exams", { title: `Timeout ${Date.now()}`, subject: "E2E", durationMinutes: 5, endTime: new Date(Date.now() + 2_500).toISOString(), published: true, questions: [{ question: "timeout", options: ["۱", "۲", "۳", "۴"], correctOption: "a" }] });
+await requestAs(platform, "POST", `/exams/${timeoutExam.id}/assignments`, { studentIds: [student.id] });
+const timeoutRun = await request("POST", `/student/exams/${timeoutExam.id}/start`, {});
+await request("PATCH", `/student/exams/attempts/${timeoutRun.runId}`, { answers: [{ questionId: timeoutRun.quiz.questions[0].id, selectedOption: "a", visited: true, revision: 1, clientUpdatedAt: new Date().toISOString() }] });
+await new Promise((resolve) => setTimeout(resolve, 3_000));
+const timedOut = await request("GET", `/student/exams/${timeoutExam.id}/progress`);
+assert(timedOut.id === timeoutRun.runId && timedOut.finishedAt, "server finalizes an expired active attempt", timedOut);
 await request("GET", "/student/exams/attempts");
 await request("GET", "/quizzes/history");
 await request("GET", "/student/mistakes");

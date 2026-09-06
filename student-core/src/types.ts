@@ -68,6 +68,7 @@ export interface ExamDelivery {
     title?: string;
     status: string;
     score?: number | null;
+    subjectSummary?: Array<{ subject: string; percentage: number; correct: number; wrong: number; unanswered: number; total: number }>;
     startedAt: string;
     finishedAt?: string | null;
     answeredCount?: number;
