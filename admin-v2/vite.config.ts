@@ -19,13 +19,16 @@ function devBackendProxy() {
     configureServer(server: import("vite").ViteDevServer) {
       server.middlewares.use("/api", (req, res, next) => {
         const target = backendTargets[selectedBackend(req.headers.cookie)];
-        const originalUrl =
-          (req as typeof req & { originalUrl?: string }).originalUrl || req.url || "";
-        if (!/^\/api\/v[12](?:\/|$)/.test(originalUrl)) {
+        const mountedUrl = req.url || "";
+        const originalUrl = (req as typeof req & { originalUrl?: string }).originalUrl;
+        const requestPath = originalUrl?.startsWith("/api/")
+          ? originalUrl
+          : `/api${mountedUrl.startsWith("/") ? mountedUrl : `/${mountedUrl}`}`;
+        if (!/^\/api\/v[12](?:\/|$)/.test(requestPath)) {
           next();
           return;
         }
-        const path = originalUrl;
+        const path = requestPath;
         const upstreamUrl = new URL(path, target);
         const client = upstreamUrl.protocol === "https:" ? https : http;
         const proxyReq = client.request(

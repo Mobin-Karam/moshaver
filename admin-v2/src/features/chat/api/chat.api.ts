@@ -14,6 +14,29 @@ import type {
   GroupRole,
 } from "../model/group.types";
 
+type WireChatMessage = Partial<ChatMessage> & {
+  id: string;
+  content?: unknown;
+  type?: string;
+};
+
+export function normalizeChatMessage(message: WireChatMessage): ChatMessage {
+  const rawType = String(message.type || "text").toLowerCase();
+  return {
+    ...message,
+    text: String(message.text ?? message.content ?? ""),
+    senderRole: message.senderRole || "student",
+    type: rawType,
+  } as ChatMessage;
+}
+
+function normalizeMessagePage(result: MessagePage | WireChatMessage[]): MessagePage {
+  if (Array.isArray(result)) {
+    return { messages: result.map(normalizeChatMessage), hasMore: false };
+  }
+  return { ...result, messages: result.messages.map(normalizeChatMessage) };
+}
+
 export async function fetchConversationPage(
   _cursor: ConversationCursor,
   search: string,
@@ -39,18 +62,28 @@ export async function fetchConversationPage(
 }
 
 export async function fetchMessages(conversationId: string, beforeMessageId = "") {
-  const result = await api.get<MessagePage | ChatMessage[]>(
+  const result = await api.get<MessagePage | WireChatMessage[]>(
     `/chat/conversations/${conversationId}/messages?limit=50${beforeMessageId ? `&beforeMessageId=${encodeURIComponent(beforeMessageId)}` : ""}`,
   );
-  return Array.isArray(result) ? { messages: result, hasMore: false } : result;
+  return normalizeMessagePage(result);
 }
 
 export const chatApi = {
   markRead: (conversationId: string) => api.post(`/chat/conversations/${conversationId}/read`, {}),
-  send: (conversationId: string, text: string, replyToId?: string) =>
-    api.post<ChatMessage>(`/chat/conversations/${conversationId}/messages`, { text, replyToId }),
-  edit: (conversationId: string, messageId: string, text: string) =>
-    api.patch<ChatMessage>(`/chat/conversations/${conversationId}/messages/${messageId}`, { text }),
+  send: async (conversationId: string, text: string, replyToId?: string) =>
+    normalizeChatMessage(
+      await api.post<WireChatMessage>(`/chat/conversations/${conversationId}/messages`, {
+        text,
+        replyToId,
+      }),
+    ),
+  edit: async (conversationId: string, messageId: string, text: string) =>
+    normalizeChatMessage(
+      await api.patch<WireChatMessage>(
+        `/chat/conversations/${conversationId}/messages/${messageId}`,
+        { text },
+      ),
+    ),
   remove: (conversationId: string, messageId: string) =>
     api.delete(`/chat/conversations/${conversationId}/messages/${messageId}`),
   react: (conversationId: string, messageId: string, emoji: string) =>

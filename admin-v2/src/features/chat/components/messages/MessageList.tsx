@@ -222,7 +222,8 @@ export function MessageBubble({
 export function MessageBody({ message }: { message: ChatMessage }) {
   if (message.deletedAt) return <p className="italic text-slate-400">پیام حذف شده است.</p>;
   const payload = message.payload || {};
-  if (message.type && !["text", "system"].includes(message.type)) {
+  const type = String(message.type || "text").toLowerCase();
+  if (!["text", "system"].includes(type)) {
     const labels: Record<string, string> = {
       study_state: "📚 وضعیت مطالعه",
       exam_result: "📊 نتیجه آزمون",
@@ -231,14 +232,21 @@ export function MessageBody({ message }: { message: ChatMessage }) {
       learning_item: "🔁 مورد یادگیری",
     };
     return (
-      <StructuredMessage
-        type={message.type}
-        payload={payload}
-        label={labels[message.type] || "اشتراک دانش‌آموز"}
-      />
+      <div className="grid gap-2">
+        <StructuredMessage
+          type={type}
+          payload={payload}
+          label={labels[type] || "اشتراک دانش‌آموز"}
+        />
+        {message.text ? (
+          <p className="whitespace-pre-wrap break-words leading-7">{message.text}</p>
+        ) : null}
+      </div>
     );
   }
-  return <p className="whitespace-pre-wrap break-words leading-7">{message.text}</p>;
+  return (
+    <p className="whitespace-pre-wrap break-words leading-7">{message.text || "پیام بدون متن"}</p>
+  );
 }
 
 export function StructuredMessage({

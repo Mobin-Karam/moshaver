@@ -12,7 +12,7 @@ import { ConversationSidebar } from "../components/conversation/ConversationSide
 import { MessageList, MessageSkeleton } from "../components/messages/MessageList";
 import { ChatHeader } from "../components/messages/ChatHeader";
 import { MessageSearchBar } from "../components/messages/MessageSearchBar";
-import { chatApi } from "../api/chat.api";
+import { chatApi, normalizeChatMessage } from "../api/chat.api";
 import { useChatSelectionParams } from "../hooks/useChatSelection";
 import { useConversation } from "../hooks/useConversation";
 import { useConversationFavorites } from "../hooks/useConversationFavorites";
@@ -146,13 +146,7 @@ export function ChatPage() {
       body: string;
       replyToId?: string;
       editingId?: string;
-    }) =>
-      editingId
-        ? api.patch<ChatMessage>(`/chat/conversations/${id}/messages/${editingId}`, { text: body })
-        : api.post<ChatMessage>(`/chat/conversations/${id}/messages`, {
-            text: body,
-            replyToId,
-          }),
+    }) => (editingId ? chatApi.edit(id, editingId, body) : chatApi.send(id, body, replyToId)),
     onMutate: async ({ id, body, replyToId, editingId }) => {
       const key = ["chat-messages", id] as const;
       await qc.cancelQueries({ queryKey: key });
@@ -227,9 +221,9 @@ export function ChatPage() {
         const nearBottom = isNearBottom(scrollRef.current);
         shouldStickRef.current = nearBottom;
         if (type === "chat.message.created" && data.id)
-          appendRealtimeMessage(qc, active.id, data as unknown as ChatMessage);
+          appendRealtimeMessage(qc, active.id, normalizeChatMessage(data as { id: string }));
         else if (type === "chat.message.edited" && data.id)
-          replaceRealtimeMessage(qc, active.id, data as unknown as ChatMessage);
+          replaceRealtimeMessage(qc, active.id, normalizeChatMessage(data as { id: string }));
         else if (type === "chat.message.deleted" && data.id)
           patchDeletedMessage(qc, active.id, String(data.id), String(data.deletedAt || ""));
         else void qc.invalidateQueries({ queryKey: ["chat-messages", active.id] });

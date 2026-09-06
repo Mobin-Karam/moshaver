@@ -47,12 +47,12 @@ describe("api client", () => {
     await expect(api.get("/bad")).rejects.toMatchObject(new ApiError(400, "bad", "VALIDATION"));
   });
 
-  it("uses the selected dev backend when one is set", () => {
+  it("keeps selected development backends behind the same-origin proxy", () => {
     setSelectedBackend("remote");
-    expect(getBackendTargetUrl()).toBe("https://api.mahakaram.ir/api/v2");
+    expect(getBackendTargetUrl()).toBe("/api/v2");
 
     setSelectedBackend("local");
-    expect(getBackendTargetUrl()).toBe("http://localhost:4000/api/v2");
+    expect(getBackendTargetUrl()).toBe("/api/v2");
   });
 
   it("pins the admin application to API v2", () => {
@@ -68,9 +68,6 @@ describe("api client", () => {
 
     await api.get("/auth/me");
 
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      "http://localhost:4000/api/v2/auth/me",
-      expect.any(Object),
-    );
+    expect(globalThis.fetch).toHaveBeenCalledWith("/api/v2/auth/me", expect.any(Object));
   });
 });

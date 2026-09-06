@@ -86,7 +86,10 @@ export function getApiBaseUrl() {
 
 export function getBackendTargetUrl() {
   const selected = getSelectedBackend();
-  if (selected) return `${backendTargets[selected]}${versionedPath()}`;
+  // In development the selected target is carried by a same-origin cookie and
+  // resolved by the Vite proxy. Returning the absolute backend URL here would
+  // bypass that proxy, reintroduce CORS, and make session cookies cross-site.
+  if (selected && import.meta.env.DEV) return versionedPath();
   return getApiBaseUrl();
 }
 
