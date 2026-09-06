@@ -55,6 +55,20 @@ function devBackendProxy() {
 
 export default defineConfig({
   plugins: [devBackendProxy(), react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return "react";
+          if (id.includes("node_modules/react-router")) return "router";
+          if (id.includes("node_modules/@tanstack/")) return "query";
+          if (/node_modules\/(lucide-react|react-multi-date-picker|@persian-tools)\//.test(id)) return "ui";
+          return "vendor";
+        },
+      },
+    },
+  },
   server: {
     port: 8081,
     strictPort: true,
