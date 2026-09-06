@@ -43,6 +43,7 @@ Current behavior belongs in `architecture/`, `components/`, or `operations/`. Un
 - [Backend v2 HTTP API](./components/backend-v2-http-api.md)
 - [Admin v2 application](./components/admin-v2-application.md)
 - [Admin v2 capability matrix](./ADMIN_V2_CAPABILITY_MATRIX.md) — current backend, frontend, permission, test, and status mapping.
+- [Student and Family exam experience audit](./migrations/STUDENT_FAMILY_EXAM_AUDIT.md) — current learner/family baseline, integrity gaps, and phased delivery matrix.
 
 The v1.4 static Admin and Student applications are described with their backend in the [v1.4 runtime architecture](./architecture/backend-v1-4-runtime.md).
 

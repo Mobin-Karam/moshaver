@@ -13,6 +13,7 @@ import { DataSource, In } from "typeorm";
 import { Organization } from "../../database/entities/organization.entity";
 
 type QuestionInput = CreateQuestionDto & { question?: string; correctOption?: string };
+type AttemptAnswer = ExamAttempt["answers"][number];
 
 @Injectable()
 export class ExamsService {
@@ -75,14 +76,15 @@ export class ExamsService {
     return attempt ? this.attemptProgress(attempt) : null;
   }
 
-  async saveProgress(attemptId: string, answers: Array<{ questionId: string; selectedOption?: string | null }>, userId: string) {
+  async saveProgress(attemptId: string, answers: AttemptAnswer[], userId: string) {
     const student = await this.studentForUser(userId);
     const attempt = await this.attempts.findOneOrFail({ where: { id: attemptId, student: { id: student.id } }, relations: { exam: { questions: true } } });
     if (attempt.finishedAt || this.isExpired(attempt)) throw new ApiException(409, "ATTEMPT_CLOSED", "زمان آزمون به پایان رسیده است.");
     const questionIds = new Set(attempt.exam.questions.map((question) => question.id));
-    const validAnswers = answers.filter((answer) => questionIds.has(answer.questionId));
-    await this.attempts.update(attemptId, { answers: validAnswers });
-    return this.attemptProgress({ ...attempt, answers: validAnswers } as ExamAttempt);
+    const incoming = answers.filter((answer) => questionIds.has(answer.questionId));
+    const merged = this.mergeAnswers(attempt.answers || [], incoming);
+    await this.attempts.update(attemptId, { answers: merged });
+    return this.attemptProgress({ ...attempt, answers: merged } as ExamAttempt);
   }
 
   async create(dto: CreateExamDto & { durationMinutes?: number; maxAttempts?: number; openAt?: string; closeAt?: string; isoDate?: string }, actorUserId?: string) {
@@ -136,17 +138,26 @@ export class ExamsService {
     await this.requireAssignment(examId, student.id);
     const active = await this.attempts.findOne({ where: { exam: { id: examId }, student: { id: student.id }, finishedAt: IsNull() }, relations: { exam: { questions: true } }, order: { startedAt: "DESC" } });
     if (active) return this.attemptProgress(active);
+    const now = new Date();
+    if (exam.startTime && now < exam.startTime)
+      throw new ApiException(409, "EXAM_NOT_OPEN", "زمان شروع آزمون هنوز نرسیده است.");
+    if (exam.endTime && now >= exam.endTime)
+      throw new ApiException(409, "EXAM_CLOSED", "مهلت شرکت در آزمون به پایان رسیده است.");
+    if (!exam.questions.length)
+      throw new ApiException(409, "EXAM_HAS_NO_QUESTIONS", "این آزمون هنوز سؤال قابل پاسخ ندارد.");
     const used = await this.attempts.count({ where: { exam: { id: examId }, student: { id: student.id } } });
     if (used >= exam.attemptLimit) throw new ApiException(409, "ATTEMPT_LIMIT_REACHED", "تعداد دفعات مجاز آزمون تکمیل شده است.");
     const attempt = await this.attempts.save(this.attempts.create({ exam, student, startedAt: new Date() }));
     return this.attemptProgress({ ...attempt, exam, answers: [] } as ExamAttempt);
   }
 
-  async submit(attemptId: string, answers: Array<{ questionId: string; selectedOption?: string | null }> = [], userId: string) {
+  async submit(attemptId: string, answers: AttemptAnswer[] = [], userId: string) {
     const student = await this.studentForUser(userId);
     const attempt = await this.attempts.findOneOrFail({ where: { id: attemptId, student: { id: student.id } }, relations: { exam: { questions: true } } });
     if (attempt.finishedAt) return this.result(attempt, attempt.answers || []);
-    const finalAnswers = this.isExpired(attempt) ? (attempt.answers || []) : answers;
+    const finalAnswers = this.isExpired(attempt)
+      ? attempt.answers || []
+      : this.mergeAnswers(attempt.answers || [], answers);
     const answerMap = new Map(finalAnswers.map((answer) => [answer.questionId, answer.selectedOption || ""]));
     const questions = attempt.exam.questions || [];
     const correct = questions.filter((question) => answerMap.get(question.id) === question.correctAnswer).length;
@@ -156,7 +167,7 @@ export class ExamsService {
     return this.result({ ...attempt, answers: finalAnswers, score, finishedAt } as ExamAttempt, finalAnswers);
   }
 
-  async submitExam(examId: string, answers: Array<{ questionId: string; selectedOption?: string | null }> = [], userId: string) {
+  async submitExam(examId: string, answers: AttemptAnswer[] = [], userId: string) {
     const student = await this.studentForUser(userId);
     await this.requireAssignment(examId, student.id);
     const attempt = await this.attempts.findOne({ where: { exam: { id: examId }, student: { id: student.id }, finishedAt: IsNull() }, order: { startedAt: "DESC" } });
@@ -164,7 +175,7 @@ export class ExamsService {
     return this.submit(attempt.id, answers, userId);
   }
 
-  private result(attempt: ExamAttempt, answers: Array<{ questionId: string; selectedOption?: string | null }>) {
+  private result(attempt: ExamAttempt, answers: AttemptAnswer[]) {
     const answerMap = new Map(answers.map((answer) => [answer.questionId, answer.selectedOption || ""]));
     const questions = attempt.exam.questions || [];
     const correct = questions.filter((question) => answerMap.get(question.id) === question.correctAnswer).length;
@@ -188,8 +199,8 @@ export class ExamsService {
     const durationEnd = new Date(attempt.startedAt.getTime() + attempt.exam.duration * 60_000);
     const deadline = attempt.exam.endTime && attempt.exam.endTime < durationEnd ? attempt.exam.endTime : durationEnd;
     return {
-      runId: attempt.id, startedAt: attempt.startedAt, examCloseAt: attempt.exam.endTime || null, finishedAt: attempt.finishedAt || null,
-      savedAnswers: attempt.answers || [], remainingSeconds: Math.max(0, Math.ceil((deadline.getTime() - Date.now()) / 1000)),
+      runId: attempt.id, startedAt: attempt.startedAt, examCloseAt: attempt.exam.endTime || null, deadlineAt: deadline.toISOString(), serverTime: new Date().toISOString(), finishedAt: attempt.finishedAt || null,
+      savedAnswers: (attempt.answers || []).map((answer, index) => ({ ...answer, clientUpdatedAt: answer.clientUpdatedAt || attempt.startedAt.toISOString(), revision: answer.revision ?? index + 1 })), remainingSeconds: Math.max(0, Math.ceil((deadline.getTime() - Date.now()) / 1000)),
       quiz: { id: attempt.exam.id, examId: attempt.exam.id, title: attempt.exam.title, durationMinutes: attempt.exam.duration,
         questions: (attempt.exam.questions || []).map((question) => ({ id: question.id, question: question.text, options: this.fourOptions(question.options) })) },
     };
@@ -201,10 +212,31 @@ export class ExamsService {
 
   private publicExam(exam: Exam, includeAnswers = true, studentId?: string) {
     const studentAttempts = studentId ? (exam.attempts || []).filter((attempt) => attempt.student?.id === studentId) : [];
+    const activeAttempt = studentAttempts.find((attempt) => !attempt.finishedAt);
+    const now = new Date();
+    const beforeWindow = Boolean(exam.startTime && now < exam.startTime);
+    const afterWindow = Boolean(exam.endTime && now >= exam.endTime);
+    const attemptsUsed = studentAttempts.length;
+    const canStart = Boolean(
+      exam.published &&
+        exam.questions?.length &&
+        !beforeWindow &&
+        !afterWindow &&
+        (activeAttempt || attemptsUsed < exam.attemptLimit),
+    );
+    const reason = beforeWindow
+      ? "زمان شروع آزمون هنوز نرسیده است."
+      : afterWindow
+        ? "مهلت شرکت در آزمون به پایان رسیده است."
+        : !exam.questions?.length
+          ? "آزمون هنوز سؤال ندارد."
+          : attemptsUsed >= exam.attemptLimit && !activeAttempt
+            ? "تعداد تلاش‌های مجاز تکمیل شده است."
+            : undefined;
     return {
       id: exam.id, title: exam.title, subject: exam.subject, duration: exam.duration, durationMinutes: exam.duration, attemptLimit: exam.attemptLimit, maxAttempts: exam.attemptLimit, startTime: exam.startTime, endTime: exam.endTime, openAt: exam.startTime?.toISOString(), closeAt: exam.endTime?.toISOString(), isoDate: exam.startTime?.toISOString().slice(0, 10) || new Date().toISOString().slice(0, 10), published: exam.published,
       questions: includeAnswers ? exam.questions?.map((question) => this.publicQuestion(question)) || [] : undefined,
-      delivery: { questionCount: exam.questions?.length || 0, allowedAttempts: exam.attemptLimit, attemptsUsed: studentId ? studentAttempts.length : 0, lastAttempt: studentAttempts[0] ? this.publicAttempt(studentAttempts[0], exam.id) : null },
+      delivery: { questionCount: exam.questions?.length || 0, allowedAttempts: exam.attemptLimit, attemptsUsed: studentId ? attemptsUsed : 0, activeAttemptId: activeAttempt?.id || null, canStart, reason, state: activeAttempt ? "active" : beforeWindow ? "upcoming" : afterWindow ? "closed" : canStart ? "available" : "closed", lastAttempt: studentAttempts[0] ? this.publicAttempt(studentAttempts[0], exam.id) : null },
     };
   }
 
@@ -318,6 +350,32 @@ export class ExamsService {
     const normalized = [...(options || [])].slice(0, 4);
     while (normalized.length < 4) normalized.push("");
     return normalized as [string, string, string, string];
+  }
+
+  private mergeAnswers(current: AttemptAnswer[], incoming: AttemptAnswer[]) {
+    const merged = new Map(current.map((answer) => [answer.questionId, answer]));
+    for (const raw of incoming) {
+      const previous = merged.get(raw.questionId);
+      const answer: AttemptAnswer = {
+        questionId: raw.questionId,
+        selectedOption: raw.selectedOption ?? null,
+        marked: Boolean(raw.marked),
+        visited: Boolean(raw.visited),
+        clientUpdatedAt: raw.clientUpdatedAt || new Date().toISOString(),
+        revision: raw.revision ?? (previous?.revision ?? 0) + 1,
+      };
+      const previousRevision = previous?.revision ?? 0;
+      const previousTime = Date.parse(previous?.clientUpdatedAt || "");
+      const incomingTime = Date.parse(answer.clientUpdatedAt || "");
+      if (
+        !previous ||
+        (answer.revision ?? 0) > previousRevision ||
+        ((answer.revision ?? 0) === previousRevision &&
+          (!Number.isFinite(previousTime) || incomingTime > previousTime))
+      )
+        merged.set(answer.questionId, answer);
+    }
+    return [...merged.values()];
   }
 }
 

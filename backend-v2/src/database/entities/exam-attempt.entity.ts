@@ -19,7 +19,14 @@ export class ExamAttempt {
   score!: number;
 
   @Column({ type: "simple-json", default: "[]" })
-  answers!: Array<{ questionId: string; selectedOption?: string | null }>;
+  answers!: Array<{
+    questionId: string;
+    selectedOption?: string | null;
+    marked?: boolean;
+    visited?: boolean;
+    clientUpdatedAt?: string;
+    revision?: number;
+  }>;
 
   @Column()
   startedAt!: Date;

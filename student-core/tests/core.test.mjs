@@ -14,6 +14,11 @@ import {
   resolveConflict,
   taskStatus,
   unansweredCount,
+  questionState,
+  attemptSummary,
+  reconcileAttemptAnswers,
+  examAvailability,
+  remainingServerSeconds,
 } from '../dist/index.js';
 
 test('planner keeps v1 task timing semantics', () => {
@@ -87,6 +92,55 @@ test('quiz attempt answer shaping preserves blanks', () => {
     { questionId: 'q2', selectedOption: null, errorReason: '' },
   ]);
   assert.equal(unansweredCount(['q1', 'q2'], { q1: 'b' }), 1);
+});
+
+test('exam question states and review summary never depend on color', () => {
+  const answers = {
+    q1: { selectedOption: 'a', visited: true },
+    q2: { selectedOption: null, visited: true },
+    q3: { selectedOption: 'b', marked: true },
+  };
+  assert.equal(questionState(answers.q1), 'answered');
+  assert.equal(questionState(answers.q2), 'seen');
+  assert.equal(questionState(answers.q3), 'marked');
+  assert.equal(questionState(undefined, true), 'current');
+  assert.deepEqual(attemptSummary(['q1', 'q2', 'q3', 'q4'], answers), {
+    total: 4,
+    answered: 2,
+    unanswered: 2,
+    marked: 1,
+    seen: 1,
+  });
+});
+
+test('answer reconciliation keeps the newest explicit revision without discarding local work', () => {
+  const server = [
+    { questionId: 'q1', selectedOption: 'a', clientUpdatedAt: '2026-09-06T08:00:00.000Z', revision: 2 },
+    { questionId: 'q2', selectedOption: 'b', clientUpdatedAt: '2026-09-06T08:01:00.000Z', revision: 1 },
+  ];
+  const local = [
+    { questionId: 'q1', selectedOption: 'c', clientUpdatedAt: '2026-09-06T08:02:00.000Z', revision: 3 },
+    { questionId: 'q2', selectedOption: 'd', clientUpdatedAt: '2026-09-06T08:00:00.000Z', revision: 1 },
+  ];
+  assert.deepEqual(reconcileAttemptAnswers(local, server), [local[0], server[1]]);
+});
+
+test('availability and countdown use server-derived windows', () => {
+  assert.deepEqual(examAvailability({ openAt: '2026-09-06T09:00:00Z' }, new Date('2026-09-06T08:00:00Z')), {
+    state: 'upcoming',
+    canStart: false,
+  });
+  assert.equal(
+    remainingServerSeconds(
+      {
+        deadlineAt: '2026-09-06T09:00:00.000Z',
+        serverTime: '2026-09-06T08:30:00.000Z',
+        receivedAt: 1_000,
+      },
+      61_000,
+    ),
+    1740,
+  );
 });
 
 test('sync conflict policy maps student mutations deliberately', () => {

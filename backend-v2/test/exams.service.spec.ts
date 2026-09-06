@@ -28,8 +28,22 @@ describe("ExamsService student attempt safety", () => {
 
     const progress = await service.saveProgress("attempt-1", [{ questionId: "question-1", selectedOption: "A" }, { questionId: "unknown", selectedOption: "A" }], "user-1");
 
-    expect(attempts.update).toHaveBeenCalledWith("attempt-1", { answers: [{ questionId: "question-1", selectedOption: "A" }] });
-    expect(progress.savedAnswers).toEqual([{ questionId: "question-1", selectedOption: "A" }]);
+    expect(attempts.update).toHaveBeenCalledWith("attempt-1", {
+      answers: [
+        expect.objectContaining({
+          questionId: "question-1",
+          selectedOption: "A",
+          revision: 1,
+        }),
+      ],
+    });
+    expect(progress.savedAnswers).toEqual([
+      expect.objectContaining({
+        questionId: "question-1",
+        selectedOption: "A",
+        revision: 1,
+      }),
+    ]);
   });
 
   it("rejects an attempt that is not owned by the authenticated student", async () => {
@@ -46,5 +60,76 @@ describe("ExamsService student attempt safety", () => {
     const service = new ExamsService(repository([exam]) as any, repository() as any, attempts as any, repository([{ id: "student-1" }]) as any);
 
     await expect(service.start("exam-1", "user-1")).rejects.toBeInstanceOf(ApiException);
+  });
+
+  it("rejects starting an assigned exam before its legal window", async () => {
+    const exam = {
+      id: "exam-1",
+      published: true,
+      attemptLimit: 1,
+      duration: 60,
+      startTime: new Date(Date.now() + 60_000),
+      questions: [{ id: "question-1" }],
+    } as any;
+    const attempts = { findOne: jest.fn(async () => null), count: jest.fn(async () => 0) };
+    const service = new ExamsService(
+      repository([exam]) as any,
+      repository() as any,
+      attempts as any,
+      repository([{ id: "student-1" }]) as any,
+    );
+
+    try {
+      await service.start("exam-1", "user-1");
+      throw new Error("expected EXAM_NOT_OPEN");
+    } catch (error) {
+      expect(error).toBeInstanceOf(ApiException);
+      expect((error as ApiException).getResponse()).toMatchObject({
+        error: { code: "EXAM_NOT_OPEN" },
+      });
+    }
+  });
+
+  it("does not let an older autosave overwrite a newer server answer", async () => {
+    const newer = {
+      questionId: "question-1",
+      selectedOption: "b",
+      clientUpdatedAt: "2026-09-06T09:00:00.000Z",
+      revision: 3,
+    };
+    const attempt = {
+      id: "attempt-1",
+      student: { id: "student-1" },
+      startedAt: new Date(),
+      answers: [newer],
+      finishedAt: null,
+      exam: {
+        id: "exam-1",
+        duration: 60,
+        questions: [{ id: "question-1", text: "Q", options: ["A"], correctAnswer: "a" }],
+      },
+    } as any;
+    const attempts = repository([attempt]);
+    const service = new ExamsService(
+      repository() as any,
+      repository() as any,
+      attempts as any,
+      repository([{ id: "student-1" }]) as any,
+    );
+
+    await service.saveProgress(
+      "attempt-1",
+      [
+        {
+          questionId: "question-1",
+          selectedOption: "a",
+          clientUpdatedAt: "2026-09-06T08:00:00.000Z",
+          revision: 2,
+        },
+      ],
+      "user-1",
+    );
+
+    expect(attempts.update).toHaveBeenCalledWith("attempt-1", { answers: [newer] });
   });
 });
