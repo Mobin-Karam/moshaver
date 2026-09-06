@@ -35,10 +35,7 @@ function Meter({
         <strong className="text-ink">{fa(safe)}/۱۰</strong>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
-        <div
-          className={`h-full rounded-full ${bar}`}
-          style={{ width: `${safe * 10}%` }}
-        />
+        <div className={`h-full rounded-full ${bar}`} style={{ width: `${safe * 10}%` }} />
       </div>
     </div>
   );
@@ -91,9 +88,7 @@ export function ReportCard({
         <div className="flex items-center gap-2 rounded-lg bg-emerald-50/70 p-2.5">
           <CheckCircle2 size={16} className="text-emerald-600" />
           <span className="text-xs text-emerald-700">صحیح</span>
-          <strong className="mr-auto text-sm text-emerald-800">
-            {fa(correct)}
-          </strong>
+          <strong className="mr-auto text-sm text-emerald-800">{fa(correct)}</strong>
         </div>
         <div className="flex items-center gap-2 rounded-lg bg-rose-50/70 p-2.5">
           <XCircle size={16} className="text-rose-500" />
@@ -114,9 +109,7 @@ export function ReportCard({
               <CircleGauge size={16} />
               دقت پاسخ‌ها
             </span>
-            <strong className="text-lg">
-              {accuracy === null ? "-" : `${fa(accuracy)}٪`}
-            </strong>
+            <strong className="text-lg">{accuracy === null ? "-" : `${fa(accuracy)}٪`}</strong>
           </div>
           {row.problem ? (
             <p className="flex gap-2 rounded-xl bg-rose-50 p-3 text-sm leading-6 text-rose-800">

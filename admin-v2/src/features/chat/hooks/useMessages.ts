@@ -10,8 +10,7 @@ export function useMessages(conversationId?: string) {
     enabled: !!conversationId,
     initialPageParam: "",
     queryFn: ({ pageParam }) => fetchMessages(conversationId!, pageParam),
-    getNextPageParam: (lastPage) =>
-      lastPage.hasMore ? lastPage.nextBeforeMessageId : undefined,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextBeforeMessageId : undefined),
     refetchInterval: 20_000,
   });
   const items = useMemo(() => mergeMessagePages(query.data), [query.data]);

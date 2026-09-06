@@ -11,7 +11,7 @@ import {
   updateExam,
 } from "../api/exams.api";
 import type { ExamDraft } from "../model/exam-model";
-import type { RetryRequest, SyllabusDraft } from "../model/exam.types";
+import type { SyllabusDraft } from "../model/exam.types";
 
 export function useExamMutations(studentId: string) {
   const queryClient = useQueryClient();
@@ -32,10 +32,7 @@ export function useExamMutations(studentId: string) {
     },
 
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "ذخیره آزمون ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "ذخیره آزمون ناموفق بود.", "error"),
   });
 
   const remove = useMutation({
@@ -47,10 +44,7 @@ export function useExamMutations(studentId: string) {
     },
 
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "حذف آزمون ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "حذف آزمون ناموفق بود.", "error"),
   });
 
   const review = useMutation({
@@ -65,11 +59,7 @@ export function useExamMutations(studentId: string) {
     }) => reviewRetryRequest(id, status, advisorNote),
 
     onSuccess: (_, variables) => {
-      notify(
-        variables.status === "approved"
-          ? "تلاش مجدد فعال شد."
-          : "درخواست رد شد.",
-      );
+      notify(variables.status === "approved" ? "تلاش مجدد فعال شد." : "درخواست رد شد.");
 
       void queryClient.invalidateQueries({
         queryKey: ["exam-retry"],
@@ -77,10 +67,7 @@ export function useExamMutations(studentId: string) {
     },
 
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "ثبت تصمیم ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "ثبت تصمیم ناموفق بود.", "error"),
   });
 
   const addSyllabus = useMutation({
@@ -94,10 +81,7 @@ export function useExamMutations(studentId: string) {
     },
 
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "افزودن بودجه ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "افزودن بودجه ناموفق بود.", "error"),
   });
 
   const deleteSyllabus = useMutation({
@@ -110,10 +94,7 @@ export function useExamMutations(studentId: string) {
     },
 
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "حذف بودجه ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "حذف بودجه ناموفق بود.", "error"),
   });
 
   const togglePublish = useMutation({
@@ -148,16 +129,11 @@ export function useExamMutations(studentId: string) {
         queryClient.setQueryData(["exams", studentId], context.previous);
       }
 
-      notify(
-        error instanceof Error ? error.message : "تغییر انتشار ناموفق بود.",
-        "error",
-      );
+      notify(error instanceof Error ? error.message : "تغییر انتشار ناموفق بود.", "error");
     },
 
     onSuccess: (_, variables) =>
-      notify(
-        variables.published ? "آزمون منتشر شد." : "آزمون به پیش‌نویس برگشت.",
-      ),
+      notify(variables.published ? "آزمون منتشر شد." : "آزمون به پیش‌نویس برگشت."),
 
     onSettled: () => {
       void refreshExams();

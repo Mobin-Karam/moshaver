@@ -1,5 +1,9 @@
 import { useEffect, useRef } from "react";
-import { getClockStoreSnapshot, processClockRuntime, subscribeClockStore } from "../lib/clock-store";
+import {
+  getClockStoreSnapshot,
+  processClockRuntime,
+  subscribeClockStore,
+} from "../lib/clock-store";
 import { playClockTone, showClockNotification } from "../lib/notifications";
 
 export function useClockRuntime() {
@@ -19,7 +23,10 @@ export function useClockRuntime() {
       const activeStartedAt = store.activeAlarm?.startedAt ?? null;
       if (activeStartedAt && activeStartedAt !== previousActiveAlarm.current) {
         const alarm = store.alarms.find((item) => item.id === store.activeAlarm?.alarmId);
-        showClockNotification(alarm?.label || "هشدار", `${String(alarm?.hour ?? 0).padStart(2, "0")}:${String(alarm?.minute ?? 0).padStart(2, "0")}`);
+        showClockNotification(
+          alarm?.label || "هشدار",
+          `${String(alarm?.hour ?? 0).padStart(2, "0")}:${String(alarm?.minute ?? 0).padStart(2, "0")}`,
+        );
         if (store.preferences.soundEnabled) playClockTone("alarm");
       }
       previousActiveAlarm.current = activeStartedAt;

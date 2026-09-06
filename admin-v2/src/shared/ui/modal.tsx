@@ -276,10 +276,7 @@ px-5 py-4
           <div className="flex-1">
             <h2
               id={titleId.current}
-              className={cn(
-                "text-lg font-black",
-                modal.tone === "danger" && "text-rosewood",
-              )}
+              className={cn("text-lg font-black", modal.tone === "danger" && "text-rosewood")}
             >
               {modal.title}
             </h2>

@@ -14,7 +14,14 @@ function reportStudentName(report: DashboardRecentReport) {
 }
 
 function reportDate(report: DashboardRecentReport) {
-  return report.updatedAt || report.updated_at || report.createdAt || report.created_at || report.planDate || report.plan_date;
+  return (
+    report.updatedAt ||
+    report.updated_at ||
+    report.createdAt ||
+    report.created_at ||
+    report.planDate ||
+    report.plan_date
+  );
 }
 
 export function RecentReportsCard({ reports }: { reports: DashboardRecentReport[] }) {
@@ -29,7 +36,10 @@ export function RecentReportsCard({ reports }: { reports: DashboardRecentReport[
             داده واقعی API؛ بدون فعالیت یا عدد نمونه در داشبورد.
           </p>
         </div>
-        <Link to="/admin/reports" className="inline-flex items-center gap-1 text-xs font-bold text-brand hover:underline">
+        <Link
+          to="/admin/reports"
+          className="inline-flex items-center gap-1 text-xs font-bold text-brand hover:underline"
+        >
           همه گزارش‌ها
           <ArrowUpLeft size={14} />
         </Link>
@@ -40,8 +50,11 @@ export function RecentReportsCard({ reports }: { reports: DashboardRecentReport[
           {reports.slice(0, 8).map((report) => {
             const studentId = reportStudentId(report);
             const date = reportDate(report);
-            const totalAnswered = Number(report.correct || 0) + Number(report.wrong || 0) + Number(report.blank || 0);
-            const accuracy = totalAnswered ? Math.round((Number(report.correct || 0) / totalAnswered) * 100) : null;
+            const totalAnswered =
+              Number(report.correct || 0) + Number(report.wrong || 0) + Number(report.blank || 0);
+            const accuracy = totalAnswered
+              ? Math.round((Number(report.correct || 0) / totalAnswered) * 100)
+              : null;
             return (
               <article key={report.id} className="flex items-center gap-3 px-4 py-3">
                 <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">
@@ -49,16 +62,28 @@ export function RecentReportsCard({ reports }: { reports: DashboardRecentReport[
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <strong className="truncate text-sm text-slate-800 dark:text-slate-100">{reportStudentName(report)}</strong>
+                    <strong className="truncate text-sm text-slate-800 dark:text-slate-100">
+                      {reportStudentName(report)}
+                    </strong>
                     {report.planDate || report.plan_date ? (
-                      <span className="text-[10px] text-slate-400">{formatDate(report.planDate || report.plan_date)}</span>
+                      <span className="text-[10px] text-slate-400">
+                        {formatDate(report.planDate || report.plan_date)}
+                      </span>
                     ) : null}
                   </div>
                   <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-500 dark:text-slate-400">
-                    {report.studyHours || report.study_hours ? <span>مطالعه {fa(report.studyHours || report.study_hours)} ساعت</span> : null}
+                    {report.studyHours || report.study_hours ? (
+                      <span>مطالعه {fa(report.studyHours || report.study_hours)} ساعت</span>
+                    ) : null}
                     {Number(report.tests || 0) > 0 ? <span>{fa(report.tests)} تست</span> : null}
-                    {accuracy != null ? <span className="inline-flex items-center gap-1"><Target size={10} /> دقت {fa(accuracy)}٪</span> : null}
-                    {date ? <span>{date.includes("T") ? formatDateTime(date) : formatDate(date)}</span> : null}
+                    {accuracy != null ? (
+                      <span className="inline-flex items-center gap-1">
+                        <Target size={10} /> دقت {fa(accuracy)}٪
+                      </span>
+                    ) : null}
+                    {date ? (
+                      <span>{date.includes("T") ? formatDateTime(date) : formatDate(date)}</span>
+                    ) : null}
                   </div>
                 </div>
                 {studentId ? (
@@ -74,7 +99,9 @@ export function RecentReportsCard({ reports }: { reports: DashboardRecentReport[
           })}
         </div>
       ) : (
-        <div className="p-4"><EmptyState title="هنوز گزارش روزانه‌ای ثبت نشده است." /></div>
+        <div className="p-4">
+          <EmptyState title="هنوز گزارش روزانه‌ای ثبت نشده است." />
+        </div>
       )}
     </Card>
   );

@@ -1,33 +1,22 @@
 import { useState } from "react";
-import {
-  Button,
-  Field,
-  Input,
-  Textarea,
-} from "../../../shared/ui/ui";
+import { Button, Field, Input, Textarea } from "../../../shared/ui/ui";
 import type { SyllabusDraft } from "../model/exam.types";
 
 export function SyllabusForm({
   onSubmit,
   onCancel,
 }: {
-  onSubmit: (
-    data: SyllabusDraft,
-  ) => Promise<void>;
+  onSubmit: (data: SyllabusDraft) => Promise<void>;
   onCancel: () => void;
 }) {
-  const [data, setData] =
-    useState<SyllabusDraft>({
-      subject: "",
-      description: "",
-      track: "",
-      required: true,
-    });
+  const [data, setData] = useState<SyllabusDraft>({
+    subject: "",
+    description: "",
+    track: "",
+    required: true,
+  });
 
-  const [
-    submitting,
-    setSubmitting,
-  ] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   return (
     <form
@@ -35,10 +24,7 @@ export function SyllabusForm({
       onSubmit={(event) => {
         event.preventDefault();
 
-        if (
-          !data.subject.trim() ||
-          !data.description.trim()
-        ) {
+        if (!data.subject.trim() || !data.description.trim()) {
           return;
         }
 
@@ -46,15 +32,10 @@ export function SyllabusForm({
 
         void onSubmit({
           ...data,
-          subject:
-            data.subject.trim(),
-          description:
-            data.description.trim(),
-          track:
-            data.track.trim(),
-        }).finally(() =>
-          setSubmitting(false),
-        );
+          subject: data.subject.trim(),
+          description: data.description.trim(),
+          track: data.track.trim(),
+        }).finally(() => setSubmitting(false));
       }}
     >
       <Field label="درس">
@@ -65,8 +46,7 @@ export function SyllabusForm({
           onChange={(event) =>
             setData({
               ...data,
-              subject:
-                event.target.value,
+              subject: event.target.value,
             })
           }
         />
@@ -78,8 +58,7 @@ export function SyllabusForm({
           onChange={(event) =>
             setData({
               ...data,
-              track:
-                event.target.value,
+              track: event.target.value,
             })
           }
         />
@@ -92,8 +71,7 @@ export function SyllabusForm({
           onChange={(event) =>
             setData({
               ...data,
-              description:
-                event.target.value,
+              description: event.target.value,
             })
           }
         />
@@ -106,9 +84,7 @@ export function SyllabusForm({
           onChange={(event) =>
             setData({
               ...data,
-              required:
-                event.target
-                  .checked,
+              required: event.target.checked,
             })
           }
         />{" "}
@@ -116,19 +92,11 @@ export function SyllabusForm({
       </label>
 
       <div className="flex justify-end gap-2">
-        <Button
-          type="button"
-          variant="soft"
-          onClick={onCancel}
-        >
+        <Button type="button" variant="soft" onClick={onCancel}>
           انصراف
         </Button>
 
-        <Button
-          loading={submitting}
-        >
-          افزودن
-        </Button>
+        <Button loading={submitting}>افزودن</Button>
       </div>
     </form>
   );

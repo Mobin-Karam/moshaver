@@ -41,19 +41,12 @@ export function StudentOverview({
     ],
     [
       "هدف",
-      [
-        student.targetField || student.target_major,
-        student.targetUniversity || student.target_city,
-      ]
+      [student.targetField || student.target_major, student.targetUniversity || student.target_city]
         .filter(Boolean)
         .join(" · ") || "ثبت نشده",
       Target,
     ],
-    [
-      "ظرفیت روزانه",
-      student.dailyCapacity || student.daily_capacity || "ثبت نشده",
-      CalendarClock,
-    ],
+    ["ظرفیت روزانه", student.dailyCapacity || student.daily_capacity || "ثبت نشده", CalendarClock],
     ["نام کاربری", getStudentUsername(student) || "ثبت نشده", UserRound],
   ] as const;
   const recentReports = countData(overview?.recentReports);
@@ -62,10 +55,7 @@ export function StudentOverview({
     <section className="grid gap-4" aria-labelledby="student-overview-heading">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3
-            id="student-overview-heading"
-            className="text-sm font-black text-ink"
-          >
+          <h3 id="student-overview-heading" className="text-sm font-black text-ink">
             نمای کلی دانش‌آموز
           </h3>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -108,9 +98,7 @@ export function StudentOverview({
                 : "پرونده کامل است"}
             </span>
           </span>
-          <strong className="text-xl text-brand">
-            ٪{completeness.toLocaleString("fa-IR")}
-          </strong>
+          <strong className="text-xl text-brand">٪{completeness.toLocaleString("fa-IR")}</strong>
         </div>
         <div
           className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
@@ -166,11 +154,7 @@ export function StudentOverview({
                 دریافت ناموفق
               </span>
               {onRetry ? (
-                <button
-                  type="button"
-                  className="text-xs font-bold text-brand"
-                  onClick={onRetry}
-                >
+                <button type="button" className="text-xs font-bold text-brand" onClick={onRetry}>
                   تلاش دوباره
                 </button>
               ) : null}

@@ -139,8 +139,7 @@ export function SoftConfirmButton({
 
   const stroke = 4;
 
-  const perimeter =
-    2 * (width - radius * 2 + height - radius * 2) + 2 * Math.PI * radius;
+  const perimeter = 2 * (width - radius * 2 + height - radius * 2) + 2 * Math.PI * radius;
 
   const offset = perimeter - progress * perimeter;
 
@@ -188,9 +187,7 @@ export function SoftConfirmButton({
           height={height - 4}
           rx={radius}
           fill="none"
-          stroke={
-            progressColor ?? (variant === "danger" ? "#fecdd3" : "#5eead4")
-          }
+          stroke={progressColor ?? (variant === "danger" ? "#fecdd3" : "#5eead4")}
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={perimeter}

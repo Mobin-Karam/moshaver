@@ -1,12 +1,5 @@
 import { RotateCcw, Search } from "lucide-react";
-import {
-  Badge,
-  Button,
-  Card,
-  EmptyState,
-  Input,
-  Select,
-} from "../../../shared/ui/ui";
+import { Badge, Button, Card, EmptyState, Input, Select } from "../../../shared/ui/ui";
 import type { Quiz } from "../model/quiz.types";
 export function QuizSidebar({
   quizzes,
@@ -46,10 +39,7 @@ export function QuizSidebar({
       ) : null}
       <div className="mb-3 grid gap-2">
         <div className="relative">
-          <Search
-            className="absolute right-3 top-2.5 text-slate-400"
-            size={16}
-          />
+          <Search className="absolute right-3 top-2.5 text-slate-400" size={16} />
           <Input
             className="pr-9"
             type="search"
@@ -67,10 +57,7 @@ export function QuizSidebar({
       {loading ? (
         <div className="grid gap-2">
           {[1, 2, 3].map((x) => (
-            <div
-              key={x}
-              className="h-16 animate-pulse rounded-md bg-slate-100"
-            />
+            <div key={x} className="h-16 animate-pulse rounded-md bg-slate-100" />
           ))}
         </div>
       ) : error ? (
@@ -107,9 +94,7 @@ export function QuizSidebar({
       ) : (
         <EmptyState
           title={
-            search || status !== "all"
-              ? "آزمونکی با این فیلتر پیدا نشد."
-              : "آزمونکی ثبت نشده است."
+            search || status !== "all" ? "آزمونکی با این فیلتر پیدا نشد." : "آزمونکی ثبت نشده است."
           }
           action={
             search || status !== "all" ? (

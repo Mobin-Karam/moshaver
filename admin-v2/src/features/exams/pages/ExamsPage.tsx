@@ -20,7 +20,7 @@ import { useAuth } from "../../auth";
 
 export function ExamsPage() {
   const modal = useModal();
-  const auth=useAuth();
+  const auth = useAuth();
 
   const filters = useExamFilters();
 
@@ -55,10 +55,7 @@ export function ExamsPage() {
     });
   }
 
-  function openRetryReview(
-    request: RetryRequest,
-    status: "approved" | "rejected",
-  ) {
+  function openRetryReview(request: RetryRequest, status: "approved" | "rejected") {
     modal.open({
       title: status === "approved" ? "تأیید تلاش مجدد" : "رد درخواست تلاش مجدد",
       description: request.examTitle || "آزمون",
@@ -107,7 +104,7 @@ export function ExamsPage() {
 
         const deleteDelay = 10;
 
-        const toastId = notifications.undoCountdown(
+        notifications.undoCountdown(
           `آزمون «${exam.title}» آماده حذف است`,
 
           deleteDelay,
@@ -146,10 +143,7 @@ export function ExamsPage() {
                 notifications.dismiss(loadingId);
 
                 notifications.error("حذف آزمون انجام نشد.", {
-                  description:
-                    error instanceof Error
-                      ? error.message
-                      : "خطای ناشناخته رخ داد.",
+                  description: error instanceof Error ? error.message : "خطای ناشناخته رخ داد.",
                 });
               },
             },
@@ -173,10 +167,7 @@ export function ExamsPage() {
 
   function handleToggle(exam: Exam) {
     if (!exam.published && !exam.delivery?.questionCount) {
-      notify(
-        "برای انتشار، ابتدا حداقل یک سؤال به آزمون اضافه کنید.",
-        "warning",
-      );
+      notify("برای انتشار، ابتدا حداقل یک سؤال به آزمون اضافه کنید.", "warning");
 
       return;
     }
@@ -218,9 +209,7 @@ export function ExamsPage() {
 
   function checkExam(examId: string, checked: boolean) {
     filters.setSelected((items) =>
-      checked
-        ? [...new Set([...items, examId])]
-        : items.filter((id) => id !== examId),
+      checked ? [...new Set([...items, examId])] : items.filter((id) => id !== examId),
     );
   }
 
@@ -230,7 +219,7 @@ export function ExamsPage() {
         students={filters.students.students}
         studentId={filters.students.studentId}
         onStudentChange={filters.students.selectStudent}
-        onCreate={auth.can("exams.create")?() => openEditor():undefined}
+        onCreate={auth.can("exams.create") ? () => openEditor() : undefined}
         onHistory={() =>
           modal.open({
             title: "سابقه و پاسخ‌های آزمون",
@@ -238,27 +227,30 @@ export function ExamsPage() {
             content: <ExamAttempts studentId={filters.students.studentId} />,
           })
         }
-        onMore={auth.can("import.preview")||auth.can("export.read")?() =>
-          modal.open({
-            title: "ورود و خروج داده آزمون‌ها",
-            size: "xl",
-            content: (
-              <DataTransferWorkspace
-                studentId={filters.students.studentId}
-                scope="exams"
-                title="انتقال کامل آزمون‌ها"
-                description="آزمون‌ها را همراه سؤال، پاسخ، توضیح، بودجه‌بندی، زمان‌بندی و محدودیت تلاش بررسی و منتقل کنید."
-                showExamReplacement
-                onImported={() => void data.refreshExams()}
-              />
-            ),
-          }):undefined
+        onMore={
+          auth.can("import.preview") || auth.can("export.read")
+            ? () =>
+                modal.open({
+                  title: "ورود و خروج داده آزمون‌ها",
+                  size: "xl",
+                  content: (
+                    <DataTransferWorkspace
+                      studentId={filters.students.studentId}
+                      scope="exams"
+                      title="انتقال کامل آزمون‌ها"
+                      description="آزمون‌ها را همراه سؤال، پاسخ، توضیح، بودجه‌بندی، زمان‌بندی و محدودیت تلاش بررسی و منتقل کنید."
+                      showExamReplacement
+                      onImported={() => void data.refreshExams()}
+                    />
+                  ),
+                })
+            : undefined
         }
       />
 
       <RetryRequestsPanel
         requests={data.pendingRetries}
-        onReview={auth.can("retry_requests.moderate")?openRetryReview:undefined}
+        onReview={auth.can("retry_requests.moderate") ? openRetryReview : undefined}
       />
 
       <ExamFilters
@@ -283,22 +275,20 @@ export function ExamsPage() {
         loading={data.exams.isLoading}
         error={data.exams.isError}
         toggleBusyId={
-          mutations.togglePublish.isPending
-            ? mutations.togglePublish.variables?.id
-            : undefined
+          mutations.togglePublish.isPending ? mutations.togglePublish.variables?.id : undefined
         }
         onRetry={() => void data.exams.refetch()}
-        onSelectAll={auth.can("exams.update")?(checked) =>
-          filters.setSelected(
-            checked ? data.filtered.map((exam) => exam.id) : [],
-          )
-        :undefined}
-        onCheck={auth.can("exams.update")?checkExam:undefined}
-        onEdit={auth.can("exams.update")?openEditor:undefined}
-        onDelete={auth.can("exams.delete")?confirmRemove:undefined}
-        onToggle={auth.can("exams.update")?handleToggle:undefined}
-        onAddSyllabus={auth.can("syllabus.manage")?openSyllabus:undefined}
-        onDeleteSyllabus={auth.can("syllabus.manage")?deleteSyllabus:undefined}
+        onSelectAll={
+          auth.can("exams.update")
+            ? (checked) => filters.setSelected(checked ? data.filtered.map((exam) => exam.id) : [])
+            : undefined
+        }
+        onCheck={auth.can("exams.update") ? checkExam : undefined}
+        onEdit={auth.can("exams.update") ? openEditor : undefined}
+        onDelete={auth.can("exams.delete") ? confirmRemove : undefined}
+        onToggle={auth.can("exams.update") ? handleToggle : undefined}
+        onAddSyllabus={auth.can("syllabus.manage") ? openSyllabus : undefined}
+        onDeleteSyllabus={auth.can("syllabus.manage") ? deleteSyllabus : undefined}
         showQuestions={auth.can("questions.read")}
       />
     </div>

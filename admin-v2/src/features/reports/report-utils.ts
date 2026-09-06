@@ -3,7 +3,11 @@ import type { ReportRow } from "./api/reports.api";
 export function reportNumber(value: unknown): number {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string") {
-    const normalized = value.replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit))).replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit))).replace(/,/g, "").trim();
+    const normalized = value
+      .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+      .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+      .replace(/,/g, "")
+      .trim();
     const parsed = Number(normalized);
     return Number.isFinite(parsed) ? parsed : 0;
   }
@@ -16,7 +20,9 @@ export function reportDate(report: ReportRow): string {
 }
 
 export function reportText(report: ReportRow): string {
-  return [report.problem, report.tomorrow, report.note, report.notes, report.description].filter(Boolean).join(" ");
+  return [report.problem, report.tomorrow, report.note, report.notes, report.description]
+    .filter(Boolean)
+    .join(" ");
 }
 
 export function reportAccuracy(report: ReportRow): number | null {
@@ -37,7 +43,10 @@ function average(rows: ReportRow[], key: string) {
 }
 
 export function summarizeReports(rows: ReportRow[]) {
-  const studyHours = rows.reduce((sum, row) => sum + reportNumber(row.study_hours ?? row.studyHours), 0);
+  const studyHours = rows.reduce(
+    (sum, row) => sum + reportNumber(row.study_hours ?? row.studyHours),
+    0,
+  );
   const tests = rows.reduce((sum, row) => sum + reportNumber(row.tests), 0);
   const correct = rows.reduce((sum, row) => sum + reportNumber(row.correct), 0);
   const wrong = rows.reduce((sum, row) => sum + reportNumber(row.wrong), 0);

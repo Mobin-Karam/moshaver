@@ -7,17 +7,9 @@ afterEach(cleanup);
 
 describe("read-only role controls", () => {
   it("does not expose learning creation without a create capability", () => {
-    render(
-      <LearningHeader
-        students={[]}
-        studentId=""
-        onStudentChange={vi.fn()}
-      />,
-    );
+    render(<LearningHeader students={[]} studentId="" onStudentChange={vi.fn()} />);
 
-    expect(
-      screen.queryByRole("button", { name: /مرور جدید/ }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /مرور جدید/ })).not.toBeInTheDocument();
   });
 
   it("shows retry state without moderation actions", () => {

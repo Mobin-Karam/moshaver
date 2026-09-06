@@ -1,7 +1,4 @@
-export type LearningStatus =
-  | "pending"
-  | "done"
-  | "archived";
+export type LearningStatus = "pending" | "done" | "archived";
 
 export type LearningItem = {
   id: string;
@@ -62,19 +59,11 @@ export type LearningReview = {
   nextReviewAt: string;
 };
 
-export function isLearningDue(
-  item: LearningItem,
-  today: string,
-) {
-  return (
-    item.status === "pending" &&
-    item.dueDate <= today
-  );
+export function isLearningDue(item: LearningItem, today: string) {
+  return item.status === "pending" && item.dueDate <= today;
 }
 
-export function learningStatusLabel(
-  status: LearningStatus,
-) {
+export function learningStatusLabel(status: LearningStatus) {
   return (
     {
       pending: "در انتظار مرور",

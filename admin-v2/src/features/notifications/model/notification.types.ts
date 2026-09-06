@@ -1,8 +1,4 @@
-import type {
-  AdminNotification,
-  PushPreferences,
-  PushStatus,
-} from "./notification-model";
+import type { AdminNotification, PushPreferences, PushStatus } from "./notification-model";
 
 export type NotificationContextValue = {
   items: AdminNotification[];

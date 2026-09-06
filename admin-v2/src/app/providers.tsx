@@ -14,7 +14,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <LocaleProvider>
           <ModalProvider>
-            <AuthProvider><NotificationProvider>{children}</NotificationProvider></AuthProvider>
+            <AuthProvider>
+              <NotificationProvider>{children}</NotificationProvider>
+            </AuthProvider>
             <AppToaster />
           </ModalProvider>
         </LocaleProvider>

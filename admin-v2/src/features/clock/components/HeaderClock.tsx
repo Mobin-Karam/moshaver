@@ -1,13 +1,4 @@
-import {
-  AlarmClock,
-  BellRing,
-  Clock3,
-  Gauge,
-  Globe2,
-  Pause,
-  Timer,
-  X,
-} from "lucide-react";
+import { AlarmClock, BellRing, Clock3, Gauge, Globe2, Pause, Timer, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useAlarms } from "../hooks/useAlarms";
@@ -25,7 +16,7 @@ import {
   formatShortDate,
   getNextAlarmTimestamp,
 } from "../lib/time";
-import type { ClockTab, PlatformSessionStats } from "../model/clock.types";
+import type { PlatformSessionStats } from "../model/clock.types";
 import { AlarmPanel } from "./AlarmPanel";
 import { SessionStats } from "./SessionStats";
 import { StopwatchPanel } from "./StopwatchPanel";
@@ -51,8 +42,7 @@ export function HeaderClock({ userId }: { userId?: string }) {
           at: getNextAlarmTimestamp(alarm, now.getTime()),
         }))
         .filter(
-          (entry): entry is { alarm: (typeof alarms)[number]; at: number } =>
-            entry.at != null,
+          (entry): entry is { alarm: (typeof alarms)[number]; at: number } => entry.at != null,
         )
         .sort((a, b) => a.at - b.at)[0],
     [alarms, now],
@@ -61,14 +51,10 @@ export function HeaderClock({ userId }: { userId?: string }) {
   useEffect(() => {
     if (!open) return;
     const handlePointerDown = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      )
+      if (containerRef.current && !containerRef.current.contains(event.target as Node))
         setOpen(false);
     };
-    const handleEscape = (event: KeyboardEvent) =>
-      event.key === "Escape" && setOpen(false);
+    const handleEscape = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false);
     document.addEventListener("mousedown", handlePointerDown);
     document.addEventListener("keydown", handleEscape);
     return () => {
@@ -194,17 +180,9 @@ export function HeaderClock({ userId }: { userId?: string }) {
           )}
           {timer.status !== "idle" && (
             <HeaderStatus
-              icon={
-                timer.status === "paused" ? (
-                  <Pause size={11} />
-                ) : (
-                  <Timer size={12} />
-                )
-              }
+              icon={timer.status === "paused" ? <Pause size={11} /> : <Timer size={12} />}
               value={
-                timer.status === "finished"
-                  ? "پایان"
-                  : formatCompactDuration(timer.remainingMs)
+                timer.status === "finished" ? "پایان" : formatCompactDuration(timer.remainingMs)
               }
               title={
                 timer.status === "running"
@@ -224,31 +202,22 @@ export function HeaderClock({ userId }: { userId?: string }) {
               attention
             />
           )}
-          {!stopwatch.running &&
-            timer.status === "idle" &&
-            !activeAlarm &&
-            nextAlarm && (
-              <HeaderStatus
-                icon={<AlarmClock size={12} />}
-                value={new Intl.DateTimeFormat("en-GB", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                }).format(new Date(nextAlarm.at))}
-                title={`هشدار بعدی: ${nextAlarm.alarm.label}`}
-              />
-            )}
+          {!stopwatch.running && timer.status === "idle" && !activeAlarm && nextAlarm && (
+            <HeaderStatus
+              icon={<AlarmClock size={12} />}
+              value={new Intl.DateTimeFormat("en-GB", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              }).format(new Date(nextAlarm.at))}
+              title={`هشدار بعدی: ${nextAlarm.alarm.label}`}
+            />
+          )}
         </span>
 
         <span
           className={`ml-0.5 hidden size-1.5 shrink-0 rounded-full sm:block ${session.isActive ? "bg-emerald-500" : session.isIdle ? "bg-amber-500" : "bg-slate-400"}`}
-          title={
-            session.isIdle
-              ? "کاربر غیرفعال است"
-              : session.isActive
-                ? "فعال"
-                : "غیرفعال"
-          }
+          title={session.isIdle ? "کاربر غیرفعال است" : session.isActive ? "فعال" : "غیرفعال"}
         />
       </button>
 
@@ -260,9 +229,7 @@ export function HeaderClock({ userId }: { userId?: string }) {
         >
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
             <div>
-              <div className="text-xs font-bold text-slate-900 dark:text-white">
-                مرکز زمان
-              </div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">مرکز زمان</div>
               <div className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
                 ابزارها پس از بستن این پنل همچنان فعال می‌مانند
               </div>
@@ -319,9 +286,7 @@ export function HeaderClock({ userId }: { userId?: string }) {
           </div>
 
           <div className="max-h-[min(70vh,560px)] overflow-y-auto p-4">
-            {store.selectedTab === "clock" && (
-              <ClockOverview now={now} session={session} />
-            )}
+            {store.selectedTab === "clock" && <ClockOverview now={now} session={session} />}
             {store.selectedTab === "stopwatch" && <StopwatchPanel />}
             {store.selectedTab === "timer" && <TimerPanel />}
             {store.selectedTab === "alarm" && <AlarmPanel />}
@@ -355,13 +320,7 @@ function HeaderStatus({
   );
 }
 
-function ClockOverview({
-  now,
-  session,
-}: {
-  now: Date;
-  session: PlatformSessionStats;
-}) {
+function ClockOverview({ now, session }: { now: Date; session: PlatformSessionStats }) {
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const store = useClockStore();
   return (
@@ -402,9 +361,7 @@ function ClockOverview({
         </button>
         <button
           type="button"
-          onClick={() =>
-            clockActions.setSoundEnabled(!store.preferences.soundEnabled)
-          }
+          onClick={() => clockActions.setSoundEnabled(!store.preferences.soundEnabled)}
           className="rounded-xl border border-slate-200 bg-white p-2.5 text-right dark:border-slate-700 dark:bg-slate-800"
         >
           <span className="block text-[10px] text-slate-400">صدای ابزارها</span>
@@ -439,9 +396,7 @@ function TabButton({
     >
       {icon}
       <span className="hidden 2xl:inline">{children}</span>
-      {badge && (
-        <span className="absolute left-1 top-1 size-1.5 rounded-full bg-rose-500" />
-      )}
+      {badge && <span className="absolute left-1 top-1 size-1.5 rounded-full bg-rose-500" />}
     </button>
   );
 }

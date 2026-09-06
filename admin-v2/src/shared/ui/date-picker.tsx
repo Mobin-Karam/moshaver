@@ -105,9 +105,7 @@ export function DatePicker({
             calendar={profile.calendar}
             selected={parts.month}
             onSelect={(month: number) => {
-              setCursor(
-                findMonth(cursor, month, profile.locale, profile.calendar),
-              );
+              setCursor(findMonth(cursor, month, profile.locale, profile.calendar));
               setMode("calendar");
             }}
           />
@@ -115,24 +113,22 @@ export function DatePicker({
 
         {mode === "year" && (
           <div className="grid grid-cols-4 gap-2">
-            {Array.from({ length: 31 }, (_, i) => parts.year - 15 + i).map(
-              (year) => (
-                <button
-                  type="button"
-                  key={year}
-                  className={cn(
-                    "rounded-xl p-2 hover:bg-brand/10",
-                    year === parts.year && "bg-brand text-white",
-                  )}
-                  onClick={() => {
-                    setCursor(addDays(cursor, (year - parts.year) * 365));
-                    setMode("calendar");
-                  }}
-                >
-                  {localNumber(year, profile.locale)}
-                </button>
-              ),
-            )}
+            {Array.from({ length: 31 }, (_, i) => parts.year - 15 + i).map((year) => (
+              <button
+                type="button"
+                key={year}
+                className={cn(
+                  "rounded-xl p-2 hover:bg-brand/10",
+                  year === parts.year && "bg-brand text-white",
+                )}
+                onClick={() => {
+                  setCursor(addDays(cursor, (year - parts.year) * 365));
+                  setMode("calendar");
+                }}
+              >
+                {localNumber(year, profile.locale)}
+              </button>
+            ))}
           </div>
         )}
 
@@ -143,14 +139,7 @@ export function DatePicker({
                 type="button"
                 className="rounded-xl p-2 hover:bg-slate-100"
                 onClick={() =>
-                  setCursor(
-                    shiftCalendarMonth(
-                      cursor,
-                      -1,
-                      profile.locale,
-                      profile.calendar,
-                    ),
-                  )
+                  setCursor(shiftCalendarMonth(cursor, -1, profile.locale, profile.calendar))
                 }
               >
                 <ChevronRight size={18} />
@@ -168,14 +157,7 @@ export function DatePicker({
                 type="button"
                 className="rounded-xl p-2 hover:bg-slate-100"
                 onClick={() =>
-                  setCursor(
-                    shiftCalendarMonth(
-                      cursor,
-                      1,
-                      profile.locale,
-                      profile.calendar,
-                    ),
-                  )
+                  setCursor(shiftCalendarMonth(cursor, 1, profile.locale, profile.calendar))
                 }
               >
                 <ChevronLeft size={18} />
@@ -188,16 +170,12 @@ export function DatePicker({
                   <button
                     type="button"
                     key={day.iso}
-                    disabled={
-                      (!!min && day.iso < min) || (!!max && day.iso > max)
-                    }
+                    disabled={(!!min && day.iso < min) || (!!max && day.iso > max)}
                     onClick={() => selectDate(day.iso)}
                     className={cn(
                       "aspect-square rounded-xl text-sm hover:bg-brand/10",
                       day.iso === value && "bg-brand text-white",
-                      day.iso === todayIso() &&
-                        day.iso !== value &&
-                        "ring-1 ring-brand",
+                      day.iso === todayIso() && day.iso !== value && "ring-1 ring-brand",
                     )}
                   >
                     {localNumber(day.day, profile.locale)}
@@ -221,9 +199,7 @@ export function DatePicker({
         )}
       </ViewportPopover>
 
-      {required && (
-        <input className="sr-only" required value={value} readOnly />
-      )}
+      {required && <input className="sr-only" required value={value} readOnly />}
     </div>
   );
 }
@@ -301,15 +277,9 @@ function calendarGrid(cursor: string, locale: string, calendar: string) {
   if (!isValidIso(cursor)) return [];
   const current = calendarParts(cursor, locale, calendar);
   let first = cursor;
-  for (
-    let i = 0;
-    i < 40 && calendarParts(first, locale, calendar).day !== 1;
-    i++
-  )
+  for (let i = 0; i < 40 && calendarParts(first, locale, calendar).day !== 1; i++)
     first = addDays(first, -1);
-  const rows: Array<any> = Array(
-    (new Date(`${first}T12:00:00`).getDay() + 1) % 7,
-  ).fill(null);
+  const rows: Array<any> = Array((new Date(`${first}T12:00:00`).getDay() + 1) % 7).fill(null);
   for (let iso = first; ; iso = addDays(iso, 1)) {
     const p = calendarParts(iso, locale, calendar);
     if (p.month !== current.month || p.year !== current.year) break;
@@ -318,12 +288,7 @@ function calendarGrid(cursor: string, locale: string, calendar: string) {
   return rows;
 }
 
-function findMonth(
-  cursor: string,
-  month: number,
-  locale: string,
-  calendar: string,
-) {
+function findMonth(cursor: string, month: number, locale: string, calendar: string) {
   let p = cursor;
   for (let i = 0; i < 370; i++) {
     if (calendarParts(p, locale, calendar).month === month) return p;
@@ -332,12 +297,7 @@ function findMonth(
   return cursor;
 }
 
-function shiftCalendarMonth(
-  cursor: string,
-  delta: number,
-  locale: string,
-  calendar: string,
-) {
+function shiftCalendarMonth(cursor: string, delta: number, locale: string, calendar: string) {
   let p = cursor;
   const start = calendarParts(cursor, locale, calendar).month;
   for (let i = 0; i < 40; i++) {

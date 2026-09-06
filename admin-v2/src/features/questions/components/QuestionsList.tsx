@@ -1,12 +1,4 @@
-import {
-  CheckCircle2,
-  Copy,
-  ListChecks,
-  Pencil,
-  RotateCcw,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { CheckCircle2, Copy, ListChecks, Pencil, RotateCcw, Search, Trash2 } from "lucide-react";
 import { Button, Card, EmptyState, Input } from "../../../shared/ui/ui";
 import type { QuestionView } from "../model/question-model";
 import { questionNumber } from "../model/question-model";
@@ -61,9 +53,7 @@ export function QuestionsList({
           <label className="flex items-center gap-1 text-xs">
             <input
               type="checkbox"
-              checked={items.every(
-                (item) => !!item.id && selected.includes(item.id),
-              )}
+              checked={items.every((item) => !!item.id && selected.includes(item.id))}
               onChange={(e) => {
                 const ids = items.flatMap((item) => (item.id ? [item.id] : []));
                 setSelected(
@@ -77,12 +67,7 @@ export function QuestionsList({
           </label>
         ) : null}
         {selected.length && canDelete ? (
-          <Button
-            className="h-8"
-            variant="danger"
-            loading={bulkBusy}
-            onClick={onBulkDelete}
-          >
+          <Button className="h-8" variant="danger" loading={bulkBusy} onClick={onBulkDelete}>
             حذف انتخاب‌شده
           </Button>
         ) : null}
@@ -90,10 +75,7 @@ export function QuestionsList({
       {examId ? (
         <div className="mb-3 flex gap-2">
           <div className="relative flex-1">
-            <Search
-              className="absolute right-3 top-2.5 text-slate-400"
-              size={16}
-            />
+            <Search className="absolute right-3 top-2.5 text-slate-400" size={16} />
             <Input
               className="pr-9"
               type="search"
@@ -117,10 +99,7 @@ export function QuestionsList({
       {loading ? (
         <div className="grid gap-2" aria-label="در حال دریافت سؤال‌ها">
           {[1, 2, 3].map((x) => (
-            <div
-              key={x}
-              className="h-24 animate-pulse rounded-md bg-slate-100"
-            />
+            <div key={x} className="h-24 animate-pulse rounded-md bg-slate-100" />
           ))}
         </div>
       ) : error ? (
@@ -135,10 +114,7 @@ export function QuestionsList({
       ) : items.length ? (
         <div className="grid min-h-0 gap-3 overflow-y-auto pl-1">
           {items.map((q, index) => (
-            <article
-              key={q.id || index}
-              className="rounded-md border border-slate-200 p-3"
-            >
+            <article key={q.id || index} className="rounded-md border border-slate-200 p-3">
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2">
                   <input
@@ -153,9 +129,7 @@ export function QuestionsList({
                       )
                     }
                   />
-                  <strong>
-                    سؤال {questionNumber(q, index + 1).toLocaleString("fa-IR")}
-                  </strong>
+                  <strong>سؤال {questionNumber(q, index + 1).toLocaleString("fa-IR")}</strong>
                 </label>
                 {q.id && (canCreate || canUpdate || canDelete) ? (
                   <div className="flex gap-1">
@@ -171,20 +145,12 @@ export function QuestionsList({
                       </Button>
                     ) : null}
                     {canUpdate ? (
-                      <Button
-                        className="h-8 px-2"
-                        variant="ghost"
-                        onClick={() => onEdit(q, index)}
-                      >
+                      <Button className="h-8 px-2" variant="ghost" onClick={() => onEdit(q, index)}>
                         <Pencil size={14} />
                       </Button>
                     ) : null}
                     {canDelete ? (
-                      <Button
-                        className="h-8 px-2"
-                        variant="danger"
-                        onClick={() => onDelete(q)}
-                      >
+                      <Button className="h-8 px-2" variant="danger" onClick={() => onDelete(q)}>
                         <Trash2 size={14} />
                       </Button>
                     ) : null}
@@ -195,24 +161,16 @@ export function QuestionsList({
               <div className="mt-3 grid gap-2">
                 {(
                   q.options ||
-                  [q.option_a, q.option_b, q.option_c, q.option_d].filter(
-                    (o): o is string => !!o,
-                  )
+                  [q.option_a, q.option_b, q.option_c, q.option_d].filter((o): o is string => !!o)
                 ).map((option, optionIndex) => {
                   const key = ["a", "b", "c", "d"][optionIndex];
-                  const active =
-                    (q.correctOption || q.correct_option || q.correctAnswer) ===
-                    key;
+                  const active = (q.correctOption || q.correct_option || q.correctAnswer) === key;
                   return (
                     <div
                       key={key}
                       className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${active ? "bg-emerald-50 text-emerald-800" : "bg-slate-50"}`}
                     >
-                      {active ? (
-                        <CheckCircle2 size={15} />
-                      ) : (
-                        <span className="size-[15px]" />
-                      )}
+                      {active ? <CheckCircle2 size={15} /> : <span className="size-[15px]" />}
                       {option}
                     </div>
                   );
@@ -220,33 +178,21 @@ export function QuestionsList({
               </div>
               {q.explanation || q.hint ? (
                 <details className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                  <summary className="cursor-pointer font-semibold">
-                    توضیح و راهنمای مرور
-                  </summary>
-                  {q.explanation ? (
-                    <p className="mt-2">{q.explanation}</p>
-                  ) : null}
-                  {q.hint ? (
-                    <p className="mt-2 text-xs">راهنما: {q.hint}</p>
-                  ) : null}
+                  <summary className="cursor-pointer font-semibold">توضیح و راهنمای مرور</summary>
+                  {q.explanation ? <p className="mt-2">{q.explanation}</p> : null}
+                  {q.hint ? <p className="mt-2 text-xs">راهنما: {q.hint}</p> : null}
                 </details>
               ) : null}
               {[q.book, q.chapter, q.lesson, q.topic].some(Boolean) ? (
                 <p className="mt-2 text-xs text-slate-500">
-                  {[q.book, q.chapter, q.lesson, q.topic]
-                    .filter(Boolean)
-                    .join(" • ")}
+                  {[q.book, q.chapter, q.lesson, q.topic].filter(Boolean).join(" • ")}
                 </p>
               ) : null}
             </article>
           ))}
         </div>
       ) : (
-        <EmptyState
-          title={
-            examId ? "سؤالی برای نمایش نیست." : "ابتدا یک آزمون انتخاب کنید."
-          }
-        />
+        <EmptyState title={examId ? "سؤالی برای نمایش نیست." : "ابتدا یک آزمون انتخاب کنید."} />
       )}
     </Card>
   );

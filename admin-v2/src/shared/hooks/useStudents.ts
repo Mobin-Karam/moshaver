@@ -59,9 +59,7 @@ export function useStudents({ enabled = true }: { enabled?: boolean } = {}) {
     if (typeof window !== "undefined") {
       if (next) window.localStorage.setItem("admin-selected-student-id", next);
       else window.localStorage.removeItem("admin-selected-student-id");
-      window.dispatchEvent(
-        new CustomEvent(STUDENT_SELECTION_EVENT, { detail: next }),
-      );
+      window.dispatchEvent(new CustomEvent(STUDENT_SELECTION_EVENT, { detail: next }));
     }
   }, []);
   useEffect(() => {
@@ -71,8 +69,7 @@ export function useStudents({ enabled = true }: { enabled?: boolean } = {}) {
   }, []);
   useEffect(() => {
     function sync(event: StorageEvent) {
-      if (event.key === "admin-selected-student-id")
-        setStudentIdState(event.newValue || "");
+      if (event.key === "admin-selected-student-id") setStudentIdState(event.newValue || "");
     }
     window.addEventListener("storage", sync);
     const syncSameWindow = (event: Event) =>

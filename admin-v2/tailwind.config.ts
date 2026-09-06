@@ -6,7 +6,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Vazirmatn', 'Tahoma', 'Arial', 'sans-serif'],
+        sans: ["Vazirmatn", "Tahoma", "Arial", "sans-serif"],
       },
       colors: {
         ink: "rgb(var(--color-ink) / <alpha-value>)",

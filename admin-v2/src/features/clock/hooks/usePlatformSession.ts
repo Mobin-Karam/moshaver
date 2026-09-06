@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { loadPlatformSession, loadTabSession, savePlatformSession, saveTabSession } from "../lib/clock-storage";
+import {
+  loadPlatformSession,
+  loadTabSession,
+  savePlatformSession,
+  saveTabSession,
+} from "../lib/clock-storage";
 import { getTodayKey } from "../lib/time";
 import type { PlatformSessionStats } from "../model/clock.types";
 
@@ -25,24 +30,30 @@ export function usePlatformSession(userId?: string): PlatformSessionStats {
     enteredAt: tabRef.current.enteredAt,
     lastSeenAt: Date.now(),
     lastExitAt: persistedRef.current.lastExitAt,
-    isActive: typeof document !== "undefined" ? document.visibilityState === "visible" && document.hasFocus() : false,
+    isActive:
+      typeof document !== "undefined"
+        ? document.visibilityState === "visible" && document.hasFocus()
+        : false,
     isIdle: false,
   }));
 
-  const persist = useCallback((markExit = false) => {
-    const now = Date.now();
-    if (markExit) lastExitAtRef.current = now;
-    const payload = {
-      version: 2 as const,
-      todayKey: todayKeyRef.current,
-      todayMs: todayMsRef.current,
-      totalMs: totalMsRef.current,
-      lastSeenAt: now,
-      lastExitAt: lastExitAtRef.current,
-    };
-    savePlatformSession(payload, userId);
-    saveTabSession(tabRef.current, userId);
-  }, [userId]);
+  const persist = useCallback(
+    (markExit = false) => {
+      const now = Date.now();
+      if (markExit) lastExitAtRef.current = now;
+      const payload = {
+        version: 2 as const,
+        todayKey: todayKeyRef.current,
+        todayMs: todayMsRef.current,
+        totalMs: totalMsRef.current,
+        lastSeenAt: now,
+        lastExitAt: lastExitAtRef.current,
+      };
+      savePlatformSession(payload, userId);
+      saveTabSession(tabRef.current, userId);
+    },
+    [userId],
+  );
 
   useEffect(() => {
     const registerActivity = () => {
@@ -52,7 +63,13 @@ export function usePlatformSession(userId?: string): PlatformSessionStats {
         lastTickRef.current = Date.now();
       }
     };
-    const events: Array<keyof WindowEventMap> = ["pointerdown", "pointermove", "keydown", "wheel", "touchstart"];
+    const events: Array<keyof WindowEventMap> = [
+      "pointerdown",
+      "pointermove",
+      "keydown",
+      "wheel",
+      "touchstart",
+    ];
     events.forEach((event) => window.addEventListener(event, registerActivity, { passive: true }));
     return () => events.forEach((event) => window.removeEventListener(event, registerActivity));
   }, []);
@@ -94,17 +111,29 @@ export function usePlatformSession(userId?: string): PlatformSessionStats {
     const interval = window.setInterval(tick, 1000);
     const syncLatest = () => {
       const latest = loadPlatformSession(userId);
-      if (latest.todayKey === todayKeyRef.current) todayMsRef.current = Math.max(todayMsRef.current, latest.todayMs);
+      if (latest.todayKey === todayKeyRef.current)
+        todayMsRef.current = Math.max(todayMsRef.current, latest.todayMs);
       totalMsRef.current = Math.max(totalMsRef.current, latest.totalMs);
       lastExitAtRef.current = latest.lastExitAt;
     };
     const handleVisibility = () => {
       tick();
       if (document.visibilityState === "hidden") persist(false);
-      else { syncLatest(); lastTickRef.current = Date.now(); }
+      else {
+        syncLatest();
+        lastTickRef.current = Date.now();
+      }
     };
-    const handleFocus = () => { syncLatest(); lastTickRef.current = Date.now(); tick(); };
-    const handleBlur = () => { tick(); persist(false); lastTickRef.current = Date.now(); };
+    const handleFocus = () => {
+      syncLatest();
+      lastTickRef.current = Date.now();
+      tick();
+    };
+    const handleBlur = () => {
+      tick();
+      persist(false);
+      lastTickRef.current = Date.now();
+    };
     document.addEventListener("visibilitychange", handleVisibility);
     window.addEventListener("focus", handleFocus);
     window.addEventListener("blur", handleBlur);
@@ -122,7 +151,8 @@ export function usePlatformSession(userId?: string): PlatformSessionStats {
     const handleStorage = (event: StorageEvent) => {
       if (!event.key?.includes("ravin:clock:session:v2")) return;
       const latest = loadPlatformSession(userId);
-      if (latest.todayKey === todayKeyRef.current) todayMsRef.current = Math.max(todayMsRef.current, latest.todayMs);
+      if (latest.todayKey === todayKeyRef.current)
+        todayMsRef.current = Math.max(todayMsRef.current, latest.todayMs);
       totalMsRef.current = Math.max(totalMsRef.current, latest.totalMs);
       lastExitAtRef.current = latest.lastExitAt;
     };

@@ -5,10 +5,7 @@ export type RetryRequest = {
   message?: string;
   createdAt?: string;
   created_at?: string;
-  status?:
-    | "pending"
-    | "approved"
-    | "rejected";
+  status?: "pending" | "approved" | "rejected";
   advisor_note?: string;
 };
 
@@ -19,19 +16,8 @@ export type SyllabusDraft = {
   required: boolean;
 };
 
-export type ExamFilterStatus =
-  | "all"
-  | "upcoming"
-  | "active"
-  | "completed"
-  | "cancelled";
+export type ExamFilterStatus = "all" | "upcoming" | "active" | "completed" | "cancelled";
 
-export type ExamVisibilityFilter =
-  | "all"
-  | "published"
-  | "draft";
+export type ExamVisibilityFilter = "all" | "published" | "draft";
 
-export type BulkExamAction =
-  | "publish"
-  | "draft"
-  | "delete";
+export type BulkExamAction = "publish" | "draft" | "delete";

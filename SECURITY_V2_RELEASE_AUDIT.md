@@ -4,7 +4,7 @@ Date: 2026-09-06
 
 ## Release-blocking result
 
-No open P0 or P1 authorization or data-isolation defect remains in the implemented v2 scope. This result is based on source review, 50 backend tests, a live cookie/CSRF security matrix against a disposable 32-migration SQLite database, 112 protected-route browser checks (7 staff roles by 16 routes), and a browser multi-role context-switch check.
+No open P0 or P1 authorization or data-isolation defect remains in the implemented v2 scope. This result is based on source review, 51 backend tests, a live cookie/CSRF security matrix against a disposable 32-migration SQLite database, 112 protected-route browser checks (7 staff roles by 16 routes), and a browser multi-role context-switch check.
 
 ## Boundaries proven
 

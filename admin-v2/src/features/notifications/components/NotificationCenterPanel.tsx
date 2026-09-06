@@ -1,22 +1,8 @@
-import {
-  AlertCircle,
-  Bell,
-  CheckCheck,
-  RefreshCw,
-  Search,
-} from "lucide-react";
-import type {
-  Dispatch,
-  SetStateAction,
-} from "react";
+import { AlertCircle, Bell, CheckCheck, RefreshCw, Search } from "lucide-react";
+import type { Dispatch, SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocale } from "../../../shared/ui/locale";
-import {
-  Badge,
-  Button,
-  Card,
-  EmptyState,
-} from "../../../shared/ui/ui";
+import { Badge, Button, Card, EmptyState } from "../../../shared/ui/ui";
 import { useAdminNotifications } from "../hooks/useAdminNotifications";
 import type { AdminNotification } from "../model/notification-model";
 import {
@@ -187,14 +173,9 @@ export function NotificationCenterPanel({
                 <strong className="min-w-0 flex-1 truncate text-sm text-slate-900 dark:text-white">
                   {item.title}
                 </strong>
-                <Badge tone={notificationTone(item.type)}>
-                  {notificationTypeLabel(item.type)}
-                </Badge>
+                <Badge tone={notificationTone(item.type)}>{notificationTypeLabel(item.type)}</Badge>
                 {!item.isRead ? (
-                  <span
-                    className="size-2 rounded-full bg-rose-600"
-                    aria-label="خوانده‌نشده"
-                  />
+                  <span className="size-2 rounded-full bg-rose-600" aria-label="خوانده‌نشده" />
                 ) : null}
               </span>
 

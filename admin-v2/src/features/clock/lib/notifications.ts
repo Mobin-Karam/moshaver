@@ -11,7 +11,12 @@ export async function requestClockNotificationPermission() {
 }
 
 export function showClockNotification(title: string, body: string) {
-  if (typeof window === "undefined" || !("Notification" in window) || Notification.permission !== "granted") return;
+  if (
+    typeof window === "undefined" ||
+    !("Notification" in window) ||
+    Notification.permission !== "granted"
+  )
+    return;
   try {
     new Notification(title, { body, tag: `ravin-clock:${title}` });
   } catch {
@@ -22,7 +27,9 @@ export function showClockNotification(title: string, body: string) {
 export function playClockTone(kind: "timer" | "alarm" = "timer") {
   if (typeof window === "undefined") return;
   try {
-    const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
     const context = new AudioContextClass();
     const oscillator = context.createOscillator();

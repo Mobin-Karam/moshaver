@@ -1,8 +1,4 @@
-import {
-  InfiniteData,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ChevronUp, WifiOff } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, EmptyState } from "../../../shared/ui/ui";
@@ -13,10 +9,7 @@ import type { ChatMessage, Conversation } from "../../../shared/types/domain";
 import { useAuth } from "../../auth/AuthProvider";
 import { MessageComposer } from "../components/composer/MessageComposer";
 import { ConversationSidebar } from "../components/conversation/ConversationSidebar";
-import {
-  MessageList,
-  MessageSkeleton,
-} from "../components/messages/MessageList";
+import { MessageList, MessageSkeleton } from "../components/messages/MessageList";
 import { ChatHeader } from "../components/messages/ChatHeader";
 import { MessageSearchBar } from "../components/messages/MessageSearchBar";
 import { chatApi } from "../api/chat.api";
@@ -27,16 +20,8 @@ import { useConversations } from "../hooks/useConversations";
 import { useMessageActions } from "../hooks/useMessageActions";
 import { useMessageSearch } from "../hooks/useMessageSearch";
 import { useMessages } from "../hooks/useMessages";
-import {
-  isNearBottom,
-  mergeMessagePages,
-  persistDraft,
-  readDraft,
-} from "../lib/chat-helpers";
-import {
-  persistConversationScroll,
-  readConversationScroll,
-} from "../lib/chat-ui-storage";
+import { isNearBottom, mergeMessagePages, persistDraft, readDraft } from "../lib/chat-helpers";
+import { persistConversationScroll, readConversationScroll } from "../lib/chat-ui-storage";
 import { toFa } from "../lib/chat-formatters";
 import type {
   CombinedConversationPage,
@@ -51,8 +36,7 @@ export function ChatPage() {
   const selection = useChatSelectionParams();
   const { requestedStudentId, requestedConversationId } = selection;
   const [conversationId, setConversationId] = useState(requestedConversationId);
-  const [selectedConversation, setSelectedConversation] =
-    useState<Conversation | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [showMessages, setShowMessages] = useState(
     !!requestedConversationId || !!requestedStudentId,
   );
@@ -61,10 +45,8 @@ export function ChatPage() {
   const [editing, setEditing] = useState<ChatMessage | null>(null);
   const [search, setSearch] = useState("");
   const deferredSearch = useDebouncedValue(search.trim(), 250);
-  const [conversationFilter, setConversationFilter] =
-    useState<ConversationFilter>("all");
-  const [conversationSort, setConversationSort] =
-    useState<ConversationSort>("recent");
+  const [conversationFilter, setConversationFilter] = useState<ConversationFilter>("all");
+  const [conversationSort, setConversationSort] = useState<ConversationSort>("recent");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [newMessageCount, setNewMessageCount] = useState(0);
   const [highlightedMessageId, setHighlightedMessageId] = useState<string>();
@@ -101,25 +83,16 @@ export function ChatPage() {
     });
     return [...items].sort((a, b) => {
       if (conversationSort === "unread")
-        return (
-          Number(!!b.unread) - Number(!!a.unread) || activity(b) - activity(a)
-        );
+        return Number(!!b.unread) - Number(!!a.unread) || activity(b) - activity(a);
       if (conversationSort === "online")
         return (
-          Number(!!b.presence?.online) - Number(!!a.presence?.online) ||
-          activity(b) - activity(a)
+          Number(!!b.presence?.online) - Number(!!a.presence?.online) || activity(b) - activity(a)
         );
       if (conversationSort === "name")
         return conversationName(a).localeCompare(conversationName(b), "fa");
       return activity(b) - activity(a);
     });
-  }, [
-    allConversations,
-    conversationFilter,
-    conversationSort,
-    favorites,
-    drafts,
-  ]);
+  }, [allConversations, conversationFilter, conversationSort, favorites, drafts]);
 
   const totalConversations = conversations.total;
   const totalUnread = conversations.unread;
@@ -127,12 +100,8 @@ export function ChatPage() {
     () =>
       allConversations.find((item) => item.id === conversationId) ??
       allConversations.find((item) => item.id === requestedConversationId) ??
-      allConversations.find(
-        (item) => String(item.student?.id || "") === requestedStudentId,
-      ) ??
-      (selectedConversation?.id === conversationId
-        ? selectedConversation
-        : undefined) ??
+      allConversations.find((item) => String(item.student?.id || "") === requestedStudentId) ??
+      (selectedConversation?.id === conversationId ? selectedConversation : undefined) ??
       allConversations[0],
     [
       allConversations,
@@ -159,9 +128,7 @@ export function ChatPage() {
                 ...current,
                 pages: current.pages.map((page) => ({
                   ...page,
-                  items: page.items.map((item) =>
-                    item.id === id ? { ...item, unread: 0 } : item,
-                  ),
+                  items: page.items.map((item) => (item.id === id ? { ...item, unread: 0 } : item)),
                 })),
               }
             : current,
@@ -181,10 +148,7 @@ export function ChatPage() {
       editingId?: string;
     }) =>
       editingId
-        ? api.patch<ChatMessage>(
-            `/chat/conversations/${id}/messages/${editingId}`,
-            { text: body },
-          )
+        ? api.patch<ChatMessage>(`/chat/conversations/${id}/messages/${editingId}`, { text: body })
         : api.post<ChatMessage>(`/chat/conversations/${id}/messages`, {
             text: body,
             replyToId,
@@ -232,9 +196,7 @@ export function ChatPage() {
               pages: current.pages.map((page) => ({
                 ...page,
                 messages: page.messages.map((item) =>
-                  item.id === context.pendingId || item.id === context.editingId
-                    ? message
-                    : item,
+                  item.id === context.pendingId || item.id === context.editingId ? message : item,
                 ),
               })),
             }
@@ -251,14 +213,9 @@ export function ChatPage() {
       }
       if (context?.editingId && context.previous)
         setEditing(
-          mergeMessagePages(context.previous).find(
-            (item) => item.id === context.editingId,
-          ) || null,
+          mergeMessagePages(context.previous).find((item) => item.id === context.editingId) || null,
         );
-      notify(
-        error instanceof Error ? error.message : "ارسال پیام ناموفق بود.",
-        "error",
-      );
+      notify(error instanceof Error ? error.message : "ارسال پیام ناموفق بود.", "error");
     },
   });
   const messageAction = useMessageActions(active?.id);
@@ -274,14 +231,8 @@ export function ChatPage() {
         else if (type === "chat.message.edited" && data.id)
           replaceRealtimeMessage(qc, active.id, data as unknown as ChatMessage);
         else if (type === "chat.message.deleted" && data.id)
-          patchDeletedMessage(
-            qc,
-            active.id,
-            String(data.id),
-            String(data.deletedAt || ""),
-          );
-        else
-          void qc.invalidateQueries({ queryKey: ["chat-messages", active.id] });
+          patchDeletedMessage(qc, active.id, String(data.id), String(data.deletedAt || ""));
+        else void qc.invalidateQueries({ queryKey: ["chat-messages", active.id] });
         if (!nearBottom && type === "chat.message.created")
           setNewMessageCount((count) => count + 1);
       }
@@ -297,12 +248,7 @@ export function ChatPage() {
   }, [active?.id, showMessages]);
 
   useEffect(() => {
-    if (
-      active?.id &&
-      active.unread &&
-      messages.isSuccess &&
-      !markRead.isPending
-    )
+    if (active?.id && active.unread && messages.isSuccess && !markRead.isPending)
       markRead.mutate(active.id);
   }, [active?.id, active?.unread, messages.isSuccess]);
 
@@ -363,23 +309,15 @@ export function ChatPage() {
     function onKeyDown(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null;
       const typing =
-        target?.tagName === "INPUT" ||
-        target?.tagName === "TEXTAREA" ||
-        target?.isContentEditable;
-      if (
-        (event.ctrlKey || event.metaKey) &&
-        event.key.toLowerCase() === "f" &&
-        showMessages
-      ) {
+        target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f" && showMessages) {
         event.preventDefault();
         messageSearch.setOpen(true);
         return;
       }
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        const input = document.querySelector<HTMLInputElement>(
-          '[aria-label="جستجوی گفتگوها"]',
-        );
+        const input = document.querySelector<HTMLInputElement>('[aria-label="جستجوی گفتگوها"]');
         input?.focus();
         return;
       }
@@ -389,10 +327,7 @@ export function ChatPage() {
         return;
       }
       if (typing || !active) return;
-      if (
-        event.altKey &&
-        (event.key === "ArrowUp" || event.key === "ArrowDown")
-      ) {
+      if (event.altKey && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
         event.preventDefault();
         const index = filtered.findIndex((item) => item.id === active.id);
         if (index < 0) return;
@@ -410,8 +345,7 @@ export function ChatPage() {
 
   useEffect(
     () => () => {
-      if (highlightTimerRef.current)
-        window.clearTimeout(highlightTimerRef.current);
+      if (highlightTimerRef.current) window.clearTimeout(highlightTimerRef.current);
       persistConversationScroll(active?.id, scrollRef.current?.scrollTop || 0);
     },
     [active?.id],
@@ -420,9 +354,7 @@ export function ChatPage() {
   function selectConversation(item: Conversation) {
     persistConversationScroll(active?.id, scrollRef.current?.scrollTop || 0);
     persistDraft(active?.id, text);
-    setDrafts((current) =>
-      active?.id ? { ...current, [active.id]: text } : current,
-    );
+    setDrafts((current) => (active?.id ? { ...current, [active.id]: text } : current));
     shouldStickRef.current = true;
     setShowMessages(true);
     setConversationId(item.id);
@@ -465,18 +397,13 @@ export function ChatPage() {
   function jumpToMessage(id: string, notifyIfMissing = true) {
     const node = document.getElementById(`message-${id}`);
     if (!node) {
-      if (notifyIfMissing)
-        notify("این پیام هنوز در تاریخچه بارگذاری‌شده نیست.", "info");
+      if (notifyIfMissing) notify("این پیام هنوز در تاریخچه بارگذاری‌شده نیست.", "info");
       return;
     }
     node.scrollIntoView({ behavior: "smooth", block: "center" });
     setHighlightedMessageId(id);
-    if (highlightTimerRef.current)
-      window.clearTimeout(highlightTimerRef.current);
-    highlightTimerRef.current = window.setTimeout(
-      () => setHighlightedMessageId(undefined),
-      1200,
-    );
+    if (highlightTimerRef.current) window.clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = window.setTimeout(() => setHighlightedMessageId(undefined), 1200);
   }
 
   function closeMessageSearch() {
@@ -543,19 +470,14 @@ export function ChatPage() {
                 markingRead={markRead.isPending}
                 searchOpen={messageSearch.open}
                 onBack={() => {
-                  persistConversationScroll(
-                    active.id,
-                    scrollRef.current?.scrollTop || 0,
-                  );
+                  persistConversationScroll(active.id, scrollRef.current?.scrollTop || 0);
 
                   setShowMessages(false);
 
                   selection.clear();
                 }}
                 onMarkRead={() => markRead.mutate(active.id)}
-                onToggleSearch={() =>
-                  messageSearch.setOpen(!messageSearch.open)
-                }
+                onToggleSearch={() => messageSearch.setOpen(!messageSearch.open)}
                 onGroupChanged={() => void conversations.refetch()}
               />
 
@@ -643,9 +565,7 @@ export function ChatPage() {
                     >
                       <ChevronUp size={15} />
 
-                      {messages.isFetchingNextPage
-                        ? "در حال دریافت تاریخچه"
-                        : "پیام‌های قدیمی‌تر"}
+                      {messages.isFetchingNextPage ? "در حال دریافت تاریخچه" : "پیام‌های قدیمی‌تر"}
                     </Button>
                   </div>
                 ) : (
@@ -667,10 +587,7 @@ export function ChatPage() {
                   <EmptyState
                     title="دریافت پیام‌ها ناموفق بود."
                     action={
-                      <Button
-                        variant="soft"
-                        onClick={() => void messages.refetch()}
-                      >
+                      <Button variant="soft" onClick={() => void messages.refetch()}>
                         <WifiOff size={15} />
                         تلاش دوباره
                       </Button>
@@ -699,16 +616,12 @@ export function ChatPage() {
                       setText(message.text);
                     }}
                     act={(method, path, body) => {
-                      if (
-                        method === "delete" &&
-                        !path.includes("/reactions/")
-                      ) {
+                      if (method === "delete" && !path.includes("/reactions/")) {
                         void modal
                           .confirm({
                             title: "حذف پیام؟",
 
-                            description:
-                              "متن پیام برای اعضای گفتگو حذف خواهد شد.",
+                            description: "متن پیام برای اعضای گفتگو حذف خواهد شد.",
 
                             tone: "danger",
 
@@ -807,18 +720,14 @@ export function ChatPage() {
                   >
                     <ArrowDown size={15} />
 
-                    {newMessageCount
-                      ? `${toFa(newMessageCount)} پیام جدید`
-                      : "رفتن به آخر گفتگو"}
+                    {newMessageCount ? `${toFa(newMessageCount)} پیام جدید` : "رفتن به آخر گفتگو"}
                   </button>
                 ) : null}
               </div>
 
               <MessageComposer
                 conversationId={active.id}
-                personName={
-                  active.type === "group" ? active.title : active.student?.name
-                }
+                personName={active.type === "group" ? active.title : active.student?.name}
                 value={text}
                 replyTo={replyTo}
                 editing={editing}
@@ -884,9 +793,7 @@ export function ChatPage() {
 }
 
 function activity(item: Conversation) {
-  return item.lastMessage?.createdAt
-    ? new Date(item.lastMessage.createdAt).getTime()
-    : 0;
+  return item.lastMessage?.createdAt ? new Date(item.lastMessage.createdAt).getTime() : 0;
 }
 function conversationName(item: Conversation) {
   return item.type === "group" ? item.title || "" : item.student?.name || "";
@@ -896,41 +803,32 @@ function appendRealtimeMessage(
   conversationId: string,
   message: ChatMessage,
 ) {
-  qc.setQueryData<InfiniteData<MessagePage>>(
-    ["chat-messages", conversationId],
-    (current) => {
-      if (
-        !current?.pages.length ||
-        current.pages.some((page) =>
-          page.messages.some((item) => item.id === message.id),
-        )
-      )
-        return current;
-      const pages = [...current.pages];
-      pages[0] = { ...pages[0], messages: [...pages[0].messages, message] };
-      return { ...current, pages };
-    },
-  );
+  qc.setQueryData<InfiniteData<MessagePage>>(["chat-messages", conversationId], (current) => {
+    if (
+      !current?.pages.length ||
+      current.pages.some((page) => page.messages.some((item) => item.id === message.id))
+    )
+      return current;
+    const pages = [...current.pages];
+    pages[0] = { ...pages[0], messages: [...pages[0].messages, message] };
+    return { ...current, pages };
+  });
 }
 function replaceRealtimeMessage(
   qc: ReturnType<typeof useQueryClient>,
   conversationId: string,
   message: ChatMessage,
 ) {
-  qc.setQueryData<InfiniteData<MessagePage>>(
-    ["chat-messages", conversationId],
-    (current) =>
-      current
-        ? {
-            ...current,
-            pages: current.pages.map((page) => ({
-              ...page,
-              messages: page.messages.map((item) =>
-                item.id === message.id ? message : item,
-              ),
-            })),
-          }
-        : current,
+  qc.setQueryData<InfiniteData<MessagePage>>(["chat-messages", conversationId], (current) =>
+    current
+      ? {
+          ...current,
+          pages: current.pages.map((page) => ({
+            ...page,
+            messages: page.messages.map((item) => (item.id === message.id ? message : item)),
+          })),
+        }
+      : current,
   );
 }
 function patchDeletedMessage(
@@ -939,20 +837,18 @@ function patchDeletedMessage(
   id: string,
   deletedAt: string,
 ) {
-  qc.setQueryData<InfiniteData<MessagePage>>(
-    ["chat-messages", conversationId],
-    (current) =>
-      current
-        ? {
-            ...current,
-            pages: current.pages.map((page) => ({
-              ...page,
-              messages: page.messages.map((item) =>
-                item.id === id ? { ...item, text: "", deletedAt } : item,
-              ),
-            })),
-          }
-        : current,
+  qc.setQueryData<InfiniteData<MessagePage>>(["chat-messages", conversationId], (current) =>
+    current
+      ? {
+          ...current,
+          pages: current.pages.map((page) => ({
+            ...page,
+            messages: page.messages.map((item) =>
+              item.id === id ? { ...item, text: "", deletedAt } : item,
+            ),
+          })),
+        }
+      : current,
   );
 }
 function useDebouncedValue<T>(value: T, delay: number) {

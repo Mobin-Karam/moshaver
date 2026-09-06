@@ -2,15 +2,9 @@ import { useCallback, useRef } from "react";
 import { useStoredBoolean } from "./useStoredBoolean";
 
 export function useNotificationSound() {
-  const [soundEnabled, setSoundEnabled] = useStoredBoolean(
-    "admin-notification-sound",
-    true,
-  );
+  const [soundEnabled, setSoundEnabled] = useStoredBoolean("admin-notification-sound", true);
 
-  const [chatSoundEnabled, setChatSoundEnabled] = useStoredBoolean(
-    "admin-chat-sound",
-    true,
-  );
+  const [chatSoundEnabled, setChatSoundEnabled] = useStoredBoolean("admin-chat-sound", true);
 
   const lastSoundAt = useRef(0);
 

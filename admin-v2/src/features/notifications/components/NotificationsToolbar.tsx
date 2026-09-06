@@ -1,19 +1,9 @@
-import {
-  BellRing,
-  MessageSquare,
-  Settings2,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { BellRing, MessageSquare, Settings2, Volume2, VolumeX } from "lucide-react";
 import { Button, Card } from "../../../shared/ui/ui";
 import { useAdminNotifications } from "../hooks/useAdminNotifications";
 import { ToggleButton } from "./ToggleButton";
 
-export function NotificationsToolbar({
-  onOpenSettings,
-}: {
-  onOpenSettings: () => void;
-}) {
+export function NotificationsToolbar({ onOpenSettings }: { onOpenSettings: () => void }) {
   const notifications = useAdminNotifications();
 
   return (
@@ -26,9 +16,7 @@ export function NotificationsToolbar({
           <strong className="block leading-5 text-slate-900 dark:text-white">
             {notifications.unread.toLocaleString("fa-IR")}
           </strong>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">
-            خوانده‌نشده
-          </span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">خوانده‌نشده</span>
         </div>
       </div>
 

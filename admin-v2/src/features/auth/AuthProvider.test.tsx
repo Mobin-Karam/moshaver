@@ -13,9 +13,7 @@ function Probe() {
     <div>
       <span>{auth.status}</span>
       <span>{auth.message}</span>
-      <button onClick={() => void api.get("/protected").catch(() => undefined)}>
-        protected
-      </button>
+      <button onClick={() => void api.get("/protected").catch(() => undefined)}>protected</button>
       <button onClick={auth.stopRestore}>stop restore</button>
     </div>
   );
@@ -51,9 +49,7 @@ describe("AuthProvider", () => {
 
     expect(screen.getByText("checking")).toBeInTheDocument();
 
-    await userEvent.click(
-      screen.getByRole("button", { name: "stop restore" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: "stop restore" }));
 
     expect(screen.getByText("anonymous")).toBeInTheDocument();
     expect(
@@ -93,16 +89,10 @@ describe("AuthProvider", () => {
 
     expect(await screen.findByText("authenticated")).toBeInTheDocument();
 
-    await userEvent.click(
-      screen.getByRole("button", { name: "protected" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: "protected" }));
 
-    await waitFor(() =>
-      expect(screen.getByText("anonymous")).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText("anonymous")).toBeInTheDocument());
 
-    expect(
-      screen.getByText("نشست پایان یافته است"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("نشست پایان یافته است")).toBeInTheDocument();
   });
 });

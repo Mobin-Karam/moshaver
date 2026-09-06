@@ -14,7 +14,13 @@ export function plannerRange(date: string, mode: PlannerMode, locale = "en", cal
   return { from: addDays(date, -30), to: addDays(date, 30) };
 }
 
-export function shiftView(date: string, mode: PlannerMode, direction: number, locale = "en", calendar = "gregory") {
+export function shiftView(
+  date: string,
+  mode: PlannerMode,
+  direction: number,
+  locale = "en",
+  calendar = "gregory",
+) {
   const d = new Date(`${date}T12:00:00`);
   if (mode === "month" && calendar !== "gregory") {
     const current = calendarParts(date, locale, calendar);
@@ -49,14 +55,17 @@ export function taskMinutes(task: PlanTask) {
 }
 
 export function summarizePlans(plans: Plan[]) {
-  return plans.reduce((acc, plan) => {
-    plan.tasks.forEach((task) => {
-      acc.tasks++;
-      acc.minutes += taskMinutes(task);
-      acc.tests += Number(task.testCount || 0);
-    });
-    return acc;
-  }, { tasks: 0, minutes: 0, tests: 0 });
+  return plans.reduce(
+    (acc, plan) => {
+      plan.tasks.forEach((task) => {
+        acc.tasks++;
+        acc.minutes += taskMinutes(task);
+        acc.tests += Number(task.testCount || 0);
+      });
+      return acc;
+    },
+    { tasks: 0, minutes: 0, tests: 0 },
+  );
 }
 
 export function planWarnings(plans: Plan[]) {
@@ -65,7 +74,8 @@ export function planWarnings(plans: Plan[]) {
     let total = 0;
     plan.tasks.forEach((task, index) => {
       total += taskMinutes(task);
-      if ((task.end || "") > "22:30") warnings.push(`${plan.planDate}: فعالیت دیرهنگام تا ${task.end}`);
+      if ((task.end || "") > "22:30")
+        warnings.push(`${plan.planDate}: فعالیت دیرهنگام تا ${task.end}`);
       plan.tasks.slice(index + 1).forEach((other) => {
         if ((task.start || "") < (other.end || "") && (other.start || "") < (task.end || "")) {
           warnings.push(`${plan.planDate}: تداخل ${task.start} و ${other.start}`);
@@ -84,18 +94,41 @@ export function parseFilter(value: string | null): TaskFilter {
   return value === "published" || value === "draft" || value === "incomplete" ? value : "all";
 }
 export function filterLabel(value: TaskFilter) {
-  return ({ all: "همه برنامه‌ها", published: "فقط منتشرشده", draft: "فقط پیش‌نویس", incomplete: "فعالیت‌های انجام‌نشده" } as const)[value];
+  return (
+    {
+      all: "همه برنامه‌ها",
+      published: "فقط منتشرشده",
+      draft: "فقط پیش‌نویس",
+      incomplete: "فعالیت‌های انجام‌نشده",
+    } as const
+  )[value];
 }
 
 export function filterPlans(plans: Plan[], search: string, filter: TaskFilter) {
   const needle = normalizePersianText(search).trim().toLocaleLowerCase("fa");
   return plans
-    .filter((plan) => filter === "all" || (filter === "published" && plan.published) || (filter === "draft" && !plan.published) || (filter === "incomplete" && plan.tasks.some((task) => !task.completedAt)))
+    .filter(
+      (plan) =>
+        filter === "all" ||
+        (filter === "published" && plan.published) ||
+        (filter === "draft" && !plan.published) ||
+        (filter === "incomplete" && plan.tasks.some((task) => !task.completedAt)),
+    )
     .map((plan) => ({
       ...plan,
       tasks: plan.tasks
         .filter((task) => filter !== "incomplete" || !isTaskComplete(task))
-        .filter((task) => !needle || normalizePersianText([task.title, task.subject, task.note, task.type, task.pages].filter(Boolean).join(" ")).toLocaleLowerCase("fa").includes(needle))
+        .filter(
+          (task) =>
+            !needle ||
+            normalizePersianText(
+              [task.title, task.subject, task.note, task.type, task.pages]
+                .filter(Boolean)
+                .join(" "),
+            )
+              .toLocaleLowerCase("fa")
+              .includes(needle),
+        )
         .sort(comparePlanTasks),
     }))
     .filter((plan) => !needle || plan.tasks.length > 0);
@@ -105,10 +138,15 @@ export function replacePlan(current: Plan[] | undefined, updated: Plan) {
   updated = { ...updated, tasks: [...updated.tasks].sort(comparePlanTasks) };
   if (!current) return [updated];
   const found = current.some((plan) => plan.id === updated.id);
-  return found ? current.map((plan) => plan.id === updated.id ? updated : plan) : [...current, updated].sort((a, b) => a.planDate.localeCompare(b.planDate));
+  return found
+    ? current.map((plan) => (plan.id === updated.id ? updated : plan))
+    : [...current, updated].sort((a, b) => a.planDate.localeCompare(b.planDate));
 }
 
-export function optimisticMove(plans: Plan[], move: { taskId: string; planId: string; start: string; end: string }) {
+export function optimisticMove(
+  plans: Plan[],
+  move: { taskId: string; planId: string; start: string; end: string },
+) {
   let moved: PlanTask | undefined;
   const stripped = plans.map((plan) => ({
     ...plan,
@@ -121,18 +159,33 @@ export function optimisticMove(plans: Plan[], move: { taskId: string; planId: st
     }),
   }));
   if (!moved) return plans;
-  return stripped.map((plan) => plan.id === move.planId ? { ...plan, tasks: [...plan.tasks, moved!].sort(comparePlanTasks) } : plan);
+  return stripped.map((plan) =>
+    plan.id === move.planId
+      ? { ...plan, tasks: [...plan.tasks, moved!].sort(comparePlanTasks) }
+      : plan,
+  );
 }
 
 export function comparePlanTasks(a: PlanTask, b: PlanTask) {
-  return taskTime(a).localeCompare(taskTime(b)) || (a.end || a.endTime || "").localeCompare(b.end || b.endTime || "") || a.id.localeCompare(b.id);
+  return (
+    taskTime(a).localeCompare(taskTime(b)) ||
+    (a.end || a.endTime || "").localeCompare(b.end || b.endTime || "") ||
+    a.id.localeCompare(b.id)
+  );
 }
 export function sortPlanTasks(plans: Plan[]) {
   return plans.map((plan) => ({ ...plan, tasks: [...plan.tasks].sort(comparePlanTasks) }));
 }
-export function taskTime(task: PlanTask) { return task.start || task.startTime || "99:99"; }
+export function taskTime(task: PlanTask) {
+  return task.start || task.startTime || "99:99";
+}
 export function normalizeTaskDraft<T extends TaskDraft & { id?: string }>(task: T): T {
-  return { ...task, start: normalizeTime(task.start), end: normalizeTime(task.end), sortOrder: timeToMinutes(task.start) };
+  return {
+    ...task,
+    start: normalizeTime(task.start),
+    end: normalizeTime(task.end),
+    sortOrder: timeToMinutes(task.start),
+  };
 }
 export function normalizeTime(value: string) {
   const [hour = "0", minute = "0"] = value.split(":");
@@ -143,22 +196,49 @@ export function timeToMinutes(value: string) {
   return hour * 60 + minute;
 }
 export function validateTaskDraft(task: Pick<TaskDraft, "start" | "end">) {
-  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(task.start) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(task.end)) return "زمان شروع و پایان معتبر وارد کنید.";
-  if (timeToMinutes(task.end) <= timeToMinutes(task.start)) return "زمان پایان باید بعد از زمان شروع باشد.";
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(task.start) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(task.end))
+    return "زمان شروع و پایان معتبر وارد کنید.";
+  if (timeToMinutes(task.end) <= timeToMinutes(task.start))
+    return "زمان پایان باید بعد از زمان شروع باشد.";
   return "";
 }
 export function parseDraggedTask(raw: string) {
   try {
     const value = JSON.parse(raw) as Record<string, unknown>;
-    if (typeof value.id !== "string" || typeof value.start !== "string" || typeof value.end !== "string" || validateTaskDraft({ start: value.start, end: value.end })) return null;
+    if (
+      typeof value.id !== "string" ||
+      typeof value.start !== "string" ||
+      typeof value.end !== "string" ||
+      validateTaskDraft({ start: value.start, end: value.end })
+    )
+      return null;
     return { id: value.id, start: value.start, end: value.end };
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 export function taskTypeLabel(type: string) {
-  return ({ study: "مطالعه", review: "مرور", test: "تست", class: "کلاس", prayer: "نماز", meal: "وعده غذایی", break: "استراحت", exam: "آزمون" } as Record<string, string>)[type] || type;
+  return (
+    (
+      {
+        study: "مطالعه",
+        review: "مرور",
+        test: "تست",
+        class: "کلاس",
+        prayer: "نماز",
+        meal: "وعده غذایی",
+        break: "استراحت",
+        exam: "آزمون",
+      } as Record<string, string>
+    )[type] || type
+  );
 }
-export function errorMessage(reason: unknown, fallback: string) { return reason instanceof Error && reason.message ? reason.message : fallback; }
-export function isTaskComplete(task: PlanTask) { return Boolean(task.completedAt || task.completion?.status === "done"); }
+export function errorMessage(reason: unknown, fallback: string) {
+  return reason instanceof Error && reason.message ? reason.message : fallback;
+}
+export function isTaskComplete(task: PlanTask) {
+  return Boolean(task.completedAt || task.completion?.status === "done");
+}
 export function addMinutes(time: string, minutes: number) {
   const [hour, minute] = time.split(":").map(Number);
   const total = Math.min(23 * 60 + 59, hour * 60 + minute + minutes);
@@ -170,11 +250,22 @@ export function minutesBetween(start: string, end: string) {
   return endHour * 60 + endMinute - (startHour * 60 + startMinute);
 }
 
-function addDateDays(date: Date, days: number) { const next = new Date(date); next.setDate(next.getDate() + days); return next; }
-function iso(date: Date) { return date.toISOString().slice(0, 10); }
+function addDateDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+function iso(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
 function calendarParts(value: string, locale: string, calendar: string) {
-  const parts = new Intl.DateTimeFormat(`${locale}-u-ca-${calendar}-nu-latn`, { year: "numeric", month: "numeric", day: "numeric" }).formatToParts(new Date(`${value}T12:00:00`));
-  const number = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((part) => part.type === type)?.value);
+  const parts = new Intl.DateTimeFormat(`${locale}-u-ca-${calendar}-nu-latn`, {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  }).formatToParts(new Date(`${value}T12:00:00`));
+  const number = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value);
   return { year: number("year"), month: number("month"), day: number("day") };
 }
 function calendarMonthRange(date: string, locale: string, calendar: string) {

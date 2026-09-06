@@ -16,18 +16,18 @@
 ## Suggested structure
 
 components/
-  canvas/
-  forms/
-  menus/
-  analytics/
-  shared/
+canvas/
+forms/
+menus/
+analytics/
+shared/
 
 hooks/
-  usePlannerFilters
-  usePlannerNavigation
-  usePlannerActions
+usePlannerFilters
+usePlannerNavigation
+usePlannerActions
 
 lib/
-  date/
-  validation/
-  planner-model
+date/
+validation/
+planner-model

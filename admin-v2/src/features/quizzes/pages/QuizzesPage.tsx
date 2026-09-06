@@ -55,8 +55,7 @@ export function QuizzesPage() {
       `${item.title} ${item.subject || ""} ${item.exam_title || ""}`
         .toLocaleLowerCase("fa")
         .includes(quizSearch.trim().toLocaleLowerCase("fa")) &&
-      (status === "all" ||
-        (status === "active" ? !!item.active : !item.active)),
+      (status === "all" || (status === "active" ? !!item.active : !item.active)),
   );
   function setQuizId(value: string) {
     setQuizIdState(value);
@@ -69,11 +68,7 @@ export function QuizzesPage() {
       { replace: true },
     );
   }
-  function syncFilter(
-    key: "q" | "status" | "question",
-    value: string,
-    fallback = "",
-  ) {
+  function syncFilter(key: "q" | "status" | "question", value: string, fallback = "") {
     setParams(
       (current) => {
         const next = new URLSearchParams(current);
@@ -105,14 +100,10 @@ export function QuizzesPage() {
     onSuccess: (value) => {
       qc.invalidateQueries({ queryKey: ["quizzes"] });
       notify(quizId ? "آزمونک به‌روز شد." : "آزمونک ساخته شد.");
-      if (value && typeof value === "object" && "id" in value)
-        setQuizId(String(value.id));
+      if (value && typeof value === "object" && "id" in value) setQuizId(String(value.id));
     },
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "ذخیره آزمونک ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "ذخیره آزمونک ناموفق بود.", "error"),
   });
   const toggle = useMutation({
     mutationFn: () => updateQuiz(quizId, { active: !selected?.active }),
@@ -121,12 +112,7 @@ export function QuizzesPage() {
       void qc.invalidateQueries({ queryKey: ["quizzes"] });
     },
     onError: (error) =>
-      notify(
-        error instanceof Error
-          ? error.message
-          : "تغییر وضعیت آزمونک ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "تغییر وضعیت آزمونک ناموفق بود.", "error"),
   });
   const add = useMutation({
     mutationFn: () =>
@@ -134,22 +120,15 @@ export function QuizzesPage() {
         ? updateQuizQuestion(editingQuestionId, question)
         : createQuizQuestion(quizId, question),
     onSuccess: () => {
-      notify(
-        editingQuestionId ? "سؤال آزمونک ویرایش شد." : "سؤال آزمونک افزوده شد.",
-      );
+      notify(editingQuestionId ? "سؤال آزمونک ویرایش شد." : "سؤال آزمونک افزوده شد.");
       setQuestion(emptyQuestion());
       setEditingQuestionId("");
       qc.invalidateQueries({ queryKey: ["quiz-questions", quizId] });
     },
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "ذخیره سؤال ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "ذخیره سؤال ناموفق بود.", "error"),
   });
-  const visibleQuestions = (questions.data ?? []).filter((item) =>
-    questionMatches(item, search),
-  );
+  const visibleQuestions = (questions.data ?? []).filter((item) => questionMatches(item, search));
   const validationError = questionError(question);
   const remove = useMutation({
     mutationFn: deleteQuizQuestion,
@@ -158,10 +137,7 @@ export function QuizzesPage() {
       void qc.invalidateQueries({ queryKey: ["quiz-questions", quizId] });
     },
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "حذف سؤال ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "حذف سؤال ناموفق بود.", "error"),
   });
   return (
     <div className="grid gap-5">
@@ -206,9 +182,7 @@ export function QuizzesPage() {
               onToggle={() =>
                 void modal
                   .confirm({
-                    title: selected?.active
-                      ? "غیرفعال‌کردن آزمونک؟"
-                      : "فعال‌کردن آزمونک؟",
+                    title: selected?.active ? "غیرفعال‌کردن آزمونک؟" : "فعال‌کردن آزمونک؟",
                     description: selected?.active
                       ? "دانش‌آموزان دیگر به این آزمونک دسترسی نخواهند داشت."
                       : "آزمونک دوباره برای دانش‌آموزان قابل استفاده می‌شود.",

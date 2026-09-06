@@ -51,31 +51,12 @@ import {
   type StudentForm,
 } from "../model/student-form";
 
-const detailTabs: StudentDetailTab[] = [
-  "overview",
-  "activity",
-  "profile",
-  "access",
-  "security",
-];
-const sortValues: StudentSort[] = [
-  "name",
-  "username",
-  "grade",
-  "lastSeen",
-  "completeness",
-];
-const statusValues: StudentStatusFilter[] = [
-  "all",
-  "active",
-  "inactive",
-  "archived",
-];
+const detailTabs: StudentDetailTab[] = ["overview", "activity", "profile", "access", "security"];
+const sortValues: StudentSort[] = ["name", "username", "grade", "lastSeen", "completeness"];
+const statusValues: StudentStatusFilter[] = ["all", "active", "inactive", "archived"];
 
 function sameForm(a: StudentForm, b: StudentForm) {
-  return (Object.keys(a) as (keyof StudentForm)[]).every(
-    (key) => a[key] === b[key],
-  );
+  return (Object.keys(a) as (keyof StudentForm)[]).every((key) => a[key] === b[key]);
 }
 
 function readableError(error: unknown, fallback: string) {
@@ -100,11 +81,7 @@ function dateValue(value?: string) {
   return Number.isNaN(time) ? 0 : time;
 }
 
-function numberParam(
-  value: string | null,
-  fallback: number,
-  allowed?: number[],
-) {
+function numberParam(value: string | null, fallback: number, allowed?: number[]) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < 1) return fallback;
   return allowed && !allowed.includes(parsed) ? fallback : parsed;
@@ -138,7 +115,12 @@ function FeedbackBanner({
 
 export function StudentsPage() {
   const auth = useAuth();
-  const visibleDetailTabs:StudentDetailTab[]=["overview","activity","access",...(auth.can("students.update")?["profile" as const,"security" as const]:[])];
+  const visibleDetailTabs: StudentDetailTab[] = [
+    "overview",
+    "activity",
+    "access",
+    ...(auth.can("students.update") ? ["profile" as const, "security" as const] : []),
+  ];
   const [searchParams, setSearchParams] = useSearchParams();
   const studentStore = useStudents();
   const [search, setSearch] = useState(() => searchParams.get("q") || "");
@@ -146,33 +128,27 @@ export function StudentsPage() {
     const value = searchParams.get("status") as StudentStatusFilter | null;
     return value && statusValues.includes(value) ? value : "all";
   });
-  const [profileFilter, setProfileFilter] = useState<StudentProfileFilter>(
-    () => (searchParams.get("profile") === "incomplete" ? "incomplete" : "all"),
+  const [profileFilter, setProfileFilter] = useState<StudentProfileFilter>(() =>
+    searchParams.get("profile") === "incomplete" ? "incomplete" : "all",
   );
   const [sort, setSortState] = useState<StudentSort>(() => {
     const value = searchParams.get("sort") as StudentSort | null;
     return value && sortValues.includes(value) ? value : "name";
   });
-  const [sortDirection, setSortDirection] = useState<StudentSortDirection>(
-    () => (searchParams.get("direction") === "desc" ? "desc" : "asc"),
+  const [sortDirection, setSortDirection] = useState<StudentSortDirection>(() =>
+    searchParams.get("direction") === "desc" ? "desc" : "asc",
   );
-  const [page, setPage] = useState(() =>
-    numberParam(searchParams.get("page"), 1),
-  );
+  const [page, setPage] = useState(() => numberParam(searchParams.get("page"), 1));
   const [pageSize, setPageSize] = useState(() =>
     numberParam(searchParams.get("pageSize"), 25, [25, 50, 100]),
   );
   const [creating, setCreating] = useState(false);
-  const [selectedId, setSelectedId] = useState(
-    () => searchParams.get("studentId") || "",
-  );
+  const [selectedId, setSelectedId] = useState(() => searchParams.get("studentId") || "");
   const [detailTab, setDetailTab] = useState<StudentDetailTab>(() => {
     const value = searchParams.get("tab") as StudentDetailTab | null;
     return value && detailTabs.includes(value) ? value : "overview";
   });
-  const [mobileDirectory, setMobileDirectory] = useState(
-    () => !searchParams.get("studentId"),
-  );
+  const [mobileDirectory, setMobileDirectory] = useState(() => !searchParams.get("studentId"));
   const [form, setForm] = useState<StudentForm>(emptyStudentForm());
   const [securityPassword, setSecurityPassword] = useState("");
   const [feedback, setFeedback] = useState<StudentEditorFeedback>(null);
@@ -183,22 +159,12 @@ export function StudentsPage() {
   const studentsQueryKey = ["students", getApiWorkContextKey()] as const;
 
   const selected = useMemo(
-    () =>
-      selectedId
-        ? (students.find((student) => student.id === selectedId) ?? null)
-        : null,
+    () => (selectedId ? (students.find((student) => student.id === selectedId) ?? null) : null),
     [selectedId, students],
   );
-  const mode: StudentEditorMode = creating
-    ? "create"
-    : selected
-      ? "edit"
-      : "empty";
+  const mode: StudentEditorMode = creating ? "create" : selected ? "edit" : "empty";
   const baseline = useMemo(
-    () =>
-      mode === "edit" && selected
-        ? studentToForm(selected)
-        : emptyStudentForm(),
+    () => (mode === "edit" && selected ? studentToForm(selected) : emptyStudentForm()),
     [mode, selected],
   );
   const dirty = useMemo(
@@ -206,12 +172,7 @@ export function StudentsPage() {
     [baseline, form, mode],
   );
   const saveDirty = useMemo(
-    () =>
-      mode === "edit"
-        ? !sameForm(form, baseline)
-        : mode === "create"
-          ? dirty
-          : false,
+    () => (mode === "edit" ? !sameForm(form, baseline) : mode === "create" ? dirty : false),
     [baseline, dirty, form, mode],
   );
 
@@ -221,8 +182,7 @@ export function StudentsPage() {
     return (
       students.find(
         (student) =>
-          student.id !== selectedId &&
-          normalizedUsername(getStudentUsername(student)) === username,
+          student.id !== selectedId && normalizedUsername(getStudentUsername(student)) === username,
       ) ?? null
     );
   }, [form.username, selectedId, students]);
@@ -233,22 +193,14 @@ export function StudentsPage() {
   const counts = useMemo(
     () => ({
       all: students.length,
-      active: students.filter(
-        (student) => getStudentStatus(student) === "active",
-      ).length,
-      inactive: students.filter(
-        (student) => getStudentStatus(student) === "inactive",
-      ).length,
-      archived: students.filter(
-        (student) => getStudentStatus(student) === "archived",
-      ).length,
+      active: students.filter((student) => getStudentStatus(student) === "active").length,
+      inactive: students.filter((student) => getStudentStatus(student) === "inactive").length,
+      archived: students.filter((student) => getStudentStatus(student) === "archived").length,
     }),
     [students],
   );
   const incompleteCount = useMemo(
-    () =>
-      students.filter((student) => getStudentProfileCompleteness(student) < 100)
-        .length,
+    () => students.filter((student) => getStudentProfileCompleteness(student) < 100).length,
     [students],
   );
 
@@ -273,26 +225,14 @@ export function StudentsPage() {
               .join(" "),
           ).includes(needle),
       )
-      .filter(
-        (student) => status === "all" || getStudentStatus(student) === status,
-      )
-      .filter(
-        (student) =>
-          profileFilter === "all" ||
-          getStudentProfileCompleteness(student) < 100,
-      )
+      .filter((student) => status === "all" || getStudentStatus(student) === status)
+      .filter((student) => profileFilter === "all" || getStudentProfileCompleteness(student) < 100)
       .slice()
       .sort((a, b) => {
         if (sort === "lastSeen")
-          return (
-            (dateValue(a.last_seen_at) - dateValue(b.last_seen_at)) * direction
-          );
+          return (dateValue(a.last_seen_at) - dateValue(b.last_seen_at)) * direction;
         if (sort === "completeness")
-          return (
-            (getStudentProfileCompleteness(a) -
-              getStudentProfileCompleteness(b)) *
-            direction
-          );
+          return (getStudentProfileCompleteness(a) - getStudentProfileCompleteness(b)) * direction;
         const av =
           sort === "username"
             ? getStudentUsername(a)
@@ -305,10 +245,7 @@ export function StudentsPage() {
             : sort === "grade"
               ? b.grade || ""
               : b.name || "";
-        return (
-          av.localeCompare(bv, "fa", { numeric: true, sensitivity: "base" }) *
-          direction
-        );
+        return av.localeCompare(bv, "fa", { numeric: true, sensitivity: "base" }) * direction;
       });
   }, [deferredSearch, profileFilter, sort, sortDirection, status, students]);
 
@@ -380,8 +317,7 @@ export function StudentsPage() {
     void modal
       .confirm({
         title: "فرم فعلی پاک شود؟",
-        description:
-          "تغییرات ذخیره‌نشده کنار گذاشته می‌شوند و فرم ساخت دانش‌آموز جدید باز می‌شود.",
+        description: "تغییرات ذخیره‌نشده کنار گذاشته می‌شوند و فرم ساخت دانش‌آموز جدید باز می‌شود.",
         confirmLabel: "دانش‌آموز جدید",
       })
       .then((ok) => {
@@ -391,9 +327,7 @@ export function StudentsPage() {
 
   function cancelCreate() {
     const run = () => {
-      const previous =
-        students.find((student) => student.id === studentStore.studentId) ??
-        null;
+      const previous = students.find((student) => student.id === studentStore.studentId) ?? null;
       setCreating(false);
       setMobileDirectory(true);
       setFeedback(null);
@@ -446,9 +380,7 @@ export function StudentsPage() {
   function patchCachedStudent(id: string, patch: Partial<Student>) {
     qc.setQueryData<Student[]>(studentsQueryKey, (current) =>
       Array.isArray(current)
-        ? current.map((student) =>
-            student.id === id ? { ...student, ...patch } : student,
-          )
+        ? current.map((student) => (student.id === id ? { ...student, ...patch } : student))
         : current,
     );
   }
@@ -513,9 +445,8 @@ export function StudentsPage() {
   });
 
   const lifecycle = useMutation({
-    mutationFn: (
-      action: "activate" | "deactivate" | "restore" | "force-logout",
-    ) => studentLifecycle(selectedId, action),
+    mutationFn: (action: "activate" | "deactivate" | "restore" | "force-logout") =>
+      studentLifecycle(selectedId, action),
     onSuccess: (_, action) => {
       if (action === "activate" || action === "restore")
         patchCachedStudent(selectedId, {
@@ -570,8 +501,7 @@ export function StudentsPage() {
     enabled: mode === "edit" && !!selectedId && detailTab === "overview",
     queryFn: () => getStudentOverview(selectedId),
   });
-  const activityEnabled =
-    mode === "edit" && !!selectedId && detailTab === "activity";
+  const activityEnabled = mode === "edit" && !!selectedId && detailTab === "activity";
   const learning = useQuery({
     queryKey: ["student-learning", selectedId],
     enabled: activityEnabled && auth.can("learning.read"),
@@ -596,9 +526,7 @@ export function StudentsPage() {
   useEffect(() => {
     if (creating || studentStore.isLoading || !students.length) return;
     const fromUrl = searchParams.get("studentId") || "";
-    const fromUrlStudent = fromUrl
-      ? students.find((student) => student.id === fromUrl)
-      : null;
+    const fromUrlStudent = fromUrl ? students.find((student) => student.id === fromUrl) : null;
     if (fromUrlStudent) {
       if (fromUrlStudent.id !== selectedId) {
         setSelectedId(fromUrlStudent.id);
@@ -609,10 +537,8 @@ export function StudentsPage() {
         studentStore.setStudentId(fromUrlStudent.id);
       return;
     }
-    if (selectedId && students.some((student) => student.id === selectedId))
-      return;
-    const stored =
-      students.find((student) => student.id === studentStore.studentId) ?? null;
+    if (selectedId && students.some((student) => student.id === selectedId)) return;
+    const stored = students.find((student) => student.id === studentStore.studentId) ?? null;
     if (stored) {
       setSelectedId(stored.id);
       setForm(studentToForm(stored));
@@ -630,7 +556,9 @@ export function StudentsPage() {
   useEffect(() => {
     setPage(1);
   }, [profileFilter, deferredSearch, sort, sortDirection, status, pageSize]);
-  useEffect(()=>{if(!visibleDetailTabs.includes(detailTab))setDetailTab("overview");},[detailTab,auth.activeRole]);
+  useEffect(() => {
+    if (!visibleDetailTabs.includes(detailTab)) setDetailTab("overview");
+  }, [detailTab, auth.activeRole]);
   useEffect(() => {
     if (page > pageCount) setPage(pageCount);
   }, [page, pageCount]);
@@ -648,11 +576,7 @@ export function StudentsPage() {
     setSearchParams(
       (current) => {
         const next = new URLSearchParams(current);
-        const setOrDelete = (
-          key: string,
-          value: string,
-          defaultValue?: string,
-        ) => {
+        const setOrDelete = (key: string, value: string, defaultValue?: string) => {
           if (!value || value === defaultValue) next.delete(key);
           else next.set(key, value);
         };
@@ -695,9 +619,7 @@ export function StudentsPage() {
       return;
     }
     setSortState(value);
-    setSortDirection(
-      value === "lastSeen" || value === "completeness" ? "desc" : "asc",
-    );
+    setSortDirection(value === "lastSeen" || value === "completeness" ? "desc" : "asc");
   }
 
   function clearFilters() {
@@ -706,25 +628,15 @@ export function StudentsPage() {
     setProfileFilter("all");
   }
 
-  function confirmLifecycle(
-    action: "activate" | "deactivate" | "restore" | "force-logout",
-  ) {
+  function confirmLifecycle(action: "activate" | "deactivate" | "restore" | "force-logout") {
     const copy = {
-      activate: [
-        "فعال‌سازی حساب؟",
-        "دانش‌آموز دوباره اجازه ورود خواهد داشت.",
-        "فعال‌سازی",
-      ],
+      activate: ["فعال‌سازی حساب؟", "دانش‌آموز دوباره اجازه ورود خواهد داشت.", "فعال‌سازی"],
       deactivate: [
         "غیرفعال‌سازی حساب؟",
         "نشست‌های دانش‌آموز بسته و ورود او متوقف می‌شود.",
         "غیرفعال‌سازی",
       ],
-      restore: [
-        "بازیابی حساب؟",
-        "حساب بایگانی‌شده با تمام تاریخچه دوباره فعال می‌شود.",
-        "بازیابی",
-      ],
+      restore: ["بازیابی حساب؟", "حساب بایگانی‌شده با تمام تاریخچه دوباره فعال می‌شود.", "بازیابی"],
       "force-logout": [
         "خروج اجباری دانش‌آموز؟",
         "تمام نشست‌های فعال این دانش‌آموز فوراً بسته می‌شوند.",
@@ -736,10 +648,7 @@ export function StudentsPage() {
         title: copy[0],
         description: copy[1],
         confirmLabel: copy[2],
-        tone:
-          action === "deactivate" || action === "force-logout"
-            ? "danger"
-            : "default",
+        tone: action === "deactivate" || action === "force-logout" ? "danger" : "default",
       })
       .then((ok) => ok && lifecycle.mutate(action));
   }
@@ -753,10 +662,42 @@ export function StudentsPage() {
     ]);
 
   const activityValues = [
-    ...(auth.can("learning.read") ? [{ label:"موارد یادگیری", value:learning.data?.summary.totalItems||0, loading:learning.isLoading, error:learning.isError, hint:"داده بخش یادگیری" }] : []),
-    ...(auth.can("exams.read") ? [{ label:"تلاش آزمون", value:countData(attempts.data), loading:attempts.isLoading, error:attempts.isError, hint:"تعداد تلاش‌های ثبت‌شده" }] : []),
-    { label:"روزهای هفتگی", value:countData(weekly.data), loading:weekly.isLoading, error:weekly.isError, hint:"داده پیشرفت هفتگی" },
-    { label:"موضوع عملکرد", value:countData(topics.data), loading:topics.isLoading, error:topics.isError, hint:"موضوع‌های تحلیل‌شده" },
+    ...(auth.can("learning.read")
+      ? [
+          {
+            label: "موارد یادگیری",
+            value: learning.data?.summary.totalItems || 0,
+            loading: learning.isLoading,
+            error: learning.isError,
+            hint: "داده بخش یادگیری",
+          },
+        ]
+      : []),
+    ...(auth.can("exams.read")
+      ? [
+          {
+            label: "تلاش آزمون",
+            value: countData(attempts.data),
+            loading: attempts.isLoading,
+            error: attempts.isError,
+            hint: "تعداد تلاش‌های ثبت‌شده",
+          },
+        ]
+      : []),
+    {
+      label: "روزهای هفتگی",
+      value: countData(weekly.data),
+      loading: weekly.isLoading,
+      error: weekly.isError,
+      hint: "داده پیشرفت هفتگی",
+    },
+    {
+      label: "موضوع عملکرد",
+      value: countData(topics.data),
+      loading: topics.isLoading,
+      error: topics.isError,
+      hint: "موضوع‌های تحلیل‌شده",
+    },
   ];
 
   const detailContent = selected ? (
@@ -774,10 +715,10 @@ export function StudentsPage() {
           />
         ) : null}
         {detailTab === "activity" ? (
-          <><StudentInsights
-            onRetry={retryActivity}
-            values={activityValues}
-          /><StudentSupportWorkspace studentId={selectedId} /></>
+          <>
+            <StudentInsights onRetry={retryActivity} values={activityValues} />
+            <StudentSupportWorkspace studentId={selectedId} />
+          </>
         ) : null}
         {detailTab === "profile" && auth.can("students.update") ? (
           <StudentEditor
@@ -795,9 +736,7 @@ export function StudentsPage() {
             onSave={() => update.mutate()}
           />
         ) : null}
-        {detailTab === "access" ? (
-          <StudentAdminAccess selectedId={selectedId} />
-        ) : null}
+        {detailTab === "access" ? <StudentAdminAccess selectedId={selectedId} /> : null}
         {detailTab === "security" && auth.can("students.update") ? (
           <StudentSecurity
             student={selected}
@@ -810,8 +749,7 @@ export function StudentsPage() {
               void modal
                 .confirm({
                   title: "بایگانی دانش‌آموز؟",
-                  description:
-                    "حساب غیرفعال می‌شود اما تاریخچه برای بازیابی حفظ خواهد شد.",
+                  description: "حساب غیرفعال می‌شود اما تاریخچه برای بازیابی حفظ خواهد شد.",
                   tone: "danger",
                   confirmLabel: "بایگانی",
                 })
@@ -821,8 +759,7 @@ export function StudentsPage() {
               void modal
                 .confirm({
                   title: "تغییر رمز دانش‌آموز؟",
-                  description:
-                    "رمز تغییر می‌کند و تمام نشست‌های قبلی دانش‌آموز بسته می‌شوند.",
+                  description: "رمز تغییر می‌کند و تمام نشست‌های قبلی دانش‌آموز بسته می‌شوند.",
                   confirmLabel: "تغییر رمز",
                 })
                 .then((ok) => ok && resetPassword.mutate())
@@ -852,16 +789,16 @@ export function StudentsPage() {
           incomplete={incompleteCount}
           incompleteOnly={profileFilter === "incomplete"}
           onIncompleteToggle={() => {
-            setProfileFilter(
-              profileFilter === "incomplete" ? "all" : "incomplete",
-            );
+            setProfileFilter(profileFilter === "incomplete" ? "all" : "incomplete");
             if (profileFilter !== "incomplete") setStatus("all");
           }}
         />
-        {auth.can("students.create") ? <Button onClick={startCreate}>
-          <UserPlus size={16} />
-          دانش‌آموز جدید
-        </Button> : null}
+        {auth.can("students.create") ? (
+          <Button onClick={startCreate}>
+            <UserPlus size={16} />
+            دانش‌آموز جدید
+          </Button>
+        ) : null}
       </header>
 
       <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(420px,0.75fr)] 2xl:grid-cols-[minmax(0,1.4fr)_minmax(460px,0.6fr)]">
@@ -906,10 +843,7 @@ export function StudentsPage() {
                 </button>
               </div>
               <div className="max-h-[calc(100vh-8rem)] overflow-y-auto p-3 sm:p-4">
-                <FeedbackBanner
-                  feedback={feedback}
-                  onDismiss={() => setFeedback(null)}
-                />
+                <FeedbackBanner feedback={feedback} onDismiss={() => setFeedback(null)} />
                 <div className={feedback ? "mt-4" : ""}>
                   <StudentEditor
                     mode="create"
@@ -947,9 +881,7 @@ export function StudentsPage() {
                   <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
                     <UserPlus size={20} />
                   </span>
-                  <h2 className="mt-3 font-bold text-ink">
-                    یک دانش‌آموز را انتخاب کنید
-                  </h2>
+                  <h2 className="mt-3 font-bold text-ink">یک دانش‌آموز را انتخاب کنید</h2>
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     پرونده و فضای کاری در این بخش نمایش داده می‌شود.
                   </p>

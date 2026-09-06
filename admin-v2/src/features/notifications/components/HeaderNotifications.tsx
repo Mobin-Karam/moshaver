@@ -1,10 +1,4 @@
-import {
-  AlertCircle,
-  Bell,
-  CheckCheck,
-  ExternalLink,
-  RefreshCw,
-} from "lucide-react";
+import { AlertCircle, Bell, CheckCheck, ExternalLink, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useLocale } from "../../../shared/ui/locale";
@@ -121,9 +115,7 @@ export function HeaderNotifications() {
                 <strong className="line-clamp-1 text-sm text-slate-900 dark:text-white">
                   {item.title}
                 </strong>
-                <Badge tone={notificationTone(item.type)}>
-                  {notificationTypeLabel(item.type)}
-                </Badge>
+                <Badge tone={notificationTone(item.type)}>{notificationTypeLabel(item.type)}</Badge>
               </span>
 
               {item.body ? (

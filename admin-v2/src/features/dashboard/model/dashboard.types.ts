@@ -39,11 +39,7 @@ export type DashboardRecentReport = {
 export type AttentionSeverity = "red" | "yellow" | "green";
 
 export type AttentionReason = {
-  code:
-    | "overdue_reviews"
-    | "weak_exam_performance"
-    | "no_recent_activity"
-    | string;
+  code: "overdue_reviews" | "weak_exam_performance" | "no_recent_activity" | string;
   value: number;
   label: string;
 };
@@ -90,13 +86,19 @@ export type RoleDashboardData = {
   recoveryRequests?: number;
   retryRequests?: number;
   todayPlanHealth?: { plans?: number; tasks?: number; completed?: number };
-  upcomingExams?: Array<{ id:string; title:string; subject?:string; startTime?:string }>;
-  subjects?: number | Array<{id:string;name:string}>;
-  recentExamResults?: Array<{id:string;score:number;finishedAt:string;studentId:string;title:string}>;
+  upcomingExams?: Array<{ id: string; title: string; subject?: string; startTime?: string }>;
+  subjects?: number | Array<{ id: string; name: string }>;
+  recentExamResults?: Array<{
+    id: string;
+    score: number;
+    finishedAt: string;
+    studentId: string;
+    title: string;
+  }>;
   studentsNeedingAttention?: number;
-  contentTasks?: {questions?:number;quizzes?:number};
-  recentProgress?: {plans?:number;tasks?:number;completed?:number};
-  upcomingGoals?: Array<{id:string;title:string}>;
+  contentTasks?: { questions?: number; quizzes?: number };
+  recentProgress?: { plans?: number; tasks?: number; completed?: number };
+  upcomingGoals?: Array<{ id: string; title: string }>;
   messages?: number;
   questions?: number;
   quizzes?: number;
@@ -110,11 +112,11 @@ export type RoleDashboardData = {
   staff?: number;
   activeUsers?: number;
   inactiveUsers?: number;
-  analytics?: {plans?:number};
+  analytics?: { plans?: number };
   notices?: unknown[];
   users?: number;
-  systemHealth?: {database?:string;sqlite?:boolean};
-  releaseStatus?: {version?:string;environment?:string};
-  auditSummary?: {events24h?:number;lockedLogins?:number};
+  systemHealth?: { database?: string; sqlite?: boolean };
+  releaseStatus?: { version?: string; environment?: string };
+  auditSummary?: { events24h?: number; lockedLogins?: number };
   children?: number;
 };

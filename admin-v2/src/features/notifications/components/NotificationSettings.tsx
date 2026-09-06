@@ -75,10 +75,7 @@ function NotificationSettingsContent({
       }
       notify(successMessage, "success");
     } catch (error) {
-      notify(
-        error instanceof Error ? error.message : "عملیات اعلان ناموفق بود.",
-        "error",
-      );
+      notify(error instanceof Error ? error.message : "عملیات اعلان ناموفق بود.", "error");
     } finally {
       setBusy("");
     }
@@ -111,16 +108,17 @@ function NotificationSettingsContent({
     );
   }
 
-  const message =
-    !status?.supported
-      ? "این مرورگر Push را پشتیبانی نمی‌کند."
-      : !status.serverConfigured
-        ? "کلیدهای Web Push روی سرور تنظیم نشده‌اند."
-        : status.permission === "denied"
-          ? "اجازه اعلان در تنظیمات مرورگر مسدود شده است."
-          : status.registered
-            ? "اعلان سیستمی این دستگاه فعال است."
-            : "برای دریافت اعلان در پس‌زمینه، اعلان سیستمی را برای این دستگاه فعال کنید.";
+  const message = !status?.supported
+    ? "این مرورگر Push را پشتیبانی نمی‌کند."
+    : !status.serverConfigured
+      ? "کلیدهای Web Push روی سرور تنظیم نشده‌اند."
+      : status.permission === "denied"
+        ? "اجازه اعلان در تنظیمات مرورگر مسدود شده است."
+        : status.registered
+          ? "اعلان سیستمی این دستگاه فعال است."
+          : status.permission === "default"
+            ? "منتظر اجازه مرورگر: برای ادامه، فعال‌سازی را بزنید و اجازه اعلان را تأیید کنید."
+            : "اعلان سیستمی این دستگاه غیرفعال است؛ برای دریافت در پس‌زمینه آن را فعال کنید.";
 
   return (
     <div className="grid gap-4">
@@ -161,11 +159,7 @@ function NotificationSettingsContent({
               status.permission === "denied"
             }
             onClick={() =>
-              void action(
-                "enable",
-                notifications.enablePush,
-                "اعلان سیستمی این دستگاه فعال شد.",
-              )
+              void action("enable", notifications.enablePush, "اعلان سیستمی این دستگاه فعال شد.")
             }
           >
             فعال‌کردن اعلان سیستمی
@@ -182,7 +176,7 @@ function NotificationSettingsContent({
               async () => {
                 await notifications.testPush();
               },
-              "اعلان آزمایشی ارسال شد.",
+              "درخواست اعلان آزمایشی ثبت شد؛ دریافت آن را روی همین دستگاه بررسی کنید.",
             )
           }
         >

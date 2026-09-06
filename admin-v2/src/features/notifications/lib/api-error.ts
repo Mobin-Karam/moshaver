@@ -11,9 +11,7 @@ type ErrorRecord = {
 
 function asStatus(value: unknown) {
   const status = Number(value);
-  return Number.isInteger(status) && status >= 100 && status <= 599
-    ? status
-    : undefined;
+  return Number.isInteger(status) && status >= 100 && status <= 599 ? status : undefined;
 }
 
 export function getHttpStatus(error: unknown): number | undefined {
@@ -36,10 +34,7 @@ export function isAuthHttpError(error: unknown) {
   return status === 401 || status === 403;
 }
 
-export function shouldRetryNotificationRequest(
-  failureCount: number,
-  error: unknown,
-) {
+export function shouldRetryNotificationRequest(failureCount: number, error: unknown) {
   const status = getHttpStatus(error);
 
   // Retrying these responses only creates duplicate console/network noise.

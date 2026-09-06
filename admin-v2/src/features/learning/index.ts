@@ -1,9 +1,6 @@
 export { LearningPage } from "./pages/LearningPage";
 
-export {
-  isLearningDue,
-  learningStatusLabel,
-} from "./model/learning-model";
+export { isLearningDue, learningStatusLabel } from "./model/learning-model";
 
 export type {
   LearningItem,
@@ -13,6 +10,4 @@ export type {
   LearningSummary,
 } from "./model/learning-model";
 
-export type {
-  LearningFilter,
-} from "./model/learning.types";
+export type { LearningFilter } from "./model/learning.types";

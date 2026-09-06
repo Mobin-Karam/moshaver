@@ -31,9 +31,7 @@ export function SystemPage() {
   const modal = useModal();
   const auth = useAuth();
   const systemAvailable =
-    auth.can("database.read") ||
-    auth.can("release.read") ||
-    auth.can("audit.read");
+    auth.can("database.read") || auth.can("release.read") || auth.can("audit.read");
   const [file, setFile] = useState<File | null>(null);
   const [passwords, setPasswords] = useState({
     currentPassword: "",
@@ -45,9 +43,7 @@ export function SystemPage() {
     version: "",
     notes: "",
   });
-  const [historyTab, setHistoryTab] = useState<
-    "audit" | "imports" | "releases"
-  >("audit");
+  const [historyTab, setHistoryTab] = useState<"audit" | "imports" | "releases">("audit");
   const database = useQuery({
     queryKey: ["system-database"],
     queryFn: getDatabaseMeta,
@@ -64,7 +60,11 @@ export function SystemPage() {
     queryFn: getReleases,
     enabled: systemAvailable && historyTab === "releases",
   });
-  const versions = useQuery({ queryKey: ["app-versions"], queryFn: getAppVersions, enabled: auth.can("release.read") });
+  const versions = useQuery({
+    queryKey: ["app-versions"],
+    queryFn: getAppVersions,
+    enabled: auth.can("release.read"),
+  });
   const audit = useQuery({
     queryKey: ["audit"],
     queryFn: getAudit,
@@ -81,22 +81,12 @@ export function SystemPage() {
       void qc.invalidateQueries({ queryKey: ["system-database"] });
     },
     onError: (error) =>
-      notify(
-        error instanceof Error
-          ? error.message
-          : "بازیابی پایگاه داده انجام نشد.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "بازیابی پایگاه داده انجام نشد.", "error"),
   });
   const backup = useMutation({
     mutationFn: downloadDatabaseBackup,
     onError: (error) =>
-      notify(
-        error instanceof Error
-          ? error.message
-          : "دریافت نسخه پشتیبان انجام نشد.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "دریافت نسخه پشتیبان انجام نشد.", "error"),
   });
   const changePassword = useMutation({
     mutationFn: () => changeAdminPassword(passwords),
@@ -109,10 +99,7 @@ export function SystemPage() {
       notify("رمز مدیر تغییر کرد و نشست‌های دیگر بسته شدند.");
     },
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "تغییر رمز انجام نشد.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "تغییر رمز انجام نشد.", "error"),
   });
   const saveRelease = useMutation({
     mutationFn: () => saveAppRelease(release),
@@ -122,12 +109,18 @@ export function SystemPage() {
       void qc.invalidateQueries({ queryKey: ["app-releases"] });
     },
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "ثبت انتشار انجام نشد.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "ثبت انتشار انجام نشد.", "error"),
   });
-  const updateVersion = useMutation({ mutationFn: ({app,value}:{app:string;value:{version:string;notes:string}})=>saveAppVersion(app,value), onSuccess:()=>{notify("نسخه فعال به‌روزرسانی شد.");void qc.invalidateQueries({queryKey:["app-versions"]});}, onError:(error)=>notify(error instanceof Error?error.message:"به‌روزرسانی نسخه انجام نشد.","error") });
+  const updateVersion = useMutation({
+    mutationFn: ({ app, value }: { app: string; value: { version: string; notes: string } }) =>
+      saveAppVersion(app, value),
+    onSuccess: () => {
+      notify("نسخه فعال به‌روزرسانی شد.");
+      void qc.invalidateQueries({ queryKey: ["app-versions"] });
+    },
+    onError: (error) =>
+      notify(error instanceof Error ? error.message : "به‌روزرسانی نسخه انجام نشد.", "error"),
+  });
   async function download() {
     const result = await backup.mutateAsync();
     const url = URL.createObjectURL(result.blob);
@@ -148,8 +141,8 @@ export function SystemPage() {
         >
           <AlertTriangle className="mt-0.5 shrink-0" size={17} />
           <span>
-            ابزارهای عملیاتی این صفحه فقط برای نقش‌هایی با مجوز مدیریت سامانه در
-            دسترس‌اند. امنیت حساب و نشست‌ها همچنان قابل استفاده است.
+            ابزارهای عملیاتی این صفحه فقط برای نقش‌هایی با مجوز مدیریت سامانه در دسترس‌اند. امنیت
+            حساب و نشست‌ها همچنان قابل استفاده است.
           </span>
         </div>
       ) : null}
@@ -158,24 +151,16 @@ export function SystemPage() {
           label="پایگاه داده"
           value={
             systemAvailable
-              ? meta?.database ||
-                meta?.status ||
-                (database.isLoading ? "در حال بررسی…" : "نامشخص")
+              ? meta?.database || meta?.status || (database.isLoading ? "در حال بررسی…" : "نامشخص")
               : "بدون دسترسی"
           }
         />
-        <SystemMetric
-          label="نسخه"
-          value={meta?.version || `API ${getSelectedApiVersion()}`}
-        />
+        <SystemMetric label="نسخه" value={meta?.version || `API ${getSelectedApiVersion()}`} />
         <SystemMetric
           label="نشست فعال"
           value={String(meta?.activeSessions ?? sessions.data?.length ?? 0)}
         />
-        <SystemMetric
-          label="اتصال زنده"
-          value={String(meta?.realtimeConnections || 0)}
-        />
+        <SystemMetric label="اتصال زنده" value={String(meta?.realtimeConnections || 0)} />
       </section>
       <section className="grid gap-4 lg:grid-cols-2">
         <AccountSecurityPanel
@@ -186,17 +171,13 @@ export function SystemPage() {
             void modal
               .confirm({
                 title: "تغییر رمز مدیر؟",
-                description:
-                  "هویت شما دوباره بررسی و نشست‌های دیگر این حساب بسته می‌شوند.",
+                description: "هویت شما دوباره بررسی و نشست‌های دیگر این حساب بسته می‌شوند.",
                 confirmLabel: "تغییر رمز",
               })
               .then((confirmed) => confirmed && changePassword.mutate())
           }
         />
-        <SystemSessionsPanel
-          sessions={sessions.data}
-          loading={sessions.isLoading}
-        />
+        <SystemSessionsPanel sessions={sessions.data} loading={sessions.isLoading} />
       </section>
       {systemAvailable ? (
         <>
@@ -231,7 +212,17 @@ export function SystemPage() {
                 .then((confirmed) => confirmed && saveRelease.mutate())
             }
           />
-          {auth.can("release.read")?<AppVersionManager versions={versions.data} loading={versions.isLoading} error={versions.isError} busy={updateVersion.isPending} canManage={auth.can("release.manage")} onRetry={()=>void versions.refetch()} onSave={(app,value)=>updateVersion.mutate({app,value})}/>:null}
+          {auth.can("release.read") ? (
+            <AppVersionManager
+              versions={versions.data}
+              loading={versions.isLoading}
+              error={versions.isError}
+              busy={updateVersion.isPending}
+              canManage={auth.can("release.manage")}
+              onRetry={() => void versions.refetch()}
+              onSave={(app, value) => updateVersion.mutate({ app, value })}
+            />
+          ) : null}
           <Card className="p-2">
             <div
               className="flex flex-wrap items-center gap-1"

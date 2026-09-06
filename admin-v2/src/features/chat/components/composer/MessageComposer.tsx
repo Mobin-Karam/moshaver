@@ -136,9 +136,7 @@ dark:border-slate-800
     >
       <QuickReplies
         personName={personName}
-        onSelect={(item) =>
-          onChange(value.trim() ? `${value.trim()}\n${item}` : item)
-        }
+        onSelect={(item) => onChange(value.trim() ? `${value.trim()}\n${item}` : item)}
       />
 
       {editing ? (
@@ -249,11 +247,7 @@ text-white
 disabled:opacity-50
 "
         >
-          {busy ? (
-            <LoaderCircle size={18} className="animate-spin" />
-          ) : (
-            <Send size={18} />
-          )}
+          {busy ? <LoaderCircle size={18} className="animate-spin" /> : <Send size={18} />}
         </button>
       </form>
     </div>

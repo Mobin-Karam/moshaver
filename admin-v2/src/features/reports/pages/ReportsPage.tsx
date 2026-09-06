@@ -1,22 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  CalendarRange,
-  LayoutGrid,
-  List,
-  RefreshCw,
-  Search,
-} from "lucide-react";
+import { CalendarRange, LayoutGrid, List, RefreshCw, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { StudentPicker } from "../../../shared/ui/StudentPicker";
 import { DatePicker } from "../../../shared/ui/date-picker";
 import { useLocale } from "../../../shared/ui/locale";
 import { Button, Card, EmptyState, Input } from "../../../shared/ui/ui";
 import { useStudentSelection } from "../../../shared/hooks/useStudentSelection";
-import {
-  addDays,
-  todayIso,
-  normalizePersianText,
-} from "../../../shared/lib/utils";
+import { addDays, todayIso, normalizePersianText } from "../../../shared/lib/utils";
 import { getReports } from "../api/reports.api";
 import { ReportCard } from "../components/ReportCard";
 import { ReportCompactList } from "../components/ReportCompactList";
@@ -49,23 +39,15 @@ export function ReportsPage() {
   const visibleReports = useMemo(() => {
     const needle = normalizePersianText(search);
     return (reports.data ?? [])
-      .filter(
-        (report) =>
-          !needle || normalizePersianText(reportText(report)).includes(needle),
-      )
+      .filter((report) => !needle || normalizePersianText(reportText(report)).includes(needle))
       .slice()
       .sort((a, b) => {
         const left = reportDate(a);
         const right = reportDate(b);
-        return sort === "newest"
-          ? right.localeCompare(left)
-          : left.localeCompare(right);
+        return sort === "newest" ? right.localeCompare(left) : left.localeCompare(right);
       });
   }, [reports.data, search, sort]);
-  const summary = useMemo(
-    () => summarizeReports(reports.data ?? []),
-    [reports.data],
-  );
+  const summary = useMemo(() => summarizeReports(reports.data ?? []), [reports.data]);
 
   function applyPreset(days: number) {
     const end = todayIso();
@@ -125,10 +107,7 @@ export function ReportsPage() {
         <Card>
           <div className="grid gap-3" aria-label="در حال دریافت گزارش‌ها">
             {[0, 1, 2].map((item) => (
-              <div
-                key={item}
-                className="h-36 animate-pulse rounded-xl bg-slate-100"
-              />
+              <div key={item} className="h-36 animate-pulse rounded-xl bg-slate-100" />
             ))}
           </div>
         </Card>
@@ -136,9 +115,7 @@ export function ReportsPage() {
         <Card>
           <div className="flex min-h-44 flex-col items-center justify-center gap-3 text-center">
             <div>
-              <strong className="text-sm text-slate-800">
-                دریافت گزارش‌ها انجام نشد.
-              </strong>
+              <strong className="text-sm text-slate-800">دریافت گزارش‌ها انجام نشد.</strong>
               <p className="mt-1 text-xs text-slate-500">
                 اتصال یا پاسخ سرور را بررسی کنید و دوباره تلاش کنید.
               </p>
@@ -178,10 +155,7 @@ export function ReportsPage() {
                   <option value="oldest">قدیمی‌ترین</option>
                 </select>
               </label>
-              <div
-                className="grid grid-cols-2 rounded-lg bg-slate-100 p-1"
-                aria-label="نوع نمایش"
-              >
+              <div className="grid grid-cols-2 rounded-lg bg-slate-100 p-1" aria-label="نوع نمایش">
                 <button
                   type="button"
                   aria-pressed={view === "cards"}
@@ -204,27 +178,21 @@ export function ReportsPage() {
             </div>
             <div className="mb-3 text-xs text-slate-500">
               {visibleReports.length.toLocaleString("fa-IR")} گزارش از{" "}
-              {reports.data.length.toLocaleString("fa-IR")} مورد نمایش داده
-              می‌شود.
+              {reports.data.length.toLocaleString("fa-IR")} مورد نمایش داده می‌شود.
             </div>
             {visibleReports.length ? (
               view === "cards" ? (
                 <div className="grid gap-3">
                   {visibleReports.map((report, index) => (
                     <ReportCard
-                      key={String(
-                        report.id ?? `${reportDate(report)}-${index}`,
-                      )}
+                      key={String(report.id ?? `${reportDate(report)}-${index}`)}
                       report={report}
                       formatDate={locale.formatDate}
                     />
                   ))}
                 </div>
               ) : (
-                <ReportCompactList
-                  reports={visibleReports}
-                  formatDate={locale.formatDate}
-                />
+                <ReportCompactList reports={visibleReports} formatDate={locale.formatDate} />
               )
             ) : (
               <EmptyState title="گزارشی مطابق جستجوی شما پیدا نشد." />

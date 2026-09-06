@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  examDraftError,
-  examReadiness,
-  makeExamDraft,
-  matchesExam,
-} from "./exam-model";
+import { examDraftError, examReadiness, makeExamDraft, matchesExam } from "./exam-model";
 
 describe("exam UI model", () => {
   it("rejects reversed schedules and invalid attempt limits", () => {
@@ -38,12 +33,8 @@ describe("exam UI model", () => {
       delivery: { questionCount: 0 },
     };
 
-    expect(
-      matchesExam(exam, "علی", "all", "all"),
-    ).toBe(true);
+    expect(matchesExam(exam, "علی", "all", "all")).toBe(true);
 
-    expect(
-      examReadiness(exam).label,
-    ).toContain("بدون سؤال");
+    expect(examReadiness(exam).label).toContain("بدون سؤال");
   });
 });

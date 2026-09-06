@@ -1,6 +1,4 @@
-import {
-  useMemo,
-} from "react";
+import { useMemo } from "react";
 import type { AdminNotification } from "../model/notification-model";
 
 export function useFilteredNotifications({
@@ -15,33 +13,13 @@ export function useFilteredNotifications({
   search: string;
 }) {
   return useMemo(() => {
-    const needle =
-      search
-        .trim()
-        .toLocaleLowerCase(
-          "fa",
-        );
+    const needle = search.trim().toLocaleLowerCase("fa");
 
     return items.filter(
       (item) =>
-        (filter === "all" ||
-          !item.isRead) &&
-        (typeFilter === "all" ||
-          item.type ===
-            typeFilter) &&
-        (!needle ||
-          `${item.title} ${
-            item.body || ""
-          }`
-            .toLocaleLowerCase(
-              "fa",
-            )
-            .includes(needle)),
+        (filter === "all" || !item.isRead) &&
+        (typeFilter === "all" || item.type === typeFilter) &&
+        (!needle || `${item.title} ${item.body || ""}`.toLocaleLowerCase("fa").includes(needle)),
     );
-  }, [
-    filter,
-    items,
-    search,
-    typeFilter,
-  ]);
+  }, [filter, items, search, typeFilter]);
 }

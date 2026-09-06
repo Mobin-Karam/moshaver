@@ -12,7 +12,8 @@ export function AdminAccountMenu() {
   const auth = useAuth();
   const modal = useModal();
   const [open, setOpen] = useState(false);
-  const displayName = auth.user?.displayName || auth.user?.display_name || auth.user?.username || "مدیر";
+  const displayName =
+    auth.user?.displayName || auth.user?.display_name || auth.user?.username || "مدیر";
   const initial = displayName.trim()[0] || "م";
 
   async function logout() {
@@ -41,12 +42,17 @@ export function AdminAccountMenu() {
           aria-label="منوی حساب کاربری"
           title={displayName}
         >
-          <span className="grid size-7 shrink-0 place-items-center rounded-full bg-brand text-xs font-black text-white" aria-hidden="true">
+          <span
+            className="grid size-7 shrink-0 place-items-center rounded-full bg-brand text-xs font-black text-white"
+            aria-hidden="true"
+          >
             {initial}
           </span>
           <span className="hidden max-w-28 min-w-0 2xl:block">
             <strong className="block truncate text-xs">{displayName}</strong>
-            <small className="block truncate text-[9px] text-slate-400">{rolePortalTitle(auth.activeRole)}</small>
+            <small className="block truncate text-[9px] text-slate-400">
+              {rolePortalTitle(auth.activeRole)}
+            </small>
           </span>
         </button>
       )}
@@ -69,17 +75,43 @@ export function AdminAccountMenu() {
         {(auth.context?.roles.length ?? 0) > 1 ? (
           <label className="grid gap-1 text-xs font-semibold text-slate-600">
             زمینه کاری
-            <select className="h-10 rounded-lg border border-slate-200 bg-white px-2 dark:border-slate-700 dark:bg-slate-900" value={auth.activeRole ?? ""} onChange={(event) => auth.setActiveRole(event.target.value as NonNullable<typeof auth.activeRole>)}>
-              {auth.context?.roles.filter((role) => role !== "STUDENT").map((role) => <option key={role} value={role}>{roleLabel(role)}</option>)}
+            <select
+              className="h-10 rounded-lg border border-slate-200 bg-white px-2 dark:border-slate-700 dark:bg-slate-900"
+              value={auth.activeRole ?? ""}
+              onChange={(event) =>
+                auth.setActiveRole(event.target.value as NonNullable<typeof auth.activeRole>)
+              }
+            >
+              {auth.context?.roles
+                .filter((role) => role !== "STUDENT")
+                .map((role) => (
+                  <option key={role} value={role}>
+                    {roleLabel(role)}
+                  </option>
+                ))}
             </select>
           </label>
         ) : null}
         {(auth.context?.availableOrganizations.length ?? 0) > 1 ? (
           <label className="grid gap-1 text-xs font-semibold text-slate-600">
             سازمان فعال
-            <select className="h-10 rounded-lg border border-slate-200 bg-white px-2 dark:border-slate-700 dark:bg-slate-900" value={auth.context?.activeOrganization?.id ?? ""} onChange={(event) => auth.setActiveOrganization(auth.context?.availableOrganizations.find((item) => item.id === event.target.value) ?? null)}>
+            <select
+              className="h-10 rounded-lg border border-slate-200 bg-white px-2 dark:border-slate-700 dark:bg-slate-900"
+              value={auth.context?.activeOrganization?.id ?? ""}
+              onChange={(event) =>
+                auth.setActiveOrganization(
+                  auth.context?.availableOrganizations.find(
+                    (item) => item.id === event.target.value,
+                  ) ?? null,
+                )
+              }
+            >
               <option value="">انتخاب سازمان</option>
-              {auth.context?.availableOrganizations.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}
+              {auth.context?.availableOrganizations.map((organization) => (
+                <option key={organization.id} value={organization.id}>
+                  {organization.name}
+                </option>
+              ))}
             </select>
           </label>
         ) : null}

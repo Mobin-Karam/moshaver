@@ -30,9 +30,7 @@ describe("normalizeAttentionStudent", () => {
   });
 
   it("defaults omitted collections and metrics without crashing", () => {
-    expect(
-      normalizeAttentionStudent({ id: "student-b", name: "Student B" }),
-    ).toMatchObject({
+    expect(normalizeAttentionStudent({ id: "student-b", name: "Student B" })).toMatchObject({
       reasons: [],
       remainingTasks: 0,
       dueReviews: 0,

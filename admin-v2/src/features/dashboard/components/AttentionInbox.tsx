@@ -13,10 +13,7 @@ import { Link } from "react-router-dom";
 import { Badge, Button, Card, EmptyState } from "../../../shared/ui/ui";
 import { cn, fa } from "../../../shared/lib/utils";
 import { useLocale } from "../../../shared/ui/locale";
-import type {
-  AttentionSeverity,
-  AttentionStudent,
-} from "../model/dashboard.types";
+import type { AttentionSeverity, AttentionStudent } from "../model/dashboard.types";
 
 type Filter = "all" | "red" | "yellow";
 
@@ -45,31 +42,19 @@ export function AttentionInbox({
   const { formatDateTime } = useLocale();
 
   const filtered = useMemo(
-    () =>
-      students.filter(
-        (student) => filter === "all" || student.severity === filter,
-      ),
+    () => students.filter((student) => filter === "all" || student.severity === filter),
     [filter, students],
   );
 
-  const critical = students.filter(
-    (student) => student.severity === "red",
-  ).length;
-  const warning = students.filter(
-    (student) => student.severity === "yellow",
-  ).length;
+  const critical = students.filter((student) => student.severity === "red").length;
+  const warning = students.filter((student) => student.severity === "yellow").length;
 
   return (
-    <Card
-      id="attention-queue"
-      className="scroll-mt-24 p-0 dark:border-slate-800 dark:bg-slate-900"
-    >
+    <Card id="attention-queue" className="scroll-mt-24 p-0 dark:border-slate-800 dark:bg-slate-900">
       <header className="flex flex-col gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-slate-900 dark:text-white">
-              دانش‌آموزان نیازمند توجه
-            </h3>
+            <h3 className="font-bold text-slate-900 dark:text-white">دانش‌آموزان نیازمند توجه</h3>
             <Badge tone={critical ? "red" : warning ? "amber" : "green"}>
               {fa(students.length)}
             </Badge>
@@ -143,9 +128,7 @@ export function AttentionInbox({
                     <span
                       className={cn(
                         "size-2 shrink-0 rounded-full",
-                        student.severity === "red"
-                          ? "bg-rose-500"
-                          : "bg-amber-500",
+                        student.severity === "red" ? "bg-rose-500" : "bg-amber-500",
                       )}
                     />
                     <strong className="truncate text-sm text-slate-900 dark:text-white">
@@ -157,9 +140,8 @@ export function AttentionInbox({
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-slate-400">
                     <span>
-                      {[student.grade, student.major]
-                        .filter(Boolean)
-                        .join(" · ") || "پروفایل آموزشی"}
+                      {[student.grade, student.major].filter(Boolean).join(" · ") ||
+                        "پروفایل آموزشی"}
                     </span>
                     <span className="flex items-center gap-1">
                       {online ? (
@@ -179,8 +161,7 @@ export function AttentionInbox({
                 <div className="flex flex-wrap gap-1.5">
                   {(student.reasons ?? []).map((reason) => {
                     const Icon =
-                      reasonIcons[reason.code as keyof typeof reasonIcons] ||
-                      AlertTriangle;
+                      reasonIcons[reason.code as keyof typeof reasonIcons] || AlertTriangle;
                     return (
                       <span
                         key={`${reason.code}-${reason.value}`}

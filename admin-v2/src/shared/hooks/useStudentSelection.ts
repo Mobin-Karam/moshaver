@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useStudents } from "./useStudents";
 
-export function useStudentSelection(options: { clearOnChange?: string[]; preferredStudentId?: string; enabled?: boolean } = {}) {
+export function useStudentSelection(
+  options: { clearOnChange?: string[]; preferredStudentId?: string; enabled?: boolean } = {},
+) {
   const students = useStudents({ enabled: options.enabled });
   const [params, setParams] = useSearchParams();
   const pendingStudentId = useRef("");
@@ -17,7 +19,8 @@ export function useStudentSelection(options: { clearOnChange?: string[]; preferr
   const pendingStudent = students.students.find(
     (student) => student.id === pendingStudentId.current,
   );
-  const studentId = pendingStudent?.id || preferredStudent?.id || urlStudent?.id || students.studentId;
+  const studentId =
+    pendingStudent?.id || preferredStudent?.id || urlStudent?.id || students.studentId;
   const selectedStudent = useMemo(
     () => students.students.find((student) => student.id === studentId) ?? null,
     [studentId, students.students],
@@ -29,25 +32,49 @@ export function useStudentSelection(options: { clearOnChange?: string[]; preferr
     if (urlStudentId === pendingStudentId.current) pendingStudentId.current = "";
     if (students.studentId !== studentId) students.setStudentId(studentId);
     if (urlStudentId === studentId) return;
-    setParams((current) => {
-      const next = new URLSearchParams(current);
-      next.set("studentId", studentId);
-      clearKey.split("\0").filter(Boolean).forEach((key) => next.delete(key));
-      return next;
-    }, { replace: true });
-  }, [clearKey, studentId, students.isLoading, students.studentId, students.students.length, students.setStudentId, urlStudentId, setParams]);
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.set("studentId", studentId);
+        clearKey
+          .split("\0")
+          .filter(Boolean)
+          .forEach((key) => next.delete(key));
+        return next;
+      },
+      { replace: true },
+    );
+  }, [
+    clearKey,
+    studentId,
+    students.isLoading,
+    students.studentId,
+    students.students.length,
+    students.setStudentId,
+    urlStudentId,
+    setParams,
+  ]);
 
-  const selectStudent = useCallback((nextStudentId: string) => {
-    if (!students.students.some((student) => student.id === nextStudentId)) return;
-    pendingStudentId.current = nextStudentId;
-    students.setStudentId(nextStudentId);
-    setParams((current) => {
-      const next = new URLSearchParams(current);
-      next.set("studentId", nextStudentId);
-      clearKey.split("\0").filter(Boolean).forEach((key) => next.delete(key));
-      return next;
-    }, { replace: true });
-  }, [clearKey, setParams, students.setStudentId, students.students]);
+  const selectStudent = useCallback(
+    (nextStudentId: string) => {
+      if (!students.students.some((student) => student.id === nextStudentId)) return;
+      pendingStudentId.current = nextStudentId;
+      students.setStudentId(nextStudentId);
+      setParams(
+        (current) => {
+          const next = new URLSearchParams(current);
+          next.set("studentId", nextStudentId);
+          clearKey
+            .split("\0")
+            .filter(Boolean)
+            .forEach((key) => next.delete(key));
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [clearKey, setParams, students.setStudentId, students.students],
+  );
 
   return { ...students, studentId, selectedStudent, selectStudent };
 }

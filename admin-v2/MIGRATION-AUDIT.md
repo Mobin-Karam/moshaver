@@ -1,23 +1,25 @@
 # Admin v1.6 to v2 migration audit
 
+> This is the historical retirement contract. Current implementation status is maintained in [`docs/ADMIN_V2_CAPABILITY_MATRIX.md`](../docs/ADMIN_V2_CAPABILITY_MATRIX.md). The matrix supersedes older gap labels below.
+
 This document is the parity contract for retiring `v1.4/admin-app`. A row is complete only when the React screen exposes the same user outcome and calls the same protected backend operation; visual similarity alone is not parity.
 
-| v1.6 area | Required capability | v2 destination | Status |
-| --- | --- | --- | --- |
-| Authentication | cookie session, CSRF recovery, admin-role rejection, queued offline logout, session expiry, cross-tab sync, visibility refresh, backend health, logout | auth provider/login/layout | Behavior migrated and unit-tested |
-| Dashboard | global counts, selected-student overview, attention inbox, unread chat | dashboard | Re-audit required |
-| Live operations | presence, current task/session, plan progress, study totals, attempt, issues, reviews, event timeline, SSE refresh | live | Re-audit required |
-| Chat | conversation search, thread, send, Enter/Shift+Enter, unread/read state, realtime refresh | chat | Re-audit required |
-| Planner | day/week/month, task CRUD, drafts, publication, JSON preview/commit | planner | Behavior migrated; build and helper tests pass |
-| Import/export | safe preview, replacement switches, draft/publish commit, template and range export | planner | Behavior migrated; target browser smoke pending |
-| Exams | create/edit/delete, search/filter, bulk actions, publish/status, retry review, syllabus, question management, JSON import/export | exams/questions | Behavior migrated; target browser smoke pending |
-| Quiz bank | quiz CRUD and question CRUD | questions | Re-audit required |
-| Reports | date/search/sort, study/test/focus/fatigue/motivation/problem presentation | reports | Re-audit required |
-| Students | search/filter/sort/pagination, create/edit, activate/deactivate/archive/restore, reset password, force logout, overview, learning, attempts, weekly/topics | students | Re-audit required |
-| Subjects | global subject creation/order/edit and per-student status/progress/mastery/note | subjects | Re-audit required |
-| Notifications | durable inbox, unread filter, pagination, single/read-all, advisor inbox, SSE refresh, push preferences | notifications | Re-audit required |
-| System | health/database metadata, SQLite backup/restore, sessions, password, app releases, import history, audit history | system | Re-audit required |
-| Deployment | same-origin `/api/v1`, development backend switch, production nginx fallback | shared API/Docker/nginx | Re-audit required |
+| v1.6 area       | Required capability                                                                                                                                        | v2 destination             | Status                                          |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------- |
+| Authentication  | cookie session, CSRF recovery, admin-role rejection, queued offline logout, session expiry, cross-tab sync, visibility refresh, backend health, logout     | auth provider/login/layout | Behavior migrated and unit-tested               |
+| Dashboard       | global counts, selected-student overview, attention inbox, unread chat                                                                                     | dashboard                  | Role-specific implementation; see matrix        |
+| Live operations | presence, current task/session, plan progress, study totals, attempt, issues, reviews, event timeline, SSE refresh                                         | live                       | Implemented; browser acceptance pending         |
+| Chat            | conversation search, thread, send, Enter/Shift+Enter, unread/read state, realtime refresh                                                                  | chat                       | Implemented; browser acceptance pending         |
+| Planner         | day/week/month, task CRUD, drafts, publication, JSON preview/commit                                                                                        | planner                    | Behavior migrated; build and helper tests pass  |
+| Import/export   | safe preview, replacement switches, draft/publish commit, template and range export                                                                        | planner                    | Behavior migrated; target browser smoke pending |
+| Exams           | create/edit/delete, search/filter, bulk actions, publish/status, retry review, syllabus, question management, JSON import/export                           | exams/questions            | Behavior migrated; target browser smoke pending |
+| Quiz bank       | quiz CRUD and question CRUD                                                                                                                                | questions                  | Implemented; see matrix                         |
+| Reports         | date/search/sort, study/test/focus/fatigue/motivation/problem presentation                                                                                 | reports                    | Implemented; see matrix                         |
+| Students        | search/filter/sort/pagination, create/edit, activate/deactivate/archive/restore, reset password, force logout, overview, learning, attempts, weekly/topics | students                   | Implemented; see matrix                         |
+| Subjects        | global subject creation/order/edit and per-student status/progress/mastery/note                                                                            | subjects                   | Implemented; see matrix                         |
+| Notifications   | durable inbox, unread filter, pagination, single/read-all, advisor inbox, SSE refresh, push preferences                                                    | notifications              | Implemented; production Push pending            |
+| System          | health/database metadata, SQLite backup/restore, sessions, password, app releases, import history, audit history                                           | system                     | Implemented; target restore acceptance pending  |
+| Deployment      | same-origin `/api/v1`, development backend switch, production nginx fallback                                                                               | shared API/Docker/nginx    | Superseded by canonical `/api/v2` deployment    |
 
 ## Authentication evidence
 

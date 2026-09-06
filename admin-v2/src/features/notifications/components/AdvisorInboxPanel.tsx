@@ -66,8 +66,12 @@ export function AdvisorInboxPanel({
             </p>
           </div>
           <div className="flex gap-1.5">
-            {actionableCount ? <Badge tone="red">{actionableCount.toLocaleString("fa-IR")} عملیاتی</Badge> : null}
-            <Badge tone={rows.length ? "amber" : "green"}>{rows.length.toLocaleString("fa-IR")}</Badge>
+            {actionableCount ? (
+              <Badge tone="red">{actionableCount.toLocaleString("fa-IR")} عملیاتی</Badge>
+            ) : null}
+            <Badge tone={rows.length ? "amber" : "green"}>
+              {rows.length.toLocaleString("fa-IR")}
+            </Badge>
           </div>
         </div>
 
@@ -77,12 +81,18 @@ export function AdvisorInboxPanel({
       </header>
 
       {loading ? (
-        <div className="p-3"><NotificationSkeletons /></div>
+        <div className="p-3">
+          <NotificationSkeletons />
+        </div>
       ) : error ? (
         <div className="p-3">
           <EmptyState
             title="صندوق پیگیری دریافت نشد."
-            action={<Button variant="soft" onClick={onRetry}><RefreshCw size={15} /> تلاش دوباره</Button>}
+            action={
+              <Button variant="soft" onClick={onRetry}>
+                <RefreshCw size={15} /> تلاش دوباره
+              </Button>
+            }
           />
         </div>
       ) : rows.length ? (
@@ -101,7 +111,9 @@ export function AdvisorInboxPanel({
           ))}
         </div>
       ) : (
-        <div className="p-3"><EmptyState title="مورد فعالی برای این دانش‌آموز وجود ندارد." /></div>
+        <div className="p-3">
+          <EmptyState title="مورد فعالی برای این دانش‌آموز وجود ندارد." />
+        </div>
       )}
     </Card>
   );

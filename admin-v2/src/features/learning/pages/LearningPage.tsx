@@ -16,7 +16,7 @@ import { notifications, notify } from "../../../shared/ui/notifications";
 import { useAuth } from "../../auth";
 
 export function LearningPage() {
-  const auth=useAuth();
+  const auth = useAuth();
   const state = useLearningPageState();
 
   const modal = useModal();
@@ -142,10 +142,7 @@ export function LearningPage() {
                   "حذف مورد یادگیری انجام نشد.",
 
                   {
-                    description:
-                      error instanceof Error
-                        ? error.message
-                        : "خطای ناشناخته رخ داد.",
+                    description: error instanceof Error ? error.message : "خطای ناشناخته رخ داد.",
                   },
                 );
               },
@@ -161,7 +158,7 @@ export function LearningPage() {
         students={state.students.students}
         studentId={state.studentId}
         onStudentChange={(id) => state.updateLocation(id)}
-        onCreate={auth.can("learning.create")?() => openEditor():undefined}
+        onCreate={auth.can("learning.create") ? () => openEditor() : undefined}
       />
 
       {!state.studentId ? (
@@ -188,9 +185,9 @@ export function LearningPage() {
               formatDate={formatDate}
               onSearchChange={state.changeSearch}
               onFilterChange={state.changeFilter}
-              onEdit={auth.can("learning.update")?openEditor:undefined}
+              onEdit={auth.can("learning.update") ? openEditor : undefined}
               onHistory={openHistory}
-              onDelete={auth.can("learning.update")?confirmDelete:undefined}
+              onDelete={auth.can("learning.update") ? confirmDelete : undefined}
             />
 
             <LearningSidebar summary={data.summary} />

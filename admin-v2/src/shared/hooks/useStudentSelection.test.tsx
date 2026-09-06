@@ -6,7 +6,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "../api/api";
 import { useStudentSelection } from "./useStudentSelection";
 
-vi.mock("../api/api", () => ({ api: { get: vi.fn() }, API_WORK_CONTEXT_EVENT: "admin-api-work-context-change", getApiWorkContextKey: () => "none:global" }));
+vi.mock("../api/api", () => ({
+  api: { get: vi.fn() },
+  API_WORK_CONTEXT_EVENT: "admin-api-work-context-change",
+  getApiWorkContextKey: () => "none:global",
+}));
 
 const roster = [
   { id: "student-1", name: "اول" },
@@ -16,7 +20,11 @@ const roster = [
 function wrapper(initialEntry: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return function TestProviders({ children }: { children: ReactNode }) {
-    return <QueryClientProvider client={client}><MemoryRouter initialEntries={[initialEntry]}>{children}</MemoryRouter></QueryClientProvider>;
+    return (
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={[initialEntry]}>{children}</MemoryRouter>
+      </QueryClientProvider>
+    );
   };
 }
 
@@ -33,14 +41,20 @@ describe("global student selection", () => {
 
   it("uses a valid URL student immediately after the roster loads", async () => {
     localStorage.setItem("admin-selected-student-id", "student-1");
-    const { result } = renderHook(() => useSelection(), { wrapper: wrapper("/admin/planner?studentId=student-2") });
+    const { result } = renderHook(() => useSelection(), {
+      wrapper: wrapper("/admin/planner?studentId=student-2"),
+    });
     await waitFor(() => expect(result.current.studentId).toBe("student-2"));
-    await waitFor(() => expect(localStorage.getItem("admin-selected-student-id")).toBe("student-2"));
+    await waitFor(() =>
+      expect(localStorage.getItem("admin-selected-student-id")).toBe("student-2"),
+    );
   });
 
   it("repairs an invalid URL and never exposes it as the effective student", async () => {
     localStorage.setItem("admin-selected-student-id", "student-1");
-    const { result } = renderHook(() => useSelection(), { wrapper: wrapper("/admin/exams?studentId=removed") });
+    const { result } = renderHook(() => useSelection(), {
+      wrapper: wrapper("/admin/exams?studentId=removed"),
+    });
     await waitFor(() => expect(result.current.studentId).toBe("student-1"));
     await waitFor(() => expect(result.current.searchParams.get("studentId")).toBe("student-1"));
   });

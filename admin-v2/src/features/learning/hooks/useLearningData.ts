@@ -13,38 +13,20 @@ export function useLearningData({
   search: string;
   filter: LearningFilter;
 }) {
-  const learning =
-    useQuery({
-      queryKey: [
-        "student-learning",
-        studentId,
-      ],
-      enabled: !!studentId,
-      queryFn: () =>
-        getStudentLearning(
-          studentId,
-        ),
-    });
+  const learning = useQuery({
+    queryKey: ["student-learning", studentId],
+    enabled: !!studentId,
+    queryFn: () => getStudentLearning(studentId),
+  });
 
   const items = useMemo(
-    () =>
-      filterLearningItems(
-        learning.data?.items ||
-          [],
-        search,
-        filter,
-      ),
-    [
-      search,
-      filter,
-      learning.data?.items,
-    ],
+    () => filterLearningItems(learning.data?.items || [], search, filter),
+    [search, filter, learning.data?.items],
   );
 
   return {
     learning,
     items,
-    summary:
-      learning.data?.summary,
+    summary: learning.data?.summary,
   };
 }

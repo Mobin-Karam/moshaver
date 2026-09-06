@@ -18,7 +18,11 @@ function readJson<T>(key: string, fallback: T): T {
 }
 
 function writeJson(key: string, value: unknown) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage can be unavailable */ }
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* storage can be unavailable */
+  }
 }
 
 export function readFavoriteConversationIds() {
@@ -50,5 +54,9 @@ export function readConversationScroll(id: string) {
 
 export function persistConversationScroll(id: string | undefined, scrollTop: number) {
   if (!id) return;
-  try { sessionStorage.setItem(`${SCROLL_PREFIX}${id}`, String(Math.max(0, Math.round(scrollTop)))); } catch { /* ignore */ }
+  try {
+    sessionStorage.setItem(`${SCROLL_PREFIX}${id}`, String(Math.max(0, Math.round(scrollTop))));
+  } catch {
+    /* ignore */
+  }
 }

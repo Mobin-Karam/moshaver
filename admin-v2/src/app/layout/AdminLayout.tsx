@@ -7,7 +7,11 @@ import { AdminContextSidebar } from "./AdminContextSidebar";
 import { AdminHeader } from "./AdminHeader";
 import { AdminMainSidebar } from "./AdminMainSidebar";
 import { AdminMobileBottomNav, AdminMobileDrawer } from "./AdminMobileNavigation";
-import { adminBreadcrumbs, navigationForCapabilities, resolveAdminNavigation } from "./admin-navigation";
+import {
+  adminBreadcrumbs,
+  navigationForCapabilities,
+  resolveAdminNavigation,
+} from "./admin-navigation";
 import { adminContentOffsetClass } from "./layout-geometry";
 import { usePersistentCollapse } from "./layout-storage";
 import { WorkContextBar } from "../../shared/ui/work-context-bar";
@@ -38,16 +42,25 @@ export function AdminLayout() {
   const notificationState = useAdminNotifications();
   const location = useLocation();
   const [mainCollapsed, setMainCollapsed] = usePersistentCollapse("admin-main-sidebar-collapsed");
-  const [contextCollapsed, setContextCollapsed] = usePersistentCollapse("admin-context-sidebar-collapsed");
+  const [contextCollapsed, setContextCollapsed] = usePersistentCollapse(
+    "admin-context-sidebar-collapsed",
+  );
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   const current = resolveAdminNavigation(location.pathname);
   const breadcrumbs = adminBreadcrumbs(location.pathname);
-  const contextual = navigationForCapabilities(auth.capabilities, auth.activeRole).find((group) => group.section === current.section)?.items || [];
+  const contextual =
+    navigationForCapabilities(auth.capabilities, auth.activeRole).find(
+      (group) => group.section === current.section,
+    )?.items || [];
   const showContextRail = contextual.length > 1;
   const selectedStudentId = readSelectedStudentId(location.search);
-  const contentOffset = adminContentOffsetClass({ showContextRail, mainCollapsed, contextCollapsed });
+  const contentOffset = adminContentOffsetClass({
+    showContextRail,
+    mainCollapsed,
+    contextCollapsed,
+  });
 
   const openMobileNavigation = useCallback(() => setMobileNavigationOpen(true), []);
   const closeMobileNavigation = useCallback(() => setMobileNavigationOpen(false), []);
@@ -94,7 +107,9 @@ export function AdminLayout() {
         />
       ) : null}
 
-      <div className={`${contentOffset} min-h-screen min-w-0 transition-[margin] duration-200 motion-reduce:transition-none`}>
+      <div
+        className={`${contentOffset} min-h-screen min-w-0 transition-[margin] duration-200 motion-reduce:transition-none`}
+      >
         <AdminHeader
           current={current}
           breadcrumbs={breadcrumbs}
@@ -105,7 +120,13 @@ export function AdminLayout() {
         />
 
         <main className="w-full min-w-0 p-2 pb-[calc(4rem+env(safe-area-inset-bottom))] sm:p-3 sm:pb-[calc(4rem+env(safe-area-inset-bottom))] lg:p-3 lg:pb-3 xl:p-4">
-          <WorkContextBar role={roleLabel(auth.activeRole)} organization={auth.context?.activeOrganization?.name} multipleRoles={(auth.context?.roles.filter(role=>role!=="STUDENT").length||0)>1}/>
+          <WorkContextBar
+            role={roleLabel(auth.activeRole)}
+            organization={auth.context?.activeOrganization?.name}
+            multipleRoles={
+              (auth.context?.roles.filter((role) => role !== "STUDENT").length || 0) > 1
+            }
+          />
           <Outlet />
         </main>
       </div>

@@ -9,11 +9,7 @@ import { DateSeparator } from "./DateSeparator";
 import { EmojiReactionPicker } from "./EmojiReactionPicker";
 import { MessageContextMenu } from "./MessageContextMenu";
 
-type MessageAction = (
-  method: "post" | "delete",
-  path: string,
-  body?: unknown,
-) => void;
+type MessageAction = (method: "post" | "delete", path: string, body?: unknown) => void;
 
 export function MessageList({
   conversationId,
@@ -40,21 +36,15 @@ export function MessageList({
   onJumpToMessage: (id: string) => void;
   act: MessageAction;
 }) {
-  const byId = useMemo(
-    () => new Map(items.map((item) => [item.id, item])),
-    [items],
-  );
+  const byId = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
   return items.map((message, index) => {
     const mine = message.senderUserId
       ? message.senderUserId === authUserId
       : !isGroup && String(message.senderRole).toLowerCase() === "admin";
     const ready = !isGroup || !!group;
-    const canEdit =
-      !message.deletedAt && ready && canUseMessageAction("edit", mine, group);
-    const canDelete =
-      !message.deletedAt && ready && canUseMessageAction("delete", mine, group);
-    const canReact =
-      !message.deletedAt && ready && canUseMessageAction("react", mine, group);
+    const canEdit = !message.deletedAt && ready && canUseMessageAction("edit", mine, group);
+    const canDelete = !message.deletedAt && ready && canUseMessageAction("delete", mine, group);
+    const canReact = !message.deletedAt && ready && canUseMessageAction("react", mine, group);
     const previous = items[index - 1];
     const next = items[index + 1];
     const sameSender = (candidate?: ChatMessage) =>
@@ -62,10 +52,8 @@ export function MessageList({
       candidate.senderUserId === message.senderUserId &&
       candidate.senderRole === message.senderRole &&
       candidate.type !== "system";
-    const startsGroup =
-      !sameSender(previous) || showDateSeparator(previous, message);
-    const endsGroup =
-      !sameSender(next) || (!!next && showDateSeparator(message, next));
+    const startsGroup = !sameSender(previous) || showDateSeparator(previous, message);
+    const endsGroup = !sameSender(next) || (!!next && showDateSeparator(message, next));
     return (
       <div
         key={message.id}
@@ -83,28 +71,18 @@ export function MessageList({
           group={isGroup}
           startsGroup={startsGroup}
           endsGroup={endsGroup}
-          referenced={
-            message.replyToId ? byId.get(message.replyToId) : undefined
-          }
-          onJumpToReply={
-            message.replyToId
-              ? () => onJumpToMessage(message.replyToId!)
-              : undefined
-          }
+          referenced={message.replyToId ? byId.get(message.replyToId) : undefined}
+          onJumpToReply={message.replyToId ? () => onJumpToMessage(message.replyToId!) : undefined}
           onReply={() => setReplyTo(message)}
           onEdit={canEdit ? () => setEditing(message) : undefined}
           onDelete={
             canDelete
-              ? () =>
-                  act(
-                    "delete",
-                    `/chat/conversations/${conversationId}/messages/${message.id}`,
-                  )
+              ? () => act("delete", `/chat/conversations/${conversationId}/messages/${message.id}`)
               : undefined
           }
           onReact={
             canReact
-              ? (emoji, remove) =>
+              ? (emoji) =>
                   act(
                     "post",
                     `/chat/conversations/${conversationId}/messages/${message.id}/reactions`,
@@ -172,9 +150,7 @@ export function MessageBubble({
   }
 
   return (
-    <div
-      className={`group/message flex ${mine ? "justify-end" : "justify-start"}`}
-    >
+    <div className={`group/message flex ${mine ? "justify-end" : "justify-start"}`}>
       <div
         className={`relative max-w-[92%] border px-3 py-2 text-sm shadow-[0_1px_2px_rgba(24,45,39,0.08)] sm:max-w-[72%] lg:max-w-[68%] ${mine ? "chat-bubble-outgoing border-teal-200/70 rounded-2xl rounded-bl-md dark:border-teal-800" : "chat-bubble-incoming border-slate-200/80 rounded-2xl rounded-br-md"} ${!startsGroup ? (mine ? "rounded-bl-2xl" : "rounded-br-2xl") : ""} ${!endsGroup ? (mine ? "rounded-tl-md" : "rounded-tr-md") : ""} ${message.pending ? "opacity-70" : ""}`}
       >
@@ -235,9 +211,7 @@ export function MessageBubble({
               onEdit={onEdit}
               onDelete={onDelete}
             />
-            {onReact ? (
-              <EmojiReactionPicker reacted={reacted} onReact={onReact} />
-            ) : null}
+            {onReact ? <EmojiReactionPicker reacted={reacted} onReact={onReact} /> : null}
           </div>
         ) : null}
       </div>
@@ -246,8 +220,7 @@ export function MessageBubble({
 }
 
 export function MessageBody({ message }: { message: ChatMessage }) {
-  if (message.deletedAt)
-    return <p className="italic text-slate-400">پیام حذف شده است.</p>;
+  if (message.deletedAt) return <p className="italic text-slate-400">پیام حذف شده است.</p>;
   const payload = message.payload || {};
   if (message.type && !["text", "system"].includes(message.type)) {
     const labels: Record<string, string> = {
@@ -265,9 +238,7 @@ export function MessageBody({ message }: { message: ChatMessage }) {
       />
     );
   }
-  return (
-    <p className="whitespace-pre-wrap break-words leading-7">{message.text}</p>
-  );
+  return <p className="whitespace-pre-wrap break-words leading-7">{message.text}</p>;
 }
 
 export function StructuredMessage({
@@ -287,24 +258,16 @@ export function StructuredMessage({
       <strong>{label}</strong>
       {payload.title ? <b>{String(payload.title)}</b> : null}
       {payload.subject ? <span>درس: {String(payload.subject)}</span> : null}
-      {payload.percent != null ? (
-        <span>نتیجه: {String(payload.percent)}٪</span>
-      ) : null}
+      {payload.percent != null ? <span>نتیجه: {String(payload.percent)}٪</span> : null}
       {payload.studyMinutes != null ? (
         <span>مطالعه امروز: {String(payload.studyMinutes)} دقیقه</span>
       ) : null}
       {payload.totalMinutes != null ? (
         <span>مجموع مطالعه: {String(payload.totalMinutes)} دقیقه</span>
       ) : null}
-      {payload.testCount != null ? (
-        <span>تعداد تست: {String(payload.testCount)}</span>
-      ) : null}
-      {payload.reviews != null ? (
-        <span>مرورهای سررسید: {String(payload.reviews)}</span>
-      ) : null}
-      {payload.minutes != null ? (
-        <span>مدت: {String(payload.minutes)} دقیقه</span>
-      ) : null}
+      {payload.testCount != null ? <span>تعداد تست: {String(payload.testCount)}</span> : null}
+      {payload.reviews != null ? <span>مرورهای سررسید: {String(payload.reviews)}</span> : null}
+      {payload.minutes != null ? <span>مدت: {String(payload.minutes)} دقیقه</span> : null}
     </div>
   );
 }
@@ -312,14 +275,12 @@ export function StructuredMessage({
 export function MessageSkeleton() {
   return (
     <div className="grid gap-3">
-      {["w-2/5", "mr-auto w-3/5", "w-1/2", "mr-auto w-2/5"].map(
-        (width, index) => (
-          <div
-            key={index}
-            className={`chat-surface h-14 animate-pulse rounded-2xl opacity-70 ${width}`}
-          />
-        ),
-      )}
+      {["w-2/5", "mr-auto w-3/5", "w-1/2", "mr-auto w-2/5"].map((width, index) => (
+        <div
+          key={index}
+          className={`chat-surface h-14 animate-pulse rounded-2xl opacity-70 ${width}`}
+        />
+      ))}
     </div>
   );
 }

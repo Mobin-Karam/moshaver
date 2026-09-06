@@ -8,26 +8,17 @@ type ButtonProps = ComponentProps<"button"> & {
   loadingLabel?: string;
 };
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  function Button(
-    {
-      className,
-      variant = "primary",
-      loading = false,
-      loadingLabel,
-      children,
-      disabled,
-      ...props
-    },
-    ref,
-  ) {
-    return (
-      <button
-        ref={ref}
-        aria-busy={loading || undefined}
-        disabled={disabled || loading}
-        className={cn(
-          `
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { className, variant = "primary", loading = false, loadingLabel, children, disabled, ...props },
+  ref,
+) {
+  return (
+    <button
+      ref={ref}
+      aria-busy={loading || undefined}
+      disabled={disabled || loading}
+      className={cn(
+        `
           inline-flex
           h-10
           items-center
@@ -56,8 +47,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           focus-visible:ring-brand/20
           `,
 
-          variant === "primary" &&
-            `
+        variant === "primary" &&
+          `
             bg-brand
             text-white
 
@@ -67,8 +58,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             hover:shadow-md
             `,
 
-          variant === "soft" &&
-            `
+        variant === "soft" &&
+          `
             border
             border-[rgb(var(--border-subtle))]
 
@@ -82,8 +73,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             dark:bg-slate-900
             `,
 
-          variant === "danger" &&
-            `
+        variant === "danger" &&
+          `
             bg-rosewood
             text-white
 
@@ -91,8 +82,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             hover:shadow-md
             `,
 
-          variant === "ghost" &&
-            `
+        variant === "ghost" &&
+          `
             text-slate-600
 
             hover:bg-slate-100
@@ -101,19 +92,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             dark:hover:bg-slate-800
             `,
 
-          className,
-        )}
-        {...props}
-      >
-        {loading ? (
-          <LoaderCircle size={17} className="animate-spin" aria-hidden="true" />
-        ) : null}
+        className,
+      )}
+      {...props}
+    >
+      {loading ? <LoaderCircle size={17} className="animate-spin" aria-hidden="true" /> : null}
 
-        {loading && loadingLabel ? loadingLabel : children}
-      </button>
-    );
-  },
-);
+      {loading && loadingLabel ? loadingLabel : children}
+    </button>
+  );
+});
 
 Button.displayName = "Button";
 
@@ -208,16 +196,14 @@ dark:placeholder:text-slate-500
   },
 );
 
-export const Textarea = forwardRef<
-  HTMLTextAreaElement,
-  ComponentProps<"textarea">
->(function Textarea(props, ref) {
-  return (
-    <textarea
-      ref={ref}
-      {...props}
-      className={cn(
-        `
+export const Textarea = forwardRef<HTMLTextAreaElement, ComponentProps<"textarea">>(
+  function Textarea(props, ref) {
+    return (
+      <textarea
+        ref={ref}
+        {...props}
+        className={cn(
+          `
 
 min-h-28
 
@@ -271,11 +257,12 @@ dark:placeholder:text-slate-500
 
 `,
 
-        props.className,
-      )}
-    />
-  );
-});
+          props.className,
+        )}
+      />
+    );
+  },
+);
 
 export const Select = forwardRef<HTMLSelectElement, ComponentProps<"select">>(
   function Select(props, ref) {
@@ -502,11 +489,7 @@ dark:text-slate-400
   );
 }
 
-export function LoadingState({
-  label = "در حال دریافت...",
-}: {
-  label?: string;
-}) {
+export function LoadingState({ label = "در حال دریافت..." }: { label?: string }) {
   return (
     <div
       className="

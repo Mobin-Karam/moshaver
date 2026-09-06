@@ -77,9 +77,7 @@ export function StudentDetail({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="truncate font-black text-ink">{student.name}</h2>
-              <span
-                className={`rounded-full px-2 py-1 text-[10px] font-bold ${status.className}`}
-              >
+              <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${status.className}`}>
                 {status.label}
               </span>
               {dirty ? (
@@ -100,13 +98,8 @@ export function StudentDetail({
             className="flex min-w-0 items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white p-2 text-right text-[11px] hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900"
           >
             <span className="min-w-0">
-              <span className="block text-slate-500 dark:text-slate-400">
-                شناسه
-              </span>
-              <strong
-                className="block truncate text-slate-700 dark:text-slate-200"
-                dir="ltr"
-              >
+              <span className="block text-slate-500 dark:text-slate-400">شناسه</span>
+              <strong className="block truncate text-slate-700 dark:text-slate-200" dir="ltr">
                 {student.id}
               </strong>
             </span>
@@ -123,13 +116,8 @@ export function StudentDetail({
             className="flex min-w-0 items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white p-2 text-right text-[11px] hover:bg-slate-50 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900"
           >
             <span className="min-w-0">
-              <span className="block text-slate-500 dark:text-slate-400">
-                نام کاربری
-              </span>
-              <strong
-                className="block truncate text-slate-700 dark:text-slate-200"
-                dir="ltr"
-              >
+              <span className="block text-slate-500 dark:text-slate-400">نام کاربری</span>
+              <strong className="block truncate text-slate-700 dark:text-slate-200" dir="ltr">
                 {getStudentUsername(student) || "ثبت نشده"}
               </strong>
             </span>
@@ -141,11 +129,7 @@ export function StudentDetail({
           </button>
         </div>
         <span className="sr-only" aria-live="polite">
-          {copied === "id"
-            ? "شناسه کپی شد"
-            : copied === "username"
-              ? "نام کاربری کپی شد"
-              : ""}
+          {copied === "id" ? "شناسه کپی شد" : copied === "username" ? "نام کاربری کپی شد" : ""}
         </span>
       </div>
 
@@ -154,18 +138,20 @@ export function StudentDetail({
         aria-label="بخش‌های پرونده دانش‌آموز"
       >
         <div className="flex min-w-max items-center gap-1">
-          {tabOptions.filter(([value])=>!visibleTabs||visibleTabs.includes(value)).map(([value, label, Icon]) => (
-            <button
-              key={value}
-              type="button"
-              aria-current={tab === value ? "page" : undefined}
-              onClick={() => onTabChange(value)}
-              className={`relative inline-flex h-11 items-center gap-1.5 px-2.5 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${tab === value ? "text-brand after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-brand" : "text-slate-500 hover:text-ink dark:text-slate-400"}`}
-            >
-              <Icon size={14} />
-              {label}
-            </button>
-          ))}
+          {tabOptions
+            .filter(([value]) => !visibleTabs || visibleTabs.includes(value))
+            .map(([value, label, Icon]) => (
+              <button
+                key={value}
+                type="button"
+                aria-current={tab === value ? "page" : undefined}
+                onClick={() => onTabChange(value)}
+                className={`relative inline-flex h-11 items-center gap-1.5 px-2.5 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${tab === value ? "text-brand after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-brand" : "text-slate-500 hover:text-ink dark:text-slate-400"}`}
+              >
+                <Icon size={14} />
+                {label}
+              </button>
+            ))}
         </div>
       </nav>
 

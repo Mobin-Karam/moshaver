@@ -1,22 +1,8 @@
-import {
-  AlertCircle,
-  CheckCircle2,
-  Info,
-  LoaderCircle,
-  TriangleAlert,
-  Undo2,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, Info, LoaderCircle, TriangleAlert, Undo2 } from "lucide-react";
 
 import { Toaster, toast, type ExternalToast } from "sonner";
 
-import { useEffect, useState } from "react";
-
-export type NotificationTone =
-  | "success"
-  | "error"
-  | "warning"
-  | "info"
-  | "loading";
+export type NotificationTone = "success" | "error" | "warning" | "info" | "loading";
 
 const baseClass = `
 !rounded-2xl
@@ -252,8 +238,6 @@ export const notifications = {
 
     let seconds = totalSeconds;
 
-    let interval: ReturnType<typeof setInterval>;
-
     const id = toast(
       message,
 
@@ -299,7 +283,7 @@ export const notifications = {
       },
     );
 
-    interval = setInterval(() => {
+    const interval = setInterval(() => {
       seconds--;
 
       toast(
@@ -308,12 +292,7 @@ export const notifications = {
         {
           id,
 
-          description: (
-            <UndoCountdown
-              seconds={Math.max(seconds, 0)}
-              total={totalSeconds}
-            />
-          ),
+          description: <UndoCountdown seconds={Math.max(seconds, 0)} total={totalSeconds} />,
         },
       );
 

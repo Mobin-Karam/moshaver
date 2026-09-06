@@ -1,8 +1,4 @@
-import {
-  CheckCircle2,
-  RefreshCw,
-  WifiOff,
-} from "lucide-react";
+import { CheckCircle2, RefreshCw, WifiOff } from "lucide-react";
 import { useBackendHealth } from "../hooks/useBackendHealth";
 
 export function BackendHealthStatus() {
@@ -28,15 +24,10 @@ export function BackendHealthStatus() {
       <span className="min-w-0 flex-1 truncate">
         {health.loading
           ? "در حال بررسی اتصال…"
-          : health.error ||
-            `اتصال برقرار است • نسخه ${health.data?.version || "—"}`}
+          : health.error || `اتصال برقرار است • نسخه ${health.data?.version || "—"}`}
       </span>
 
-      <button
-        type="button"
-        aria-label="بررسی دوباره اتصال"
-        onClick={() => void checkHealth()}
-      >
+      <button type="button" aria-label="بررسی دوباره اتصال" onClick={() => void checkHealth()}>
         <RefreshCw size={15} />
       </button>
     </div>

@@ -23,7 +23,11 @@ describe("notification role access", () => {
   it.each([
     ["content manager", [], false],
     ["teacher", ["students.read", "exams.read"], false],
-    ["advisor", ["students.read", "recovery_requests.read", "recovery_requests.manage", "tasks.update"], true],
+    [
+      "advisor",
+      ["students.read", "recovery_requests.read", "recovery_requests.manage", "tasks.update"],
+      true,
+    ],
   ])("derives the correct advisor section for %s", (_name, capabilities, expected) => {
     expect(notificationAccess(capabilities as string[]).advisorInbox).toBe(expected);
   });

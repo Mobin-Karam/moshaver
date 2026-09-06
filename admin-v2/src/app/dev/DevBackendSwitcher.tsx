@@ -21,9 +21,7 @@ function labelFor(value: BackendTarget | "") {
 }
 
 export function DevBackendSwitcher() {
-  const [selected, setSelected] = useState<BackendTarget | "">(
-    getSelectedBackend() ?? "",
-  );
+  const [selected, setSelected] = useState<BackendTarget | "">(getSelectedBackend() ?? "");
 
   if (!import.meta.env.DEV) return null;
 

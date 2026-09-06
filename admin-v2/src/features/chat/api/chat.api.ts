@@ -6,7 +6,13 @@ import type {
   ConversationPage,
   MessagePage,
 } from "../model/chat.types";
-import type { ChatUser, GroupDetail, GroupMember, GroupPermissions, GroupRole } from "../model/group.types";
+import type {
+  ChatUser,
+  GroupDetail,
+  GroupMember,
+  GroupPermissions,
+  GroupRole,
+} from "../model/group.types";
 
 export async function fetchConversationPage(
   _cursor: ConversationCursor,
@@ -14,7 +20,13 @@ export async function fetchConversationPage(
 ): Promise<CombinedConversationPage> {
   const result = await api.get<ConversationPage | ConversationPage["items"]>("/chat/conversations");
   const all = Array.isArray(result) ? result : result.items;
-  const normalized = all.filter((item) => !search || `${item.title || ""} ${item.student?.name || ""}`.toLowerCase().includes(search.toLowerCase()));
+  const normalized = all.filter(
+    (item) =>
+      !search ||
+      `${item.title || ""} ${item.student?.name || ""}`
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+  );
   const direct = normalized.filter((item) => item.type !== "group");
   const groups = normalized.filter((item) => item.type === "group");
   return {
@@ -34,25 +46,28 @@ export async function fetchMessages(conversationId: string, beforeMessageId = ""
 }
 
 export const chatApi = {
-  markRead: (conversationId: string) =>
-    api.post(`/chat/conversations/${conversationId}/read`, {}),
+  markRead: (conversationId: string) => api.post(`/chat/conversations/${conversationId}/read`, {}),
   send: (conversationId: string, text: string, replyToId?: string) =>
     api.post<ChatMessage>(`/chat/conversations/${conversationId}/messages`, { text, replyToId }),
   edit: (conversationId: string, messageId: string, text: string) =>
     api.patch<ChatMessage>(`/chat/conversations/${conversationId}/messages/${messageId}`, { text }),
-  remove: (conversationId: string, messageId: string) => api.delete(`/chat/conversations/${conversationId}/messages/${messageId}`),
+  remove: (conversationId: string, messageId: string) =>
+    api.delete(`/chat/conversations/${conversationId}/messages/${messageId}`),
   react: (conversationId: string, messageId: string, emoji: string) =>
     api.post(`/chat/conversations/${conversationId}/messages/${messageId}/reactions`, { emoji }),
-  group: (conversationId: string) =>
-    api.get<GroupDetail>(`/chat/conversations/${conversationId}`),
+  group: (conversationId: string) => api.get<GroupDetail>(`/chat/conversations/${conversationId}`),
   createGroup: (body: { title: string; description: string; memberIds: string[] }) =>
     api.post<GroupDetail>("/chat/groups", body),
   users: (search: string) =>
     api.get<ChatUser[]>(`/chat/users?limit=15&search=${encodeURIComponent(search)}`),
   members: (conversationId: string, search = "") =>
-    api.get<GroupMember[]>(`/chat/groups/${conversationId}/members?limit=50${search ? `&search=${encodeURIComponent(search)}` : ""}`),
+    api.get<GroupMember[]>(
+      `/chat/groups/${conversationId}/members?limit=50${search ? `&search=${encodeURIComponent(search)}` : ""}`,
+    ),
   candidates: (conversationId: string, search: string) =>
-    api.get<ChatUser[]>(`/chat/groups/${conversationId}/candidates?limit=15&search=${encodeURIComponent(search)}`),
+    api.get<ChatUser[]>(
+      `/chat/groups/${conversationId}/candidates?limit=15&search=${encodeURIComponent(search)}`,
+    ),
   addMember: (conversationId: string, userId: string) =>
     api.post(`/chat/groups/${conversationId}/members`, { userId }),
   removeMember: (conversationId: string, userId: string) =>
@@ -67,6 +82,5 @@ export const chatApi = {
     api.patch(`/chat/groups/${conversationId}/permissions`, body),
   mute: (conversationId: string, muted: boolean) =>
     api.patch(`/chat/conversations/${conversationId}/mute`, { muted }),
-  leave: (conversationId: string) =>
-    api.post(`/chat/groups/${conversationId}/leave`, {}),
+  leave: (conversationId: string) => api.post(`/chat/groups/${conversationId}/leave`, {}),
 };

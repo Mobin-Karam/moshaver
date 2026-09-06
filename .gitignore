@@ -3,6 +3,9 @@ node_modules/
 
 # Build output
 dist/
+coverage/
+admin-v2/playwright-report/
+admin-v2/test-results/
 build/
 target/
 *.tsbuildinfo

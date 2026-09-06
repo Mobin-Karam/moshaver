@@ -15,7 +15,9 @@ export function formatCompactDuration(milliseconds: number) {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  return hours > 0 ? `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}` : `${pad2(minutes)}:${pad2(seconds)}`;
+  return hours > 0
+    ? `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`
+    : `${pad2(minutes)}:${pad2(seconds)}`;
 }
 
 export function formatStopwatchDuration(milliseconds: number) {
@@ -90,7 +92,8 @@ export function getDayOffsetLabel(now: Date, timeZone: string) {
     month: "2-digit",
     day: "2-digit",
   }).formatToParts(now);
-  const read = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((part) => part.type === type)?.value ?? 0);
+  const read = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value ?? 0);
   const remote = Date.UTC(read("year"), read("month") - 1, read("day"));
   const local = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
   const diff = Math.round((remote - local) / 86_400_000);
@@ -101,7 +104,13 @@ export function getDayOffsetLabel(now: Date, timeZone: string) {
 }
 
 export function getNextAlarmTimestamp(
-  alarm: { hour: number; minute: number; enabled: boolean; repeatDays: number[]; snoozedUntil: number | null },
+  alarm: {
+    hour: number;
+    minute: number;
+    enabled: boolean;
+    repeatDays: number[];
+    snoozedUntil: number | null;
+  },
   now = Date.now(),
 ) {
   if (!alarm.enabled) return null;

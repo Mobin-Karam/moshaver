@@ -1,10 +1,4 @@
-import {
-  Activity,
-  BarChart3,
-  BookOpenCheck,
-  CalendarDays,
-  RefreshCw,
-} from "lucide-react";
+import { Activity, BarChart3, BookOpenCheck, CalendarDays, RefreshCw } from "lucide-react";
 import { Button } from "../../../shared/ui/ui";
 
 const icons = [BookOpenCheck, Activity, CalendarDays, BarChart3];
@@ -29,10 +23,7 @@ export function StudentInsights({
     <section className="grid gap-3" aria-labelledby="student-activity-heading">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3
-            id="student-activity-heading"
-            className="text-sm font-black text-ink"
-          >
+          <h3 id="student-activity-heading" className="text-sm font-black text-ink">
             فعالیت و داده‌های آموزشی
           </h3>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -40,11 +31,7 @@ export function StudentInsights({
           </p>
         </div>
         {hasError && onRetry ? (
-          <Button
-            variant="ghost"
-            className="h-8 px-2.5 text-xs"
-            onClick={onRetry}
-          >
+          <Button variant="ghost" className="h-8 px-2.5 text-xs" onClick={onRetry}>
             <RefreshCw size={14} />
             تلاش دوباره
           </Button>
@@ -81,9 +68,7 @@ export function StudentInsights({
                 </strong>
               )}
               {item.hint ? (
-                <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                  {item.hint}
-                </p>
+                <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{item.hint}</p>
               ) : null}
             </div>
           );

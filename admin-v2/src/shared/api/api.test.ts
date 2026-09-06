@@ -44,9 +44,7 @@ describe("api client", () => {
           { status: 400 },
         ),
     ) as typeof fetch;
-    await expect(api.get("/bad")).rejects.toMatchObject(
-      new ApiError(400, "bad", "VALIDATION"),
-    );
+    await expect(api.get("/bad")).rejects.toMatchObject(new ApiError(400, "bad", "VALIDATION"));
   });
 
   it("uses the selected dev backend when one is set", () => {

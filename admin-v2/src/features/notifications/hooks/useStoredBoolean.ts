@@ -1,7 +1,4 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
 function readValue(key: string, fallback: boolean) {
   if (typeof window === "undefined") {
@@ -16,10 +13,7 @@ function readValue(key: string, fallback: boolean) {
   }
 }
 
-export function useStoredBoolean(
-  key: string,
-  fallback: boolean,
-) {
+export function useStoredBoolean(key: string, fallback: boolean) {
   const [value, setValue] = useState(() => readValue(key, fallback));
 
   useEffect(() => {

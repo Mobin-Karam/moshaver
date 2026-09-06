@@ -16,7 +16,12 @@ export class AppErrorBoundary extends Component<{ children: ReactNode }, { error
 
   render() {
     if (this.state.error) {
-      return <ErrorFallback details={classifyAppError(this.state.error)} onRetry={() => this.setState({ error: null })} />;
+      return (
+        <ErrorFallback
+          details={classifyAppError(this.state.error)}
+          onRetry={() => this.setState({ error: null })}
+        />
+      );
     }
     return this.props.children;
   }

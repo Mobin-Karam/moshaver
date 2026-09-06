@@ -20,10 +20,7 @@ export function QuizEditor({
     <Card>
       <div className="grid gap-3 md:grid-cols-3">
         <Field label="عنوان">
-          <Input
-            value={quiz.title}
-            onChange={(e) => setQuiz({ ...quiz, title: e.target.value })}
-          />
+          <Input value={quiz.title} onChange={(e) => setQuiz({ ...quiz, title: e.target.value })} />
         </Field>
         <Field label="درس">
           <Input
@@ -35,9 +32,7 @@ export function QuizEditor({
           <Input
             type="number"
             value={quiz.durationMinutes}
-            onChange={(e) =>
-              setQuiz({ ...quiz, durationMinutes: Number(e.target.value) })
-            }
+            onChange={(e) => setQuiz({ ...quiz, durationMinutes: Number(e.target.value) })}
           />
         </Field>
       </div>
@@ -45,10 +40,7 @@ export function QuizEditor({
         <Button
           loading={busy}
           disabled={
-            !quiz.title.trim() ||
-            quiz.durationMinutes < 1 ||
-            quiz.durationMinutes > 360 ||
-            busy
+            !quiz.title.trim() || quiz.durationMinutes < 1 || quiz.durationMinutes > 360 || busy
           }
           onClick={onSave}
         >

@@ -45,10 +45,7 @@ export function AdminHeader({
               {breadcrumbs.map((item, index) => {
                 const destination = resolveAdminNavigation(item.path);
                 return (
-                  <span
-                    key={`${item.path}-${index}`}
-                    className="flex min-w-0 items-center gap-1"
-                  >
+                  <span key={`${item.path}-${index}`} className="flex min-w-0 items-center gap-1">
                     {index ? (
                       <ChevronLeft className="shrink-0" size={11} />
                     ) : (
@@ -64,11 +61,7 @@ export function AdminHeader({
                     ) : (
                       <NavLink
                         className="truncate rounded-sm outline-none transition hover:text-brand focus-visible:ring-2 focus-visible:ring-brand"
-                        to={adminDestination(
-                          item.path,
-                          destination.section,
-                          selectedStudentId,
-                        )}
+                        to={adminDestination(item.path, destination.section, selectedStudentId)}
                       >
                         {item.title}
                       </NavLink>
@@ -77,9 +70,7 @@ export function AdminHeader({
                 );
               })}
             </nav>
-            <strong className="block truncate text-sm sm:text-base">
-              {current.title}
-            </strong>
+            <strong className="block truncate text-sm sm:text-base">{current.title}</strong>
             <p className="hidden truncate text-[11px] text-slate-500 dark:text-slate-400 xl:block">
               {current.description}
             </p>
@@ -96,9 +87,7 @@ export function AdminHeader({
             title="جستجو و رفتن سریع (Ctrl/⌘ + Shift + P)"
           >
             <Search size={17} />
-            <span className="hidden text-xs font-semibold xl:inline">
-              جستجو
-            </span>
+            <span className="hidden text-xs font-semibold xl:inline">جستجو</span>
             <kbd
               className="hidden rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[9px] font-bold text-slate-400 dark:border-slate-700 dark:bg-slate-800 2xl:inline"
               dir="ltr"

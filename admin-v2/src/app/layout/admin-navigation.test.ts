@@ -1,29 +1,79 @@
 import { describe, expect, it } from "vitest";
-import { adminBreadcrumbs, adminDestination, adminNavigation, flatAdminNavigation, mainAdminNavigation, navigationForCapabilities, normalizeAdminPath, resolveAdminNavigation } from "./admin-navigation";
+import {
+  adminBreadcrumbs,
+  adminDestination,
+  adminNavigation,
+  flatAdminNavigation,
+  mainAdminNavigation,
+  navigationForCapabilities,
+  normalizeAdminPath,
+  resolveAdminNavigation,
+} from "./admin-navigation";
 
 describe("admin navigation metadata", () => {
   it("defines a title and description for every admin destination", () => {
     expect(flatAdminNavigation.map((item) => item.path)).toEqual([
-      "", "planner", "learning", "exams", "questions", "quizzes", "subjects",
-      "live", "chat", "notifications", "students", "users", "organizations", "reports", "system", "releases", "database", "audit", "settings",
+      "",
+      "planner",
+      "learning",
+      "exams",
+      "questions",
+      "quizzes",
+      "subjects",
+      "live",
+      "chat",
+      "notifications",
+      "students",
+      "users",
+      "organizations",
+      "reports",
+      "system",
+      "releases",
+      "database",
+      "audit",
+      "settings",
     ]);
     expect(flatAdminNavigation.every((item) => item.title && item.description)).toBe(true);
     expect(adminNavigation.every((group) => group.items.length > 0)).toBe(true);
-    expect(mainAdminNavigation.map((item) => item.path)).toEqual(["", "planner", "live", "students", "system"]);
-    expect(mainAdminNavigation.map((item) => item.title)).toEqual(["خانه", "آموزش", "ارتباط", "مدیریت", "سامانه"]);
+    expect(mainAdminNavigation.map((item) => item.path)).toEqual([
+      "",
+      "planner",
+      "live",
+      "students",
+      "system",
+    ]);
+    expect(mainAdminNavigation.map((item) => item.title)).toEqual([
+      "خانه",
+      "آموزش",
+      "ارتباط",
+      "مدیریت",
+      "سامانه",
+    ]);
   });
 
   it("hides protected destinations from unrelated work contexts", () => {
-    const guardian = navigationForCapabilities(["students.read", "plans.read", "reports.read", "chat.read"] as const).flatMap((group) => group.items.map((item) => item.path));
+    const guardian = navigationForCapabilities([
+      "students.read",
+      "plans.read",
+      "reports.read",
+      "chat.read",
+    ] as const).flatMap((group) => group.items.map((item) => item.path));
     expect(guardian).toContain("students");
     expect(guardian).not.toContain("users");
     expect(guardian).not.toContain("system");
-    const platform = navigationForCapabilities(["users.read", "organization.read", "database.read"] as const).flatMap((group) => group.items.map((item) => item.path));
+    const platform = navigationForCapabilities([
+      "users.read",
+      "organization.read",
+      "database.read",
+    ] as const).flatMap((group) => group.items.map((item) => item.path));
     expect(platform).toEqual(expect.arrayContaining(["users", "organizations", "database"]));
   });
 
   it("uses guardian-specific labels for the same capability routes", () => {
-    const guardian = navigationForCapabilities(["students.read", "plans.read", "reports.read", "chat.read"], "GUARDIAN").flatMap((group) => group.items);
+    const guardian = navigationForCapabilities(
+      ["students.read", "plans.read", "reports.read", "chat.read"],
+      "GUARDIAN",
+    ).flatMap((group) => group.items);
     expect(guardian.find((item) => item.path === "students")?.title).toBe("فرزندان");
     expect(guardian.find((item) => item.path === "planner")?.title).toBe("برنامه");
     expect(guardian.find((item) => item.path === "settings")?.title).toBe("پروفایل");
@@ -48,11 +98,17 @@ describe("admin navigation metadata", () => {
       { title: "آموزش", path: "planner" },
       { title: "آزمون‌ها", path: "exams" },
     ]);
-    expect(adminBreadcrumbs("settings").map((item) => item.title)).toEqual(["خانه", "سامانه", "تنظیمات"]);
+    expect(adminBreadcrumbs("settings").map((item) => item.title)).toEqual([
+      "خانه",
+      "سامانه",
+      "تنظیمات",
+    ]);
   });
 
   it("carries student context only between Education destinations", () => {
-    expect(adminDestination("exams", "آموزش", "student 1")).toBe("/admin/exams?studentId=student%201");
+    expect(adminDestination("exams", "آموزش", "student 1")).toBe(
+      "/admin/exams?studentId=student%201",
+    );
     expect(adminDestination("chat", "ارتباط", "student-1")).toBe("/admin/chat");
   });
 });

@@ -28,13 +28,9 @@ const signalLabels: Record<string, string> = {
   TASK_ISSUE: "مسئله فعالیت باز",
 };
 
-export function normalizeAttentionStudent(
-  student: V2AttentionStudent,
-): AttentionStudent {
+export function normalizeAttentionStudent(student: V2AttentionStudent): AttentionStudent {
   const score = Number(student.attention?.score ?? 0);
-  const signals = Array.isArray(student.attention?.signals)
-    ? student.attention.signals
-    : [];
+  const signals = Array.isArray(student.attention?.signals) ? student.attention.signals : [];
   const suppliedReasons = Array.isArray(student.reasons) ? student.reasons : [];
   const reasons: AttentionReason[] = suppliedReasons.length
     ? suppliedReasons
@@ -57,8 +53,7 @@ export function normalizeAttentionStudent(
     recentAccuracy: student.recentAccuracy ?? null,
     remainingTasks: Number(student.remainingTasks ?? missedTasks?.count ?? 0),
     reasons,
-    severity:
-      student.severity ?? (score >= 4 ? "red" : score > 0 ? "yellow" : "green"),
+    severity: student.severity ?? (score >= 4 ? "red" : score > 0 ? "yellow" : "green"),
   };
 }
 

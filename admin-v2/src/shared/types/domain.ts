@@ -1,4 +1,12 @@
-export type RoleCode = "STUDENT" | "GUARDIAN" | "ADVISOR" | "TEACHER" | "MENTOR" | "CONTENT_MANAGER" | "ORGANIZATION_ADMIN" | "PLATFORM_ADMIN";
+export type RoleCode =
+  | "STUDENT"
+  | "GUARDIAN"
+  | "ADVISOR"
+  | "TEACHER"
+  | "MENTOR"
+  | "CONTENT_MANAGER"
+  | "ORGANIZATION_ADMIN"
+  | "PLATFORM_ADMIN";
 export type Role = "admin" | "student" | "ADMIN" | "STUDENT" | RoleCode | Lowercase<RoleCode>;
 
 export interface User {
@@ -10,9 +18,25 @@ export interface User {
   csrfToken?: string;
 }
 
-export interface OrganizationSummary { id: string; membershipId: string; name: string; type: string; }
-export interface WorkContext { role: RoleCode; capabilities: string[]; }
-export interface AccountContext { user: User; roles: RoleCode[]; capabilities: string[]; workContexts?: WorkContext[]; memberships: OrganizationSummary[]; activeOrganization: OrganizationSummary | null; availableOrganizations: OrganizationSummary[]; }
+export interface OrganizationSummary {
+  id: string;
+  membershipId: string;
+  name: string;
+  type: string;
+}
+export interface WorkContext {
+  role: RoleCode;
+  capabilities: string[];
+}
+export interface AccountContext {
+  user: User;
+  roles: RoleCode[];
+  capabilities: string[];
+  workContexts?: WorkContext[];
+  memberships: OrganizationSummary[];
+  activeOrganization: OrganizationSummary | null;
+  availableOrganizations: OrganizationSummary[];
+}
 
 export interface Student {
   id: string;
@@ -116,7 +140,14 @@ export interface Conversation {
   memberCount?: number;
   unread?: number;
   student?: Student;
-  lastMessage?: { id?: string; text?: string; type?: string; createdAt?: string; senderRole?: Role; senderName?: string };
+  lastMessage?: {
+    id?: string;
+    text?: string;
+    type?: string;
+    createdAt?: string;
+    senderRole?: Role;
+    senderName?: string;
+  };
   presence?: { online?: boolean; state?: string };
   pinned?: boolean;
 }

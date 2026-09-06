@@ -2,7 +2,15 @@ import type { Conversation } from "../../../../shared/types/domain";
 import { EmptyState } from "../../../../shared/ui/ui";
 import { ConversationListItem } from "./ConversationListItem";
 
-export function ConversationList({ items, activeId, favoriteIds, drafts, emptyTitle, onSelect, onToggleFavorite }: {
+export function ConversationList({
+  items,
+  activeId,
+  favoriteIds,
+  drafts,
+  emptyTitle,
+  onSelect,
+  onToggleFavorite,
+}: {
   items: Conversation[];
   activeId?: string;
   favoriteIds: Set<string>;

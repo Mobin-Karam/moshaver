@@ -22,7 +22,6 @@ import {
   questionMatches,
   questionNumber,
   questionPayload,
-  type QuestionView,
 } from "../model/question-model";
 export function QuestionsPage() {
   const [params, setParams] = useSearchParams();
@@ -58,12 +57,8 @@ export function QuestionsPage() {
     queryFn: () => getExamQuestions(examId),
   });
   const nextSortOrder =
-    Math.max(
-      0,
-      ...(questions.data || []).map((item, index) =>
-        questionNumber(item, index + 1),
-      ),
-    ) + 1;
+    Math.max(0, ...(questions.data || []).map((item, index) => questionNumber(item, index + 1))) +
+    1;
   const add = useMutation({
     mutationFn: () =>
       editingId
@@ -81,10 +76,7 @@ export function QuestionsPage() {
       void qc.invalidateQueries({ queryKey: ["exams"] });
     },
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "ذخیره سؤال ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "ذخیره سؤال ناموفق بود.", "error"),
   });
   const remove = useMutation({
     mutationFn: (id: string) => deleteExamQuestion(examId, id),
@@ -99,16 +91,10 @@ export function QuestionsPage() {
       void qc.invalidateQueries({ queryKey: ["exams"] });
     },
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "حذف سؤال ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "حذف سؤال ناموفق بود.", "error"),
   });
   const visibleQuestions = useMemo(
-    () =>
-      (questions.data ?? []).filter((item) =>
-        questionMatches(item, deferredSearch),
-      ),
+    () => (questions.data ?? []).filter((item) => questionMatches(item, deferredSearch)),
     [questions.data, deferredSearch],
   );
   const validationError = questionError(form);
@@ -208,15 +194,9 @@ export function QuestionsPage() {
                   const results = await Promise.allSettled(
                     ids.map((id) => deleteExamQuestion(examId, id)),
                   );
-                  const failed = ids.filter(
-                    (_, i) => results[i]?.status === "rejected",
-                  );
+                  const failed = ids.filter((_, i) => results[i]?.status === "rejected");
                   setSelected(failed);
-                  if (
-                    editingId &&
-                    !failed.includes(editingId) &&
-                    ids.includes(editingId)
-                  ) {
+                  if (editingId && !failed.includes(editingId) && ids.includes(editingId)) {
                     setEditingId("");
                     setForm({ ...emptyQuestion(), sortOrder: nextSortOrder });
                   }

@@ -10,12 +10,7 @@ export class ApiError extends Error {
   readonly code: string;
   readonly details: unknown;
 
-  constructor(
-    status: number,
-    message: string,
-    code = "HTTP_ERROR",
-    details: unknown = null,
-  ) {
+  constructor(status: number, message: string, code = "HTTP_ERROR", details: unknown = null) {
     super(message);
     this.name = "ApiError";
     this.status = status;
@@ -114,12 +109,10 @@ function isMutating(method: string) {
 }
 
 async function refreshCsrf() {
-  const me = await request<{ csrfToken?: string }>(
-    "GET",
-    "/auth/me",
-    undefined,
-    { noCsrfRetry: true, suppressAuthFailure: true },
-  );
+  const me = await request<{ csrfToken?: string }>("GET", "/auth/me", undefined, {
+    noCsrfRetry: true,
+    suppressAuthFailure: true,
+  });
   if (me.csrfToken) setCsrf(me.csrfToken);
   return me;
 }
@@ -135,10 +128,7 @@ export async function request<T>(
   } = {},
 ): Promise<T> {
   const controller = new AbortController();
-  const timeout = window.setTimeout(
-    () => controller.abort(),
-    options.timeoutMs ?? 20_000,
-  );
+  const timeout = window.setTimeout(() => controller.abort(), options.timeoutMs ?? 20_000);
   const headers = new Headers({ Accept: "application/json" });
   if (activeWorkRole) headers.set("X-Work-Role", activeWorkRole);
   if (activeOrganizationId) headers.set("X-Organization-Id", activeOrganizationId);
@@ -154,9 +144,7 @@ export async function request<T>(
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: controller.signal,
     });
-    const payload = (await response
-      .json()
-      .catch(() => null)) as ApiEnvelope<T> | null;
+    const payload = (await response.json().catch(() => null)) as ApiEnvelope<T> | null;
     if (response.ok && payload?.ok) {
       const data = payload.data as T & { csrfToken?: string };
       if (data?.csrfToken) setCsrf(data.csrfToken);
@@ -204,14 +192,12 @@ export const api = {
       credentials: "include",
       headers: csrf() ? { "X-CSRF-Token": csrf() } : undefined,
     });
-    if (!response.ok)
-      throw new ApiError(response.status, "دریافت فایل پشتیبان انجام نشد.");
+    if (!response.ok) throw new ApiError(response.status, "دریافت فایل پشتیبان انجام نشد.");
     return {
       blob: await response.blob(),
       filename:
-        response.headers
-          .get("content-disposition")
-          ?.match(/filename="?([^";]+)"?/)?.[1] || "moshaver-backup.sqlite",
+        response.headers.get("content-disposition")?.match(/filename="?([^";]+)"?/)?.[1] ||
+        "moshaver-backup.sqlite",
     };
   },
   async uploadBinary<T>(path: string, body: Blob) {
@@ -224,9 +210,7 @@ export const api = {
       },
       body,
     });
-    const payload = (await response
-      .json()
-      .catch(() => null)) as ApiEnvelope<T> | null;
+    const payload = (await response.json().catch(() => null)) as ApiEnvelope<T> | null;
     if (response.ok && payload?.ok) return payload.data;
     const error = payload && "error" in payload ? payload.error : undefined;
     throw new ApiError(
@@ -276,13 +260,7 @@ export const api = {
     ];
     names.forEach((name) =>
       source.addEventListener(name, (event) =>
-        onEvent(
-          name,
-          JSON.parse((event as MessageEvent).data || "{}") as Record<
-            string,
-            unknown
-          >,
-        ),
+        onEvent(name, JSON.parse((event as MessageEvent).data || "{}") as Record<string, unknown>),
       ),
     );
     source.onopen = () => onState?.("open");

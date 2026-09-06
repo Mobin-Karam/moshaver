@@ -48,139 +48,79 @@ export type AttemptDetail = AttemptSummary & {
   }>;
 };
 
-export function makeExamDraft(
-  exam?: Exam,
-): ExamDraft {
-  const day =
-    exam?.isoDate ||
-    new Date().toISOString().slice(0, 10);
+export function makeExamDraft(exam?: Exam): ExamDraft {
+  const day = exam?.isoDate || new Date().toISOString().slice(0, 10);
 
   return {
     title: exam?.title || "",
-    persianDate:
-      exam?.persianDate || "",
+    persianDate: exam?.persianDate || "",
     isoDate: day,
-    openAt:
-      exam?.openAt ||
-      `${day}T08:00:00+03:30`,
-    closeAt:
-      exam?.closeAt ||
-      `${day}T13:00:00+03:30`,
-    durationMinutes:
-      exam?.durationMinutes || 120,
-    maxAttempts:
-      exam?.maxAttempts || 1,
-    status:
-      exam?.status || "upcoming",
-    published:
-      exam?.published ?? false,
-    note:
-      exam?.note || "",
-    instructions:
-      exam?.instructions || "",
+    openAt: exam?.openAt || `${day}T08:00:00+03:30`,
+    closeAt: exam?.closeAt || `${day}T13:00:00+03:30`,
+    durationMinutes: exam?.durationMinutes || 120,
+    maxAttempts: exam?.maxAttempts || 1,
+    status: exam?.status || "upcoming",
+    published: exam?.published ?? false,
+    note: exam?.note || "",
+    instructions: exam?.instructions || "",
   };
 }
 
-export function examDraftError(
-  data: ExamDraft,
-) {
+export function examDraftError(data: ExamDraft) {
   if (!data.title.trim()) {
     return "عنوان آزمون لازم است.";
   }
 
-  if (
-    !data.persianDate.trim() ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(
-      data.isoDate,
-    )
-  ) {
+  if (!data.persianDate.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(data.isoDate)) {
     return "تاریخ شمسی و تاریخ معتبر آزمون لازم است.";
   }
 
-  const open = new Date(
-    data.openAt,
-  ).getTime();
+  const open = new Date(data.openAt).getTime();
 
-  const close = new Date(
-    data.closeAt,
-  ).getTime();
+  const close = new Date(data.closeAt).getTime();
 
-  if (
-    !Number.isFinite(open) ||
-    !Number.isFinite(close) ||
-    close <= open
-  ) {
+  if (!Number.isFinite(open) || !Number.isFinite(close) || close <= open) {
     return "زمان پایان باید بعد از زمان شروع باشد.";
   }
 
   if (
-    !Number.isFinite(
-      data.durationMinutes,
-    ) ||
+    !Number.isFinite(data.durationMinutes) ||
     data.durationMinutes < 1 ||
     data.durationMinutes > 600
   ) {
     return "مدت آزمون باید بین ۱ تا ۶۰۰ دقیقه باشد.";
   }
 
-  if (
-    !Number.isInteger(
-      data.maxAttempts,
-    ) ||
-    data.maxAttempts < 1 ||
-    data.maxAttempts > 100
-  ) {
+  if (!Number.isInteger(data.maxAttempts) || data.maxAttempts < 1 || data.maxAttempts > 100) {
     return "تعداد تلاش باید عددی بین ۱ تا ۱۰۰ باشد.";
   }
 
   return "";
 }
 
-export function matchesExam(
-  exam: Exam,
-  search: string,
-  status: string,
-  visibility: string,
-) {
-  const needle =
-    normalizePersianText(search)
-      .trim()
-      .toLocaleLowerCase("fa");
+export function matchesExam(exam: Exam, search: string, status: string, visibility: string) {
+  const needle = normalizePersianText(search).trim().toLocaleLowerCase("fa");
 
-  const haystack =
-    normalizePersianText(
-      `${exam.title} ${exam.isoDate} ${
-        exam.persianDate || ""
-      } ${exam.instructions || ""}`,
-    ).toLocaleLowerCase("fa");
+  const haystack = normalizePersianText(
+    `${exam.title} ${exam.isoDate} ${exam.persianDate || ""} ${exam.instructions || ""}`,
+  ).toLocaleLowerCase("fa");
 
   return (
-    (!needle ||
-      haystack.includes(needle)) &&
-    (status === "all" ||
-      exam.status === status) &&
-    (visibility === "all" ||
-      (visibility === "published") ===
-        !!exam.published)
+    (!needle || haystack.includes(needle)) &&
+    (status === "all" || exam.status === status) &&
+    (visibility === "all" || (visibility === "published") === !!exam.published)
   );
 }
 
-export function examReadiness(
-  exam: Exam,
-) {
-  if (
-    exam.status === "cancelled"
-  ) {
+export function examReadiness(exam: Exam) {
+  if (exam.status === "cancelled") {
     return {
       tone: "neutral" as const,
       label: "لغوشده",
     };
   }
 
-  if (
-    exam.published &&
-    !exam.delivery?.questionCount
-  ) {
+  if (exam.published && !exam.delivery?.questionCount) {
     return {
       tone: "red" as const,
       label: "منتشر بدون سؤال",

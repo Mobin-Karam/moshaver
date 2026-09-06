@@ -1,5 +1,17 @@
 import { useEffect, useState, type DragEvent } from "react";
-import { AlertTriangle, CheckCircle2, Clock3, Copy, Edit3, FileText, GripVertical, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Clock3,
+  Copy,
+  Edit3,
+  FileText,
+  GripVertical,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import type { Plan, PlanTask } from "../../../shared/types/domain";
 import { useLocale } from "../../../shared/ui/locale";
 import { Badge } from "../../../shared/ui/ui";
@@ -29,19 +41,16 @@ export type CanvasProps = {
   onEditPlan: (plan: Plan) => void;
   onDuplicatePlan: (plan: Plan) => void;
   onDeletePlan: (plan: Plan) => void;
-  onMoveTask: (
-    taskId: string,
-    planDate: string,
-    start: string,
-    end: string,
-  ) => void;
+  onMoveTask: (taskId: string, planDate: string, start: string, end: string) => void;
 };
 export function PlannerCanvas(props: CanvasProps) {
   const { formatDate } = useLocale();
   const map = new Map(props.plans.map((p) => [p.planDate, p]));
   if (props.loading) return <PlannerSkeleton />;
   if (props.mode === "list")
-    return <VirtualList plans={props.plans} onEdit={props.readOnly?undefined:props.onEditTask} />;
+    return (
+      <VirtualList plans={props.plans} onEdit={props.readOnly ? undefined : props.onEditTask} />
+    );
   if (props.mode === "month")
     return (
       <div className="h-full overflow-auto overscroll-contain">
@@ -67,10 +76,7 @@ export function PlannerCanvas(props: CanvasProps) {
                   .get(day)
                   ?.tasks.slice(0, 2)
                   .map((t) => (
-                    <small
-                      key={t.id}
-                      className="mt-1 block truncate rounded bg-slate-100 px-1"
-                    >
+                    <small key={t.id} className="mt-1 block truncate rounded bg-slate-100 px-1">
                       {t.start} {t.title || t.subject}
                     </small>
                   ))}
@@ -82,10 +88,7 @@ export function PlannerCanvas(props: CanvasProps) {
         </div>
       </div>
     );
-  const days =
-    props.mode === "day"
-      ? [props.date]
-      : dateRange(props.range.from, props.range.to);
+  const days = props.mode === "day" ? [props.date] : dateRange(props.range.from, props.range.to);
   return (
     <div className="h-full overflow-y-auto overflow-x-hidden overscroll-contain">
       <div
@@ -116,18 +119,13 @@ function DayColumn({
 }: {
   day: string;
   plan?: Plan;
-  formatDate: (
-    value?: string | Date,
-    options?: Intl.DateTimeFormatOptions,
-  ) => string;
+  formatDate: (value?: string | Date, options?: Intl.DateTimeFormatOptions) => string;
   actions: CanvasProps;
 }) {
   function drop(event: DragEvent, targetStart?: string) {
     event.preventDefault();
     event.stopPropagation();
-    const data = parseDraggedTask(
-      event.dataTransfer.getData("application/x-moshaver-task"),
-    );
+    const data = parseDraggedTask(event.dataTransfer.getData("application/x-moshaver-task"));
     if (!data) return;
     const duration = Math.max(15, minutesBetween(data.start, data.end));
     const start = targetStart || data.start;
@@ -143,10 +141,7 @@ function DayColumn({
         className={`sticky top-0 z-10 border-b border-slate-200 px-2 py-2 ${day === todayIso() ? "bg-indigo-50" : "bg-white"}`}
       >
         <div className="flex items-start gap-1">
-          <button
-            className="min-w-0 flex-1 text-right"
-            onClick={() => actions.onSelectDay(day)}
-          >
+          <button className="min-w-0 flex-1 text-right" onClick={() => actions.onSelectDay(day)}>
             <strong className="block truncate text-xs">
               {formatDate(day, {
                 weekday: "short",
@@ -160,7 +155,7 @@ function DayColumn({
               {plan ? ` · ${plan.published ? "منتشر" : "پیش‌نویس"}` : ""}
             </span>
           </button>
-          {plan&&!actions.readOnly ? (
+          {plan && !actions.readOnly ? (
             <div className="flex shrink-0 opacity-70 transition hover:opacity-100">
               <button
                 className="rounded p-1 hover:bg-slate-100"
@@ -198,30 +193,34 @@ function DayColumn({
               readOnly={actions.readOnly}
             />
           ))
+        ) : actions.readOnly ? (
+          <div className="rounded-lg border border-dashed border-slate-200 py-5 text-center text-xs text-slate-400">
+            برنامه‌ای ثبت نشده است
+          </div>
         ) : (
-          actions.readOnly?<div className="rounded-lg border border-dashed border-slate-200 py-5 text-center text-xs text-slate-400">برنامه‌ای ثبت نشده است</div>:<button
+          <button
             className="rounded-lg border border-dashed border-slate-200 py-5 text-xs text-slate-400 hover:border-brand hover:text-brand"
-            onClick={() =>
-              plan ? actions.onQuickAdd(day) : actions.onCreate(day)
-            }
+            onClick={() => (plan ? actions.onQuickAdd(day) : actions.onCreate(day))}
           >
             + برنامه این روز
           </button>
         )}
-        {!actions.readOnly?<div className="sticky bottom-2 mt-1 grid grid-cols-3 gap-1 rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-200">
-          {["08:00", "14:00", "19:00"].map((start) => (
-            <button
-              key={start}
-              className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold text-brand hover:bg-indigo-50"
-              onClick={() => actions.onQuickAdd(day, start)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => drop(e, start)}
-            >
-              <Plus size={11} />
-              <span dir="ltr">{start}</span>
-            </button>
-          ))}
-        </div>:null}
+        {!actions.readOnly ? (
+          <div className="sticky bottom-2 mt-1 grid grid-cols-3 gap-1 rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-200">
+            {["08:00", "14:00", "19:00"].map((start) => (
+              <button
+                key={start}
+                className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold text-brand hover:bg-indigo-50"
+                onClick={() => actions.onQuickAdd(day, start)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => drop(e, start)}
+              >
+                <Plus size={11} />
+                <span dir="ltr">{start}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
     </section>
   );
@@ -231,7 +230,7 @@ function CompactTask({
   task,
   plan,
   onEdit,
-  readOnly=false,
+  readOnly = false,
 }: {
   task: PlanTask;
   plan: Plan;
@@ -240,11 +239,9 @@ function CompactTask({
 }) {
   const completed = isTaskComplete(task);
 
-  const overdue =
-    !completed && task.end && new Date(`${task.end}T23:59:59`) < new Date();
+  const overdue = !completed && task.end && new Date(`${task.end}T23:59:59`) < new Date();
 
-  const priority =
-    task.type === "exam" ? "high" : task.type === "test" ? "medium" : "normal";
+  const priority = task.type === "exam" ? "high" : task.type === "test" ? "medium" : "normal";
 
   return (
     <button
@@ -262,7 +259,7 @@ function CompactTask({
           }),
         );
       }}
-      onClick={() => !readOnly&&onEdit(plan, task)}
+      onClick={() => !readOnly && onEdit(plan, task)}
       className={[
         "group relative min-w-0 rounded-lg border p-2 text-right",
         "transition-all duration-200",
@@ -277,18 +274,8 @@ function CompactTask({
               "dark:bg-emerald-950/30",
             ]
           : overdue
-            ? [
-                "border-red-300",
-                "bg-red-50",
-                "dark:border-red-700",
-                "dark:bg-red-950/30",
-              ]
-            : [
-                "border-slate-200",
-                "bg-white",
-                "dark:border-slate-700",
-                "dark:bg-slate-900",
-              ],
+            ? ["border-red-300", "bg-red-50", "dark:border-red-700", "dark:bg-red-950/30"]
+            : ["border-slate-200", "bg-white", "dark:border-slate-700", "dark:bg-slate-900"],
       ].join(" ")}
     >
       {/* top row */}
@@ -304,10 +291,7 @@ function CompactTask({
             "
           />
 
-          <Clock3
-            size={11}
-            className={completed ? "text-emerald-600" : "text-slate-400"}
-          />
+          <Clock3 size={11} className={completed ? "text-emerald-600" : "text-slate-400"} />
 
           <span
             dir="ltr"
@@ -338,37 +322,37 @@ function CompactTask({
       </div>
 
       {/* title */}
-      {!readOnly?<div
-        className="
+      {!readOnly ? (
+        <div
+          className="
           mt-1
           flex
           items-center
           gap-1
         "
-      >
-        <span
-          className={[
-            "h-2 w-2 rounded-full",
-            priority === "high"
-              ? "bg-red-500"
-              : priority === "medium"
-                ? "bg-amber-500"
-                : "bg-slate-400",
-          ].join(" ")}
-        />
-
-        <strong
-          title={task.title || task.subject}
-          className={[
-            "truncate text-[11px]",
-            completed
-              ? "text-emerald-800 line-through"
-              : "text-slate-800 dark:text-slate-100",
-          ].join(" ")}
         >
-          {task.title || task.subject || task.type}
-        </strong>
-      </div>:null}
+          <span
+            className={[
+              "h-2 w-2 rounded-full",
+              priority === "high"
+                ? "bg-red-500"
+                : priority === "medium"
+                  ? "bg-amber-500"
+                  : "bg-slate-400",
+            ].join(" ")}
+          />
+
+          <strong
+            title={task.title || task.subject}
+            className={[
+              "truncate text-[11px]",
+              completed ? "text-emerald-800 line-through" : "text-slate-800 dark:text-slate-100",
+            ].join(" ")}
+          >
+            {task.title || task.subject || task.type}
+          </strong>
+        </div>
+      ) : null}
 
       {/* status */}
       <div className="mt-1 flex items-center justify-between">
@@ -466,14 +450,9 @@ function VirtualList({
   plans: Plan[];
   onEdit?: (plan: Plan, task: PlanTask) => void;
 }) {
-  const tasks = plans.flatMap((plan) =>
-    plan.tasks.map((task) => ({ plan, task })),
-  );
+  const tasks = plans.flatMap((plan) => plan.tasks.map((task) => ({ plan, task })));
   const [start, setStart] = useState(0);
-  useEffect(
-    () => setStart((c) => Math.min(c, Math.max(0, tasks.length - 1))),
-    [tasks.length],
-  );
+  useEffect(() => setStart((c) => Math.min(c, Math.max(0, tasks.length - 1))), [tasks.length]);
   const row = 58,
     visible = 14;
   return (
@@ -482,28 +461,26 @@ function VirtualList({
       onScroll={(e) => setStart(Math.floor(e.currentTarget.scrollTop / row))}
     >
       <div style={{ height: tasks.length * row, position: "relative" }}>
-        {tasks
-          .slice(start, start + visible + 4)
-          .map(({ plan, task }, index) => (
-            <button
-              key={task.id}
-              onClick={() => onEdit?.(plan, task)}
-              className="absolute right-0 grid w-full grid-cols-[80px_72px_minmax(0,1fr)] items-center gap-2 border-b border-slate-100 px-3 text-right hover:bg-slate-50 sm:grid-cols-[110px_90px_minmax(0,1fr)_auto] sm:gap-3 sm:px-4"
-              style={{ height: row, top: (start + index) * row }}
-            >
-              <span className="text-xs text-slate-500">{plan.planDate}</span>
-              <span className="font-mono text-xs" dir="ltr">
-                {task.start}–{task.end}
-              </span>
-              <strong className="truncate text-sm">
-                {task.subject ? `${task.subject} — ` : ""}
-                {task.title || task.type}
-              </strong>
-              <span className="hidden sm:inline-flex">
-                <Badge>{taskTypeLabel(task.type)}</Badge>
-              </span>
-            </button>
-          ))}
+        {tasks.slice(start, start + visible + 4).map(({ plan, task }, index) => (
+          <button
+            key={task.id}
+            onClick={() => onEdit?.(plan, task)}
+            className="absolute right-0 grid w-full grid-cols-[80px_72px_minmax(0,1fr)] items-center gap-2 border-b border-slate-100 px-3 text-right hover:bg-slate-50 sm:grid-cols-[110px_90px_minmax(0,1fr)_auto] sm:gap-3 sm:px-4"
+            style={{ height: row, top: (start + index) * row }}
+          >
+            <span className="text-xs text-slate-500">{plan.planDate}</span>
+            <span className="font-mono text-xs" dir="ltr">
+              {task.start}–{task.end}
+            </span>
+            <strong className="truncate text-sm">
+              {task.subject ? `${task.subject} — ` : ""}
+              {task.title || task.type}
+            </strong>
+            <span className="hidden sm:inline-flex">
+              <Badge>{taskTypeLabel(task.type)}</Badge>
+            </span>
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -515,10 +492,7 @@ function PlannerSkeleton() {
         <div key={day} className="bg-white p-2">
           <div className="h-8 animate-pulse rounded bg-slate-100" />
           {[1, 2, 3].map((x) => (
-            <div
-              key={x}
-              className="mt-2 h-16 animate-pulse rounded bg-slate-100"
-            />
+            <div key={x} className="mt-2 h-16 animate-pulse rounded bg-slate-100" />
           ))}
         </div>
       ))}

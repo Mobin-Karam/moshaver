@@ -38,12 +38,20 @@ function Harness({ resolved }: { resolved: (value: boolean) => void }) {
 
 function NestedConfirmation() {
   const modal = useModal();
-  return <button onClick={() => void modal.confirm({ title: "تأیید داخلی", showCancel: true })}>nested confirm</button>;
+  return (
+    <button onClick={() => void modal.confirm({ title: "تأیید داخلی", showCancel: true })}>
+      nested confirm
+    </button>
+  );
 }
 
 function NestedHarness() {
   const modal = useModal();
-  return <button onClick={() => modal.open({ title: "مدیریت گروه", content: <NestedConfirmation /> })}>open manager</button>;
+  return (
+    <button onClick={() => modal.open({ title: "مدیریت گروه", content: <NestedConfirmation /> })}>
+      open manager
+    </button>
+  );
 }
 
 afterEach(cleanup);
@@ -56,15 +64,9 @@ describe("global modal", () => {
       </ModalProvider>,
     );
     await userEvent.click(screen.getByRole("button", { name: "open" }));
-    expect(
-      screen.getByRole("dialog", { name: "ویرایش دانش‌آموز" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("presentation").className).toContain(
-      "bg-slate-950/55",
-    );
-    expect(screen.getByRole("presentation").className).not.toContain(
-      "backdrop-blur",
-    );
+    expect(screen.getByRole("dialog", { name: "ویرایش دانش‌آموز" })).toBeInTheDocument();
+    expect(screen.getByRole("presentation").className).toContain("bg-slate-950/55");
+    expect(screen.getByRole("presentation").className).not.toContain("backdrop-blur");
     await userEvent.keyboard("{Escape}");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
@@ -82,7 +84,11 @@ describe("global modal", () => {
   });
 
   it("restores a parent modal after a nested confirmation is cancelled", async () => {
-    render(<ModalProvider><NestedHarness /></ModalProvider>);
+    render(
+      <ModalProvider>
+        <NestedHarness />
+      </ModalProvider>,
+    );
     await userEvent.click(screen.getByRole("button", { name: "open manager" }));
     await userEvent.click(screen.getByRole("button", { name: "nested confirm" }));
     expect(screen.getByRole("dialog", { name: "تأیید داخلی" })).toBeInTheDocument();

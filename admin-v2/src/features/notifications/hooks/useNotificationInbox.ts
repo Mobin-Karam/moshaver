@@ -27,10 +27,8 @@ export function useNotificationInbox(enabled: boolean) {
     queryKey: notificationQueryKey,
     enabled,
     initialPageParam: "",
-    queryFn: ({ pageParam }) =>
-      getNotificationsPage(pageParam ? String(pageParam) : undefined),
-    getNextPageParam: (last) =>
-      last.hasMore ? last.nextCursor || undefined : undefined,
+    queryFn: ({ pageParam }) => getNotificationsPage(pageParam ? String(pageParam) : undefined),
+    getNextPageParam: (last) => (last.hasMore ? last.nextCursor || undefined : undefined),
     staleTime: 15_000,
     retry: shouldRetryNotificationRequest,
     // Prevent a forbidden endpoint from being hit again whenever the tab regains focus.
@@ -65,9 +63,7 @@ export function useNotificationInbox(enabled: boolean) {
             ? {
                 ...old,
                 pages: old.pages.map((page, index) => {
-                  const targetWasUnread = page.items.some(
-                    (item) => item.id === id && !item.isRead,
-                  );
+                  const targetWasUnread = page.items.some((item) => item.id === id && !item.isRead);
 
                   return {
                     ...page,
@@ -134,10 +130,7 @@ export function useNotificationInbox(enabled: boolean) {
     void inbox.fetchNextPage();
   }, [inbox.fetchNextPage, inbox.hasNextPage, inbox.isFetchingNextPage]);
 
-  const markRead = useCallback(
-    (id: string) => read.mutate(id),
-    [read.mutate],
-  );
+  const markRead = useCallback((id: string) => read.mutate(id), [read.mutate]);
 
   const markAllRead = useCallback(() => {
     if (!readAll.isPending && unread > 0) {

@@ -1,11 +1,4 @@
-import {
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "../lib/utils";
 
@@ -99,10 +92,7 @@ export function ViewportPopover({
       left = rect.right - calculatedWidth;
     }
 
-    left = Math.min(
-      window.innerWidth - calculatedWidth - margin,
-      Math.max(margin, left),
-    );
+    left = Math.min(window.innerWidth - calculatedWidth - margin, Math.max(margin, left));
 
     const top = openBelow
       ? rect.bottom + gap
@@ -132,10 +122,7 @@ export function ViewportPopover({
     const outside = (event: PointerEvent) => {
       const target = event.target as Node;
 
-      if (
-        !anchor.current?.contains(target) &&
-        !panel.current?.contains(target)
-      ) {
+      if (!anchor.current?.contains(target) && !panel.current?.contains(target)) {
         change(false);
       }
     };

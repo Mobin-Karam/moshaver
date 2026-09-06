@@ -41,10 +41,7 @@ export function QuizQuestionsList({
       {loading ? (
         <div className="grid gap-2">
           {[1, 2, 3].map((x) => (
-            <div
-              key={x}
-              className="h-20 animate-pulse rounded-md bg-slate-100"
-            />
+            <div key={x} className="h-20 animate-pulse rounded-md bg-slate-100" />
           ))}
         </div>
       ) : error ? (
@@ -71,19 +68,13 @@ export function QuizQuestionsList({
                     >
                       <Pencil size={14} />
                     </Button>
-                    <Button
-                      variant="danger"
-                      className="h-8 px-2"
-                      onClick={() => onDelete(item)}
-                    >
+                    <Button variant="danger" className="h-8 px-2" onClick={() => onDelete(item)}>
                       حذف
                     </Button>
                   </div>
                 ) : null}
               </div>
-              <p className="mt-2 text-sm">
-                {item.question_text || item.question}
-              </p>
+              <p className="mt-2 text-sm">{item.question_text || item.question}</p>
               <span className="mt-2 flex items-center gap-1 text-xs text-emerald-700">
                 <CheckCircle2 size={14} />
                 پاسخ {item.correct_option}

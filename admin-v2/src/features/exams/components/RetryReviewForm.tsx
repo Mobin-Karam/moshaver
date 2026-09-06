@@ -1,9 +1,5 @@
 import { useState } from "react";
-import {
-  Button,
-  Field,
-  Textarea,
-} from "../../../shared/ui/ui";
+import { Button, Field, Textarea } from "../../../shared/ui/ui";
 
 export function RetryReviewForm({
   status,
@@ -11,26 +7,16 @@ export function RetryReviewForm({
   onSubmit,
   onCancel,
 }: {
-  status:
-    | "approved"
-    | "rejected";
+  status: "approved" | "rejected";
   initialNote: string;
-  onSubmit: (
-    note: string,
-  ) => Promise<void>;
+  onSubmit: (note: string) => Promise<void>;
   onCancel: () => void;
 }) {
-  const [note, setNote] =
-    useState(initialNote);
+  const [note, setNote] = useState(initialNote);
 
-  const [
-    submitting,
-    setSubmitting,
-  ] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const invalid =
-    status === "rejected" &&
-    !note.trim();
+  const invalid = status === "rejected" && !note.trim();
 
   return (
     <form
@@ -44,11 +30,7 @@ export function RetryReviewForm({
 
         setSubmitting(true);
 
-        void onSubmit(
-          note.trim(),
-        ).finally(() =>
-          setSubmitting(false),
-        );
+        void onSubmit(note.trim()).finally(() => setSubmitting(false));
       }}
     >
       <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">
@@ -58,58 +40,33 @@ export function RetryReviewForm({
       </p>
 
       <Field
-        label={
-          status === "approved"
-            ? "یادداشت مشاور (اختیاری)"
-            : "دلیل رد درخواست"
-        }
-        error={
-          invalid
-            ? "برای رد درخواست، دلیل را وارد کنید."
-            : undefined
-        }
+        label={status === "approved" ? "یادداشت مشاور (اختیاری)" : "دلیل رد درخواست"}
+        error={invalid ? "برای رد درخواست، دلیل را وارد کنید." : undefined}
       >
         <Textarea
           autoFocus
           rows={4}
           maxLength={1200}
           value={note}
-          onChange={(event) =>
-            setNote(
-              event.target.value,
-            )
-          }
+          onChange={(event) => setNote(event.target.value)}
         />
       </Field>
 
       <small className="text-left text-slate-400">
-        {note.length.toLocaleString(
-          "fa-IR",
-        )}{" "}
-        / ۱۲۰۰
+        {note.length.toLocaleString("fa-IR")} / ۱۲۰۰
       </small>
 
       <div className="flex justify-end gap-2">
-        <Button
-          type="button"
-          variant="soft"
-          onClick={onCancel}
-        >
+        <Button type="button" variant="soft" onClick={onCancel}>
           انصراف
         </Button>
 
         <Button
-          variant={
-            status === "rejected"
-              ? "danger"
-              : "primary"
-          }
+          variant={status === "rejected" ? "danger" : "primary"}
           disabled={invalid}
           loading={submitting}
         >
-          {status === "approved"
-            ? "تأیید تلاش"
-            : "رد درخواست"}
+          {status === "approved" ? "تأیید تلاش" : "رد درخواست"}
         </Button>
       </div>
     </form>

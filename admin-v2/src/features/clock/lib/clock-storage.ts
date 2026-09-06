@@ -33,7 +33,13 @@ export function createDefaultClockToolsState(): ClockToolsState {
     updatedAt: Date.now(),
     selectedTab: "clock",
     stopwatch: { running: false, accumulatedMs: 0, startedAt: null, laps: [] },
-    timer: { durationMs: 5 * 60_000, remainingMs: 5 * 60_000, targetAt: null, status: "idle", completedAt: null },
+    timer: {
+      durationMs: 5 * 60_000,
+      remainingMs: 5 * 60_000,
+      targetAt: null,
+      status: "idle",
+      completedAt: null,
+    },
     alarms: [],
     activeAlarm: null,
     worldClocks: DEFAULT_WORLD_CLOCKS,
@@ -49,8 +55,12 @@ function normalizeAlarm(item: Partial<AlarmItem>): AlarmItem | null {
     minute: Math.min(59, Math.max(0, Number(item.minute))),
     enabled: item.enabled !== false,
     label: typeof item.label === "string" && item.label.trim() ? item.label : "هشدار",
-    repeatDays: Array.isArray(item.repeatDays) ? item.repeatDays.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6) : [],
-    snoozeMinutes: Number.isFinite(item.snoozeMinutes) ? Math.min(60, Math.max(1, Number(item.snoozeMinutes))) : 5,
+    repeatDays: Array.isArray(item.repeatDays)
+      ? item.repeatDays.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+      : [],
+    snoozeMinutes: Number.isFinite(item.snoozeMinutes)
+      ? Math.min(60, Math.max(1, Number(item.snoozeMinutes)))
+      : 5,
     snoozedUntil: Number.isFinite(item.snoozedUntil) ? Number(item.snoozedUntil) : null,
     lastTriggeredKey: typeof item.lastTriggeredKey === "string" ? item.lastTriggeredKey : null,
   };
@@ -70,16 +80,29 @@ export function loadClockToolsState(): ClockToolsState {
         version: 2,
         stopwatch: { ...fallback.stopwatch, ...(parsed.stopwatch ?? {}) },
         timer: { ...fallback.timer, ...(parsed.timer ?? {}) },
-        alarms: Array.isArray(parsed.alarms) ? parsed.alarms.map((item) => normalizeAlarm(item)).filter((item): item is AlarmItem => Boolean(item)) : [],
-        worldClocks: Array.isArray(parsed.worldClocks) && parsed.worldClocks.length > 0 ? parsed.worldClocks : fallback.worldClocks,
+        alarms: Array.isArray(parsed.alarms)
+          ? parsed.alarms
+              .map((item) => normalizeAlarm(item))
+              .filter((item): item is AlarmItem => Boolean(item))
+          : [],
+        worldClocks:
+          Array.isArray(parsed.worldClocks) && parsed.worldClocks.length > 0
+            ? parsed.worldClocks
+            : fallback.worldClocks,
         preferences: { ...fallback.preferences, ...(parsed.preferences ?? {}) },
       };
     }
 
     // Migration from the previous package.
-    const oldAlarms = JSON.parse(window.localStorage.getItem("ravin:clock:alarms") ?? "[]") as Partial<AlarmItem>[];
-    const oldWorldClocks = JSON.parse(window.localStorage.getItem("ravin:clock:world-clocks") ?? "[]") as WorldClockItem[];
-    fallback.alarms = oldAlarms.map((item) => normalizeAlarm(item)).filter((item): item is AlarmItem => Boolean(item));
+    const oldAlarms = JSON.parse(
+      window.localStorage.getItem("ravin:clock:alarms") ?? "[]",
+    ) as Partial<AlarmItem>[];
+    const oldWorldClocks = JSON.parse(
+      window.localStorage.getItem("ravin:clock:world-clocks") ?? "[]",
+    ) as WorldClockItem[];
+    fallback.alarms = oldAlarms
+      .map((item) => normalizeAlarm(item))
+      .filter((item): item is AlarmItem => Boolean(item));
     if (oldWorldClocks.length > 0) fallback.worldClocks = oldWorldClocks;
     return fallback;
   } catch {
@@ -112,9 +135,16 @@ export function loadPlatformSession(userId?: string): StoredPlatformSession {
   if (typeof window === "undefined") return fallback;
 
   try {
-    const parsed = JSON.parse(window.localStorage.getItem(getSessionStorageKey(userId)) ?? "null") as StoredPlatformSession | null;
+    const parsed = JSON.parse(
+      window.localStorage.getItem(getSessionStorageKey(userId)) ?? "null",
+    ) as StoredPlatformSession | null;
     if (!parsed) return fallback;
-    if (parsed.todayKey !== getTodayKey()) return { ...fallback, totalMs: Math.max(0, Number(parsed.totalMs) || 0), lastExitAt: parsed.lastExitAt ?? null };
+    if (parsed.todayKey !== getTodayKey())
+      return {
+        ...fallback,
+        totalMs: Math.max(0, Number(parsed.totalMs) || 0),
+        lastExitAt: parsed.lastExitAt ?? null,
+      };
     return {
       ...fallback,
       ...parsed,
@@ -140,8 +170,11 @@ export function loadTabSession(userId?: string): TabSessionIdentity {
   if (typeof window === "undefined") return fallback;
   const key = `${TAB_SESSION_PREFIX}:${userId ?? "current-user"}`;
   try {
-    const parsed = JSON.parse(window.sessionStorage.getItem(key) ?? "null") as TabSessionIdentity | null;
-    if (parsed?.id && Number.isFinite(parsed.enteredAt)) return { ...fallback, ...parsed, activeMs: Math.max(0, Number(parsed.activeMs) || 0) };
+    const parsed = JSON.parse(
+      window.sessionStorage.getItem(key) ?? "null",
+    ) as TabSessionIdentity | null;
+    if (parsed?.id && Number.isFinite(parsed.enteredAt))
+      return { ...fallback, ...parsed, activeMs: Math.max(0, Number(parsed.activeMs) || 0) };
     window.sessionStorage.setItem(key, JSON.stringify(fallback));
   } catch {
     // Ignore unavailable sessionStorage.
@@ -152,13 +185,17 @@ export function loadTabSession(userId?: string): TabSessionIdentity {
 export function saveTabSession(data: TabSessionIdentity, userId?: string) {
   if (typeof window === "undefined") return;
   try {
-    window.sessionStorage.setItem(`${TAB_SESSION_PREFIX}:${userId ?? "current-user"}`, JSON.stringify(data));
+    window.sessionStorage.setItem(
+      `${TAB_SESSION_PREFIX}:${userId ?? "current-user"}`,
+      JSON.stringify(data),
+    );
   } catch {
     // Ignore unavailable sessionStorage.
   }
 }
 
 export function createId() {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
+    return crypto.randomUUID();
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }

@@ -14,7 +14,11 @@ function BrokenComponent(): never {
 describe("application error handling", () => {
   it("replaces a render crash with a safe Persian fallback", () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
-    render(<AppErrorBoundary><BrokenComponent /></AppErrorBoundary>);
+    render(
+      <AppErrorBoundary>
+        <BrokenComponent />
+      </AppErrorBoundary>,
+    );
 
     expect(screen.getByRole("alert")).toHaveTextContent("مشکلی در بارگذاری صفحه رخ داد");
     expect(screen.queryByText("private implementation detail")).not.toBeInTheDocument();
@@ -22,7 +26,12 @@ describe("application error handling", () => {
   });
 
   it("classifies route authorization failures without exposing server details", () => {
-    const details = classifyAppError({ status: 403, statusText: "Forbidden", data: "secret", internal: false });
+    const details = classifyAppError({
+      status: 403,
+      statusText: "Forbidden",
+      data: "secret",
+      internal: false,
+    });
 
     expect(details.kind).toBe("forbidden");
     expect(details.title).toBe("دسترسی به این صفحه مجاز نیست");
@@ -30,7 +39,9 @@ describe("application error handling", () => {
   });
 
   it("offers login recovery for an expired session", () => {
-    render(<ErrorFallback details={classifyAppError(new ApiError(401, "expired"))} onRetry={vi.fn()} />);
+    render(
+      <ErrorFallback details={classifyAppError(new ApiError(401, "expired"))} onRetry={vi.fn()} />,
+    );
 
     expect(screen.getByRole("link", { name: /ورود دوباره/ })).toHaveAttribute("href", "/login");
     expect(screen.queryByRole("button", { name: /تلاش دوباره/ })).not.toBeInTheDocument();
@@ -38,13 +49,20 @@ describe("application error handling", () => {
 
   it("runs the supplied retry behavior for recoverable errors", () => {
     const retry = vi.fn();
-    render(<ErrorFallback details={classifyAppError(new TypeError("Failed to fetch"))} onRetry={retry} />);
+    render(
+      <ErrorFallback
+        details={classifyAppError(new TypeError("Failed to fetch"))}
+        onRetry={retry}
+      />,
+    );
 
     fireEvent.click(screen.getByRole("button", { name: /تلاش دوباره/ }));
     expect(retry).toHaveBeenCalledOnce();
   });
 
   it("recognizes lazy chunk loading failures", () => {
-    expect(classifyAppError(new Error("Failed to fetch dynamically imported module")).kind).toBe("chunk");
+    expect(classifyAppError(new Error("Failed to fetch dynamically imported module")).kind).toBe(
+      "chunk",
+    );
   });
 });

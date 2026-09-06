@@ -9,7 +9,9 @@ export function chatSearchMatch(item: Conversation, search: string) {
   if (!needle) return true;
   return normalizePersianText(
     `${item.student?.name || ""} ${item.student?.grade || ""} ${item.title || ""} ${item.description || ""} ${item.lastMessage?.text || ""}`,
-  ).toLocaleLowerCase("fa").includes(needle);
+  )
+    .toLocaleLowerCase("fa")
+    .includes(needle);
 }
 
 export function mergeMessagePages(data?: InfiniteData<MessagePage>) {
@@ -47,7 +49,11 @@ function draftKey(id: string) {
 }
 
 export function readDraft(id: string) {
-  try { return sessionStorage.getItem(draftKey(id)) || ""; } catch { return ""; }
+  try {
+    return sessionStorage.getItem(draftKey(id)) || "";
+  } catch {
+    return "";
+  }
 }
 
 export function persistDraft(id: string | undefined, value: string) {

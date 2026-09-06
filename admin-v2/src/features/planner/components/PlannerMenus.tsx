@@ -36,17 +36,15 @@ export function FilterMenu({
   return (
     <div className="w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
       <strong className="block px-2 py-1 text-xs">وضعیت برنامه</strong>
-      {(["all", "published", "draft", "incomplete"] as TaskFilter[]).map(
-        (item) => (
-          <button
-            key={item}
-            className={`mt-1 block w-full rounded-md px-3 py-2 text-right text-sm ${value === item ? "bg-indigo-50 text-brand" : "hover:bg-slate-50"}`}
-            onClick={() => onChange(item)}
-          >
-            {filterLabel(item)}
-          </button>
-        ),
-      )}
+      {(["all", "published", "draft", "incomplete"] as TaskFilter[]).map((item) => (
+        <button
+          key={item}
+          className={`mt-1 block w-full rounded-md px-3 py-2 text-right text-sm ${value === item ? "bg-indigo-50 text-brand" : "hover:bg-slate-50"}`}
+          onClick={() => onChange(item)}
+        >
+          {filterLabel(item)}
+        </button>
+      ))}
     </div>
   );
 }
@@ -116,9 +114,7 @@ export function CommandPalette({
   useEffect(() => input.current?.focus(), []);
   const tasks = plans
     .flatMap((plan) => plan.tasks.map((task) => ({ plan, task })))
-    .filter((x) =>
-      [x.task.title, x.task.subject, x.plan.planDate].join(" ").includes(query),
-    )
+    .filter((x) => [x.task.title, x.task.subject, x.plan.planDate].join(" ").includes(query))
     .slice(0, 12);
   return (
     <div
@@ -147,7 +143,7 @@ export function CommandPalette({
         </label>
         <div className="max-h-[55vh] overflow-auto p-2">
           <div className="grid grid-cols-2 gap-2">
-            {onCreate?<PaletteButton icon={Plus} label="فعالیت جدید" onClick={onCreate} />:null}
+            {onCreate ? <PaletteButton icon={Plus} label="فعالیت جدید" onClick={onCreate} /> : null}
             <PaletteButton
               icon={Calendar}
               label="رفتن به امروز"
@@ -171,15 +167,11 @@ export function CommandPalette({
                   className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-right hover:bg-slate-50"
                   onClick={() => onTask(plan, task)}
                 >
-                  <span className="font-mono text-xs text-slate-400">
-                    {task.start}
-                  </span>
+                  <span className="font-mono text-xs text-slate-400">{task.start}</span>
                   <strong className="truncate text-sm">
                     {task.title || task.subject || task.type}
                   </strong>
-                  <small className="mr-auto text-slate-400">
-                    {plan.planDate}
-                  </small>
+                  <small className="mr-auto text-slate-400">{plan.planDate}</small>
                 </button>
               ))}
             </>

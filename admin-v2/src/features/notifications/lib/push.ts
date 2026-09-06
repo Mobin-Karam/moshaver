@@ -22,8 +22,5 @@ export function vapidBytes(value: string) {
     .replace(/-/g, "+")
     .replace(/_/g, "/");
 
-  return Uint8Array.from(
-    atob(padded),
-    (character) => character.charCodeAt(0),
-  );
+  return Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
 }

@@ -1,8 +1,4 @@
-export function ReportMetrics({
-  data,
-}: {
-  data?: Record<string, number | undefined>;
-}) {
+export function ReportMetrics({ data }: { data?: Record<string, number | undefined> }) {
   if (!data) return null;
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

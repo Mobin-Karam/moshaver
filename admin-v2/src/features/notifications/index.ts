@@ -1,7 +1,5 @@
 export { HeaderNotifications } from "./components/HeaderNotifications";
-export {
-  NotificationProvider,
-} from "./components/NotificationProvider";
+export { NotificationProvider } from "./components/NotificationProvider";
 export { useAdminNotifications } from "./hooks/useAdminNotifications";
 export { NotificationsPage } from "./pages/NotificationsPage";
 export { NotificationSettings } from "./components/NotificationSettings";

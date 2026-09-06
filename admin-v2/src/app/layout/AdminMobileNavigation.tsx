@@ -11,7 +11,9 @@ function focusableElements(root: HTMLElement | null) {
     root.querySelectorAll<HTMLElement>(
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
     ),
-  ).filter((element) => !element.hasAttribute("hidden") && element.getAttribute("aria-hidden") !== "true");
+  ).filter(
+    (element) => !element.hasAttribute("hidden") && element.getAttribute("aria-hidden") !== "true",
+  );
 }
 
 export function AdminMobileDrawer({
@@ -38,7 +40,8 @@ export function AdminMobileDrawer({
     if (!open) return;
 
     const previousOverflow = document.body.style.overflow;
-    const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousActive =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.body.style.overflow = "hidden";
     const focusTimer = window.setTimeout(() => closeRef.current?.focus(), 0);
 
@@ -119,16 +122,24 @@ export function AdminMobileDrawer({
           >
             <Search size={17} />
             <span className="flex-1">جستجو و رفتن سریع</span>
-            <kbd className="hidden rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] text-slate-400 sm:inline" dir="ltr">
+            <kbd
+              className="hidden rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] text-slate-400 sm:inline"
+              dir="ltr"
+            >
               Ctrl ⇧ P
             </kbd>
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto overscroll-contain p-3" aria-label="همه مسیرهای مدیریت">
+        <nav
+          className="flex-1 overflow-y-auto overscroll-contain p-3"
+          aria-label="همه مسیرهای مدیریت"
+        >
           {visibleNavigation.map((group) => (
             <section key={group.section} className="mb-4 last:mb-0">
-              <p className="mb-1.5 px-2 text-[10px] font-black tracking-wide text-slate-400">{group.section}</p>
+              <p className="mb-1.5 px-2 text-[10px] font-black tracking-wide text-slate-400">
+                {group.section}
+              </p>
               <div className="grid gap-1">
                 {group.items.map(({ path, title, icon: Icon }) => {
                   const active = current.path === path;
@@ -142,7 +153,12 @@ export function AdminMobileDrawer({
                       aria-current={active ? "page" : undefined}
                       className={`relative flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-brand ${active ? "bg-indigo-50 text-brand" : "text-slate-600 hover:bg-slate-50 hover:text-ink"}`}
                     >
-                      {active ? <span className="absolute inset-y-2 right-0 w-1 rounded-l-full bg-brand" aria-hidden="true" /> : null}
+                      {active ? (
+                        <span
+                          className="absolute inset-y-2 right-0 w-1 rounded-l-full bg-brand"
+                          aria-hidden="true"
+                        />
+                      ) : null}
                       <Icon size={18} className="shrink-0" strokeWidth={active ? 2.4 : 1.9} />
                       <span className="min-w-0 flex-1 truncate">{title}</span>
                       {unread ? (
@@ -174,7 +190,9 @@ export function AdminMobileBottomNav({
   selectedStudentId: string;
 }) {
   const auth = useAuth();
-  const visibleMainNavigation = navigationForCapabilities(auth.capabilities, auth.activeRole).map((group) => ({ ...group.items[0], section:group.section }));
+  const visibleMainNavigation = navigationForCapabilities(auth.capabilities, auth.activeRole).map(
+    (group) => ({ ...group.items[0], section: group.section }),
+  );
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-slate-200 bg-white/95 px-1 pt-1 shadow-[0_-8px_24px_rgba(15,23,42,0.05)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 lg:hidden"

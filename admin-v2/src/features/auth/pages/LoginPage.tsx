@@ -22,13 +22,9 @@ export function LoginPage() {
           </span>
 
           <div>
-            <p className="text-xs font-bold tracking-widest text-brand">
-              MOSHAVER PORTAL
-            </p>
+            <p className="text-xs font-bold tracking-widest text-brand">MOSHAVER PORTAL</p>
 
-            <h1 className="text-xl font-black">
-              Moshaver | مشاور
-            </h1>
+            <h1 className="text-xl font-black">Moshaver | مشاور</h1>
           </div>
         </div>
 

@@ -19,13 +19,7 @@ export function PlannerFilterPopover({
       align="end"
       className="p-2"
       trigger={({ ref, onClick, ...props }) => (
-        <Button
-          ref={ref}
-          {...props}
-          className="h-9 px-3"
-          variant="soft"
-          onClick={onClick}
-        >
+        <Button ref={ref} {...props} className="h-9 px-3" variant="soft" onClick={onClick}>
           <Filter size={15} />
           فیلتر
           {value !== "all" ? <Badge tone="blue">۱</Badge> : null}
@@ -46,11 +40,10 @@ export function PlannerFilterPopover({
           وضعیت برنامه
         </strong>
 
-        {(["all", "published", "draft", "incomplete"] as TaskFilter[]).map(
-          (item) => (
-            <button
-              key={item}
-              className={`
+        {(["all", "published", "draft", "incomplete"] as TaskFilter[]).map((item) => (
+          <button
+            key={item}
+            className={`
               block
               w-full
               rounded-xl
@@ -73,12 +66,11 @@ export function PlannerFilterPopover({
                   `
               }
             `}
-              onClick={() => onChange(item)}
-            >
-              {filterLabel(item)}
-            </button>
-          ),
-        )}
+            onClick={() => onChange(item)}
+          >
+            {filterLabel(item)}
+          </button>
+        ))}
       </div>
     </ViewportPopover>
   );

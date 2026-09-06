@@ -1,10 +1,6 @@
 import type { AccountContext, OrganizationSummary, User } from "../../../shared/types/domain";
 
-export type AuthStatus =
-  | "checking"
-  | "authenticated"
-  | "anonymous"
-  | "logging-out";
+export type AuthStatus = "checking" | "authenticated" | "anonymous" | "logging-out";
 
 export type AuthState = {
   user: User | null;

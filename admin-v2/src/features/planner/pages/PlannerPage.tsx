@@ -5,8 +5,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
-  Filter,
-  MoreHorizontal,
   Plus,
   Search,
   X,
@@ -44,12 +42,7 @@ import {
   toPlanDraft,
   toTaskDraft,
 } from "../components/PlannerForms";
-import {
-  CommandPalette,
-  FilterMenu,
-  MoreMenu,
-  ViewSwitch,
-} from "../components/PlannerMenus";
+import { CommandPalette, ViewSwitch } from "../components/PlannerMenus";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import {
   addMinutes,
@@ -67,39 +60,29 @@ import {
   sortPlanTasks,
   summarizePlans,
 } from "../lib/planner-model";
-import type {
-  PlannerMode,
-  TaskDraft,
-  TaskFilter,
-} from "../model/planner.types";
+import type { PlannerMode, TaskDraft, TaskFilter } from "../model/planner.types";
 import { PlannerMoreMenu } from "../components/PlannerMoreMenu";
 import { PlannerFilterPopover } from "../components/PlannerFilterPopover";
 import { useAuth } from "../../auth";
 
 export function PlannerPage() {
-  const auth=useAuth();
-  const canManage=auth.can("plans.create")||auth.can("plans.update");
+  const auth = useAuth();
+  const canManage = auth.can("plans.create") || auth.can("plans.update");
   const students = useStudentSelection(),
     modal = useModal(),
     qc = useQueryClient(),
     { profile } = useLocale(),
     [params, setParams] = useSearchParams();
   const [date, setDateState] = useState(params.get("date") || todayIso());
-  const [mode, setModeState] = useState<PlannerMode>(
-    parseMode(params.get("view")),
-  );
+  const [mode, setModeState] = useState<PlannerMode>(parseMode(params.get("view")));
   const [search, setSearch] = useState(params.get("q") || "");
-  const [filter, setFilter] = useState<TaskFilter>(
-    parseFilter(params.get("filter")),
-  );
-  const [filtersOpen, setFiltersOpen] = useState(false),
+  const [filter, setFilter] = useState<TaskFilter>(parseFilter(params.get("filter")));
+  const [_filtersOpen, setFiltersOpen] = useState(false),
     [summaryOpen, setSummaryOpen] = useState(true),
     [warningsOpen, setWarningsOpen] = useState(true),
-    [moreOpen, setMoreOpen] = useState(false),
+    [_moreOpen, setMoreOpen] = useState(false),
     [paletteOpen, setPaletteOpen] = useState(false);
-  const [drawer, setDrawer] = useState<{ plan: Plan; task?: PlanTask } | null>(
-    null,
-  );
+  const [drawer, setDrawer] = useState<{ plan: Plan; task?: PlanTask } | null>(null);
   const deferredSearch = useDebouncedValue(search, 220);
   function syncUrl(next: {
     date?: string;
@@ -114,11 +97,8 @@ export function PlannerPage() {
         if (next.mode !== undefined) copy.set("view", next.mode);
         if (students.studentId) copy.set("studentId", students.studentId);
         if (next.filter !== undefined)
-          next.filter === "all"
-            ? copy.delete("filter")
-            : copy.set("filter", next.filter);
-        if (next.search !== undefined)
-          next.search ? copy.set("q", next.search) : copy.delete("q");
+          next.filter === "all" ? copy.delete("filter") : copy.set("filter", next.filter);
+        if (next.search !== undefined) next.search ? copy.set("q", next.search) : copy.delete("q");
         return copy;
       },
       { replace: true },
@@ -146,60 +126,22 @@ export function PlannerPage() {
     () => plannerRange(date, mode, profile.locale, profile.calendar),
     [date, mode, profile.calendar, profile.locale],
   );
-  const plansKey = [
-    "plans",
-    students.studentId,
-    range.from,
-    range.to,
-    deferredSearch,
-    filter,
-  ];
+  const plansKey = ["plans", students.studentId, range.from, range.to, deferredSearch, filter];
   const plans = useQuery({
     queryKey: plansKey,
     enabled: !!students.studentId,
-    queryFn: () =>
-      getPlans(
-        students.studentId,
-        range.from,
-        range.to,
-        deferredSearch,
-        filter,
-      ),
+    queryFn: () => getPlans(students.studentId, range.from, range.to, deferredSearch, filter),
     select: sortPlanTasks,
   });
   useEffect(() => {
     if (!students.studentId) return;
     [-1, 1].forEach((direction) => {
-      const adjacentDate = shiftView(
-          date,
-          mode,
-          direction,
-          profile.locale,
-          profile.calendar,
-        ),
-        adjacent = plannerRange(
-          adjacentDate,
-          mode,
-          profile.locale,
-          profile.calendar,
-        );
+      const adjacentDate = shiftView(date, mode, direction, profile.locale, profile.calendar),
+        adjacent = plannerRange(adjacentDate, mode, profile.locale, profile.calendar);
       void qc.prefetchQuery({
-        queryKey: [
-          "plans",
-          students.studentId,
-          adjacent.from,
-          adjacent.to,
-          deferredSearch,
-          filter,
-        ],
+        queryKey: ["plans", students.studentId, adjacent.from, adjacent.to, deferredSearch, filter],
         queryFn: () =>
-          getPlans(
-            students.studentId,
-            adjacent.from,
-            adjacent.to,
-            deferredSearch,
-            filter,
-          ),
+          getPlans(students.studentId, adjacent.from, adjacent.to, deferredSearch, filter),
         staleTime: 60000,
       });
     });
@@ -226,18 +168,12 @@ export function PlannerPage() {
     warnings = planWarnings(plans.data ?? []),
     refresh = () => qc.invalidateQueries({ queryKey: ["plans"] });
   const savePlan = useMutation({
-    mutationFn: (body: ReturnType<typeof toPlanDraft>) =>
-      createPlan(students.studentId, body),
+    mutationFn: (body: ReturnType<typeof toPlanDraft>) => createPlan(students.studentId, body),
     onSuccess: refresh,
   });
   const patchPlan = useMutation({
-    mutationFn: ({
-      id,
-      body,
-    }: {
-      id: string;
-      body: Partial<ReturnType<typeof toPlanDraft>>;
-    }) => updatePlan(id, body),
+    mutationFn: ({ id, body }: { id: string; body: Partial<ReturnType<typeof toPlanDraft>> }) =>
+      updatePlan(id, body),
     onSuccess: refresh,
   });
   const removePlan = useMutation({
@@ -245,18 +181,12 @@ export function PlannerPage() {
     onSuccess: refresh,
   });
   const duplicate = useMutation({
-    mutationFn: ({ id, planDate }: { id: string; planDate: string }) =>
-      duplicatePlan(id, planDate),
+    mutationFn: ({ id, planDate }: { id: string; planDate: string }) => duplicatePlan(id, planDate),
     onSuccess: refresh,
   });
   const saveTask = useMutation({
-    mutationFn: ({
-      planId,
-      task,
-    }: {
-      planId: string;
-      task: TaskDraft & { id?: string };
-    }) => savePlannerTask(planId, task),
+    mutationFn: ({ planId, task }: { planId: string; task: TaskDraft & { id?: string } }) =>
+      savePlannerTask(planId, task),
     onMutate: async ({ planId, task }) => {
       const key = plansKey;
       await qc.cancelQueries({ queryKey: key });
@@ -269,14 +199,11 @@ export function PlannerPage() {
                 ...plan,
                 tasks: task.id
                   ? plan.tasks
-                      .map((item) =>
-                        item.id === task.id ? { ...item, ...task } : item,
-                      )
+                      .map((item) => (item.id === task.id ? { ...item, ...task } : item))
                       .sort(comparePlanTasks)
-                  : [
-                      ...plan.tasks,
-                      { ...task, id: `optimistic-${Date.now()}` } as PlanTask,
-                    ].sort(comparePlanTasks),
+                  : [...plan.tasks, { ...task, id: `optimistic-${Date.now()}` } as PlanTask].sort(
+                      comparePlanTasks,
+                    ),
               },
         ),
       );
@@ -284,9 +211,7 @@ export function PlannerPage() {
     },
     onSuccess: (updated) => {
       if (updated && typeof updated === "object" && "id" in updated)
-        qc.setQueryData<Plan[]>(plansKey, (current) =>
-          replacePlan(current, updated as Plan),
-        );
+        qc.setQueryData<Plan[]>(plansKey, (current) => replacePlan(current, updated as Plan));
       else refresh();
     },
     onError: (_e, _v, c) => {
@@ -329,9 +254,7 @@ export function PlannerPage() {
       const key = plansKey;
       await qc.cancelQueries({ queryKey: key });
       const previous = qc.getQueryData<Plan[]>(key);
-      qc.setQueryData<Plan[]>(key, (current) =>
-        optimisticMove(current || [], move),
-      );
+      qc.setQueryData<Plan[]>(key, (current) => optimisticMove(current || [], move));
       return { previous, key };
     },
     onError: (_e, _m, c) => {
@@ -356,10 +279,9 @@ export function PlannerPage() {
           busy={savePlan.isPending || patchPlan.isPending}
           onCancel={modal.close}
           onSubmit={(body) =>
-            (plan
-              ? patchPlan.mutateAsync({ id: plan.id, body })
-              : savePlan.mutateAsync(body)
-            ).then(modal.close)
+            (plan ? patchPlan.mutateAsync({ id: plan.id, body }) : savePlan.mutateAsync(body)).then(
+              modal.close,
+            )
           }
         />
       ),
@@ -422,11 +344,7 @@ export function PlannerPage() {
       notify(errorMessage(reason, "ساخت فعالیت انجام نشد."), "error"),
     );
   }
-  function confirmDelete(
-    title: string,
-    description: string,
-    action: () => void,
-  ) {
+  function confirmDelete(title: string, description: string, action: () => void) {
     void modal
       .confirm({ title, description, tone: "danger", confirmLabel: "حذف" })
       .then((ok) => ok && action());
@@ -434,14 +352,13 @@ export function PlannerPage() {
   useEffect(() => {
     function keydown(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null;
-      if (target?.matches("input,textarea,select,[contenteditable=true]"))
-        return;
+      if (target?.matches("input,textarea,select,[contenteditable=true]")) return;
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setPaletteOpen(true);
         return;
       }
-      if (event.key.toLowerCase() === "n"&&canManage) {
+      if (event.key.toLowerCase() === "n" && canManage) {
         event.preventDefault();
         requestQuickAdd(date);
       } else if (event.key.toLowerCase() === "t") setDate(todayIso());
@@ -475,11 +392,7 @@ export function PlannerPage() {
               className="h-8 px-2"
               variant="ghost"
               aria-label="بازه قبل"
-              onClick={() =>
-                setDate(
-                  shiftView(date, mode, -1, profile.locale, profile.calendar),
-                )
-              }
+              onClick={() => setDate(shiftView(date, mode, -1, profile.locale, profile.calendar))}
             >
               <ChevronRight size={16} />
             </Button>
@@ -492,20 +405,12 @@ export function PlannerPage() {
               className="h-8 px-2"
               variant="ghost"
               aria-label="بازه بعد"
-              onClick={() =>
-                setDate(
-                  shiftView(date, mode, 1, profile.locale, profile.calendar),
-                )
-              }
+              onClick={() => setDate(shiftView(date, mode, 1, profile.locale, profile.calendar))}
             >
               <ChevronLeft size={16} />
             </Button>
           </div>
-          <Button
-            className="h-9 px-3"
-            variant="soft"
-            onClick={() => setDate(todayIso())}
-          >
+          <Button className="h-9 px-3" variant="soft" onClick={() => setDate(todayIso())}>
             امروز
           </Button>
           <ViewSwitch value={mode} onChange={setMode} />
@@ -530,52 +435,54 @@ export function PlannerPage() {
               setTaskFilter(value);
             }}
           />
-          {canManage?<Button
-            className="h-9"
-            disabled={!students.studentId}
-            onClick={() => requestQuickAdd(date)}
-          >
-            <Plus size={16} />
-            فعالیت جدید
-          </Button>:null}
-          {canManage?<PlannerMoreMenu
-            onClose={() => setMoreOpen(false)}
-            onPlan={() => {
-              setMoreOpen(false);
-              void openPlanSettings(date);
-            }}
-            onPublish={(published) => {
-              setMoreOpen(false);
-              void modal
-                .confirm({
-                  title: published
-                    ? "انتشار برنامه‌های بازه؟"
-                    : "پیش‌نویس کردن بازه؟",
-                  description: `${range.from} تا ${range.to}`,
-                })
-                .then((ok) => ok && publishRange.mutate(published));
-            }}
-            onTransfer={() => {
-              setMoreOpen(false);
-              modal.open({
-                title: "ورود و خروج JSON",
-                size: "xl",
-                content: (
-                  <DataTransferWorkspace
-                    studentId={students.studentId}
-                    scope="all"
-                    title="انتقال برنامه‌ها و آزمون‌های مرتبط"
-                    description="ورود، اعتبارسنجی و خروجی استاندارد بازه"
-                    exportFrom={range.from}
-                    exportTo={range.to}
-                    showPlanReplacement
-                    showExamReplacement
-                    onImported={() => void refresh()}
-                  />
-                ),
-              });
-            }}
-          />:null}
+          {canManage ? (
+            <Button
+              className="h-9"
+              disabled={!students.studentId}
+              onClick={() => requestQuickAdd(date)}
+            >
+              <Plus size={16} />
+              فعالیت جدید
+            </Button>
+          ) : null}
+          {canManage ? (
+            <PlannerMoreMenu
+              onClose={() => setMoreOpen(false)}
+              onPlan={() => {
+                setMoreOpen(false);
+                void openPlanSettings(date);
+              }}
+              onPublish={(published) => {
+                setMoreOpen(false);
+                void modal
+                  .confirm({
+                    title: published ? "انتشار برنامه‌های بازه؟" : "پیش‌نویس کردن بازه؟",
+                    description: `${range.from} تا ${range.to}`,
+                  })
+                  .then((ok) => ok && publishRange.mutate(published));
+              }}
+              onTransfer={() => {
+                setMoreOpen(false);
+                modal.open({
+                  title: "ورود و خروج JSON",
+                  size: "xl",
+                  content: (
+                    <DataTransferWorkspace
+                      studentId={students.studentId}
+                      scope="all"
+                      title="انتقال برنامه‌ها و آزمون‌های مرتبط"
+                      description="ورود، اعتبارسنجی و خروجی استاندارد بازه"
+                      exportFrom={range.from}
+                      exportTo={range.to}
+                      showPlanReplacement
+                      showExamReplacement
+                      onImported={() => void refresh()}
+                    />
+                  ),
+                });
+              }}
+            />
+          ) : null}
         </div>
         {filter !== "all" ? (
           <div className="mt-2 flex items-center gap-2">
@@ -621,9 +528,7 @@ export function PlannerPage() {
           >
             <AlertTriangle size={14} />
             <span className="truncate">{warnings[0]}</span>
-            {warnings.length > 1 ? (
-              <Badge tone="amber">+{fa(warnings.length - 1)}</Badge>
-            ) : null}
+            {warnings.length > 1 ? <Badge tone="amber">+{fa(warnings.length - 1)}</Badge> : null}
             <X size={12} />
           </button>
         ) : null}
@@ -633,15 +538,8 @@ export function PlannerPage() {
           className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800"
           role="alert"
         >
-          <span>
-            برنامه‌های این بازه دریافت نشدند؛ داده قبلی، در صورت وجود، حفظ شده
-            است.
-          </span>
-          <Button
-            className="h-8"
-            variant="danger"
-            onClick={() => void plans.refetch()}
-          >
+          <span>برنامه‌های این بازه دریافت نشدند؛ داده قبلی، در صورت وجود، حفظ شده است.</span>
+          <Button className="h-8" variant="danger" onClick={() => void plans.refetch()}>
             تلاش دوباره
           </Button>
         </div>
@@ -653,8 +551,7 @@ export function PlannerPage() {
               title="دانش‌آموزی انتخاب نشده است"
               action={
                 <p className="text-sm text-slate-500">
-                  برای مشاهده یا ساخت برنامه، ابتدا دانش‌آموز را از نوار بالا
-                  انتخاب کنید.
+                  برای مشاهده یا ساخت برنامه، ابتدا دانش‌آموز را از نوار بالا انتخاب کنید.
                 </p>
               }
             />
@@ -676,38 +573,30 @@ export function PlannerPage() {
             onEditTask={(plan, task) => setDrawer({ plan, task })}
             onMoveTask={(taskId, planDate, start, end) =>
               void ensurePlan(planDate)
-                .then((plan) =>
-                  moveTask.mutateAsync({ taskId, planId: plan.id, start, end }),
-                )
+                .then((plan) => moveTask.mutateAsync({ taskId, planId: plan.id, start, end }))
                 .catch(() => undefined)
             }
             onEditPlan={(plan) => openPlan(plan.planDate, plan)}
             onDuplicatePlan={openDuplicate}
             onDeletePlan={(plan) =>
-              confirmDelete(
-                "حذف برنامه روز؟",
-                "همه فعالیت‌های این روز حذف می‌شوند.",
-                () => removePlan.mutate(plan.id),
+              confirmDelete("حذف برنامه روز؟", "همه فعالیت‌های این روز حذف می‌شوند.", () =>
+                removePlan.mutate(plan.id),
               )
             }
           />
         )}
       </Card>
-      {drawer&&canManage ? (
+      {drawer && canManage ? (
         <TaskDrawer
           title={drawer.task?.id ? "ویرایش فعالیت" : "فعالیت جدید"}
           onClose={() => setDrawer(null)}
           onDelete={
             drawer.task?.id
               ? () =>
-                  confirmDelete(
-                    "حذف فعالیت؟",
-                    "این فعالیت از برنامه حذف می‌شود.",
-                    () => {
-                      removeTask.mutate(drawer.task!.id);
-                      setDrawer(null);
-                    },
-                  )
+                  confirmDelete("حذف فعالیت؟", "این فعالیت از برنامه حذف می‌شود.", () => {
+                    removeTask.mutate(drawer.task!.id);
+                    setDrawer(null);
+                  })
               : undefined
           }
         >
@@ -744,14 +633,21 @@ export function PlannerPage() {
             setPaletteOpen(false);
           }}
           onTask={(plan, task) => {
-            if(canManage)setDrawer({ plan, task });
-            else { setDate(plan.planDate); setMode("day"); }
+            if (canManage) setDrawer({ plan, task });
+            else {
+              setDate(plan.planDate);
+              setMode("day");
+            }
             setPaletteOpen(false);
           }}
-          onCreate={canManage?() => {
-            requestQuickAdd(date);
-            setPaletteOpen(false);
-          }:undefined}
+          onCreate={
+            canManage
+              ? () => {
+                  requestQuickAdd(date);
+                  setPaletteOpen(false);
+                }
+              : undefined
+          }
         />
       ) : null}
     </div>

@@ -1,10 +1,4 @@
-import {
-  AlertTriangle,
-  Clock3,
-  MessageSquareText,
-  RotateCcw,
-  type LucideIcon,
-} from "lucide-react";
+import { AlertTriangle, Clock3, MessageSquareText, RotateCcw, type LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card } from "../../../shared/ui/ui";
 import { cn, fa } from "../../../shared/lib/utils";
@@ -19,9 +13,11 @@ const icons: Record<FollowUpMetric["key"], LucideIcon> = {
 
 const toneClass: Record<FollowUpMetric["tone"], string> = {
   red: "bg-rose-50 text-rose-700 ring-rose-100 dark:bg-rose-950/30 dark:text-rose-300 dark:ring-rose-900/50",
-  amber: "bg-amber-50 text-amber-700 ring-amber-100 dark:bg-amber-950/30 dark:text-amber-300 dark:ring-amber-900/50",
+  amber:
+    "bg-amber-50 text-amber-700 ring-amber-100 dark:bg-amber-950/30 dark:text-amber-300 dark:ring-amber-900/50",
   blue: "bg-sky-50 text-sky-700 ring-sky-100 dark:bg-sky-950/30 dark:text-sky-300 dark:ring-sky-900/50",
-  neutral: "bg-slate-50 text-slate-600 ring-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700",
+  neutral:
+    "bg-slate-50 text-slate-600 ring-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700",
 };
 
 export function DashboardFollowUpCard({ items }: { items: FollowUpMetric[] }) {
@@ -39,7 +35,12 @@ export function DashboardFollowUpCard({ items }: { items: FollowUpMetric[] }) {
           const Icon = icons[item.key];
           const content = (
             <>
-              <span className={cn("grid size-9 shrink-0 place-items-center rounded-xl ring-1", toneClass[item.tone])}>
+              <span
+                className={cn(
+                  "grid size-9 shrink-0 place-items-center rounded-xl ring-1",
+                  toneClass[item.tone],
+                )}
+              >
                 <Icon size={17} />
               </span>
               <span className="min-w-0 flex-1">
@@ -47,7 +48,9 @@ export function DashboardFollowUpCard({ items }: { items: FollowUpMetric[] }) {
                   <strong className="truncate text-sm text-slate-800 dark:text-slate-100">
                     {item.label}
                   </strong>
-                  <b className="text-lg tabular-nums text-slate-900 dark:text-white">{fa(item.value)}</b>
+                  <b className="text-lg tabular-nums text-slate-900 dark:text-white">
+                    {fa(item.value)}
+                  </b>
                 </span>
                 <small className="mt-0.5 block text-[10px] leading-5 text-slate-400 dark:text-slate-500">
                   {item.description}

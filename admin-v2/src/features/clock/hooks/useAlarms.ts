@@ -9,7 +9,9 @@ export function useAlarms() {
   return {
     alarms: store.alarms,
     activeAlarm: store.activeAlarm,
-    addAlarm: async (input: Pick<AlarmItem, "hour" | "minute" | "label" | "repeatDays" | "snoozeMinutes">) => {
+    addAlarm: async (
+      input: Pick<AlarmItem, "hour" | "minute" | "label" | "repeatDays" | "snoozeMinutes">,
+    ) => {
       await requestClockNotificationPermission();
       clockActions.addAlarm(input);
     },

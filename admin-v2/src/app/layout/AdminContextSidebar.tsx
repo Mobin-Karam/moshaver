@@ -19,7 +19,11 @@ export function AdminContextSidebar({
   items: ReadonlyArray<{
     path: string;
     title: string;
-    icon: ComponentType<{ size?: string | number; className?: string; strokeWidth?: string | number }>;
+    icon: ComponentType<{
+      size?: string | number;
+      className?: string;
+      strokeWidth?: string | number;
+    }>;
   }>;
   unreadNotifications: number;
   selectedStudentId: string;
@@ -32,7 +36,9 @@ export function AdminContextSidebar({
       className={`fixed inset-y-0 z-40 hidden flex-col border-l border-slate-200 bg-slate-50/95 transition-[right,width,padding] duration-200 motion-reduce:transition-none lg:flex ${mainCollapsed ? "right-[4.5rem]" : "right-64"} ${widthClasses}`}
       aria-label={`مسیرهای بخش ${current.section}`}
     >
-      <div className={`mb-3 flex h-11 shrink-0 items-center ${collapsed ? "justify-center" : "justify-center xl:justify-between xl:gap-2 xl:px-1"}`}>
+      <div
+        className={`mb-3 flex h-11 shrink-0 items-center ${collapsed ? "justify-center" : "justify-center xl:justify-between xl:gap-2 xl:px-1"}`}
+      >
         {!collapsed ? (
           <div className="hidden min-w-0 xl:block">
             <p className="truncate text-[10px] font-bold text-slate-400">بخش فعال</p>
@@ -55,7 +61,9 @@ export function AdminContextSidebar({
         {items.map(({ path, title, icon: Icon }) => {
           const active = current.path === path;
           const unread = path === "notifications" ? unreadNotifications : 0;
-          const compactClasses = collapsed ? "justify-center px-2" : "justify-center px-2 xl:justify-start xl:gap-2 xl:px-3";
+          const compactClasses = collapsed
+            ? "justify-center px-2"
+            : "justify-center px-2 xl:justify-start xl:gap-2 xl:px-3";
           const badgeClasses = collapsed
             ? "absolute -left-0.5 -top-0.5"
             : "absolute -left-0.5 -top-0.5 xl:static xl:mr-auto";
@@ -69,7 +77,12 @@ export function AdminContextSidebar({
               aria-current={active ? "page" : undefined}
               className={`relative flex h-10 items-center rounded-lg text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-brand ${compactClasses} ${active ? "bg-white font-bold text-brand shadow-sm ring-1 ring-slate-200" : "text-slate-600 hover:bg-white hover:text-ink"}`}
             >
-              {active ? <span className="absolute inset-y-2 right-0 w-1 rounded-l-full bg-brand" aria-hidden="true" /> : null}
+              {active ? (
+                <span
+                  className="absolute inset-y-2 right-0 w-1 rounded-l-full bg-brand"
+                  aria-hidden="true"
+                />
+              ) : null}
               <Icon className="shrink-0" size={17} strokeWidth={active ? 2.4 : 1.9} />
               {!collapsed ? <span className="hidden truncate xl:block">{title}</span> : null}
               {unread ? (

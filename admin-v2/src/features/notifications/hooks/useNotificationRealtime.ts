@@ -33,30 +33,25 @@ export function useNotificationRealtime({
         if (type === "notification.created") {
           const item = data as AdminNotification;
 
-          queryClient.setQueryData<InfiniteData<NotificationPage>>(
-            ["notifications"],
-            (current) => {
-              if (
-                !current?.pages.length ||
-                current.pages.some((page) =>
-                  page.items.some((existing) => existing.id === item.id),
-                )
-              ) {
-                return current;
-              }
+          queryClient.setQueryData<InfiniteData<NotificationPage>>(["notifications"], (current) => {
+            if (
+              !current?.pages.length ||
+              current.pages.some((page) => page.items.some((existing) => existing.id === item.id))
+            ) {
+              return current;
+            }
 
-              const pages = [...current.pages];
-              const first = pages[0];
+            const pages = [...current.pages];
+            const first = pages[0];
 
-              pages[0] = {
-                ...first,
-                unreadCount: Number(first.unreadCount || 0) + 1,
-                items: [{ ...item, isRead: false }, ...first.items].slice(0, 20),
-              };
+            pages[0] = {
+              ...first,
+              unreadCount: Number(first.unreadCount || 0) + 1,
+              items: [{ ...item, isRead: false }, ...first.items].slice(0, 20),
+            };
 
-              return { ...current, pages };
-            },
-          );
+            return { ...current, pages };
+          });
 
           sonner.info(item.title || "اعلان جدید", {
             id: item.id,
@@ -87,13 +82,10 @@ export function useNotificationRealtime({
             Notification.permission === "granted"
           ) {
             try {
-              const systemNotification = new Notification(
-                item.title || "اعلان مشاور",
-                {
-                  body: item.body || "",
-                  tag: item.id,
-                },
-              );
+              const systemNotification = new Notification(item.title || "اعلان مشاور", {
+                body: item.body || "",
+                tag: item.id,
+              });
 
               systemNotification.onclick = () => {
                 window.focus();
@@ -135,12 +127,7 @@ export function useNotificationRealtime({
         }
 
         if (
-          [
-            "review.created",
-            "quiz.completed",
-            "presence.changed",
-            "study.finished",
-          ].includes(type)
+          ["review.created", "quiz.completed", "presence.changed", "study.finished"].includes(type)
         ) {
           void queryClient.invalidateQueries({ queryKey: ["admin-attention"] });
         }
@@ -150,11 +137,5 @@ export function useNotificationRealtime({
     }
 
     return () => source?.close();
-  }, [
-    authenticated,
-    soundEnabled,
-    chatSoundEnabled,
-    queryClient,
-    playSound,
-  ]);
+  }, [authenticated, soundEnabled, chatSoundEnabled, queryClient, playSound]);
 }

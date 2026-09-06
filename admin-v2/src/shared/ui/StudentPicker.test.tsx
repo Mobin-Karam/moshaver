@@ -17,7 +17,8 @@ describe("StudentPicker at cohort scale", () => {
   afterEach(cleanup);
 
   it("searches 100 students without rendering the entire roster initially", async () => {
-    const user = userEvent.setup(), onChange = vi.fn();
+    const user = userEvent.setup(),
+      onChange = vi.fn();
     render(<StudentPicker students={students} value="student-1" onChange={onChange} />);
     await user.click(screen.getByRole("button", { name: /دانش‌آموز انتخاب‌شده/ }));
     expect(screen.getByText("۱۰۰ حساب در دسترس")).toBeInTheDocument();

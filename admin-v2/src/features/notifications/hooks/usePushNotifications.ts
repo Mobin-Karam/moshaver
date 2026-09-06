@@ -7,16 +7,9 @@ import {
   sendTestPush,
   updatePushPreferences,
 } from "../api/notifications.api";
-import {
-  defaultPushPreferences,
-  supportsPush,
-  vapidBytes,
-} from "../lib/push";
+import { defaultPushPreferences, supportsPush, vapidBytes } from "../lib/push";
 import { notificationAdminUrl } from "../model/notification-model";
-import type {
-  PushPreferences,
-  PushStatus,
-} from "../model/notification-model";
+import type { PushPreferences, PushStatus } from "../model/notification-model";
 
 async function currentRegistration() {
   if (!supportsPush()) {

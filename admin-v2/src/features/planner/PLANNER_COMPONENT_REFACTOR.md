@@ -1,11 +1,13 @@
 # Planner Page component split
 
 PlannerPage should only keep:
+
 - data fetching
 - mutations
 - orchestration
 
 UI moved into:
+
 - PlannerHeader
 - PlannerOverview
 - PlannerContent

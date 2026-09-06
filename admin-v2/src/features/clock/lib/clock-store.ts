@@ -1,5 +1,10 @@
 import type { AlarmItem, ClockTab, ClockToolsState } from "../model/clock.types";
-import { CLOCK_TOOLS_STORAGE_KEY, createId, loadClockToolsState, saveClockToolsState } from "./clock-storage";
+import {
+  CLOCK_TOOLS_STORAGE_KEY,
+  createId,
+  loadClockToolsState,
+  saveClockToolsState,
+} from "./clock-storage";
 import { getAlarmMinuteKey, getStopwatchElapsed, getTimerRemaining } from "./time";
 
 let state: ClockToolsState = loadClockToolsState();
@@ -73,19 +78,36 @@ export const clockActions = {
     commit((current) => {
       if (!current.stopwatch.running) return current;
       const elapsed = getStopwatchElapsed(current.stopwatch, now);
-      return { ...current, stopwatch: { ...current.stopwatch, running: false, accumulatedMs: elapsed, startedAt: null } };
+      return {
+        ...current,
+        stopwatch: {
+          ...current.stopwatch,
+          running: false,
+          accumulatedMs: elapsed,
+          startedAt: null,
+        },
+      };
     });
   },
 
   resetStopwatch() {
-    commit((current) => ({ ...current, stopwatch: { running: false, accumulatedMs: 0, startedAt: null, laps: [] } }));
+    commit((current) => ({
+      ...current,
+      stopwatch: { running: false, accumulatedMs: 0, startedAt: null, laps: [] },
+    }));
   },
 
   addStopwatchLap(now = Date.now()) {
     commit((current) => {
       const elapsed = getStopwatchElapsed(current.stopwatch, now);
       if (elapsed <= 0) return current;
-      return { ...current, stopwatch: { ...current.stopwatch, laps: [elapsed, ...current.stopwatch.laps].slice(0, 50) } };
+      return {
+        ...current,
+        stopwatch: {
+          ...current.stopwatch,
+          laps: [elapsed, ...current.stopwatch.laps].slice(0, 50),
+        },
+      };
     });
   },
 
@@ -93,18 +115,31 @@ export const clockActions = {
     const safe = Math.min(99 * 60 * 60_000, Math.max(1_000, Math.round(durationMs)));
     commit((current) => ({
       ...current,
-      timer: { durationMs: safe, remainingMs: safe, targetAt: null, status: "idle", completedAt: null },
+      timer: {
+        durationMs: safe,
+        remainingMs: safe,
+        targetAt: null,
+        status: "idle",
+        completedAt: null,
+      },
     }));
   },
 
   startTimer(now = Date.now()) {
     commit((current) => {
-      const remaining = current.timer.status === "finished" || current.timer.remainingMs <= 0
-        ? current.timer.durationMs
-        : getTimerRemaining(current.timer, now);
+      const remaining =
+        current.timer.status === "finished" || current.timer.remainingMs <= 0
+          ? current.timer.durationMs
+          : getTimerRemaining(current.timer, now);
       return {
         ...current,
-        timer: { ...current.timer, remainingMs: remaining, targetAt: now + remaining, status: "running", completedAt: null },
+        timer: {
+          ...current.timer,
+          remainingMs: remaining,
+          targetAt: now + remaining,
+          status: "running",
+          completedAt: null,
+        },
       };
     });
   },
@@ -113,21 +148,40 @@ export const clockActions = {
     commit((current) => {
       if (current.timer.status !== "running") return current;
       const remaining = getTimerRemaining(current.timer, now);
-      return { ...current, timer: { ...current.timer, remainingMs: remaining, targetAt: null, status: "paused" } };
+      return {
+        ...current,
+        timer: { ...current.timer, remainingMs: remaining, targetAt: null, status: "paused" },
+      };
     });
   },
 
   resetTimer() {
     commit((current) => ({
       ...current,
-      timer: { ...current.timer, remainingMs: current.timer.durationMs, targetAt: null, status: "idle", completedAt: null },
+      timer: {
+        ...current.timer,
+        remainingMs: current.timer.durationMs,
+        targetAt: null,
+        status: "idle",
+        completedAt: null,
+      },
     }));
   },
 
   completeTimer(now = Date.now()) {
     commit((current) => {
-      if (current.timer.status !== "running" || getTimerRemaining(current.timer, now) > 0) return current;
-      return { ...current, timer: { ...current.timer, remainingMs: 0, targetAt: null, status: "finished", completedAt: now } };
+      if (current.timer.status !== "running" || getTimerRemaining(current.timer, now) > 0)
+        return current;
+      return {
+        ...current,
+        timer: {
+          ...current.timer,
+          remainingMs: 0,
+          targetAt: null,
+          status: "finished",
+          completedAt: now,
+        },
+      };
     });
   },
 
@@ -149,14 +203,16 @@ export const clockActions = {
   updateAlarm(id: string, patch: Partial<Omit<AlarmItem, "id">>) {
     commit((current) => ({
       ...current,
-      alarms: current.alarms.map((alarm) => alarm.id === id ? { ...alarm, ...patch } : alarm),
+      alarms: current.alarms.map((alarm) => (alarm.id === id ? { ...alarm, ...patch } : alarm)),
     }));
   },
 
   toggleAlarm(id: string) {
     commit((current) => ({
       ...current,
-      alarms: current.alarms.map((alarm) => alarm.id === id ? { ...alarm, enabled: !alarm.enabled, snoozedUntil: null } : alarm),
+      alarms: current.alarms.map((alarm) =>
+        alarm.id === id ? { ...alarm, enabled: !alarm.enabled, snoozedUntil: null } : alarm,
+      ),
       activeAlarm: current.activeAlarm?.alarmId === id ? null : current.activeAlarm,
     }));
   },
@@ -172,9 +228,16 @@ export const clockActions = {
   triggerAlarm(id: string, minuteKey: string, now = Date.now(), disableAfterTrigger = false) {
     commit((current) => ({
       ...current,
-      alarms: current.alarms.map((alarm) => alarm.id === id
-        ? { ...alarm, enabled: disableAfterTrigger ? false : alarm.enabled, lastTriggeredKey: minuteKey, snoozedUntil: null }
-        : alarm),
+      alarms: current.alarms.map((alarm) =>
+        alarm.id === id
+          ? {
+              ...alarm,
+              enabled: disableAfterTrigger ? false : alarm.enabled,
+              lastTriggeredKey: minuteKey,
+              snoozedUntil: null,
+            }
+          : alarm,
+      ),
       activeAlarm: { alarmId: id, startedAt: now },
     }));
   },
@@ -190,9 +253,11 @@ export const clockActions = {
       return {
         ...current,
         activeAlarm: null,
-        alarms: current.alarms.map((alarm) => alarm.id === active.alarmId
-          ? { ...alarm, snoozedUntil: now + alarm.snoozeMinutes * 60_000 }
-          : alarm),
+        alarms: current.alarms.map((alarm) =>
+          alarm.id === active.alarmId
+            ? { ...alarm, snoozedUntil: now + alarm.snoozeMinutes * 60_000 }
+            : alarm,
+        ),
       };
     });
   },
@@ -200,12 +265,21 @@ export const clockActions = {
   addWorldClock(label: string, timeZone: string) {
     commit((current) => {
       if (current.worldClocks.some((item) => item.timeZone === timeZone)) return current;
-      return { ...current, worldClocks: [...current.worldClocks, { id: createId(), label: label.trim() || timeZone, timeZone }] };
+      return {
+        ...current,
+        worldClocks: [
+          ...current.worldClocks,
+          { id: createId(), label: label.trim() || timeZone, timeZone },
+        ],
+      };
     });
   },
 
   removeWorldClock(id: string) {
-    commit((current) => ({ ...current, worldClocks: current.worldClocks.filter((item) => item.id !== id) }));
+    commit((current) => ({
+      ...current,
+      worldClocks: current.worldClocks.filter((item) => item.id !== id),
+    }));
   },
 };
 
@@ -223,13 +297,16 @@ export function processClockRuntime(now = Date.now()) {
     const snoozeDue = alarm.snoozedUntil != null && alarm.snoozedUntil <= now;
     if (!alarm.enabled && !snoozeDue) continue;
 
-    const scheduledDue = alarm.enabled
-      && alarm.hour === date.getHours()
-      && alarm.minute === date.getMinutes()
-      && (alarm.repeatDays.length === 0 || alarm.repeatDays.includes(date.getDay()));
+    const scheduledDue =
+      alarm.enabled &&
+      alarm.hour === date.getHours() &&
+      alarm.minute === date.getMinutes() &&
+      (alarm.repeatDays.length === 0 || alarm.repeatDays.includes(date.getDay()));
 
     if (!snoozeDue && !scheduledDue) continue;
-    const triggerKey = snoozeDue ? `${alarm.id}:snooze:${alarm.snoozedUntil}` : `${alarm.id}:${minuteKey}`;
+    const triggerKey = snoozeDue
+      ? `${alarm.id}:snooze:${alarm.snoozedUntil}`
+      : `${alarm.id}:${minuteKey}`;
     if (alarm.lastTriggeredKey === triggerKey) continue;
     const oneTimeAlarm = scheduledDue && alarm.repeatDays.length === 0;
     clockActions.triggerAlarm(alarm.id, triggerKey, now, oneTimeAlarm);

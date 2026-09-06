@@ -11,5 +11,34 @@ export function ApiConnectionCard() {
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
   }
-  return <Card className="h-full"><div className="mb-4 flex items-start gap-3"><span className="grid size-10 place-items-center rounded-lg bg-violet-50 text-violet-700"><Server size={20}/></span><div><h3 className="font-bold">اتصال API</h3><p className="text-xs text-slate-500">مقصد واقعی درخواست‌های این پنل</p></div></div><div className="rounded-lg border bg-slate-950 p-3 text-left text-xs text-slate-100" dir="ltr"><span className="mb-2 inline-flex rounded-full bg-emerald-500/20 px-2 py-1 font-bold text-emerald-300">API v2</span><p className="break-all font-mono">{target}</p></div><div className="mt-3 flex items-center justify-between gap-2"><span className="text-xs text-slate-500">این برنامه فقط با قرارداد پایدار API v2 کار می‌کند.</span><Button className="shrink-0" variant="soft" onClick={()=>void copy()}>{copied?<CheckCircle2 size={15}/>:<Copy size={15}/>} {copied?"کپی شد":"کپی"}</Button></div></Card>;
+  return (
+    <Card className="h-full">
+      <div className="mb-4 flex items-start gap-3">
+        <span className="grid size-10 place-items-center rounded-lg bg-violet-50 text-violet-700">
+          <Server size={20} />
+        </span>
+        <div>
+          <h3 className="font-bold">اتصال API</h3>
+          <p className="text-xs text-slate-500">مقصد واقعی درخواست‌های این پنل</p>
+        </div>
+      </div>
+      <div
+        className="rounded-lg border bg-slate-950 p-3 text-left text-xs text-slate-100"
+        dir="ltr"
+      >
+        <span className="mb-2 inline-flex rounded-full bg-emerald-500/20 px-2 py-1 font-bold text-emerald-300">
+          API v2
+        </span>
+        <p className="break-all font-mono">{target}</p>
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <span className="text-xs text-slate-500">
+          این برنامه فقط با قرارداد پایدار API v2 کار می‌کند.
+        </span>
+        <Button className="shrink-0" variant="soft" onClick={() => void copy()}>
+          {copied ? <CheckCircle2 size={15} /> : <Copy size={15} />} {copied ? "کپی شد" : "کپی"}
+        </Button>
+      </div>
+    </Card>
+  );
 }

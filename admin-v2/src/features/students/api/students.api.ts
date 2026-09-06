@@ -3,20 +3,66 @@ import type { Student } from "../../../shared/types/domain";
 import type { LearningResponse } from "../../learning/learning-model";
 import type { StudentForm } from "../model/student-form";
 import { studentPayload } from "../model/student-form";
-export const createStudent=(body:StudentForm,organizationId?:string)=>{const payload=studentPayload(body,true);return api.post<Student>("/students",{name:payload.name,username:payload.username,password:payload.password,grade:payload.grade,major:payload.major,...(organizationId?{organizationId}:{})})};
-export const updateStudent=(id:string,body:StudentForm)=>api.patch<Student>(`/students/${id}`,studentPayload(body,false));
-export const archiveStudent=(id:string)=>api.delete(`/students/${id}`);
-export const studentLifecycle=(id:string,action:"activate"|"deactivate"|"restore"|"force-logout")=>api.post(`/students/${id}/${action}`,{});
-export const resetStudentPassword=(id:string,password:string)=>api.post(`/students/${id}/reset-password`,{password});
-export const getStudentOverview=(id:string)=>api.get<Record<string,unknown>>(`/students/${id}/overview`);
-export const getStudentLearning=(id:string)=>api.get<LearningResponse>(`/students/${id}/learning`);
-export const getStudentAttempts=(id:string)=>api.get<unknown[]>(`/students/${id}/exam-attempts`);
-export const getStudentWeekly=(id:string)=>api.get<Record<string,unknown>>(`/students/${id}/progress/weekly`);
-export const getStudentTopics=(id:string)=>api.get<unknown[]>(`/students/${id}/performance/topics?limit=8`);
-export type StudentAnalytics={planCompletion:number|null;taskCompletion:number|null;studyDurationMinutes:number|null;studySessions:number;examPerformance:number|null;examAttempts:number;questionAccuracy:number|null;quizAttempts:number;reviewConsistency:number;averageMastery:number|null;subjectPerformance:Array<{subject:string;items:number;mastery:number|null}>};
-export type StudentRecommendation={id:string;type:string;title:string;reason:string;evidence:Record<string,unknown>;status:"PROPOSED"|"ACCEPTED"|"REJECTED"|"DISMISSED";createdAt:string};
-export type StudentMistake={id:string;questionId:string;reason:string;resolved:boolean};
-export const getStudentAnalytics=(id:string)=>api.get<StudentAnalytics>(`/students/${id}/analytics`);
-export const getStudentRecommendations=(id:string)=>api.get<StudentRecommendation[]>(`/students/${id}/recommendations`);
-export const createStudentRecommendation=(id:string,body:{type:string;title:string;reason:string;evidence:Record<string,unknown>})=>api.post<StudentRecommendation>(`/students/${id}/recommendations`,body);
-export const getStudentMistakes=(id:string)=>api.get<StudentMistake[]>(`/students/${id}/mistakes`);
+export const createStudent = (body: StudentForm, organizationId?: string) => {
+  const payload = studentPayload(body, true);
+  return api.post<Student>("/students", {
+    name: payload.name,
+    username: payload.username,
+    password: payload.password,
+    grade: payload.grade,
+    major: payload.major,
+    ...(organizationId ? { organizationId } : {}),
+  });
+};
+export const updateStudent = (id: string, body: StudentForm) =>
+  api.patch<Student>(`/students/${id}`, studentPayload(body, false));
+export const archiveStudent = (id: string) => api.delete(`/students/${id}`);
+export const studentLifecycle = (
+  id: string,
+  action: "activate" | "deactivate" | "restore" | "force-logout",
+) => api.post(`/students/${id}/${action}`, {});
+export const resetStudentPassword = (id: string, password: string) =>
+  api.post(`/students/${id}/reset-password`, { password });
+export const getStudentOverview = (id: string) =>
+  api.get<Record<string, unknown>>(`/students/${id}/overview`);
+export const getStudentLearning = (id: string) =>
+  api.get<LearningResponse>(`/students/${id}/learning`);
+export const getStudentAttempts = (id: string) =>
+  api.get<unknown[]>(`/students/${id}/exam-attempts`);
+export const getStudentWeekly = (id: string) =>
+  api.get<Record<string, unknown>>(`/students/${id}/progress/weekly`);
+export const getStudentTopics = (id: string) =>
+  api.get<unknown[]>(`/students/${id}/performance/topics?limit=8`);
+export type StudentAnalytics = {
+  planCompletion: number | null;
+  taskCompletion: number | null;
+  studyDurationMinutes: number | null;
+  studySessions: number;
+  examPerformance: number | null;
+  examAttempts: number;
+  questionAccuracy: number | null;
+  quizAttempts: number;
+  reviewConsistency: number;
+  averageMastery: number | null;
+  subjectPerformance: Array<{ subject: string; items: number; mastery: number | null }>;
+};
+export type StudentRecommendation = {
+  id: string;
+  type: string;
+  title: string;
+  reason: string;
+  evidence: Record<string, unknown>;
+  status: "PROPOSED" | "ACCEPTED" | "REJECTED" | "DISMISSED";
+  createdAt: string;
+};
+export type StudentMistake = { id: string; questionId: string; reason: string; resolved: boolean };
+export const getStudentAnalytics = (id: string) =>
+  api.get<StudentAnalytics>(`/students/${id}/analytics`);
+export const getStudentRecommendations = (id: string) =>
+  api.get<StudentRecommendation[]>(`/students/${id}/recommendations`);
+export const createStudentRecommendation = (
+  id: string,
+  body: { type: string; title: string; reason: string; evidence: Record<string, unknown> },
+) => api.post<StudentRecommendation>(`/students/${id}/recommendations`, body);
+export const getStudentMistakes = (id: string) =>
+  api.get<StudentMistake[]>(`/students/${id}/mistakes`);

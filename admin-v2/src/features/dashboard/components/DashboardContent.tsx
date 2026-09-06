@@ -1,4 +1,4 @@
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Button, EmptyState, LoadingState } from "../../../shared/ui/ui";
 import type {
   AdminDashboardSummary,
@@ -62,9 +62,7 @@ export function DashboardContent({
         <DashboardFollowUpCard items={followUp} />
       </section>
 
-      {summary ? (
-        <RecentReportsCard reports={summary.recentReports ?? []} />
-      ) : null}
+      {summary ? <RecentReportsCard reports={summary.recentReports ?? []} /> : null}
     </div>
   );
 }

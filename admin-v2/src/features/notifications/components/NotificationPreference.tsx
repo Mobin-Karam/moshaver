@@ -1,10 +1,7 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { LoaderCircle } from "lucide-react";
 import { notify } from "../../../shared/ui/notifications";
-import type {
-  PushPreferences,
-  PushStatus,
-} from "../model/notification-model";
+import type { PushPreferences, PushStatus } from "../model/notification-model";
 
 export function NotificationPreference({
   label,
@@ -57,9 +54,7 @@ export function NotificationPreference({
       <span className="text-slate-700 dark:text-slate-200">{label}</span>
 
       <span className="flex items-center gap-2">
-        {saving ? (
-          <LoaderCircle className="animate-spin text-slate-400" size={14} />
-        ) : null}
+        {saving ? <LoaderCircle className="animate-spin text-slate-400" size={14} /> : null}
         <input
           type="checkbox"
           checked={enabled}

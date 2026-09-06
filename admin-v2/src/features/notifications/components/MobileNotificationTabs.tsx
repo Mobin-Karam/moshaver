@@ -46,9 +46,7 @@ export function MobileNotificationTabs({
       >
         <Inbox size={14} />
         پیگیری
-        <Badge tone={inboxCount ? "red" : "green"}>
-          {inboxCount.toLocaleString("fa-IR")}
-        </Badge>
+        <Badge tone={inboxCount ? "red" : "green"}>{inboxCount.toLocaleString("fa-IR")}</Badge>
       </button>
     </div>
   );
