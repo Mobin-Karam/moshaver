@@ -13,7 +13,10 @@ import { Link } from "react-router-dom";
 import { Badge, Button, Card, EmptyState } from "../../../shared/ui/ui";
 import { cn, fa } from "../../../shared/lib/utils";
 import { useLocale } from "../../../shared/ui/locale";
-import type { AttentionSeverity, AttentionStudent } from "../model/dashboard.types";
+import type {
+  AttentionSeverity,
+  AttentionStudent,
+} from "../model/dashboard.types";
 
 type Filter = "all" | "red" | "yellow";
 
@@ -42,19 +45,31 @@ export function AttentionInbox({
   const { formatDateTime } = useLocale();
 
   const filtered = useMemo(
-    () => students.filter((student) => filter === "all" || student.severity === filter),
+    () =>
+      students.filter(
+        (student) => filter === "all" || student.severity === filter,
+      ),
     [filter, students],
   );
 
-  const critical = students.filter((student) => student.severity === "red").length;
-  const warning = students.filter((student) => student.severity === "yellow").length;
+  const critical = students.filter(
+    (student) => student.severity === "red",
+  ).length;
+  const warning = students.filter(
+    (student) => student.severity === "yellow",
+  ).length;
 
   return (
-    <Card id="attention-queue" className="scroll-mt-24 p-0 dark:border-slate-800 dark:bg-slate-900">
+    <Card
+      id="attention-queue"
+      className="scroll-mt-24 p-0 dark:border-slate-800 dark:bg-slate-900"
+    >
       <header className="flex flex-col gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-slate-900 dark:text-white">دانش‌آموزان نیازمند توجه</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white">
+              دانش‌آموزان نیازمند توجه
+            </h3>
             <Badge tone={critical ? "red" : warning ? "amber" : "green"}>
               {fa(students.length)}
             </Badge>
@@ -64,12 +79,18 @@ export function AttentionInbox({
           </p>
         </div>
 
-        <div className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800" role="group" aria-label="فیلتر شدت توجه">
-          {([
-            ["all", "همه", students.length],
-            ["red", "بحرانی", critical],
-            ["yellow", "هشدار", warning],
-          ] as Array<[Filter, string, number]>).map(([key, label, count]) => (
+        <div
+          className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800"
+          role="group"
+          aria-label="فیلتر شدت توجه"
+        >
+          {(
+            [
+              ["all", "همه", students.length],
+              ["red", "بحرانی", critical],
+              ["yellow", "هشدار", warning],
+            ] as Array<[Filter, string, number]>
+          ).map(([key, label, count]) => (
             <button
               key={key}
               type="button"
@@ -91,14 +112,21 @@ export function AttentionInbox({
       {loading ? (
         <div className="grid gap-2 p-3">
           {[1, 2, 3, 4].map((item) => (
-            <div key={item} className="h-24 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+            <div
+              key={item}
+              className="h-24 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800"
+            />
           ))}
         </div>
       ) : error ? (
         <div className="p-4">
           <EmptyState
             title="فهرست توجه دریافت نشد."
-            action={<Button variant="soft" onClick={onRetry}>تلاش دوباره</Button>}
+            action={
+              <Button variant="soft" onClick={onRetry}>
+                تلاش دوباره
+              </Button>
+            }
           />
         </div>
       ) : filtered.length ? (
@@ -106,32 +134,64 @@ export function AttentionInbox({
           {filtered.slice(0, 12).map((student) => {
             const online = Boolean(student.presence?.online);
             return (
-              <article key={student.id} className="grid gap-3 px-4 py-3 transition hover:bg-slate-50/80 dark:hover:bg-slate-800/40 lg:grid-cols-[minmax(180px,.7fr)_minmax(0,1.5fr)_auto] lg:items-center">
+              <article
+                key={student.id}
+                className="grid gap-3 px-4 py-3 transition hover:bg-slate-50/80 dark:hover:bg-slate-800/40 lg:grid-cols-[minmax(180px,.7fr)_minmax(0,1.5fr)_auto] lg:items-center"
+              >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className={cn("size-2 shrink-0 rounded-full", student.severity === "red" ? "bg-rose-500" : "bg-amber-500")} />
-                    <strong className="truncate text-sm text-slate-900 dark:text-white">{student.name}</strong>
+                    <span
+                      className={cn(
+                        "size-2 shrink-0 rounded-full",
+                        student.severity === "red"
+                          ? "bg-rose-500"
+                          : "bg-amber-500",
+                      )}
+                    />
+                    <strong className="truncate text-sm text-slate-900 dark:text-white">
+                      {student.name}
+                    </strong>
                     <Badge tone={severityTone(student.severity)}>
                       {student.severity === "red" ? "بحرانی" : "هشدار"}
                     </Badge>
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-slate-400">
-                    <span>{[student.grade, student.major].filter(Boolean).join(" · ") || "پروفایل آموزشی"}</span>
+                    <span>
+                      {[student.grade, student.major]
+                        .filter(Boolean)
+                        .join(" · ") || "پروفایل آموزشی"}
+                    </span>
                     <span className="flex items-center gap-1">
-                      {online ? <Radio size={10} className="text-emerald-500" /> : <Activity size={10} />}
-                      {online ? "آنلاین" : student.lastSeenAt ? `آخرین فعالیت ${formatDateTime(student.lastSeenAt)}` : "بدون فعالیت ثبت‌شده"}
+                      {online ? (
+                        <Radio size={10} className="text-emerald-500" />
+                      ) : (
+                        <Activity size={10} />
+                      )}
+                      {online
+                        ? "آنلاین"
+                        : student.lastSeenAt
+                          ? `آخرین فعالیت ${formatDateTime(student.lastSeenAt)}`
+                          : "بدون فعالیت ثبت‌شده"}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-1.5">
-                  {student.reasons.map((reason) => {
-                    const Icon = reasonIcons[reason.code as keyof typeof reasonIcons] || AlertTriangle;
+                  {(student.reasons ?? []).map((reason) => {
+                    const Icon =
+                      reasonIcons[reason.code as keyof typeof reasonIcons] ||
+                      AlertTriangle;
                     return (
-                      <span key={`${reason.code}-${reason.value}`} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                      <span
+                        key={`${reason.code}-${reason.value}`}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                      >
                         <Icon size={13} />
                         {reason.label}
-                        <b className="tabular-nums">{fa(reason.value)}{reason.code === "weak_exam_performance" ? "%" : ""}</b>
+                        <b className="tabular-nums">
+                          {fa(reason.value)}
+                          {reason.code === "weak_exam_performance" ? "%" : ""}
+                        </b>
                       </span>
                     );
                   })}
@@ -166,7 +226,13 @@ export function AttentionInbox({
         </div>
       ) : (
         <div className="p-4">
-          <EmptyState title={filter === "all" ? "دانش‌آموزی با هشدار فعال وجود ندارد." : "موردی در این سطح هشدار وجود ندارد."} />
+          <EmptyState
+            title={
+              filter === "all"
+                ? "دانش‌آموزی با هشدار فعال وجود ندارد."
+                : "موردی در این سطح هشدار وجود ندارد."
+            }
+          />
         </div>
       )}
     </Card>
