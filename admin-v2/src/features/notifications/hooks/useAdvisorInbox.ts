@@ -17,12 +17,15 @@ import type {
   TaskIssueActionInput,
 } from "../model/notification.types";
 
-export function useAdvisorInbox(studentId: string) {
+export function useAdvisorInbox(
+  studentId: string,
+  { enabled = true, scopeKey = "default" }: { enabled?: boolean; scopeKey?: string } = {},
+) {
   const queryClient = useQueryClient();
 
   const inbox = useQuery({
-    queryKey: ["inbox", studentId],
-    enabled: !!studentId,
+    queryKey: ["inbox", scopeKey, studentId],
+    enabled: enabled && !!studentId,
     queryFn: () => getAdvisorInbox(studentId),
     staleTime: 10_000,
     retry: shouldRetryNotificationRequest,
@@ -31,7 +34,7 @@ export function useAdvisorInbox(studentId: string) {
 
   const refreshRelated = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ["inbox", studentId] }),
+      queryClient.invalidateQueries({ queryKey: ["inbox", scopeKey, studentId] }),
       queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] }),
       queryClient.invalidateQueries({ queryKey: ["admin-attention"] }),
     ]);

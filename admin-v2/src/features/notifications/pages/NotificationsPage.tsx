@@ -9,9 +9,23 @@ import { NotificationsToolbar } from "../components/NotificationsToolbar";
 import { useAdminNotifications } from "../hooks/useAdminNotifications";
 import { useAdvisorInbox } from "../hooks/useAdvisorInbox";
 import { useFilteredNotifications } from "../hooks/useFilteredNotifications";
+import { useAuth } from "../../auth";
+
+export function notificationAccess(capabilities: readonly string[]) {
+  const has = (capability: string) => capabilities.includes(capability);
+  const advisorInbox = has("students.read") && has("recovery_requests.read");
+
+  return {
+    advisorInbox,
+    manageRecovery: advisorInbox && has("recovery_requests.manage"),
+    manageIssues: advisorInbox && has("tasks.update"),
+  };
+}
 
 export function NotificationsPage() {
-  const students = useStudentSelection();
+  const auth = useAuth();
+  const access = notificationAccess(auth.capabilities);
+  const students = useStudentSelection({ enabled: access.advisorInbox });
   const notifications = useAdminNotifications();
   const modal = useModal();
 
@@ -22,7 +36,10 @@ export function NotificationsPage() {
     "notifications",
   );
 
-  const advisor = useAdvisorInbox(students.studentId);
+  const advisor = useAdvisorInbox(students.studentId, {
+    enabled: access.advisorInbox,
+    scopeKey: `${auth.activeRole || "none"}:${auth.context?.activeOrganization?.id || "global"}`,
+  });
   const items = useFilteredNotifications({
     items: notifications.items,
     filter,
@@ -44,15 +61,17 @@ export function NotificationsPage() {
         }
       />
 
-      <MobileNotificationTabs
-        panel={mobilePanel}
-        inboxCount={advisor.rows.length}
-        onChange={setMobilePanel}
-      />
+      {access.advisorInbox ? (
+        <MobileNotificationTabs
+          panel={mobilePanel}
+          inboxCount={advisor.rows.length}
+          onChange={setMobilePanel}
+        />
+      ) : null}
 
-      <section className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,.55fr)]">
+      <section className={access.advisorInbox ? "grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,.55fr)]" : "grid min-h-0 flex-1"}>
         <NotificationCenterPanel
-          mobilePanel={mobilePanel}
+          mobilePanel={access.advisorInbox ? mobilePanel : "notifications"}
           filter={filter}
           setFilter={setFilter}
           typeFilter={typeFilter}
@@ -62,7 +81,7 @@ export function NotificationsPage() {
           items={items}
         />
 
-        <AdvisorInboxPanel
+        {access.advisorInbox ? <AdvisorInboxPanel
           mobilePanel={mobilePanel}
           rows={advisor.rows}
           students={students.students}
@@ -74,10 +93,12 @@ export function NotificationsPage() {
           issuePendingId={advisor.issuePendingId}
           onRecovery={advisor.updateRecovery}
           onIssue={advisor.updateIssue}
+          canManageRecovery={access.manageRecovery}
+          canManageIssues={access.manageIssues}
           onRetry={() => {
             void advisor.inbox.refetch();
           }}
-        />
+        /> : null}
       </section>
     </div>
   );

@@ -25,6 +25,8 @@ export function AdvisorInboxPanel({
   onRetry,
   onRecovery,
   onIssue,
+  canManageRecovery,
+  canManageIssues,
 }: {
   mobilePanel: "notifications" | "inbox";
   rows: AdvisorInboxRow[];
@@ -38,8 +40,12 @@ export function AdvisorInboxPanel({
   onRetry: () => void;
   onRecovery: (input: RecoveryActionInput) => Promise<boolean>;
   onIssue: (input: TaskIssueActionInput) => Promise<boolean>;
+  canManageRecovery: boolean;
+  canManageIssues: boolean;
 }) {
-  const actionableCount = rows.filter((row) => row.actionable).length;
+  const actionableCount = rows.filter((row) =>
+    row.kind === "recovery" ? canManageRecovery : row.kind === "issue" ? canManageIssues : false,
+  ).length;
 
   return (
     <Card
@@ -89,6 +95,8 @@ export function AdvisorInboxPanel({
               issuePendingId={issuePendingId}
               onRecovery={onRecovery}
               onIssue={onIssue}
+              canManageRecovery={canManageRecovery}
+              canManageIssues={canManageIssues}
             />
           ))}
         </div>

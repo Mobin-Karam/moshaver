@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useStudents } from "./useStudents";
 
-export function useStudentSelection(options: { clearOnChange?: string[]; preferredStudentId?: string } = {}) {
-  const students = useStudents();
+export function useStudentSelection(options: { clearOnChange?: string[]; preferredStudentId?: string; enabled?: boolean } = {}) {
+  const students = useStudents({ enabled: options.enabled });
   const [params, setParams] = useSearchParams();
   const pendingStudentId = useRef("");
   const urlStudentId = params.get("studentId") || "";

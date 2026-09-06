@@ -25,12 +25,16 @@ export function AdvisorInboxItem({
   issuePendingId,
   onRecovery,
   onIssue,
+  canManageRecovery,
+  canManageIssues,
 }: {
   row: AdvisorInboxRow;
   recoveryPendingId: string;
   issuePendingId: string;
   onRecovery: (input: RecoveryActionInput) => Promise<boolean>;
   onIssue: (input: TaskIssueActionInput) => Promise<boolean>;
+  canManageRecovery: boolean;
+  canManageIssues: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [response, setResponse] = useState("");
@@ -64,12 +68,12 @@ export function AdvisorInboxItem({
           </p>
         ) : null}
 
-        <button type="button" onClick={() => setExpanded((value) => !value)} className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-brand">
+        {canManageIssues ? <button type="button" onClick={() => setExpanded((value) => !value)} className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-brand">
           <MessageSquareReply size={13} />
           {expanded ? "بستن پاسخ" : "رسیدگی و پاسخ"}
-        </button>
+        </button> : null}
 
-        {expanded ? (
+        {canManageIssues && expanded ? (
           <div className="mt-3 grid gap-2 border-t border-rose-100 pt-3 dark:border-rose-950">
             <Textarea
               rows={3}
@@ -128,12 +132,12 @@ export function AdvisorInboxItem({
         {recovery.reason ? <p className="mt-2 text-xs font-semibold text-slate-700 dark:text-slate-200">{recovery.reason}</p> : null}
         {recovery.note ? <p className="mt-1 rounded-lg bg-white/80 p-2 text-xs leading-5 text-slate-600 dark:bg-slate-900/70 dark:text-slate-300">{recovery.note}</p> : null}
 
-        <button type="button" onClick={() => setExpanded((value) => !value)} className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-brand">
+        {canManageRecovery ? <button type="button" onClick={() => setExpanded((value) => !value)} className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-brand">
           <MessageSquareReply size={13} />
           {expanded ? "بستن رسیدگی" : "رسیدگی"}
-        </button>
+        </button> : null}
 
-        {expanded ? (
+        {canManageRecovery && expanded ? (
           <div className="mt-3 grid gap-2 border-t border-sky-100 pt-3 dark:border-sky-950">
             <Textarea
               rows={3}

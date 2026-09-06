@@ -33,7 +33,7 @@ async function loadAllStudents() {
   }
 }
 
-export function useStudents() {
+export function useStudents({ enabled = true }: { enabled?: boolean } = {}) {
   const [contextKey, setContextKey] = useState(getApiWorkContextKey);
   const [studentId, setStudentIdState] = useState(() =>
     typeof window === "undefined"
@@ -43,6 +43,7 @@ export function useStudents() {
   const query = useQuery({
     queryKey: ["students", contextKey],
     queryFn: loadAllStudents,
+    enabled,
   });
   const students = query.data ?? [];
   const selectedStudentId =

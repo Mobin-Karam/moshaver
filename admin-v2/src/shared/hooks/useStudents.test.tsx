@@ -76,4 +76,12 @@ describe("useStudents education context", () => {
       "/students?limit=100&offset=100",
     );
   });
+
+  it("does not request the roster when the active feature lacks student access", () => {
+    const { result } = renderHook(() => useStudents({ enabled: false }), { wrapper });
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(result.current.students).toEqual([]);
+    expect(api.get).not.toHaveBeenCalled();
+  });
 });
