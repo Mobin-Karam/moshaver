@@ -55,6 +55,7 @@ The v1.4 static Admin and Student applications are described with their backend 
 - [v1.4 chat and realtime SSE](./operations/chat-realtime-sse-v1-4.md)
 - [Plan import schema version 2](./operations/plan-import-schema-v2.md)
 - [Admin v2 Web Push verification](./operations/admin-v2-web-push-verification.md)
+- [Backend v2 product demo seed](./operations/backend-v2-product-demo-seed.md)
 
 ## Migration work
 

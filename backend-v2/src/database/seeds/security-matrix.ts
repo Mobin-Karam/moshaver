@@ -24,7 +24,7 @@ import { TeacherSubjectAssignment } from "../entities/teacher-subject-assignment
 
 const password = process.env.E2E_PASSWORD || "Moshaver-e2e-2026!";
 
-async function main() {
+export async function seedSecurityMatrix() {
   if (
     process.env.ALLOW_E2E_SEED !== "true" ||
     process.env.NODE_ENV === "production"
@@ -34,6 +34,7 @@ async function main() {
     );
   }
   await dataSource.initialize();
+  await dataSource.runMigrations();
   const manager = dataSource.manager;
   const hash = await bcrypt.hash(password, 12);
   const orgA = await ensureOrganization("E2E Organization A");
@@ -352,8 +353,10 @@ async function main() {
   }
 }
 
-main().catch(async (error) => {
-  console.error(error);
-  if (dataSource.isInitialized) await dataSource.destroy();
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  seedSecurityMatrix().catch(async (error) => {
+    console.error(error);
+    if (dataSource.isInitialized) await dataSource.destroy();
+    process.exitCode = 1;
+  });
+}
