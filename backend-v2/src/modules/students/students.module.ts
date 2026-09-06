@@ -11,9 +11,10 @@ import { StudentsService } from "./students.service";
 import { OrganizationMembership, UserRelationship } from "../../database/entities";
 import { StudentAdministrationService } from "./student-administration.service";
 import { StudentAdministrationController } from "./student-administration.controller";
+import { TaskIssue, RecoveryRequest, ExamRetryRequest } from "../../database/entities";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Student, User, TopicMastery, LearningItem, LearningReview, Session, OrganizationMembership, UserRelationship])],
+  imports: [TypeOrmModule.forFeature([Student, User, TopicMastery, LearningItem, LearningReview, Session, OrganizationMembership, UserRelationship, TaskIssue, RecoveryRequest, ExamRetryRequest])],
   controllers: [StudentController, StudentParityController, StudentsController, StudentAdministrationController],
   providers: [StudentsService, StudentAdministrationService],
   exports: [StudentsService],

@@ -1,52 +1,57 @@
 # Security v2 release audit
 
-Date: 2026-09-05
+Date: 2026-09-06
 
 ## Release-blocking result
 
-No open P0 or P1 authorization/data-isolation issue was found after the fixes below. This conclusion covers source review, unit-level role matrix checks, DTO validation, and live negative requests against a disposable seeded database. It is not a substitute for staging browser automation with production identity provisioning.
+No open P0 or P1 authorization or data-isolation defect remains in the implemented v2 scope. This result is based on source review, 50 backend tests, a live cookie/CSRF security matrix against a disposable 32-migration SQLite database, 112 protected-route browser checks (7 staff roles by 16 routes), and a browser multi-role context-switch check.
 
-## Fixed during audit
+## Boundaries proven
 
-- **P1 — legacy role escalation (fixed):** an account carrying the storage-era `ADMIN` discriminator could fall back to `PLATFORM_ADMIN` when explicit role assignments were absent. Authorization enrichment, the roles guard, account context, and dashboard context now give such an account no effective authority. A regression test covers both enrichment and guard behavior.
-- **P1 — missing report persistence (fixed):** report and recovery entities had no matching fresh-database migration. The new migration creates both constrained tables, allowing server-authoritative reporting without runtime schema drift.
-- **P2 — chat notification durability (fixed):** chat already emitted user-scoped SSE but did not create persistent per-recipient notifications. Message send now stores notification records and retains SSE as a signal.
-- **P3 — runtime TypeORM loading (fixed):** chat used runtime `require` for `In`; it now uses the static import and safely handles an empty organization set.
+- Explicit role assignments, active memberships, capabilities, and active typed relationships are the authority; the legacy user discriminator grants no platform authority.
+- Student, Guardian, Advisor, Teacher, Mentor, Content Manager, Organization Admin, and Platform Admin negative paths are exercised with separate identities across two organizations.
+- Related staff see only their related student. Organization Admin sees only its organization. Content Manager has content scope without private student scope. Platform Admin is the only cross-organization administrative role.
+- Teachers see only subjects explicitly assigned through the `(teacher, subject, organization)` assignment table.
+- Exam delivery requires assignment and publication. Direct identifier enumeration of unrelated students, quizzes, conversations, and exams fails closed.
+- Conversation reads and mutations require active membership; message edit/delete/reaction routes are conversation-scoped.
+- Work-role and organization headers cannot select an unassigned context. Switching a multi-role account changes effective capabilities without re-login.
+- DTO validation rejects privilege-field mass assignment. Authenticated mutations require CSRF. Disabled accounts and revoked sessions/relationships lose access immediately.
+- Malformed JSON and oversized bodies return safe errors without stack or filesystem disclosure. Concurrent login failures are serialized for SQLite so throttle records cannot race their unique constraint.
+- SSE is user-scoped and durable notifications are stored per recipient; administrators receive no implicit conversation visibility.
 
-## Identity and isolation evidence
+## Findings fixed in this audit
 
-`multi-role-isolation.spec.ts` models StudentA/StudentB and GuardianA/B, AdvisorA/B, TeacherA/B, MentorA, ContentManagerA, OrgAdminA, and PlatformAdmin. It verifies self/related access, denial of unrelated StudentB, content-only denial, organization isolation, explicit platform scope, the legacy-admin case, and rejection of privilege fields injected into an unrelated student DTO.
+- Removed the legacy `ADMIN` fallback escalation.
+- Added missing report/recovery persistence migrations.
+- Removed runtime `/api/v2/admin/*` placeholder controllers and migrated clients to canonical routes.
+- Corrected stale admin chat message mutation URLs to canonical conversation-scoped paths.
+- Added explicit teacher-subject assignment persistence and filtering.
+- Scoped Organization Admin relationship listing to its active organization context.
+- Added durable chat notifications and static TypeORM imports.
+- Added concurrent login-throttle, revocation, deactivation, invalid-ID, mass-assignment, malformed-body, oversized-body, cross-org, cross-chat, and unassigned-exam regressions.
 
-With a real `sara` STUDENT session on a fresh disposable database:
+## Residual operational risk
 
-| Request | Result |
-| --- | --- |
-| `GET /api/v2/users` | 403 |
-| `GET /api/v2/organizations` | 403 |
-| `GET /api/v2/students/:self/reports` (staff route) | 403 |
-| `GET /api/v2/system/database` | 403 |
-| `POST /api/v2/chat/groups` | 403 |
-| `GET /api/v2/relationships` | 200, intentionally limited to the authenticated user's relationship view |
+These are deployment checks, not unresolved application authorization defects:
 
-Student-owned APIs derive the student profile from the authenticated user. Staff student APIs route through capability checks plus `AuthorizationService.canAccessStudent`; organization operations require capability plus active membership except explicit Platform Admin scope. Conversation content requires active membership and administrators have no implicit chat visibility.
+- Configure alert thresholds and retention for authentication failures, authorization denials, and audit records in the target environment.
+- Validate real Web Push delivery with production VAPID keys and browser permission. The subscription flow and service worker exist, but external delivery was not exercised.
+- Repeat the disposable security matrix after production-like identity provisioning in staging before changing traffic.
 
-## Open findings
+## Reproducible verification
 
-### P2 Medium
+```bash
+cd backend-v2
+npm run lint
+npm test -- --runInBand
+npm run build
+npm run test:e2e:security
+npm run test:e2e:student
 
-- A full HTTP/browser matrix with separately provisioned accounts for all roles and both organizations is not automated. The service-level matrix and live STUDENT denial checks pass, but staging should automate cookie/CSRF flows for every listed API area before public cutover.
-- Teacher subject-specific restrictions rely on explicit relationship creation and the calling service's subject query. Add a dedicated subject-assignment entity if teachers must be constrained below whole-student scope in a future policy revision.
+cd ../admin-v2
+npm test -- --run
+npm run build
+npm run audit:parity
+```
 
-### P3 Low
-
-- Compatibility `/admin/*` aliases remain Platform-Admin-only. They should be removed after client telemetry proves no use; they do not broaden other roles.
-- Rate-limit and authorization audit alerting needs deployment-level thresholds and retention configuration.
-
-## Verification commands
-
-- `cd backend-v2 && npm run lint`
-- `cd backend-v2 && npm test -- --runInBand`
-- `cd backend-v2 && npm run build`
-- Fresh SQLite migration plus `PRAGMA foreign_key_check`
-- Disposable-server cookie/CSRF requests listed above
-
+The E2E commands require a migrated disposable database, `ALLOW_E2E_SEED=true`, and the v2 server on the configured `E2E_API_URL`. Never seed a production database.

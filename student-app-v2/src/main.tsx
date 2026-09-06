@@ -18,6 +18,8 @@ import { ChatPage } from './features/chat/ChatPage';
 import { MorePage } from './features/more/MorePage';
 import './styles.css';
 
+const syncController = initializeSync();
+
 function App() {
   const syncStatus = useStudentStore((state) => state.syncStatus);
   const authStatus = useStudentStore((state) => state.authStatus);
@@ -55,6 +57,25 @@ function App() {
       if (type.startsWith('learning.') || type.startsWith('relationship.')) void Promise.all([state.loadLearning(), state.loadProfileDomains()]);
     });
     return () => source.close();
+  }, [authStatus]);
+
+  useEffect(() => {
+    if (authStatus !== 'authenticated') return;
+    let active = true;
+    void syncController.then((controller) => { if (active) controller.start(); });
+    return () => { active = false; void syncController.then((controller) => controller.stop()); };
+  }, [authStatus]);
+
+  useEffect(() => {
+    if (authStatus !== 'authenticated') return;
+    const heartbeat = () => void apiClient.request('PUT', '/student/presence/heartbeat', { state: document.hidden ? 'idle' : 'active' }).catch(() => undefined);
+    heartbeat();
+    const interval = window.setInterval(heartbeat, 45_000);
+    document.addEventListener('visibilitychange', heartbeat);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', heartbeat);
+    };
   }, [authStatus]);
 
   if (authStatus === 'checking') {
@@ -128,13 +149,22 @@ async function initializeSync() {
   worker.subscribe((status) => useStudentStore.getState().setSyncStatus(status));
   const onOnline = () => void worker.flush();
   const onOffline = () => worker.setOffline();
-  window.addEventListener('online', onOnline);
-  window.addEventListener('offline', onOffline);
-  worker.start();
-  return () => {
-    worker.stop();
-    window.removeEventListener('online', onOnline);
-    window.removeEventListener('offline', onOffline);
+  let started = false;
+  return {
+    start() {
+      if (started) return;
+      started = true;
+      window.addEventListener('online', onOnline);
+      window.addEventListener('offline', onOffline);
+      worker.start();
+    },
+    stop() {
+      if (!started) return;
+      started = false;
+      worker.stop();
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    },
   };
 }
 
@@ -211,7 +241,7 @@ function syncStatusLabel(status: string) {
   return 'آنلاین';
 }
 
-void initializeSync().then(() => {
+void syncController.then(() => {
   registerWebUpdateAdapter();
   registerNotificationClickHandler();
   ReactDOM.createRoot(document.getElementById('root')!).render(<App />);

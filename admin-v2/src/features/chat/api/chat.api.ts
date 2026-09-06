@@ -9,55 +9,28 @@ import type {
 import type { ChatUser, GroupDetail, GroupMember, GroupPermissions, GroupRole } from "../model/group.types";
 
 export async function fetchConversationPage(
-  cursor: ConversationCursor,
+  _cursor: ConversationCursor,
   search: string,
 ): Promise<CombinedConversationPage> {
-  const suffix = search ? `&search=${encodeURIComponent(search)}` : "";
-  const [directResult, groupResult] = await Promise.all([
-    cursor.directDone
-      ? Promise.resolve<ConversationPage>({ items: [], total: 0, totalUnread: 0, hasMore: false })
-      : api.get<ConversationPage | ConversationPage["items"]>(
-          `/admin/chat/conversations?limit=40&offset=${cursor.directOffset}${suffix}`,
-        ),
-    cursor.groupDone
-      ? Promise.resolve<ConversationPage>({ items: [], total: 0, totalUnread: 0, hasMore: false })
-      : api.get<ConversationPage>(
-          `/chat/conversations?limit=40&offset=${cursor.groupOffset}${suffix}`,
-        ),
-  ]);
-  const direct = Array.isArray(directResult)
-    ? {
-        items: directResult,
-        total: directResult.length,
-        totalUnread: directResult.reduce((sum, item) => sum + Number(item.unread || 0), 0),
-        hasMore: false,
-      }
-    : directResult;
-  const groups = groupResult.items ?? [];
-  const directDone = cursor.directDone || !direct.hasMore;
-  const groupDone = cursor.groupDone || !groupResult.hasMore;
+  const result = await api.get<ConversationPage | ConversationPage["items"]>("/chat/conversations");
+  const all = Array.isArray(result) ? result : result.items;
+  const normalized = all.filter((item) => !search || `${item.title || ""} ${item.student?.name || ""}`.toLowerCase().includes(search.toLowerCase()));
+  const direct = normalized.filter((item) => item.type !== "group");
+  const groups = normalized.filter((item) => item.type === "group");
   return {
-    items: [...direct.items, ...groups],
-    directTotal: cursor.directDone ? 0 : direct.total,
-    groupTotal: cursor.groupDone ? 0 : groupResult.total,
-    totalUnread:
-      direct.totalUnread + groups.reduce((sum, item) => sum + Number(item.unread || 0), 0),
-    next:
-      directDone && groupDone
-        ? undefined
-        : {
-            directOffset: cursor.directOffset + direct.items.length,
-            groupOffset: cursor.groupOffset + groups.length,
-            directDone,
-            groupDone,
-          },
+    items: [...direct, ...groups],
+    directTotal: direct.length,
+    groupTotal: groups.length,
+    totalUnread: normalized.reduce((sum, item) => sum + Number(item.unread || 0), 0),
+    next: undefined,
   };
 }
 
-export function fetchMessages(conversationId: string, beforeMessageId = "") {
-  return api.get<MessagePage>(
+export async function fetchMessages(conversationId: string, beforeMessageId = "") {
+  const result = await api.get<MessagePage | ChatMessage[]>(
     `/chat/conversations/${conversationId}/messages?limit=50${beforeMessageId ? `&beforeMessageId=${encodeURIComponent(beforeMessageId)}` : ""}`,
   );
+  return Array.isArray(result) ? { messages: result, hasMore: false } : result;
 }
 
 export const chatApi = {
@@ -65,13 +38,11 @@ export const chatApi = {
     api.post(`/chat/conversations/${conversationId}/read`, {}),
   send: (conversationId: string, text: string, replyToId?: string) =>
     api.post<ChatMessage>(`/chat/conversations/${conversationId}/messages`, { text, replyToId }),
-  edit: (messageId: string, text: string) =>
-    api.patch<ChatMessage>(`/chat/messages/${messageId}`, { text }),
-  remove: (messageId: string) => api.delete(`/chat/messages/${messageId}`),
-  react: (messageId: string, emoji: string) =>
-    api.post(`/chat/messages/${messageId}/reactions`, { emoji }),
-  removeReaction: (messageId: string, emoji: string) =>
-    api.delete(`/chat/messages/${messageId}/reactions/${encodeURIComponent(emoji)}`),
+  edit: (conversationId: string, messageId: string, text: string) =>
+    api.patch<ChatMessage>(`/chat/conversations/${conversationId}/messages/${messageId}`, { text }),
+  remove: (conversationId: string, messageId: string) => api.delete(`/chat/conversations/${conversationId}/messages/${messageId}`),
+  react: (conversationId: string, messageId: string, emoji: string) =>
+    api.post(`/chat/conversations/${conversationId}/messages/${messageId}/reactions`, { emoji }),
   group: (conversationId: string) =>
     api.get<GroupDetail>(`/chat/conversations/${conversationId}`),
   createGroup: (body: { title: string; description: string; memberIds: string[] }) =>

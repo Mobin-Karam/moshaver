@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "../api/api";
 import { useStudents } from "./useStudents";
 
-vi.mock("../api/api", () => ({ api: { get: vi.fn() } }));
+vi.mock("../api/api", () => ({ api: { get: vi.fn() }, API_WORK_CONTEXT_EVENT: "admin-api-work-context-change", getApiWorkContextKey: () => "none:global" }));
 
 function wrapper({ children }: { children: ReactNode }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });

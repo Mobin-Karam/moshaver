@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "../api/api";
 import { useStudentSelection } from "./useStudentSelection";
 
-vi.mock("../api/api", () => ({ api: { get: vi.fn() } }));
+vi.mock("../api/api", () => ({ api: { get: vi.fn() }, API_WORK_CONTEXT_EVENT: "admin-api-work-context-change", getApiWorkContextKey: () => "none:global" }));
 
 const roster = [
   { id: "student-1", name: "اول" },

@@ -12,7 +12,6 @@ import { RolesGuard } from "./common/guards/roles.guard";
 import { CsrfGuard } from "./common/guards/csrf.guard";
 import { AuthSessionGuard } from "./common/guards/auth-session.guard";
 import { AuthModule } from "./modules/auth/auth.module";
-import { AdminModule } from "./modules/admin/admin.module";
 import { StudentsModule } from "./modules/students/students.module";
 import { PlansModule } from "./modules/plans/plans.module";
 import { ExamsModule } from "./modules/exams/exams.module";
@@ -56,7 +55,6 @@ import { SystemModule } from "./modules/system/system.module";
     ImportExportModule,
     SystemModule,
     AuthModule,
-    AdminModule,
     StudentsModule,
     PlansModule,
     ExamsModule,

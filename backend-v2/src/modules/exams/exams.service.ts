@@ -51,14 +51,15 @@ export class ExamsService {
     const assigned = this.assignments ? await this.assignments.find({ where: { student: { id: student.id } }, relations: { exam: true } }) : [];
     const ids = assigned.map((item) => item.exam.id);
     if (this.assignments && !ids.length) return [];
-    const exams = await this.exams.find({ where: this.assignments ? { id: In(ids) } : {}, relations: { questions: true, attempts: { student: true } } });
+    const exams = await this.exams.find({ where: this.assignments ? { id: In(ids), published: true } : { published: true }, relations: { questions: true, attempts: { student: true } } });
     return exams.map((exam) => this.publicExam(exam, false, student.id));
   }
 
   async detail(examId: string, userId: string) {
     const student = await this.studentForUser(userId);
     await this.requireAssignment(examId, student.id);
-    const exam = await this.exams.findOneOrFail({ where: { id: examId }, relations: { questions: true, attempts: { student: true } } });
+    const exam = await this.exams.findOne({ where: { id: examId, published: true }, relations: { questions: true, attempts: { student: true } } });
+    if (!exam) throw new ApiException(404, "EXAM_NOT_FOUND", "آزمون در دسترس نیست.");
     return this.publicExam(exam, false, student.id);
   }
 
@@ -95,6 +96,7 @@ export class ExamsService {
       subject: dto.subject || "",
       duration: dto.duration || dto.durationMinutes || 1,
       attemptLimit: dto.attemptLimit || dto.maxAttempts || 1,
+      published: dto.published ?? false,
       startTime: dto.startTime || dto.openAt ? new Date(dto.startTime || dto.openAt || "") : null,
       endTime: dto.endTime || dto.closeAt ? new Date(dto.endTime || dto.closeAt || "") : null,
       questions: (dto.questions || []).map((question) => this.questions.create(this.normalizeQuestion(question))),
@@ -113,6 +115,7 @@ export class ExamsService {
     if (duration !== undefined) exam.duration = Math.max(1, Number(duration));
     const attempts = body.maxAttempts ?? body.attemptLimit;
     if (attempts !== undefined) exam.attemptLimit = Math.max(1, Number(attempts));
+    if (typeof body.published === "boolean") exam.published = body.published;
     if (body.openAt !== undefined || body.startTime !== undefined)
       exam.startTime = nullableDate(body.openAt ?? body.startTime);
     if (body.closeAt !== undefined || body.endTime !== undefined)
@@ -127,7 +130,8 @@ export class ExamsService {
   }
 
   async start(examId: string, userId: string) {
-    const exam = await this.exams.findOneOrFail({ where: { id: examId }, relations: { questions: true } });
+    const exam = await this.exams.findOne({ where: { id: examId, published: true }, relations: { questions: true } });
+    if (!exam) throw new ApiException(404, "EXAM_NOT_FOUND", "آزمون در دسترس نیست.");
     const student = await this.studentForUser(userId);
     await this.requireAssignment(examId, student.id);
     const active = await this.attempts.findOne({ where: { exam: { id: examId }, student: { id: student.id }, finishedAt: IsNull() }, relations: { exam: { questions: true } }, order: { startedAt: "DESC" } });
@@ -198,7 +202,7 @@ export class ExamsService {
   private publicExam(exam: Exam, includeAnswers = true, studentId?: string) {
     const studentAttempts = studentId ? (exam.attempts || []).filter((attempt) => attempt.student?.id === studentId) : [];
     return {
-      id: exam.id, title: exam.title, subject: exam.subject, duration: exam.duration, durationMinutes: exam.duration, attemptLimit: exam.attemptLimit, maxAttempts: exam.attemptLimit, startTime: exam.startTime, endTime: exam.endTime, openAt: exam.startTime?.toISOString(), closeAt: exam.endTime?.toISOString(), isoDate: exam.startTime?.toISOString().slice(0, 10) || new Date().toISOString().slice(0, 10), published: true,
+      id: exam.id, title: exam.title, subject: exam.subject, duration: exam.duration, durationMinutes: exam.duration, attemptLimit: exam.attemptLimit, maxAttempts: exam.attemptLimit, startTime: exam.startTime, endTime: exam.endTime, openAt: exam.startTime?.toISOString(), closeAt: exam.endTime?.toISOString(), isoDate: exam.startTime?.toISOString().slice(0, 10) || new Date().toISOString().slice(0, 10), published: exam.published,
       questions: includeAnswers ? exam.questions?.map((question) => this.publicQuestion(question)) || [] : undefined,
       delivery: { questionCount: exam.questions?.length || 0, allowedAttempts: exam.attemptLimit, attemptsUsed: studentId ? studentAttempts.length : 0, lastAttempt: studentAttempts[0] ? this.publicAttempt(studentAttempts[0], exam.id) : null },
     };

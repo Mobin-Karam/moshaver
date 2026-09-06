@@ -44,9 +44,7 @@ export function getAdvisorInbox(
   studentId: string,
 ) {
   return api.get<AdvisorInbox>(
-    `/admin/advisor-inbox?studentId=${encodeURIComponent(
-      studentId,
-    )}`,
+    `/students/${encodeURIComponent(studentId)}/advisor-inbox`,
   );
 }
 
@@ -54,7 +52,7 @@ export function getAdvisorInbox(
 export function updateRecoveryRequest(input: RecoveryActionInput) {
   const { id, ...body } = input;
   return api.patch<{ id: string; status: string }>(
-    `/admin/recovery-requests/${encodeURIComponent(id)}`,
+    `/recovery-requests/${encodeURIComponent(id)}`,
     body,
   );
 }
@@ -62,7 +60,7 @@ export function updateRecoveryRequest(input: RecoveryActionInput) {
 export function updateTaskIssue(input: TaskIssueActionInput) {
   const { id, ...body } = input;
   return api.patch<{ id: string; status: string }>(
-    `/admin/task-issues/${encodeURIComponent(id)}`,
+    `/students/task-issues/${encodeURIComponent(id)}`,
     body,
   );
 }

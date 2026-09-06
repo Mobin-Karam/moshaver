@@ -48,3 +48,4 @@ export { Recommendation } from "./recommendation.entity";
 export { ImportHistory } from "./import-history.entity";
 export { AppVersion } from "./app-version.entity";
 export { AppRelease } from "./app-release.entity";
+export { TeacherSubjectAssignment } from "./teacher-subject-assignment.entity";

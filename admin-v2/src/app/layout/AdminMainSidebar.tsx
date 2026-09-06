@@ -19,7 +19,7 @@ export function AdminMainSidebar({
   onOpenSearch: () => void;
 }) {
   const auth = useAuth();
-  const visibleMainNavigation = navigationForCapabilities(auth.capabilities).map((group) => ({ ...group.items[0], section:group.section }));
+  const visibleMainNavigation = navigationForCapabilities(auth.capabilities, auth.activeRole).map((group) => ({ ...group.items[0], section:group.section }));
   return (
     <aside
       className={`fixed inset-y-0 right-0 z-50 hidden flex-col border-l border-slate-200 bg-white shadow-sm transition-[width,padding] duration-200 motion-reduce:transition-none lg:flex ${collapsed ? "w-[4.5rem] p-2" : "w-64 p-3"}`}

@@ -7,17 +7,17 @@ const source = walk(src).map((file) => readFileSync(file, "utf8")).join("\n");
 
 const contracts = {
   auth: ["/auth/login", "/auth/logout", "/auth/me", "/auth/change-password", "/auth/sessions"],
-  dashboard: ["/admin/students/${studentId}/overview", "/admin/advisor-inbox", "/admin/chat/conversations"],
-  live: ["/admin/realtime/students?limit=100", "api.openEvents"],
+  dashboard: ["/dashboard", "/students/${encodeURIComponent(studentId)}/advisor-inbox", "/chat/conversations"],
+  live: ["/live?limit=100", "api.openEvents"],
   chat: ["/chat/conversations/${conversationId}/messages", "/chat/conversations/${conversationId}/read"],
-  planner: ["/admin/plans", "/admin/plans/publish-range", "/admin/tasks/${id}", "/admin/import/preview", "/admin/import/commit", "/admin/import/template", "/admin/export/json"],
-  exams: ["/admin/exams", "/admin/exam-attempt-requests", "/admin/syllabus/${syllabusId}", "/admin/exams/${examId}/syllabus"],
-  questions: ["/admin/exams/${examId}/questions", "/admin/questions/${id}", "/admin/quizzes", "/admin/quizzes/${quizId}/questions"],
-  students: ["/admin/students?limit=", "/reset-password", "/admin/students/${id}/${action}", "/overview", "/learning", "/attempts", "/progress/weekly", "/performance/topics"],
-  subjects: ["/admin/subjects", "/admin/student-subjects/"],
-  reports: ["/admin/reports?studentId="],
+  planner: ["/plans?studentId=", "/plans/publish-range", "/tasks/${id}", "/import/preview", "/import/commit", "/import/template", "/export/json"],
+  exams: ["/exams?studentId=", "/exam-attempt-requests", "/syllabus/${syllabusId}", "/exams/${examId}/syllabus"],
+  questions: ["/exams/${examId}/questions", "/questions/${id}", "/quizzes", "/quizzes/${quizId}/questions"],
+  students: ["/students", "/reset-password", "/students/${id}/${action}", "/overview", "/learning", "/exam-attempts", "/progress/weekly", "/performance/topics"],
+  subjects: ["/subjects", "/students/${studentId}/subjects"],
+  reports: ["/students/${studentId}/reports"],
   notifications: ["/notifications?limit=20", "/notifications/read-all"],
-  system: ["/admin/system/database", "/admin/system/database-backup", "/admin/system/database-restore", "/admin/import/history", "/admin/app-releases", "/admin/audit"],
+  system: ["/system/database", "/system/database-backup", "/system/database-restore", "/import/history", "/app-releases", "/audit"],
 };
 
 const failures = Object.entries(contracts).flatMap(([area, tokens]) => tokens.filter((token) => !source.includes(token)).map((token) => `${area}: ${token}`));

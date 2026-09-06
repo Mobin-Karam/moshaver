@@ -1,63 +1,59 @@
 # Moshaver API v2 migration final report
 
-Date: 2026-09-05
+Date: 2026-09-06
 
 ## Decision
 
-The implementation and migration tooling are complete enough for a controlled staging cutover, but v1 must **not** be retired yet. Keep `/api/v1` and `/api/v2` in parallel until the remaining browser/native and all-role staging checks below are recorded. No v1 source was deleted.
+The repository implementation, contracts, migration tool, parity gates, and local release-quality checks for Prompts 0–28 are complete. It is ready for a controlled staging cutover. v1 remains frozen as rollback evidence and must not be removed until the production cutover and monitoring gate succeeds.
 
-## Backend parity and contracts
+## Delivered architecture
 
-- Backend v2 remains NestJS/Fastify with SQLite/TypeORM and 24 ordered migrations.
-- Identity is explicit: users, roles, capabilities, organizations, active memberships, and typed active relationships are enforced server-side.
-- Role-context dashboards exist for Student, Guardian, Advisor, Teacher, Mentor, Content Manager, Organization Admin, and Platform Admin.
-- Plans/tasks/study, subjects, learning/reviews, assigned exams/server scoring, syllabus/retry/quizzes/mistakes, user notifications/push/SSE, explicit chat membership/groups, guardian views, activity/attention, reports/analytics/recommendations, import/export, releases/database operations, and offline sync have v2 routes.
-- Generated OpenAPI is served at `/api/v2/openapi.json` and interactive docs at `/api/v2/docs`. Runtime inspection found 182 paths, 224 operations, 49 schemas, cookie/CSRF schemes, and 91 capability-annotated operations.
-- `packages/api-contract` centralizes role/capability, envelope/error, pagination, notification, account context, and sync transport contracts without TypeORM entities.
-- `docs/api-migration-manifest.json` is machine-validated and records intentional differences plus frontend integration status.
+- `backend-v2`: NestJS/Fastify, SQLite/TypeORM, 32 ordered migrations, explicit users/roles/capabilities, organizations/memberships, typed relationships, and teacher-subject assignments.
+- Canonical v2 domains cover auth/context, users, organizations, relationships, students, plans/tasks/study, subjects, learning/reviews, exams/questions/assignments/publishing, syllabus/retry/quizzes/mistakes, notifications/push/SSE, direct/group chat, guardian workflows, role dashboards, presence/activity/live monitoring, reports/recovery/analytics/recommendations, import/export, releases/audit/backup-restore, and offline sync.
+- OpenAPI is generated at `/api/v2/openapi.json` with interactive docs at `/api/v2/docs`. Shared transport types live in `packages/api-contract`; persistence entities do not leak into that package.
+- `admin-v2` is pinned to `/api/v2`. Its development backend switch changes host only; there is no runtime v1/v2 API selector. Canonical APIs replace the former `/admin/*` placeholder surface, and capability checks cover routes, navigation, and relevant actions.
+- `student-app-v2` and `student-core` use server-owned student identity and authoritative exam/plan/permission data. Offline mutations use idempotency keys and opaque cursors. The PWA registers v2 push subscriptions, handles push/click events, and reports presence only after authentication.
 
-## Data migration
+## Data migration rehearsal
 
-`backend-v2/scripts/migrate-v1-to-v2.mjs` opens v1.4 SQLite read-only, requires an explicit legacy organization and explicit platform-owner decision, preserves stable IDs, maps only source-backed Advisor/Teacher/Guardian relationships, and does not migrate sessions. It creates `migration-report.json` with required integrity checks.
+`backend-v2/scripts/migrate-v1-to-v2.mjs` opens v1.4 SQLite read-only, requires explicit legacy-organization and platform-owner decisions, preserves stable IDs, maps only source-backed relationships, never migrates sessions, and writes an integrity report.
 
-Against the repository's actual v1.4 database the rehearsal migrated 2 users, 1 student, 37 plans, 958 tasks, 4 study sessions, 3 learning items/6 reviews, 8 exams/24 syllabus rows, 140 quizzes/889 questions/1 attempt, 2 conversations/59 messages, 37 notifications, 6 releases, and 316 audit rows. All integrity checks and foreign-key checks were zero. A second run inserted zero rows.
+The actual repository v1.4 database was migrated into a fresh 32-migration target:
 
-## Admin v2
+| Domain | Migrated rows |
+| --- | ---: |
+| Users / students | 2 / 1 |
+| Plans / tasks / study sessions | 37 / 958 / 4 |
+| Learning items / reviews | 3 / 6 |
+| Exams / syllabus | 8 / 24 |
+| Quizzes / questions / attempts | 140 / 889 / 1 |
+| Conversations / messages | 2 / 59 |
+| Notifications / releases / audit | 37 / 6 / 316 |
 
-- API v2 is now the default; v1 selection remains a development-only rollback switch.
-- Authentication loads `/me/context`; context can switch without logout. Central requests use cookies, CSRF retry, distinct 401 handling, and 403 page/action behavior.
-- Primary routes now have capability guards and desktop/mobile navigation filters capability-protected destinations.
-- User-scoped notification/chat/activity events share the centralized SSE client and invalidate scoped query data.
-- Production build and all 74 unit/component tests pass.
+All report integrity counters and SQLite foreign-key checks were zero. All eight migrated legacy exams are published to preserve their prior visibility semantics. A second migration run inserted zero rows. v1 has no teacher-subject assignment source, so the migration does not fabricate those links; administrators assign them explicitly in v2.
 
-Remaining staging work: exercise every page/action with real Guardian, Advisor, Teacher, Mentor, Content Manager, Organization Admin, and Platform Admin accounts. Some specialized role home/navigation labels reuse shared pages rather than bespoke role-specific screens; that is a UX follow-up, not an authorization fallback.
+## Verification evidence
 
-## Student app v2 and student-core
+- Backend: lint, build, 12 suites / 50 tests, security-matrix E2E, and full student-journey E2E passed.
+- Admin: parity audit passed 12 areas / 46 integrations; 28 test files / 77 tests and production build passed.
+- Browser: Student PWA login/navigation/offline/reconnect passed; the service worker controlled the page and `PushManager` was available. Admin passed 112 route checks across Guardian, Advisor, Teacher, Mentor, Content Manager, Organization Admin, and Platform Admin. Multi-role Advisor-to-Teacher switching changed authorization without re-login.
+- Shared/native: `student-core` passed 7 tests and build. Tauri Cargo check/test/build and Android Gradle check completed successfully in the full project validator.
+- Migration: fresh schema, actual-data migration, zero integrity/FK failures, published-exam compatibility, and repeat-run idempotency passed.
 
-- Boot sequence restores login, loads `/me/context`, rejects non-STUDENT accounts, loads server-owned self data, initializes local state/sync cursor, and connects user-scoped SSE in chat.
-- API calls stay in the client/store and student-core integration boundaries. Self operations do not supply arbitrary student IDs.
-- Offline upload batches include `clientMutationId`; opaque cursors persist in web/Tauri providers and reconciliation refreshes domain state.
-- Exam assignment/deadline/scoring, identity, roles, permissions, relationships, and published plan ownership remain server-authoritative. Local app state/PIN does not grant backend authority.
-- Student-core build and 7 tests pass; student web/PWA production build passes.
+## Honest limits
 
-Remaining device work: Android/Tauri packaging, native notification delivery, process-kill/reconnect, and multi-device/session expiry require the platform toolchains and real devices. These were not represented as passed.
+- Real Web Push delivery was not executed because it requires target-environment VAPID keys and browser permission.
+- Tauri/Android compiled successfully, but no real-device runtime, process-kill recovery, or native-notification delivery test was performed.
+- No production database was replaced and no deployed traffic was switched. Destructive restore testing stays limited to disposable databases.
 
-## Security
+## Production cutover and rollback gate
 
-See `SECURITY_V2_RELEASE_AUDIT.md`. The prior P1 legacy `ADMIN` escalation fallback was removed. The current automated audit has no open P0/P1; the all-role staging HTTP/browser matrix remains a P2 verification task.
+1. Provision production-like staging identities and rerun the role, student, browser, push, and migration checks.
+2. Freeze v1 writes, create and verify an immutable SQLite backup, and migrate into a freshly migrated v2 target.
+3. Require a successful migration report, zero integrity/FK failures, and an idempotent second run.
+4. Switch clients to v2 and monitor login failures, 403/404 changes, sync rejects, SSE reconnects, push delivery, and SQLite health.
+5. Preserve the v1 database and client rollback path through the monitoring window. Retire v1 runtime/source only after an explicit go/no-go review.
 
-## Cutover and rollback gate
+## Future database evolution
 
-1. Provision representative staging accounts and complete the admin/student matrices in `docs/V1_TO_V2_MIGRATION_CHECKLIST.md`.
-2. Run browser PWA and available Tauri/Android tests; record push/native limitations.
-3. Freeze v1 writes for the final window, take an immutable SQLite backup, and migrate into a newly migrated v2 target.
-4. Require a successful report, zero integrity failures, and an idempotent second run.
-5. Switch clients to v2, monitor auth failures, 403s, sync rejects, SSE reconnects, and SQLite health.
-6. Retain both database and client rollback paths. Keep v1 runtime/source frozen as legacy evidence until the monitoring window closes.
-
-## Deprecated aliases and future cleanup
-
-- Platform-only `/api/v2/admin/*` compatibility aliases remain while legacy admin feature calls are measured.
-- The admin development API-version switch remains as rollback tooling; production defaults to v2.
-- After cutover, remove unused aliases, expand generated response decorators, split oversized frontend chunks, and automate the complete role/browser matrix.
-- A future PostgreSQL/Prisma move should be a separate, rehearsed migration after SQLite v2 stabilizes. Preserve UUIDs, membership/relationship constraints, opaque sync semantics, audit history, and transaction boundaries; do not combine it with the v1 retirement event.
+A PostgreSQL/Prisma migration is a separate project after SQLite v2 stabilizes. Preserve UUIDs, membership/relationship/teacher-subject uniqueness, audit history, opaque sync semantics, and transaction boundaries; do not combine it with the v1 retirement event.

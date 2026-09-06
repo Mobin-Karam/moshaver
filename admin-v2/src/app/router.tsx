@@ -56,7 +56,7 @@ function ProtectedRoute() {
   return <Outlet />;
 }
 
-function CapabilityRoute({ capability, children }: { capability: string; children: ReactNode }) {
+export function CapabilityRoute({ capability, children }: { capability: string; children: ReactNode }) {
   const auth = useAuth();
   if (!auth.can(capability)) return <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center text-amber-900"><h2 className="font-bold">دسترسی مجاز نیست</h2><p className="mt-2 text-sm">حساب یا زمینه کاری فعلی مجوز این صفحه را ندارد.</p></div>;
   return <>{children}</>;
@@ -77,18 +77,21 @@ export const router = createBrowserRouter([
           { path: "users", element: <CapabilityRoute capability="users.read"><UsersPage /></CapabilityRoute> },
           { path: "organizations", element: <CapabilityRoute capability="organization.read"><OrganizationsPage /></CapabilityRoute> },
           { path: "planner", element: <CapabilityRoute capability="plans.read"><EducationScreen><PlannerPage /></EducationScreen></CapabilityRoute> },
-          { path: "learning", element: <CapabilityRoute capability="students.read"><EducationScreen><LearningPage /></EducationScreen></CapabilityRoute> },
+          { path: "learning", element: <CapabilityRoute capability="learning.read"><EducationScreen><LearningPage /></EducationScreen></CapabilityRoute> },
           { path: "education", element: <Navigate to="/admin/learning" replace /> },
-          { path: "students/:studentId/learning", element: <CapabilityRoute capability="students.read"><EducationScreen><LearningPage /></EducationScreen></CapabilityRoute> },
+          { path: "students/:studentId/learning", element: <CapabilityRoute capability="learning.read"><EducationScreen><LearningPage /></EducationScreen></CapabilityRoute> },
           { path: "exams", element: <CapabilityRoute capability="exams.read"><EducationScreen><ExamsPage /></EducationScreen></CapabilityRoute> },
           { path: "questions", element: <CapabilityRoute capability="questions.read"><EducationScreen><QuestionsPage /></EducationScreen></CapabilityRoute> },
           { path: "quizzes", element: <CapabilityRoute capability="quizzes.read"><EducationScreen><QuizzesPage /></EducationScreen></CapabilityRoute> },
           { path: "chat", element: <CapabilityRoute capability="chat.read"><ChatPage /></CapabilityRoute> },
           { path: "notifications", element: <NotificationsPage /> },
-          { path: "follow-up", element: <FollowUpPage /> },
+          { path: "follow-up", element: <CapabilityRoute capability="recovery_requests.read"><FollowUpPage /></CapabilityRoute> },
           { path: "reports", element: <CapabilityRoute capability="reports.read"><ReportsPage /></CapabilityRoute> },
           { path: "subjects", element: <CapabilityRoute capability="subjects.read"><EducationScreen><SubjectsPage /></EducationScreen></CapabilityRoute> },
-          { path: "system", element: <CapabilityRoute capability="database.read"><SystemPage /></CapabilityRoute> },
+          { path: "system", element: <CapabilityRoute capability="system.manage"><SystemPage /></CapabilityRoute> },
+          { path: "releases", element: <CapabilityRoute capability="release.read"><SystemPage /></CapabilityRoute> },
+          { path: "database", element: <CapabilityRoute capability="database.read"><SystemPage /></CapabilityRoute> },
+          { path: "audit", element: <CapabilityRoute capability="audit.read"><SystemPage /></CapabilityRoute> },
           { path: "settings", element: <SettingsPage /> },
         ],
       },

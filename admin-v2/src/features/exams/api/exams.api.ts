@@ -22,7 +22,7 @@ export function getRetryRequests(
   studentId: string,
 ) {
   return api.get<RetryRequest[]>(
-    `/admin/exam-attempt-requests?studentId=${encodeURIComponent(studentId)}`,
+    `/exam-attempt-requests?studentId=${encodeURIComponent(studentId)}`,
   );
 }
 
@@ -63,10 +63,10 @@ export function reviewRetryRequest(
   advisorNote: string,
 ) {
   return api.patch(
-    `/admin/exam-attempt-requests/${requestId}`,
+    `/exam-attempt-requests/${requestId}`,
     {
       status,
-      advisorNote,
+      note: advisorNote,
     },
   );
 }
@@ -76,7 +76,7 @@ export function addExamSyllabus(
   data: SyllabusDraft,
 ) {
   return api.post(
-    `/admin/exams/${examId}/syllabus`,
+    `/exams/${examId}/syllabus`,
     data,
   );
 }
@@ -85,7 +85,7 @@ export function deleteExamSyllabus(
   syllabusId: string,
 ) {
   return api.delete(
-    `/admin/syllabus/${syllabusId}`,
+    `/syllabus/${syllabusId}`,
   );
 }
 
@@ -94,7 +94,7 @@ export function setExamPublished(
   published: boolean,
 ) {
   return api.patch(
-    `/admin/exams/${examId}`,
+    `/exams/${examId}`,
     {
       published,
     },
@@ -105,7 +105,7 @@ export function getExamAttemptHistory(
   studentId: string,
 ) {
   return api.get<AttemptSummary[]>(
-    `/admin/students/${studentId}/attempts`,
+    `/students/${studentId}/exam-attempts`,
   );
 }
 
@@ -114,6 +114,6 @@ export function getExamAttemptDetail(
   attemptId: string,
 ) {
   return api.get<AttemptDetail>(
-    `/admin/students/${studentId}/attempts/${attemptId}`,
+    `/students/${studentId}/exam-attempts/${attemptId}`,
   );
 }

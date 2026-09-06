@@ -7,6 +7,7 @@ import { useStudents } from "../../../shared/hooks/useStudents";
 import { normalizePersianText } from "../../../shared/lib/utils";
 import { useModal } from "../../../shared/ui/modal";
 import { useAuth } from "../../auth";
+import { getApiWorkContextKey } from "../../../shared/api/api";
 import { Button, Card } from "../../../shared/ui/ui";
 import {
   archiveStudent,
@@ -177,6 +178,7 @@ export function StudentsPage() {
   const { students } = studentStore;
   const qc = useQueryClient();
   const modal = useModal();
+  const studentsQueryKey = ["students", getApiWorkContextKey()] as const;
 
   const selected = useMemo(
     () =>
@@ -431,7 +433,7 @@ export function StudentsPage() {
   }
 
   function replaceCachedStudent(student: Student) {
-    qc.setQueryData<Student[]>(["students"], (current) => {
+    qc.setQueryData<Student[]>(studentsQueryKey, (current) => {
       if (!Array.isArray(current)) return [student];
       return current.some((item) => item.id === student.id)
         ? current.map((item) => (item.id === student.id ? student : item))
@@ -440,7 +442,7 @@ export function StudentsPage() {
   }
 
   function patchCachedStudent(id: string, patch: Partial<Student>) {
-    qc.setQueryData<Student[]>(["students"], (current) =>
+    qc.setQueryData<Student[]>(studentsQueryKey, (current) =>
       Array.isArray(current)
         ? current.map((student) =>
             student.id === id ? { ...student, ...patch } : student,
@@ -796,7 +798,7 @@ export function StudentsPage() {
             ]}
           />
         ) : null}
-        {detailTab === "profile" ? (
+        {detailTab === "profile" && auth.can("students.update") ? (
           <StudentEditor
             mode="edit"
             form={form}
@@ -815,7 +817,7 @@ export function StudentsPage() {
         {detailTab === "access" ? (
           <StudentAdminAccess selectedId={selectedId} />
         ) : null}
-        {detailTab === "security" ? (
+        {detailTab === "security" && auth.can("students.update") ? (
           <StudentSecurity
             student={selected}
             password={securityPassword}
@@ -875,10 +877,10 @@ export function StudentsPage() {
             if (profileFilter !== "incomplete") setStatus("all");
           }}
         />
-        <Button onClick={startCreate}>
+        {auth.can("students.create") ? <Button onClick={startCreate}>
           <UserPlus size={16} />
           دانش‌آموز جدید
-        </Button>
+        </Button> : null}
       </header>
 
       <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(420px,0.75fr)] 2xl:grid-cols-[minmax(0,1.4fr)_minmax(460px,0.6fr)]">

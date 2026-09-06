@@ -5,7 +5,7 @@ describe("admin navigation metadata", () => {
   it("defines a title and description for every admin destination", () => {
     expect(flatAdminNavigation.map((item) => item.path)).toEqual([
       "", "planner", "learning", "exams", "questions", "quizzes", "subjects",
-      "live", "chat", "notifications", "students", "users", "organizations", "reports", "system", "settings",
+      "live", "chat", "notifications", "students", "users", "organizations", "reports", "system", "releases", "database", "audit", "settings",
     ]);
     expect(flatAdminNavigation.every((item) => item.title && item.description)).toBe(true);
     expect(adminNavigation.every((group) => group.items.length > 0)).toBe(true);
@@ -19,7 +19,14 @@ describe("admin navigation metadata", () => {
     expect(guardian).not.toContain("users");
     expect(guardian).not.toContain("system");
     const platform = navigationForCapabilities(["users.read", "organization.read", "database.read"] as const).flatMap((group) => group.items.map((item) => item.path));
-    expect(platform).toEqual(expect.arrayContaining(["users", "organizations", "system"]));
+    expect(platform).toEqual(expect.arrayContaining(["users", "organizations", "database"]));
+  });
+
+  it("uses guardian-specific labels for the same capability routes", () => {
+    const guardian = navigationForCapabilities(["students.read", "plans.read", "reports.read", "chat.read"], "GUARDIAN").flatMap((group) => group.items);
+    expect(guardian.find((item) => item.path === "students")?.title).toBe("فرزندان");
+    expect(guardian.find((item) => item.path === "planner")?.title).toBe("برنامه");
+    expect(guardian.find((item) => item.path === "settings")?.title).toBe("پروفایل");
   });
 
   it("resolves browser URLs, nested learning locations, and aliases", () => {

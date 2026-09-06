@@ -1,5 +1,6 @@
-import { IsArray, IsDateString, IsNumber, IsOptional, IsString, IsUUID, Min, ValidateNested } from "class-validator";
+import { IsArray, IsBoolean, IsDateString, IsNumber, IsOptional, IsString, IsUUID, Min, ValidateNested } from "class-validator";
 import { Type } from "class-transformer";
+import { PartialType } from "@nestjs/mapped-types";
 
 export class CreateQuestionDto {
   @IsOptional()
@@ -78,6 +79,7 @@ export class CreateExamDto {
   organizationId?: string;
 
   @IsOptional()
+  @IsBoolean()
   published?: boolean;
 
   @IsOptional()
@@ -86,5 +88,7 @@ export class CreateExamDto {
   @Type(() => CreateQuestionDto)
   questions?: CreateQuestionDto[];
 }
+
+export class UpdateExamDto extends PartialType(CreateExamDto) {}
 
 export class AssignExamDto { @IsArray() @IsUUID("4", { each: true }) studentIds!: string[]; }

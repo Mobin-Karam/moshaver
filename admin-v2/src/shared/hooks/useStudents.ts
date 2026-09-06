@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { api } from "../api/api";
+import { API_WORK_CONTEXT_EVENT, api, getApiWorkContextKey } from "../api/api";
 import type { Student } from "../types/domain";
 
 export const STUDENT_SELECTION_EVENT = "admin-selected-student-change";
@@ -34,13 +34,14 @@ async function loadAllStudents() {
 }
 
 export function useStudents() {
+  const [contextKey, setContextKey] = useState(getApiWorkContextKey);
   const [studentId, setStudentIdState] = useState(() =>
     typeof window === "undefined"
       ? ""
       : window.localStorage.getItem("admin-selected-student-id") || "",
   );
   const query = useQuery({
-    queryKey: ["students"],
+    queryKey: ["students", contextKey],
     queryFn: loadAllStudents,
   });
   const students = query.data ?? [];
@@ -61,6 +62,11 @@ export function useStudents() {
         new CustomEvent(STUDENT_SELECTION_EVENT, { detail: next }),
       );
     }
+  }, []);
+  useEffect(() => {
+    const syncContext = () => setContextKey(getApiWorkContextKey());
+    window.addEventListener(API_WORK_CONTEXT_EVENT, syncContext);
+    return () => window.removeEventListener(API_WORK_CONTEXT_EVENT, syncContext);
   }, []);
   useEffect(() => {
     function sync(event: StorageEvent) {

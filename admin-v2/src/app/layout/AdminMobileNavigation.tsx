@@ -30,7 +30,7 @@ export function AdminMobileDrawer({
   onOpenSearch: () => void;
 }) {
   const auth = useAuth();
-  const visibleNavigation = navigationForCapabilities(auth.capabilities);
+  const visibleNavigation = navigationForCapabilities(auth.capabilities, auth.activeRole);
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const dialogRef = useRef<HTMLElement | null>(null);
 
@@ -174,7 +174,7 @@ export function AdminMobileBottomNav({
   selectedStudentId: string;
 }) {
   const auth = useAuth();
-  const visibleMainNavigation = navigationForCapabilities(auth.capabilities).map((group) => ({ ...group.items[0], section:group.section }));
+  const visibleMainNavigation = navigationForCapabilities(auth.capabilities, auth.activeRole).map((group) => ({ ...group.items[0], section:group.section }));
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-slate-200 bg-white/95 px-1 pt-1 shadow-[0_-8px_24px_rgba(15,23,42,0.05)] backdrop-blur lg:hidden"

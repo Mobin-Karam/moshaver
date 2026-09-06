@@ -41,7 +41,7 @@ export function AdminCommandPalette({
 }) {
   const navigate = useNavigate();
   const auth = useAuth();
-  const availableNavigation = useMemo(() => navigationForCapabilities(auth.capabilities).flatMap((group) => group.items.map((item) => ({ ...item, section: group.section }))), [auth.capabilities]);
+  const availableNavigation = useMemo(() => navigationForCapabilities(auth.capabilities, auth.activeRole).flatMap((group) => group.items.map((item) => ({ ...item, section: group.section }))), [auth.capabilities, auth.activeRole]);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const dialogRef = useRef<HTMLElement | null>(null);
   const [query, setQuery] = useState("");

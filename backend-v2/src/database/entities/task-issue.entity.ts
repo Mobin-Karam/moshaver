@@ -22,6 +22,9 @@ export class TaskIssue {
   @Column({ type: "varchar", length: 24, default: "OPEN" })
   status!: string;
 
+  @Column({ length: 2000, default: "" })
+  advisorNote!: string;
+
   @CreateDateColumn()
   createdAt!: Date;
 }

@@ -10,6 +10,7 @@ import {
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useStudentSelection } from "../../../shared/hooks/useStudentSelection";
+import { useAuth } from "../../auth/hooks/useAuth";
 import { fa, normalizePersianText } from "../../../shared/lib/utils";
 import { useModal } from "../../../shared/ui/modal";
 import { notify } from "../../../shared/ui/notifications";
@@ -43,6 +44,10 @@ export function SubjectsPage() {
     ),
     [search, setSearch] = useState(params.get("q") || "");
   const deferredSearch = useDeferredValue(search);
+  const auth = useAuth();
+  const canCreate = auth.can("subjects.create");
+  const canUpdate = auth.can("subjects.update");
+  const canManageStudentSubjects = auth.can("studentSubjects.manage");
   const subjects = useQuery({ queryKey: ["subjects"], queryFn: getSubjects });
   const assigned = useQuery({
     queryKey: ["student-subjects", students.studentId],
@@ -211,9 +216,11 @@ export function SubjectsPage() {
           ) : (
             <div className="flex-1" />
           )}
-          <Button onClick={openCreate}>
-            <BookPlus size={16} /> درس جدید
-          </Button>
+          {canCreate ? (
+            <Button onClick={openCreate}>
+              <BookPlus size={16} /> درس جدید
+            </Button>
+          ) : null}
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <label className="flex h-10 min-w-56 flex-1 items-center gap-2 rounded-md border bg-slate-50 px-3">
@@ -270,7 +277,7 @@ export function SubjectsPage() {
                 <CatalogRow
                   key={row.id}
                   subject={row}
-                  onEdit={() => openCatalogEdit(row)}
+                  onEdit={canUpdate ? () => openCatalogEdit(row) : undefined}
                 />
               ) : (
                 <StudentSubjectEditor
@@ -281,6 +288,7 @@ export function SubjectsPage() {
                     updateStudent.isPending &&
                     updateStudent.variables?.id === row.id
                   }
+                  editable={canManageStudentSubjects}
                 />
               ),
             )}
@@ -302,7 +310,7 @@ function CatalogRow({
   onEdit,
 }: {
   subject: Subject;
-  onEdit: () => void;
+  onEdit?: () => void;
 }) {
   return (
     <article className="flex flex-wrap items-center gap-3 rounded-lg border p-3">
@@ -318,9 +326,11 @@ function CatalogRow({
       <Badge>
         ترتیب {fa(subject.display_order ?? subject.displayOrder ?? 0)}
       </Badge>
-      <Button variant="soft" onClick={onEdit}>
-        <Edit3 size={15} /> ویرایش
-      </Button>
+      {onEdit ? (
+        <Button variant="soft" onClick={onEdit}>
+          <Edit3 size={15} /> ویرایش
+        </Button>
+      ) : null}
     </article>
   );
 }
@@ -328,10 +338,12 @@ function StudentSubjectEditor({
   initial,
   onSave,
   saving,
+  editable,
 }: {
   initial: Subject;
   onSave: (subject: Subject) => void;
   saving: boolean;
+  editable: boolean;
 }) {
   const [subject, setSubject] = useState(initial);
   useEffect(() => setSubject(initial), [initial]);
@@ -348,6 +360,7 @@ function StudentSubjectEditor({
       </div>
       <Field label="وضعیت">
         <Select
+          disabled={!editable}
           value={subject.status || "yellow"}
           onChange={(event) =>
             setSubject({ ...subject, status: event.target.value })
@@ -360,6 +373,7 @@ function StudentSubjectEditor({
       </Field>
       <Field label={`پیشرفت ${fa(subject.progress || 0)}٪`}>
         <Input
+          disabled={!editable}
           type="range"
           min={0}
           max={100}
@@ -371,6 +385,7 @@ function StudentSubjectEditor({
       </Field>
       <Field label="تسلط">
         <Input
+          disabled={!editable}
           value={subject.mastery || ""}
           onChange={(event) =>
             setSubject({ ...subject, mastery: event.target.value })
@@ -380,6 +395,7 @@ function StudentSubjectEditor({
       </Field>
       <Field label="یادداشت مشاور">
         <Textarea
+          disabled={!editable}
           rows={1}
           value={subject.note || ""}
           onChange={(event) =>
@@ -387,14 +403,16 @@ function StudentSubjectEditor({
           }
         />
       </Field>
-      <Button
-        loading={saving}
-        variant={dirty ? "primary" : "soft"}
-        disabled={!dirty || saving}
-        onClick={() => onSave(subject)}
-      >
-        <Save size={15} /> ذخیره
-      </Button>
+      {editable ? (
+        <Button
+          loading={saving}
+          variant={dirty ? "primary" : "soft"}
+          disabled={!dirty || saving}
+          onClick={() => onSave(subject)}
+        >
+          <Save size={15} /> ذخیره
+        </Button>
+      ) : null}
     </article>
   );
 }

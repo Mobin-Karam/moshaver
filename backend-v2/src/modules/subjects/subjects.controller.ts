@@ -1,9 +1,19 @@
-import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from "@nestjs/common";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { RequireCapabilities } from "../../common/decorators/capabilities.decorator";
 import { ok } from "../../common/utils/envelope";
 import { AuthenticatedUser } from "../auth/auth.service";
 import {
+  AssignTeacherSubjectDto,
   CreateSubjectDto,
   UpdateStudentSubjectDto,
   UpdateSubjectDto,
@@ -29,6 +39,27 @@ export class SubjectsController {
     @Body() d: UpdateSubjectDto,
   ) {
     return this.service.update(u, id, d).then(ok);
+  }
+  @Post("subjects/:id/teachers")
+  @RequireCapabilities("organization.members.manage")
+  assignTeacher(
+    @CurrentUser() u: AuthenticatedUser,
+    @Param("id") id: string,
+    @Body() d: AssignTeacherSubjectDto,
+  ) {
+    return this.service.assignTeacher(u, id, d).then(ok);
+  }
+  @Delete("subjects/:id/teachers/:teacherId")
+  @RequireCapabilities("organization.members.manage")
+  unassignTeacher(
+    @CurrentUser() u: AuthenticatedUser,
+    @Param("id") id: string,
+    @Param("teacherId") teacherId: string,
+    @Query("organizationId") organizationId: string,
+  ) {
+    return this.service
+      .unassignTeacher(u, id, teacherId, organizationId)
+      .then(ok);
   }
   @Get("students/:studentId/subjects")
   @RequireCapabilities("studentSubjects.read")

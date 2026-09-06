@@ -9,7 +9,7 @@ export function getStudentLearning(
   studentId: string,
 ) {
   return api.get<LearningResponse>(
-    `/admin/students/${studentId}/learning`,
+    `/students/${studentId}/learning`,
   );
 }
 
@@ -18,7 +18,7 @@ export function createLearningItem(
   values: LearningFormValues,
 ) {
   return api.post(
-    `/admin/students/${studentId}/learning`,
+    `/students/${studentId}/learning`,
     values,
   );
 }
@@ -29,7 +29,7 @@ export function updateLearningItem(
   values: LearningFormValues,
 ) {
   return api.patch(
-    `/admin/students/${studentId}/learning/${itemId}`,
+    `/students/${studentId}/learning/${itemId}`,
     values,
   );
 }
@@ -39,7 +39,7 @@ export function deleteLearningItem(
   itemId: string,
 ) {
   return api.delete(
-    `/admin/students/${studentId}/learning/${itemId}`,
+    `/students/${studentId}/learning/${itemId}`,
   );
 }
 
@@ -48,6 +48,6 @@ export function getLearningReviewHistory(
   itemId: string,
 ) {
   return api.get<LearningReview[]>(
-    `/admin/students/${studentId}/learning/${itemId}/reviews?limit=50`,
+    `/students/${studentId}/learning/${itemId}/reviews?limit=50`,
   );
 }

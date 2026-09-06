@@ -42,7 +42,7 @@ export function AdminLayout() {
 
   const current = resolveAdminNavigation(location.pathname);
   const breadcrumbs = adminBreadcrumbs(location.pathname);
-  const contextual = navigationForCapabilities(auth.capabilities).find((group) => group.section === current.section)?.items || [];
+  const contextual = navigationForCapabilities(auth.capabilities, auth.activeRole).find((group) => group.section === current.section)?.items || [];
   const showContextRail = contextual.length > 1;
   const selectedStudentId = readSelectedStudentId(location.search);
   const contentOffset = adminContentOffsetClass({ showContextRail, mainCollapsed, contextCollapsed });

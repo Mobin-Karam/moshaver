@@ -22,6 +22,9 @@ export class Exam {
   @Column({ default: 1 })
   attemptLimit!: number;
 
+  @Column({ default: false })
+  published!: boolean;
+
   @Column({ type: "datetime", nullable: true })
   startTime?: Date | null;
 

@@ -181,7 +181,10 @@ export function ChatPage() {
       editingId?: string;
     }) =>
       editingId
-        ? api.patch<ChatMessage>(`/chat/messages/${editingId}`, { text: body })
+        ? api.patch<ChatMessage>(
+            `/chat/conversations/${id}/messages/${editingId}`,
+            { text: body },
+          )
         : api.post<ChatMessage>(`/chat/conversations/${id}/messages`, {
             text: body,
             replyToId,
@@ -675,6 +678,7 @@ export function ChatPage() {
                   />
                 ) : messageItems.length ? (
                   <MessageList
+                    conversationId={active.id}
                     items={messageItems}
                     authUserId={auth.user?.id}
                     isGroup={active.type === "group"}

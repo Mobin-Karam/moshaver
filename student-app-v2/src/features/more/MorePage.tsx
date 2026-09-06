@@ -2,6 +2,7 @@ import { BarChart3, KeyRound, LogOut, Monitor, MoonStar, RotateCcw, ShieldCheck 
 import { useEffect, useState, type FormEvent, type InputHTMLAttributes } from 'react';
 import { Link } from 'react-router-dom';
 import { useStudentStore } from '../../services/student-store';
+import { getNotificationPermission, requestNotificationPermission, type NotificationPermission } from '../../services/notification-service';
 
 export function MorePage() {
   const student = useStudentStore((state) => state.student);
@@ -26,12 +27,15 @@ export function MorePage() {
   const saveRecoveryRequestDraft = useStudentStore((state) => state.saveRecoveryRequestDraft);
   const submitNightReport = useStudentStore((state) => state.submitNightReport);
   const submitRecoveryRequest = useStudentStore((state) => state.submitRecoveryRequest);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
 
   useEffect(() => {
     void loadNotifications();
     void loadAuthSessions();
     void loadProfileDomains();
   }, [loadAuthSessions, loadNotifications, loadProfileDomains]);
+
+  useEffect(() => { void getNotificationPermission().then(setNotificationPermission); }, []);
 
   return (
     <section className="space-y-4">
@@ -111,6 +115,12 @@ export function MorePage() {
               <p className="mt-3 rounded-md bg-paper px-3 py-3 text-sm text-ink/60">نشستی برای نمایش وجود ندارد.</p>
             )}
           </div>
+        </div>
+      </article>
+      <article className="surface p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div><h2 className="font-semibold">اعلان دستگاه</h2><p className="mt-1 text-sm text-ink/60">اعلان پایدار سرور با SSE، Push وب یا اعلان بومی دستگاه.</p></div>
+          {notificationPermission === 'granted' ? <span className="rounded-full bg-mint/15 px-3 py-1 text-xs text-mint">فعال</span> : notificationPermission === 'unsupported' ? <span className="text-xs text-ink/50">پشتیبانی نمی‌شود</span> : <button type="button" className="rounded-md bg-ink px-3 py-2 text-sm text-white" onClick={() => void requestNotificationPermission().then(setNotificationPermission)}>فعال‌سازی</button>}
         </div>
       </article>
       <article className="surface p-4">

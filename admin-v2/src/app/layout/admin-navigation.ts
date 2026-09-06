@@ -12,13 +12,15 @@ import {
   Sparkles,
   UsersRound,
   Building2,
+  PackageOpen,
+  ShieldCheck,
 } from "lucide-react";
 
 export const adminNavigation = [
   { section: "خانه", items: [{ path: "", title: "داشبورد", description: "نمای کلی امروز، سلامت سیستم و موارد نیازمند توجه", icon: LayoutDashboard }] },
   { section: "آموزش", items: [
     { path: "planner", title: "برنامه‌ریز", description: "مدیریت برنامه روزانه، هفتگی و وظایف دانش‌آموز", icon: CalendarDays, capability:"plans.read" },
-    { path: "learning", title: "سیستم یادگیری", description: "مدیریت مرورهای فاصله‌دار، تسلط و الگوهای خطای دانش‌آموز", icon: Sparkles, capability:"students.read", aliases: ["education", "students/:studentId/learning"] },
+    { path: "learning", title: "سیستم یادگیری", description: "مدیریت مرورهای فاصله‌دار، تسلط و الگوهای خطای دانش‌آموز", icon: Sparkles, capability:"learning.read", aliases: ["education", "students/:studentId/learning"] },
     { path: "exams", title: "آزمون‌ها", description: "زمان‌بندی، انتشار، تلاش مجدد، بودجه و سؤال‌ها", icon: BookOpenCheck, capability:"exams.read" },
     { path: "questions", title: "بانک سؤال", description: "ساخت، بازبینی و مرتب‌سازی سؤال‌های هر آزمون", icon: GraduationCap, capability:"questions.read" },
     { path: "quizzes", title: "آزمونک‌ها", description: "مدیریت آزمونک‌ها، سؤال‌ها و وضعیت انتشار", icon: BookOpenCheck, capability:"quizzes.read" },
@@ -36,7 +38,10 @@ export const adminNavigation = [
     { path: "reports", title: "گزارش‌ها", description: "گزارش عملکرد، مطالعه و روند پیشرفت دانش‌آموز", icon: LayoutDashboard, capability:"reports.read" },
   ] },
   { section: "سامانه", items: [
-    { path: "system", title: "سیستم و امنیت", description: "پشتیبان‌گیری، سلامت سرویس و رویدادهای امنیتی", icon: Database, capability:"database.read" },
+    { path: "system", title: "سیستم", description: "تنظیمات و سلامت سرویس", icon: Settings, capability:"system.manage" },
+    { path: "releases", title: "انتشارها", description: "نسخه‌ها و انتشار برنامه‌ها", icon: PackageOpen, capability:"release.read" },
+    { path: "database", title: "پایگاه داده", description: "پشتیبان‌گیری و بازیابی کنترل‌شده", icon: Database, capability:"database.read" },
+    { path: "audit", title: "ممیزی", description: "رویدادهای امنیتی و عملیاتی", icon: ShieldCheck, capability:"audit.read" },
     { path: "settings", title: "تنظیمات", description: "موقعیت، تقویم، نشست‌ها و اتصال API", icon: Settings },
   ] },
 ] as const;
@@ -48,8 +53,15 @@ export const mainAdminNavigation = adminNavigation.map((group) => ({
   section: group.section,
 }));
 
-export function navigationForCapabilities(capabilities: readonly string[]) {
-  return adminNavigation.map((group) => ({ ...group, items: group.items.filter((item) => !("capability" in item) || capabilities.includes(item.capability)) })).filter((group) => group.items.length);
+const roleTitles: Record<string,Record<string,string>> = {
+  GUARDIAN: { "": "خانه", students: "فرزندان", reports: "پیشرفت", planner: "برنامه", chat: "پیام‌ها", notifications: "اعلان‌ها", settings: "پروفایل" },
+  TEACHER: { students: "دانش‌آموزان / کلاس‌ها", quizzes: "آزمون‌ها و آزمونک‌ها" },
+  PLATFORM_ADMIN: { "": "داشبورد پلتفرم" },
+};
+
+export function navigationForCapabilities(capabilities: readonly string[], role?: string | null) {
+  const titles = role ? roleTitles[role] : undefined;
+  return adminNavigation.map((group) => ({ ...group, items: group.items.filter((item) => !("capability" in item) || capabilities.includes(item.capability)).map((item) => titles?.[item.path] ? { ...item, title: titles[item.path] } : item) })).filter((group) => group.items.length);
 }
 
 export function normalizeAdminPath(pathname: string) {

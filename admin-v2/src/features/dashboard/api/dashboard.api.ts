@@ -5,12 +5,12 @@ import type {
 } from "../model/dashboard.types";
 
 export function getAdminDashboard() {
-  return api.get<AdminDashboardSummary>("/admin/dashboard");
+  return api.get<AdminDashboardSummary>("/dashboard");
 }
 
 export function getAdminAttention(limit = 50) {
   const safeLimit = Math.min(100, Math.max(1, limit));
   return api.get<AttentionStudent[]>(
-    `/admin/attention?limit=${safeLimit}`,
+    `/attention?limit=${safeLimit}`,
   );
 }

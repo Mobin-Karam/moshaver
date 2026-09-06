@@ -15,7 +15,7 @@ export function useSendMessage(options?: {
   return useMutation({
     mutationFn: (input: SendMessageInput) =>
       input.editingId
-        ? chatApi.edit(input.editingId, input.text)
+        ? chatApi.edit(input.conversationId, input.editingId, input.text)
         : chatApi.send(input.conversationId, input.text, input.replyToId),
     onSuccess: options?.onSuccess,
     onError: (error) => options?.onError?.(error),

@@ -22,4 +22,12 @@ describe("LoginThrottleService", () => {
     expect(JSON.stringify(repo.rows)).not.toContain("Student@Example.com");
     await expect(service.assertAllowed("192.0.2.1", "student@example.com")).rejects.toMatchObject({ response: { error: { code: "LOGIN_THROTTLED" } } });
   });
+
+  it("serializes concurrent failures for the single-process SQLite writer", async () => {
+    const repo = repository();
+    const service = new LoginThrottleService(repo as any, { get: (_key: string, fallback: number) => fallback } as any);
+    await Promise.all(Array.from({ length: 4 }, () => service.failure("192.0.2.2", "same-user")));
+    expect(repo.rows).toHaveLength(3);
+    expect(repo.rows.every((row) => row.attempts === 4)).toBe(true);
+  });
 });

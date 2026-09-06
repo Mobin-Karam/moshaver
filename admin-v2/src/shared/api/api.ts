@@ -26,16 +26,23 @@ export class ApiError extends Error {
 
 const CSRF_KEY = "moshaver_admin_csrf";
 const DEV_BACKEND_KEY = "moshaver_admin_backend";
-const API_VERSION_KEY = "moshaver_admin_api_version";
-export type ApiVersion = "v1" | "v2";
 type AuthFailureListener = (error: ApiError) => void;
 const authFailureListeners = new Set<AuthFailureListener>();
 let activeOrganizationId = "";
 let activeWorkRole = "";
+export const API_WORK_CONTEXT_EVENT = "admin-api-work-context-change";
 
 export function setApiWorkContext(role?: string, organizationId?: string) {
-  activeWorkRole = role?.trim() || "";
-  activeOrganizationId = organizationId?.trim() || "";
+  const nextRole = role?.trim() || "";
+  const nextOrganizationId = organizationId?.trim() || "";
+  if (nextRole === activeWorkRole && nextOrganizationId === activeOrganizationId) return;
+  activeWorkRole = nextRole;
+  activeOrganizationId = nextOrganizationId;
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(API_WORK_CONTEXT_EVENT));
+}
+
+export function getApiWorkContextKey() {
+  return `${activeWorkRole || "none"}:${activeOrganizationId || "global"}`;
 }
 
 export const backendTargets = {
@@ -45,24 +52,12 @@ export const backendTargets = {
 
 export type BackendTarget = keyof typeof backendTargets;
 
-function configuredApiVersion(): ApiVersion {
-  return import.meta.env.VITE_API_VERSION === "v1" ? "v1" : "v2";
-}
-
-export function getSelectedApiVersion(): ApiVersion {
-  if (typeof window === "undefined") return configuredApiVersion();
-  const saved = window.localStorage.getItem(API_VERSION_KEY);
-  return saved === "v1" || saved === "v2" ? saved : configuredApiVersion();
-}
-
-export function setSelectedApiVersion(version: ApiVersion) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(API_VERSION_KEY, version);
-  document.cookie = `${API_VERSION_KEY}=${version}; Path=/; SameSite=Lax; Max-Age=31536000`;
+export function getSelectedApiVersion(): "v2" {
+  return "v2";
 }
 
 function versionedPath() {
-  return `/api/${getSelectedApiVersion()}`;
+  return "/api/v2";
 }
 
 function isBackendTarget(value: string | null): value is BackendTarget {
@@ -152,7 +147,7 @@ export async function request<T>(
   if (isMutating(method) && token) headers.set("X-CSRF-Token", token);
 
   try {
-    const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    const response = await fetch(`${getBackendTargetUrl()}${path}`, {
       method,
       headers,
       credentials: "include",
@@ -204,7 +199,7 @@ export const api = {
   patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
   delete: <T>(path: string) => request<T>("DELETE", path),
   async download(path: string) {
-    const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    const response = await fetch(`${getBackendTargetUrl()}${path}`, {
       method: "POST",
       credentials: "include",
       headers: csrf() ? { "X-CSRF-Token": csrf() } : undefined,
@@ -220,7 +215,7 @@ export const api = {
     };
   },
   async uploadBinary<T>(path: string, body: Blob) {
-    const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    const response = await fetch(`${getBackendTargetUrl()}${path}`, {
       method: "POST",
       credentials: "include",
       headers: {
