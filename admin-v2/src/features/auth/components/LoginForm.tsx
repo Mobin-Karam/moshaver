@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Clipboard,
   Eye,
   EyeOff,
 } from "lucide-react";
@@ -17,6 +16,7 @@ import {
   loginSchema,
   type LoginFormValues,
 } from "../model/login.schema";
+import { DemoAccountPicker } from "./DemoAccountPicker";
 
 export function LoginForm() {
   const auth = useAuth();
@@ -104,34 +104,7 @@ export function LoginForm() {
         </div>
       </Field>
 
-      {import.meta.env.DEV ? (
-        <div className="rounded-md border border-dashed p-3">
-          <span className="text-xs text-slate-500">
-            رمزهای آماده محیط توسعه
-          </span>
-
-          <div className="mt-2 flex flex-wrap gap-2">
-            {["Admin123456!", "anonymous"].map(
-              (password) => (
-                <button
-                  key={password}
-                  type="button"
-                  className="flex items-center gap-1 rounded bg-slate-100 px-2 py-1 text-xs"
-                  onClick={() => {
-                    setValue("password", password);
-                    void navigator.clipboard?.writeText(
-                      password,
-                    );
-                  }}
-                >
-                  <Clipboard size={13} />
-                  {password}
-                </button>
-              ),
-            )}
-          </div>
-        </div>
-      ) : null}
+      {import.meta.env.DEV ? <DemoAccountPicker onSelect={(username,password)=>{setValue("username",username,{shouldValidate:true});setValue("password",password,{shouldValidate:true});setError("");}}/> : null}
 
       {auth.message || error ? (
         <p

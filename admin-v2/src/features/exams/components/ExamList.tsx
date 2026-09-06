@@ -23,6 +23,7 @@ export function ExamList({
   onToggle,
   onAddSyllabus,
   onDeleteSyllabus,
+  showQuestions=false,
 }: {
   exams: Exam[];
   filtered: Exam[];
@@ -32,28 +33,29 @@ export function ExamList({
   error: boolean;
   toggleBusyId?: string;
   onRetry: () => void;
-  onSelectAll: (
+  onSelectAll?: (
     checked: boolean,
   ) => void;
-  onCheck: (
+  onCheck?: (
     examId: string,
     checked: boolean,
   ) => void;
-  onEdit: (
+  onEdit?: (
     exam: Exam,
   ) => void;
-  onDelete: (
+  onDelete?: (
     exam: Exam,
   ) => void;
-  onToggle: (
+  onToggle?: (
     exam: Exam,
   ) => void;
-  onAddSyllabus: (
+  onAddSyllabus?: (
     exam: Exam,
   ) => void;
-  onDeleteSyllabus: (
+  onDeleteSyllabus?: (
     id: string,
   ) => void;
+  showQuestions?: boolean;
 }) {
   void exams;
 
@@ -66,7 +68,7 @@ export function ExamList({
   return (
     <Card>
       <div className="mb-3 flex items-center justify-between">
-        <label className="flex items-center gap-2 text-sm">
+        {onSelectAll?<label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
             checked={allSelected}
@@ -77,7 +79,7 @@ export function ExamList({
             }
           />{" "}
           انتخاب همه نتایج
-        </label>
+        </label>:<span className="text-sm font-bold">فهرست آزمون‌ها</span>}
 
         <Badge tone="blue">
           {filtered.length} آزمون
@@ -120,38 +122,39 @@ export function ExamList({
                 checked={selected.includes(
                   exam.id,
                 )}
-                onCheck={(
+                onCheck={onCheck ? (
                   checked,
                 ) =>
                   onCheck(
                     exam.id,
                     checked,
                   )
-                }
-                onEdit={() =>
+                : undefined}
+                onEdit={onEdit ? () =>
                   onEdit(exam)
-                }
-                onDelete={() =>
+                : undefined}
+                onDelete={onDelete ? () =>
                   onDelete(exam)
-                }
-                onToggle={() =>
+                : undefined}
+                onToggle={onToggle ? () =>
                   onToggle(exam)
-                }
+                : undefined}
                 toggleBusy={
                   toggleBusyId ===
                   exam.id
                 }
-                onAddSyllabus={() =>
+                onAddSyllabus={onAddSyllabus ? () =>
                   onAddSyllabus(
                     exam,
                   )
-                }
+                : undefined}
                 onDeleteSyllabus={
                   onDeleteSyllabus
                 }
                 studentId={
                   studentId
                 }
+                showQuestions={showQuestions}
               />
             ),
           )}

@@ -87,12 +87,12 @@ export function AdminMobileDrawer({
       />
       <aside
         ref={dialogRef}
-        className="absolute inset-y-0 right-0 flex w-[min(90vw,22rem)] flex-col border-l border-slate-200 bg-white shadow-2xl"
+        className="absolute inset-y-0 right-0 flex w-[min(90vw,22rem)] flex-col border-l border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950"
         role="dialog"
         aria-modal="true"
         aria-label="منوی مدیریت"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 p-3">
+        <div className="flex items-center justify-between border-b border-slate-200 p-3 dark:border-slate-800">
           <div className="min-w-0">
             <strong className="block truncate text-base">Moshaver | مشاور</strong>
             <p className="text-[11px] text-slate-500">پنل مدیریت</p>
@@ -108,7 +108,7 @@ export function AdminMobileDrawer({
           </button>
         </div>
 
-        <div className="border-b border-slate-200 p-3">
+        <div className="border-b border-slate-200 p-3 dark:border-slate-800">
           <button
             type="button"
             className="flex h-11 w-full items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-right text-xs font-semibold text-slate-500 outline-none transition hover:bg-white focus-visible:ring-2 focus-visible:ring-brand"
@@ -177,7 +177,7 @@ export function AdminMobileBottomNav({
   const visibleMainNavigation = navigationForCapabilities(auth.capabilities, auth.activeRole).map((group) => ({ ...group.items[0], section:group.section }));
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-slate-200 bg-white/95 px-1 pt-1 shadow-[0_-8px_24px_rgba(15,23,42,0.05)] backdrop-blur lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-slate-200 bg-white/95 px-1 pt-1 shadow-[0_-8px_24px_rgba(15,23,42,0.05)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 lg:hidden"
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.25rem)" }}
       aria-label="مسیرهای اصلی مدیریت"
     >

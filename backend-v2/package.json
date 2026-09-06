@@ -14,8 +14,9 @@
     "migration:revert": "typeorm-ts-node-commonjs -d src/database/data-source.ts migration:revert",
     "migrate:v1": "node scripts/migrate-v1-to-v2.mjs",
     "seed": "npm run build && node dist/database/seeds/seed.js",
-    "seed:e2e": "npm run build && node dist/database/seeds/security-matrix.js"
-    ,"test:e2e:security": "node scripts/security-matrix-e2e.mjs",
+    "seed:e2e": "npm run build && node dist/database/seeds/security-matrix.js",
+    "seed:demo": "npm run build && NODE_ENV=development ALLOW_E2E_SEED=true node dist/database/seeds/security-matrix.js",
+    "test:e2e:security": "node scripts/security-matrix-e2e.mjs",
     "test:e2e:student": "node scripts/student-journey-e2e.mjs"
   },
   "dependencies": {

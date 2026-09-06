@@ -18,11 +18,13 @@ export function useExamsData({
   search,
   status,
   visibility,
+  canReadRetries=true,
 }: {
   studentId: string;
   search: string;
   status: ExamFilterStatus;
   visibility: ExamVisibilityFilter;
+  canReadRetries?: boolean;
 }) {
   const queryClient =
     useQueryClient();
@@ -42,7 +44,7 @@ export function useExamsData({
       "exam-retry",
       studentId,
     ],
-    enabled: !!studentId,
+    enabled: !!studentId && canReadRetries,
     queryFn: () =>
       getRetryRequests(studentId),
   });

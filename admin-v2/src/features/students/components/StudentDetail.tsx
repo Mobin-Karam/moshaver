@@ -20,7 +20,7 @@ import {
   type StudentDetailTab,
 } from "./student-ui";
 
-const tabs = [
+const tabOptions = [
   ["overview", "نمای کلی", LayoutGrid],
   ["activity", "فعالیت", Activity],
   ["profile", "پروفایل", Pencil],
@@ -35,6 +35,7 @@ export function StudentDetail({
   onBack,
   children,
   dirty = false,
+  visibleTabs,
 }: {
   student: Student;
   tab: StudentDetailTab;
@@ -42,6 +43,7 @@ export function StudentDetail({
   onBack: () => void;
   children: ReactNode;
   dirty?: boolean;
+  visibleTabs?: readonly StudentDetailTab[];
 }) {
   const [copied, setCopied] = useState<"id" | "username" | "">("");
   const status = studentStatusCopy[getStudentStatus(student)];
@@ -152,7 +154,7 @@ export function StudentDetail({
         aria-label="بخش‌های پرونده دانش‌آموز"
       >
         <div className="flex min-w-max items-center gap-1">
-          {tabs.map(([value, label, Icon]) => (
+          {tabOptions.filter(([value])=>!visibleTabs||visibleTabs.includes(value)).map(([value, label, Icon]) => (
             <button
               key={value}
               type="button"

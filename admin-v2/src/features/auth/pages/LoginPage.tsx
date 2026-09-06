@@ -15,7 +15,7 @@ export function LoginPage() {
 
   return (
     <main className="grid min-h-screen place-items-center bg-paper p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-2xl">
         <div className="mb-5 flex items-center gap-3">
           <span className="grid size-11 place-items-center rounded-md bg-brand text-white">
             <LockKeyhole />
@@ -23,7 +23,7 @@ export function LoginPage() {
 
           <div>
             <p className="text-xs font-bold tracking-widest text-brand">
-              MOSHAVER ADVISOR
+              MOSHAVER PORTAL
             </p>
 
             <h1 className="text-xl font-black">
@@ -33,7 +33,7 @@ export function LoginPage() {
         </div>
 
         <p className="mb-4 text-sm text-slate-500">
-          برنامه‌ریزی، آزمون، فعالیت زنده و تحلیل دانش‌آموز با نشست امن.
+          درگاه امن خانواده، مشاوران، دبیران و مدیران برای پیگیری آموزش و عملیات.
         </p>
 
         <BackendHealthStatus />

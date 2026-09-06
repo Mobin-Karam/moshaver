@@ -33,13 +33,13 @@ export function LearningList({
   onFilterChange: (
     value: LearningFilter,
   ) => void;
-  onEdit: (
+  onEdit?: (
     item: LearningItem,
   ) => void;
   onHistory: (
     item: LearningItem,
   ) => void;
-  onDelete: (
+  onDelete?: (
     item: LearningItem,
   ) => void;
 }) {
@@ -71,17 +71,17 @@ export function LearningList({
                 formatDate={
                   formatDate
                 }
-                onEdit={() =>
+                onEdit={onEdit ? () =>
                   onEdit(item)
-                }
+                : undefined}
                 onHistory={() =>
                   onHistory(
                     item,
                   )
                 }
-                onDelete={() =>
+                onDelete={onDelete ? () =>
                   onDelete(item)
-                }
+                : undefined}
               />
             ),
           )}

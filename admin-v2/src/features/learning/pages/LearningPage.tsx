@@ -13,8 +13,10 @@ import { useLearningMutations } from "../hooks/useLearningMutations";
 import { useLearningPageState } from "../hooks/useLearningPageState";
 import type { LearningItem } from "../model/learning-model";
 import { notifications, notify } from "../../../shared/ui/notifications";
+import { useAuth } from "../../auth";
 
 export function LearningPage() {
+  const auth=useAuth();
   const state = useLearningPageState();
 
   const modal = useModal();
@@ -159,7 +161,7 @@ export function LearningPage() {
         students={state.students.students}
         studentId={state.studentId}
         onStudentChange={(id) => state.updateLocation(id)}
-        onCreate={() => openEditor()}
+        onCreate={auth.can("learning.create")?() => openEditor():undefined}
       />
 
       {!state.studentId ? (
@@ -186,9 +188,9 @@ export function LearningPage() {
               formatDate={formatDate}
               onSearchChange={state.changeSearch}
               onFilterChange={state.changeFilter}
-              onEdit={openEditor}
+              onEdit={auth.can("learning.update")?openEditor:undefined}
               onHistory={openHistory}
-              onDelete={confirmDelete}
+              onDelete={auth.can("learning.update")?confirmDelete:undefined}
             />
 
             <LearningSidebar summary={data.summary} />

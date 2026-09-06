@@ -23,7 +23,7 @@ export function LearningHeader({
   onStudentChange: (
     id: string,
   ) => void;
-  onCreate: () => void;
+  onCreate?: () => void;
 }) {
   return (
     <Card className="flex flex-wrap items-center gap-3 p-3">
@@ -37,13 +37,12 @@ export function LearningHeader({
         />
       </div>
 
-      <Button
-        onClick={onCreate}
-        disabled={!studentId}
-      >
-        <Plus size={17} />
-        مرور جدید
-      </Button>
+      {onCreate ? (
+        <Button onClick={onCreate} disabled={!studentId}>
+          <Plus size={17} />
+          مرور جدید
+        </Button>
+      ) : null}
     </Card>
   );
 }

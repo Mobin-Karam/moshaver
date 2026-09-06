@@ -11,7 +11,7 @@ export function StudentSupportWorkspace({ studentId }: { studentId: string }) {
   const auth = useAuth();
   const qc = useQueryClient();
   const [draft, setDraft] = useState({ title: "", reason: "", type: "FOLLOW_UP" });
-  const analytics = useQuery({ queryKey: ["student-analytics", studentId], queryFn: () => getStudentAnalytics(studentId) });
+  const analytics = useQuery({ queryKey: ["student-analytics", studentId], queryFn: () => getStudentAnalytics(studentId), enabled: auth.can("analytics.read") });
   const recommendations = useQuery({ queryKey: ["student-recommendations", studentId], queryFn: () => getStudentRecommendations(studentId), enabled: auth.can("recommendations.read") });
   const mistakes = useQuery({ queryKey: ["student-mistakes", studentId], queryFn: () => getStudentMistakes(studentId), enabled: auth.can("mistakes.read") });
   const create = useMutation({
@@ -21,6 +21,7 @@ export function StudentSupportWorkspace({ studentId }: { studentId: string }) {
   const failed = analytics.isError || recommendations.isError || mistakes.isError;
   const retry = () => { void analytics.refetch(); if (auth.can("recommendations.read")) void recommendations.refetch(); if (auth.can("mistakes.read")) void mistakes.refetch(); };
 
+  if(!auth.can("analytics.read")&&!auth.can("recommendations.read")&&!auth.can("mistakes.read"))return null;
   return <section className="mt-4 grid gap-3" aria-labelledby="support-heading">
     <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 id="support-heading" className="text-sm font-black text-ink">مرکز تحلیل و پیگیری</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">تحلیل عملکرد، خطاهای نیازمند مرور و پیشنهادهای تیم آموزشی</p></div>{failed?<Button variant="ghost" className="h-8 px-2.5 text-xs" onClick={retry}><RefreshCw size={14}/>تلاش دوباره</Button>:null}</div>
     {analytics.isLoading?<div className="h-28 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800"/>:analytics.isError?<div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300">تحلیل عملکرد دریافت نشد.</div>:<div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">{[

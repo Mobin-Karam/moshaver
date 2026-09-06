@@ -27,9 +27,9 @@ export function LearningRow({
   formatDate: (
     value?: string | Date,
   ) => string;
-  onEdit: () => void;
+  onEdit?: () => void;
   onHistory: () => void;
-  onDelete: () => void;
+  onDelete?: () => void;
 }) {
   const due =
     isLearningDue(
@@ -89,23 +89,23 @@ export function LearningRow({
         </div>
 
         <div className="flex gap-1">
-          <Button
+          {onEdit?<Button
             className="size-9 p-0"
             variant="ghost"
             aria-label="تاریخچه مرور"
             onClick={onHistory}
           >
             <History size={15} />
-          </Button>
+          </Button>:null}
 
-          <Button
+          {onDelete?<Button
             className="size-9 p-0"
             variant="ghost"
             aria-label="ویرایش"
             onClick={onEdit}
           >
             <Edit3 size={15} />
-          </Button>
+          </Button>:null}
 
           <Button
             className="size-9 p-0 text-rose-700"

@@ -21,9 +21,9 @@ export function ExamsHeader({
   onStudentChange: (
     id: string,
   ) => void;
-  onCreate: () => void;
+  onCreate?: () => void;
   onHistory: () => void;
-  onMore: () => void;
+  onMore?: () => void;
 }) {
   return (
     <header className="flex justify-end">
@@ -38,22 +38,22 @@ export function ExamsHeader({
           />
         </div>
 
-        <Button
+        {onCreate?<Button
           disabled={!studentId}
           onClick={onCreate}
         >
           <Plus size={16} />
           آزمون
-        </Button>
+        </Button>:null}
 
-        <Button
+        {onMore?<Button
           variant="soft"
           disabled={!studentId}
           onClick={onHistory}
         >
           <History size={16} />
           سابقه
-        </Button>
+        </Button>:null}
 
         <Button
           variant="soft"

@@ -1,8 +1,8 @@
 import { api } from "../../../shared/api/api";
 import type {
-  AdminDashboardSummary,
   AttentionReason,
   AttentionStudent,
+  RoleDashboardData,
 } from "../model/dashboard.types";
 
 type AttentionSignal = {
@@ -63,7 +63,7 @@ export function normalizeAttentionStudent(
 }
 
 export function getAdminDashboard() {
-  return api.get<AdminDashboardSummary>("/dashboard");
+  return api.get<RoleDashboardData>("/dashboard");
 }
 
 export function getAdminAttention(limit = 50) {

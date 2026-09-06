@@ -58,7 +58,7 @@ function ProtectedRoute() {
 
 export function CapabilityRoute({ capability, children }: { capability: string; children: ReactNode }) {
   const auth = useAuth();
-  if (!auth.can(capability)) return <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center text-amber-900"><h2 className="font-bold">دسترسی مجاز نیست</h2><p className="mt-2 text-sm">حساب یا زمینه کاری فعلی مجوز این صفحه را ندارد.</p></div>;
+  if (!auth.can(capability)) return <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200"><h2 className="font-bold">این ابزار در نقش فعال شما نیست</h2><p className="mt-2 text-sm">از منوی حساب می‌توانید زمینه کاری را تغییر دهید یا به میز کار خود برگردید.</p><a href="/admin" className="mt-4 inline-flex h-10 items-center rounded-xl bg-brand px-4 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand/20">بازگشت به میز کار</a></div>;
   return <>{children}</>;
 }
 

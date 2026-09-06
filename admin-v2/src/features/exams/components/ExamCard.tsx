@@ -29,21 +29,23 @@ export function ExamCard({
   onAddSyllabus,
   onDeleteSyllabus,
   studentId,
+  showQuestions=false,
 }: {
   exam: Exam;
   checked: boolean;
-  onCheck: (
+  onCheck?: (
     value: boolean,
   ) => void;
-  onEdit: () => void;
-  onDelete: () => void;
-  onToggle: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onToggle?: () => void;
   toggleBusy: boolean;
-  onAddSyllabus: () => void;
-  onDeleteSyllabus: (
+  onAddSyllabus?: () => void;
+  onDeleteSyllabus?: (
     id: string,
   ) => void;
   studentId: string;
+  showQuestions?: boolean;
 }) {
   const {
     formatDate,
@@ -56,7 +58,7 @@ export function ExamCard({
   return (
     <article className="rounded-lg border border-slate-200 p-4">
       <div className="flex items-start gap-3">
-        <input
+        {onCheck?<input
           type="checkbox"
           checked={checked}
           onChange={(event) =>
@@ -64,7 +66,7 @@ export function ExamCard({
               event.target.checked,
             )
           }
-        />
+        />:null}
 
         <div className="min-w-0 flex-1">
           <strong className="block truncate">
@@ -133,16 +135,16 @@ export function ExamCard({
       </p>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        <Button
+        {onEdit?<Button
           className="h-8 px-2 text-xs"
           variant="soft"
           onClick={onEdit}
         >
           <Pencil size={14} />
           ویرایش
-        </Button>
+        </Button>:null}
 
-        <Link
+        {showQuestions?<Link
           to={`/admin/questions?examId=${encodeURIComponent(
             exam.id,
           )}&studentId=${encodeURIComponent(
@@ -155,9 +157,9 @@ export function ExamCard({
           >
             سؤال‌ها
           </Button>
-        </Link>
+        </Link>:null}
 
-        <Button
+        {onToggle?<Button
           className="h-8 px-2 text-xs"
           variant="ghost"
           loading={toggleBusy}
@@ -166,15 +168,15 @@ export function ExamCard({
           {exam.published
             ? "پیش‌نویس"
             : "انتشار"}
-        </Button>
+        </Button>:null}
 
-        <Button
+        {onDelete?<Button
           className="h-8 px-2"
           variant="danger"
           onClick={onDelete}
         >
           <Trash2 size={14} />
-        </Button>
+        </Button>:null}
       </div>
 
       {exam.published &&
@@ -196,7 +198,7 @@ export function ExamCard({
             )
           </strong>
 
-          <button
+          {onAddSyllabus?<button
             type="button"
             className="text-xs text-brand"
             onClick={(event) => {
@@ -205,7 +207,7 @@ export function ExamCard({
             }}
           >
             + افزودن
-          </button>
+          </button>:null}
         </summary>
 
         <div className="mt-2">
@@ -228,7 +230,7 @@ export function ExamCard({
                     : ""}
                 </span>
 
-                <button
+                {onDeleteSyllabus?<button
                   className="text-rose-700"
                   onClick={() =>
                     onDeleteSyllabus(
@@ -237,7 +239,7 @@ export function ExamCard({
                   }
                 >
                   حذف
-                </button>
+                </button>:null}
               </div>
             ),
           )}

@@ -138,6 +138,7 @@ function FeedbackBanner({
 
 export function StudentsPage() {
   const auth = useAuth();
+  const visibleDetailTabs:StudentDetailTab[]=["overview","activity","access",...(auth.can("students.update")?["profile" as const,"security" as const]:[])];
   const [searchParams, setSearchParams] = useSearchParams();
   const studentStore = useStudents();
   const [search, setSearch] = useState(() => searchParams.get("q") || "");
@@ -573,12 +574,12 @@ export function StudentsPage() {
     mode === "edit" && !!selectedId && detailTab === "activity";
   const learning = useQuery({
     queryKey: ["student-learning", selectedId],
-    enabled: activityEnabled,
+    enabled: activityEnabled && auth.can("learning.read"),
     queryFn: () => getStudentLearning(selectedId),
   });
   const attempts = useQuery({
     queryKey: ["student-attempts", selectedId],
-    enabled: activityEnabled,
+    enabled: activityEnabled && auth.can("exams.read"),
     queryFn: () => getStudentAttempts(selectedId),
   });
   const weekly = useQuery({
@@ -629,6 +630,7 @@ export function StudentsPage() {
   useEffect(() => {
     setPage(1);
   }, [profileFilter, deferredSearch, sort, sortDirection, status, pageSize]);
+  useEffect(()=>{if(!visibleDetailTabs.includes(detailTab))setDetailTab("overview");},[detailTab,auth.activeRole]);
   useEffect(() => {
     if (page > pageCount) setPage(pageCount);
   }, [page, pageCount]);
@@ -744,11 +746,18 @@ export function StudentsPage() {
 
   const retryActivity = () =>
     void Promise.all([
-      learning.refetch(),
-      attempts.refetch(),
+      ...(auth.can("learning.read") ? [learning.refetch()] : []),
+      ...(auth.can("exams.read") ? [attempts.refetch()] : []),
       weekly.refetch(),
       topics.refetch(),
     ]);
+
+  const activityValues = [
+    ...(auth.can("learning.read") ? [{ label:"موارد یادگیری", value:learning.data?.summary.totalItems||0, loading:learning.isLoading, error:learning.isError, hint:"داده بخش یادگیری" }] : []),
+    ...(auth.can("exams.read") ? [{ label:"تلاش آزمون", value:countData(attempts.data), loading:attempts.isLoading, error:attempts.isError, hint:"تعداد تلاش‌های ثبت‌شده" }] : []),
+    { label:"روزهای هفتگی", value:countData(weekly.data), loading:weekly.isLoading, error:weekly.isError, hint:"داده پیشرفت هفتگی" },
+    { label:"موضوع عملکرد", value:countData(topics.data), loading:topics.isLoading, error:topics.isError, hint:"موضوع‌های تحلیل‌شده" },
+  ];
 
   const detailContent = selected ? (
     <>
@@ -767,36 +776,7 @@ export function StudentsPage() {
         {detailTab === "activity" ? (
           <><StudentInsights
             onRetry={retryActivity}
-            values={[
-              {
-                label: "موارد یادگیری",
-                value: learning.data?.summary.totalItems || 0,
-                loading: learning.isLoading,
-                error: learning.isError,
-                hint: "داده بخش یادگیری",
-              },
-              {
-                label: "تلاش آزمون",
-                value: countData(attempts.data),
-                loading: attempts.isLoading,
-                error: attempts.isError,
-                hint: "تعداد تلاش‌های ثبت‌شده",
-              },
-              {
-                label: "روزهای هفتگی",
-                value: countData(weekly.data),
-                loading: weekly.isLoading,
-                error: weekly.isError,
-                hint: "داده پیشرفت هفتگی",
-              },
-              {
-                label: "موضوع عملکرد",
-                value: countData(topics.data),
-                loading: topics.isLoading,
-                error: topics.isError,
-                hint: "موضوع‌های تحلیل‌شده",
-              },
-            ]}
+            values={activityValues}
           /><StudentSupportWorkspace studentId={selectedId} /></>
         ) : null}
         {detailTab === "profile" && auth.can("students.update") ? (
@@ -956,6 +936,7 @@ export function StudentsPage() {
               onTabChange={setDetailTab}
               onBack={showDirectory}
               dirty={dirty}
+              visibleTabs={visibleDetailTabs}
             >
               {detailContent}
             </StudentDetail>

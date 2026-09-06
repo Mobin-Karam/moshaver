@@ -74,8 +74,11 @@ import type {
 } from "../model/planner.types";
 import { PlannerMoreMenu } from "../components/PlannerMoreMenu";
 import { PlannerFilterPopover } from "../components/PlannerFilterPopover";
+import { useAuth } from "../../auth";
 
 export function PlannerPage() {
+  const auth=useAuth();
+  const canManage=auth.can("plans.create")||auth.can("plans.update");
   const students = useStudentSelection(),
     modal = useModal(),
     qc = useQueryClient(),
@@ -212,7 +215,7 @@ export function PlannerPage() {
   ]);
   const exams = useQuery({
     queryKey: ["exams", students.studentId],
-    enabled: !!students.studentId,
+    enabled: !!students.studentId && canManage && auth.can("exams.read"),
     queryFn: () => getPlannerExams(students.studentId),
   });
   const visiblePlans = useMemo(
@@ -438,7 +441,7 @@ export function PlannerPage() {
         setPaletteOpen(true);
         return;
       }
-      if (event.key.toLowerCase() === "n") {
+      if (event.key.toLowerCase() === "n"&&canManage) {
         event.preventDefault();
         requestQuickAdd(date);
       } else if (event.key.toLowerCase() === "t") setDate(todayIso());
@@ -527,15 +530,15 @@ export function PlannerPage() {
               setTaskFilter(value);
             }}
           />
-          <Button
+          {canManage?<Button
             className="h-9"
             disabled={!students.studentId}
             onClick={() => requestQuickAdd(date)}
           >
             <Plus size={16} />
             فعالیت جدید
-          </Button>
-          <PlannerMoreMenu
+          </Button>:null}
+          {canManage?<PlannerMoreMenu
             onClose={() => setMoreOpen(false)}
             onPlan={() => {
               setMoreOpen(false);
@@ -572,7 +575,7 @@ export function PlannerPage() {
                 ),
               });
             }}
-          />
+          />:null}
         </div>
         {filter !== "all" ? (
           <div className="mt-2 flex items-center gap-2">
@@ -658,6 +661,7 @@ export function PlannerPage() {
           </div>
         ) : (
           <PlannerCanvas
+            readOnly={!canManage}
             mode={mode}
             date={date}
             range={range}
@@ -689,7 +693,7 @@ export function PlannerPage() {
           />
         )}
       </Card>
-      {drawer ? (
+      {drawer&&canManage ? (
         <TaskDrawer
           title={drawer.task?.id ? "ویرایش فعالیت" : "فعالیت جدید"}
           onClose={() => setDrawer(null)}
@@ -740,13 +744,14 @@ export function PlannerPage() {
             setPaletteOpen(false);
           }}
           onTask={(plan, task) => {
-            setDrawer({ plan, task });
+            if(canManage)setDrawer({ plan, task });
+            else { setDate(plan.planDate); setMode("day"); }
             setPaletteOpen(false);
           }}
-          onCreate={() => {
+          onCreate={canManage?() => {
             requestQuickAdd(date);
             setPaletteOpen(false);
-          }}
+          }:undefined}
         />
       ) : null}
     </div>

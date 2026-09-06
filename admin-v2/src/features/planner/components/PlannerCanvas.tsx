@@ -16,6 +16,7 @@ import {
 } from "../lib/planner-model";
 
 export type CanvasProps = {
+  readOnly?: boolean;
   mode: PlannerMode;
   date: string;
   range: { from: string; to: string };
@@ -40,7 +41,7 @@ export function PlannerCanvas(props: CanvasProps) {
   const map = new Map(props.plans.map((p) => [p.planDate, p]));
   if (props.loading) return <PlannerSkeleton />;
   if (props.mode === "list")
-    return <VirtualList plans={props.plans} onEdit={props.onEditTask} />;
+    return <VirtualList plans={props.plans} onEdit={props.readOnly?undefined:props.onEditTask} />;
   if (props.mode === "month")
     return (
       <div className="h-full overflow-auto overscroll-contain">
@@ -159,7 +160,7 @@ function DayColumn({
               {plan ? ` · ${plan.published ? "منتشر" : "پیش‌نویس"}` : ""}
             </span>
           </button>
-          {plan ? (
+          {plan&&!actions.readOnly ? (
             <div className="flex shrink-0 opacity-70 transition hover:opacity-100">
               <button
                 className="rounded p-1 hover:bg-slate-100"
@@ -194,10 +195,11 @@ function DayColumn({
               task={task}
               plan={plan}
               onEdit={actions.onEditTask}
+              readOnly={actions.readOnly}
             />
           ))
         ) : (
-          <button
+          actions.readOnly?<div className="rounded-lg border border-dashed border-slate-200 py-5 text-center text-xs text-slate-400">برنامه‌ای ثبت نشده است</div>:<button
             className="rounded-lg border border-dashed border-slate-200 py-5 text-xs text-slate-400 hover:border-brand hover:text-brand"
             onClick={() =>
               plan ? actions.onQuickAdd(day) : actions.onCreate(day)
@@ -206,7 +208,7 @@ function DayColumn({
             + برنامه این روز
           </button>
         )}
-        <div className="sticky bottom-2 mt-1 grid grid-cols-3 gap-1 rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-200">
+        {!actions.readOnly?<div className="sticky bottom-2 mt-1 grid grid-cols-3 gap-1 rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-200">
           {["08:00", "14:00", "19:00"].map((start) => (
             <button
               key={start}
@@ -219,7 +221,7 @@ function DayColumn({
               <span dir="ltr">{start}</span>
             </button>
           ))}
-        </div>
+        </div>:null}
       </div>
     </section>
   );
@@ -229,10 +231,12 @@ function CompactTask({
   task,
   plan,
   onEdit,
+  readOnly=false,
 }: {
   task: PlanTask;
   plan: Plan;
   onEdit: (plan: Plan, task: PlanTask) => void;
+  readOnly?: boolean;
 }) {
   const completed = isTaskComplete(task);
 
@@ -244,7 +248,8 @@ function CompactTask({
 
   return (
     <button
-      draggable
+      draggable={!readOnly}
+      disabled={readOnly}
       onDragStart={(e) => {
         e.dataTransfer.effectAllowed = "move";
 
@@ -257,7 +262,7 @@ function CompactTask({
           }),
         );
       }}
-      onClick={() => onEdit(plan, task)}
+      onClick={() => !readOnly&&onEdit(plan, task)}
       className={[
         "group relative min-w-0 rounded-lg border p-2 text-right",
         "transition-all duration-200",
@@ -333,7 +338,7 @@ function CompactTask({
       </div>
 
       {/* title */}
-      <div
+      {!readOnly?<div
         className="
           mt-1
           flex
@@ -363,7 +368,7 @@ function CompactTask({
         >
           {task.title || task.subject || task.type}
         </strong>
-      </div>
+      </div>:null}
 
       {/* status */}
       <div className="mt-1 flex items-center justify-between">
@@ -459,7 +464,7 @@ function VirtualList({
   onEdit,
 }: {
   plans: Plan[];
-  onEdit: (plan: Plan, task: PlanTask) => void;
+  onEdit?: (plan: Plan, task: PlanTask) => void;
 }) {
   const tasks = plans.flatMap((plan) =>
     plan.tasks.map((task) => ({ plan, task })),
@@ -482,7 +487,7 @@ function VirtualList({
           .map(({ plan, task }, index) => (
             <button
               key={task.id}
-              onClick={() => onEdit(plan, task)}
+              onClick={() => onEdit?.(plan, task)}
               className="absolute right-0 grid w-full grid-cols-[80px_72px_minmax(0,1fr)] items-center gap-2 border-b border-slate-100 px-3 text-right hover:bg-slate-50 sm:grid-cols-[110px_90px_minmax(0,1fr)_auto] sm:gap-3 sm:px-4"
               style={{ height: row, top: (start + index) * row }}
             >

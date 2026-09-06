@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { adminDestination, navigationForCapabilities } from "./admin-navigation";
 import { useAuth } from "../../features/auth";
+import { rolePortalTitle } from "../../shared/lib/role-ui";
 
 export function AdminMainSidebar({
   collapsed,
@@ -22,14 +23,14 @@ export function AdminMainSidebar({
   const visibleMainNavigation = navigationForCapabilities(auth.capabilities, auth.activeRole).map((group) => ({ ...group.items[0], section:group.section }));
   return (
     <aside
-      className={`fixed inset-y-0 right-0 z-50 hidden flex-col border-l border-slate-200 bg-white shadow-sm transition-[width,padding] duration-200 motion-reduce:transition-none lg:flex ${collapsed ? "w-[4.5rem] p-2" : "w-64 p-3"}`}
+      className={`fixed inset-y-0 right-0 z-50 hidden flex-col border-l border-slate-200 bg-white shadow-sm transition-[width,padding] duration-200 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-950 lg:flex ${collapsed ? "w-[4.5rem] p-2" : "w-64 p-3"}`}
       aria-label="ناوبری اصلی مدیریت"
     >
       <div className={`shrink-0 ${collapsed ? "mb-2 grid justify-items-center gap-1" : "mb-3 flex h-12 items-center justify-between gap-2 px-1"}`}>
         {!collapsed ? (
           <div className="min-w-0">
             <h1 className="truncate text-lg font-black tracking-tight">Moshaver | مشاور</h1>
-            <p className="truncate text-[11px] font-semibold text-slate-400">پنل مدیریت</p>
+            <p className="truncate text-[11px] font-semibold text-slate-400">{rolePortalTitle(auth.activeRole)}</p>
           </div>
         ) : (
           <div className="grid size-9 place-items-center rounded-xl bg-brand text-sm font-black text-white" aria-hidden="true">
@@ -50,7 +51,7 @@ export function AdminMainSidebar({
 
       <button
         type="button"
-        className={`mb-3 flex h-10 w-full shrink-0 items-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 outline-none transition hover:border-slate-300 hover:bg-white focus-visible:ring-2 focus-visible:ring-brand ${collapsed ? "justify-center px-2" : "gap-2 px-3"}`}
+        className={`mb-3 flex h-10 w-full shrink-0 items-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 outline-none transition hover:border-slate-300 hover:bg-white focus-visible:ring-2 focus-visible:ring-brand dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 ${collapsed ? "justify-center px-2" : "gap-2 px-3"}`}
         onClick={onOpenSearch}
         title={collapsed ? "جستجو و رفتن سریع" : undefined}
         aria-label="جستجو و رفتن سریع"

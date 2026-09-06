@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import {
   Button,
+  Badge,
   Card,
 } from "../../../shared/ui/ui";
 import type { RetryRequest } from "../model/exam.types";
@@ -13,7 +14,7 @@ export function RetryRequestsPanel({
   onReview,
 }: {
   requests: RetryRequest[];
-  onReview: (
+  onReview?: (
     request: RetryRequest,
     status:
       | "approved"
@@ -52,7 +53,7 @@ export function RetryRequestsPanel({
                   </p>
                 </div>
 
-                <div className="flex gap-2">
+                {onReview ? <div className="flex gap-2">
                   <Button
                     onClick={() =>
                       onReview(
@@ -77,7 +78,7 @@ export function RetryRequestsPanel({
                     <X size={15} />
                     رد
                   </Button>
-                </div>
+                </div> : <Badge tone="amber">در انتظار بررسی مشاور</Badge>}
               </div>
             ),
           )}

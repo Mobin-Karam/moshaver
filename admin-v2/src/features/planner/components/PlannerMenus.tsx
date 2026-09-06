@@ -109,7 +109,7 @@ export function CommandPalette({
   onDate: (date: string) => void;
   onView: (mode: PlannerMode) => void;
   onTask: (plan: Plan, task: PlanTask) => void;
-  onCreate: () => void;
+  onCreate?: () => void;
 }) {
   const [query, setQuery] = useState("");
   const input = useRef<HTMLInputElement>(null);
@@ -147,7 +147,7 @@ export function CommandPalette({
         </label>
         <div className="max-h-[55vh] overflow-auto p-2">
           <div className="grid grid-cols-2 gap-2">
-            <PaletteButton icon={Plus} label="فعالیت جدید" onClick={onCreate} />
+            {onCreate?<PaletteButton icon={Plus} label="فعالیت جدید" onClick={onCreate} />:null}
             <PaletteButton
               icon={Calendar}
               label="رفتن به امروز"

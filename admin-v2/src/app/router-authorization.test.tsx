@@ -11,7 +11,8 @@ describe("protected portal routes", () => {
   it("blocks a manipulated direct URL", () => {
     can.mockReturnValue(false);
     render(<CapabilityRoute capability="system.manage"><span>secret system page</span></CapabilityRoute>);
-    expect(screen.getByRole("alert")).toHaveTextContent("دسترسی مجاز نیست");
+    expect(screen.getByRole("alert")).toHaveTextContent("این ابزار در نقش فعال شما نیست");
+    expect(screen.getByRole("link",{name:"بازگشت به میز کار"})).toHaveAttribute("href","/admin");
     expect(screen.queryByText("secret system page")).not.toBeInTheDocument();
   });
   it("renders an authorized route", () => {

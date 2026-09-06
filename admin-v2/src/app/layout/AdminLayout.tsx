@@ -10,6 +10,8 @@ import { AdminMobileBottomNav, AdminMobileDrawer } from "./AdminMobileNavigation
 import { adminBreadcrumbs, navigationForCapabilities, resolveAdminNavigation } from "./admin-navigation";
 import { adminContentOffsetClass } from "./layout-geometry";
 import { usePersistentCollapse } from "./layout-storage";
+import { WorkContextBar } from "../../shared/ui/work-context-bar";
+import { roleLabel } from "../../shared/lib/role-ui";
 
 function readSelectedStudentId(search: string) {
   const urlValue = new URLSearchParams(search).get("studentId");
@@ -103,6 +105,7 @@ export function AdminLayout() {
         />
 
         <main className="w-full min-w-0 p-2 pb-[calc(4rem+env(safe-area-inset-bottom))] sm:p-3 sm:pb-[calc(4rem+env(safe-area-inset-bottom))] lg:p-3 lg:pb-3 xl:p-4">
+          <WorkContextBar role={roleLabel(auth.activeRole)} organization={auth.context?.activeOrganization?.name} multipleRoles={(auth.context?.roles.filter(role=>role!=="STUDENT").length||0)>1}/>
           <Outlet />
         </main>
       </div>

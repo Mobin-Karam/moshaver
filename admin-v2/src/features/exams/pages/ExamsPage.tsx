@@ -16,9 +16,11 @@ import { useExamMutations } from "../hooks/useExamMutations";
 import { useExamsData } from "../hooks/useExamsData";
 import { makeExamDraft } from "../model/exam-model";
 import type { BulkExamAction, RetryRequest } from "../model/exam.types";
+import { useAuth } from "../../auth";
 
 export function ExamsPage() {
   const modal = useModal();
+  const auth=useAuth();
 
   const filters = useExamFilters();
 
@@ -27,6 +29,7 @@ export function ExamsPage() {
     search: filters.deferredSearch,
     status: filters.status,
     visibility: filters.visibility,
+    canReadRetries: auth.can("retry_requests.read"),
   });
 
   const mutations = useExamMutations(filters.students.studentId);
@@ -227,7 +230,7 @@ export function ExamsPage() {
         students={filters.students.students}
         studentId={filters.students.studentId}
         onStudentChange={filters.students.selectStudent}
-        onCreate={() => openEditor()}
+        onCreate={auth.can("exams.create")?() => openEditor():undefined}
         onHistory={() =>
           modal.open({
             title: "سابقه و پاسخ‌های آزمون",
@@ -235,7 +238,7 @@ export function ExamsPage() {
             content: <ExamAttempts studentId={filters.students.studentId} />,
           })
         }
-        onMore={() =>
+        onMore={auth.can("import.preview")||auth.can("export.read")?() =>
           modal.open({
             title: "ورود و خروج داده آزمون‌ها",
             size: "xl",
@@ -249,13 +252,13 @@ export function ExamsPage() {
                 onImported={() => void data.refreshExams()}
               />
             ),
-          })
+          }):undefined
         }
       />
 
       <RetryRequestsPanel
         requests={data.pendingRetries}
-        onReview={openRetryReview}
+        onReview={auth.can("retry_requests.moderate")?openRetryReview:undefined}
       />
 
       <ExamFilters
@@ -285,17 +288,18 @@ export function ExamsPage() {
             : undefined
         }
         onRetry={() => void data.exams.refetch()}
-        onSelectAll={(checked) =>
+        onSelectAll={auth.can("exams.update")?(checked) =>
           filters.setSelected(
             checked ? data.filtered.map((exam) => exam.id) : [],
           )
-        }
-        onCheck={checkExam}
-        onEdit={openEditor}
-        onDelete={confirmRemove}
-        onToggle={handleToggle}
-        onAddSyllabus={openSyllabus}
-        onDeleteSyllabus={deleteSyllabus}
+        :undefined}
+        onCheck={auth.can("exams.update")?checkExam:undefined}
+        onEdit={auth.can("exams.update")?openEditor:undefined}
+        onDelete={auth.can("exams.delete")?confirmRemove:undefined}
+        onToggle={auth.can("exams.update")?handleToggle:undefined}
+        onAddSyllabus={auth.can("syllabus.manage")?openSyllabus:undefined}
+        onDeleteSyllabus={auth.can("syllabus.manage")?deleteSyllabus:undefined}
+        showQuestions={auth.can("questions.read")}
       />
     </div>
   );

@@ -55,7 +55,11 @@ export const mainAdminNavigation = adminNavigation.map((group) => ({
 
 const roleTitles: Record<string,Record<string,string>> = {
   GUARDIAN: { "": "خانه", students: "فرزندان", reports: "پیشرفت", planner: "برنامه", chat: "پیام‌ها", notifications: "اعلان‌ها", settings: "پروفایل" },
-  TEACHER: { students: "دانش‌آموزان / کلاس‌ها", quizzes: "آزمون‌ها و آزمونک‌ها" },
+  ADVISOR: { "":"میز کار",students:"دانش‌آموزان من",planner:"برنامه‌ریزی",learning:"یادگیری و مرور",exams:"آزمون و درخواست‌ها",chat:"گفت‌وگوها",reports:"گزارش پیشرفت" },
+  TEACHER: { "":"میز کار دبیر",students: "دانش‌آموزان / کلاس‌ها", exams:"آزمون‌ها",questions:"بانک سؤال",quizzes: "آزمونک‌ها",subjects:"درس‌های من",chat:"پیام‌ها" },
+  MENTOR: { "":"میز کار منتور",students:"دانش‌آموزان من",planner:"برنامه و هدف‌ها",reports:"روند پیشرفت",chat:"گفت‌وگوها" },
+  CONTENT_MANAGER: { "":"استودیوی محتوا",subjects:"درس‌ها",questions:"بانک سؤال",quizzes:"آزمونک‌ها",exams:"آزمون‌ها" },
+  ORGANIZATION_ADMIN: { "":"داشبورد سازمان",students:"دانش‌آموزان",users:"کارکنان",organizations:"عضویت و دسترسی",reports:"گزارش سازمان" },
   PLATFORM_ADMIN: { "": "داشبورد پلتفرم" },
 };
 

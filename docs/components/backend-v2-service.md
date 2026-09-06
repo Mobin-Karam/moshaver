@@ -39,6 +39,16 @@ Student login:
 - username: `sara`
 - password: `12345678sara`
 
+### Admin v2 role demo accounts
+
+For a disposable development database, seed every Admin v2 role with:
+
+```bash
+npm run seed:demo
+```
+
+The Admin v2 development login screen then offers one-click account selection for guardian, advisor, teacher, mentor, content manager, organization administrator, platform administrator, and a multi-role account. All use the development-only password `Moshaver-e2e-2026!`. The seed refuses to run with `NODE_ENV=production`; never use these identities or this password in a deployed environment.
+
 ## Production Notes
 
 - Set `NODE_ENV=production`.
