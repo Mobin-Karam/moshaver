@@ -40,11 +40,18 @@ export function ExamCenter({ exams, busy, error, onOpen }: Props) {
       <ExamGroup title="نتایج" icon={<CheckCircle2 />} empty="هنوز نتیجه منتشرشده‌ای نداری.">
         {grouped.results.map((exam) => <ExamCard key={exam.id} exam={exam} busy={busy} onOpen={onOpen} />)}
       </ExamGroup>
+      {grouped.results.length ? <ResultTrend exams={grouped.results} /> : null}
       <ExamGroup title="نیازمند اقدام" icon={<AlertTriangle />} empty="مورد نیازمند اقدامی وجود ندارد.">
         {grouped.action.map((exam) => <ExamCard key={exam.id} exam={exam} busy={busy} onOpen={onOpen} />)}
       </ExamGroup>
     </section>
   );
+}
+
+function ResultTrend({ exams }: { exams: ExamSummary[] }) {
+  const released = exams.filter((exam) => typeof exam.delivery?.lastAttempt?.score === 'number').slice(0, 6);
+  if (!released.length) return null;
+  return <section className="surface rounded-3xl p-4" aria-labelledby="exam-trend-title"><h2 id="exam-trend-title" className="font-black">روند نتیجه‌های اخیر</h2><p className="mt-1 text-xs text-ink/55">فقط بر پایه نتیجه‌های منتشرشده واقعی</p><div className="mt-4 flex h-28 items-end gap-2" role="img" aria-label={released.map((exam) => `${exam.title}: ${exam.delivery?.lastAttempt?.score} درصد`).join('، ')}>{released.map((exam) => { const score = exam.delivery?.lastAttempt?.score || 0; return <div key={exam.id} className="flex min-w-0 flex-1 flex-col items-center justify-end gap-1"><span className="text-[10px] font-bold">{new Intl.NumberFormat('fa-IR').format(score)}٪</span><span className="w-full rounded-t-lg bg-mint" style={{ height: `${Math.max(4, score)}%` }} /><span className="w-full truncate text-center text-[9px] text-ink/55">{exam.subjects?.[0] || 'آزمون'}</span></div>; })}</div></section>;
 }
 
 function ExamGroup({ title, icon, empty, children }: { title: string; icon: React.ReactNode; empty: string; children: React.ReactNode[] }) {

@@ -23,6 +23,7 @@ type Props = {
 export function ExamRunner(props: Props) {
   const { run, answers, index, reviewing, onSubmit } = props;
   const remaining = useRemainingSeconds(run, props.receivedAt);
+  const warning = timerWarning(remaining, run.quiz.durationMinutes * 60);
   const submittedAtTimeout = useRef(false);
   const ids = run.quiz.questions.map((question) => question.id);
   const summary = attemptSummary(ids, answers);
@@ -46,7 +47,7 @@ export function ExamRunner(props: Props) {
     <section className="exam-stage" aria-labelledby="question-title">
       <header className="exam-header">
         <div className="min-w-0"><span className="block truncate text-xs text-white/60">{run.quiz.title}</span><strong className="block truncate">سؤال {index + 1} از {ids.length}</strong></div>
-        <div className="text-left"><span className={`timer-chip ${remaining <= 60 ? 'timer-danger' : remaining <= 300 ? 'timer-warning' : ''}`} dir="ltr">{formatSeconds(remaining)}</span><SaveStatus state={props.saveState} /></div>
+        <div className="text-left"><span className={`timer-chip ${warning === 'one' ? 'timer-danger' : warning ? 'timer-warning' : ''}`} dir="ltr" aria-label={`${formatSeconds(remaining)} زمان باقی‌مانده`}>{formatSeconds(remaining)}</span><SaveStatus state={props.saveState} />{warning ? <span className="sr-only" role="status">{warning === 'one' ? 'یک دقیقه' : warning === 'five' ? 'پنج دقیقه' : 'پانزده دقیقه'} تا پایان آزمون باقی مانده است.</span> : null}</div>
       </header>
 
       <div className="exam-question">
@@ -83,6 +84,7 @@ function SubmissionReview(props: Props & { summary: ReturnType<typeof attemptSum
 function SaveStatus({ state }: { state: AnswerSaveState }) { const copy = state === 'saved' ? 'ذخیره شد' : state === 'saving' ? 'در حال ذخیره' : state === 'queued' ? 'آفلاین — روی دستگاه' : state === 'failed' ? 'خطا در همگام‌سازی' : 'روی دستگاه ذخیره شد'; return <span className="mt-1 flex items-center justify-end gap-1 text-[10px] text-white/65">{state === 'queued' || state === 'failed' ? <CloudOff size={12} /> : state === 'saving' ? <LoaderCircle size={12} className="animate-spin" /> : <ShieldCheck size={12} />}{copy}</span>; }
 function Summary({ label, value, tone }: { label: string; value: number; tone: string }) { return <div className={`rounded-2xl p-3 text-center summary-${tone}`}><strong className="block text-2xl">{toPersian(value)}</strong><span className="text-xs">{label}</span></div>; }
 function formatSeconds(value: number) { const minute = String(Math.floor(value / 60)).padStart(2, '0'); const second = String(value % 60).padStart(2, '0'); return `${minute}:${second}`; }
+export function timerWarning(remaining: number, total: number) { if (remaining <= 60) return 'one'; if (remaining <= 300) return 'five'; if (total > 30 * 60 && remaining <= 900) return 'fifteen'; return null; }
 function toPersian(value: number) { return new Intl.NumberFormat('fa-IR').format(value); }
 function stateLabel(state: ReturnType<typeof questionState>) { return state === 'answered' ? 'پاسخ داده‌شده' : state === 'marked' ? 'علامت برای مرور' : state === 'seen' ? 'دیده‌شده بدون پاسخ' : state === 'current' ? 'سؤال فعلی' : 'بدون پاسخ'; }
 function stateIcon(state: ReturnType<typeof questionState>) { return state === 'answered' ? '✓' : state === 'marked' ? '★' : state === 'seen' ? '•' : state === 'current' ? '◉' : '○'; }
