@@ -10,6 +10,11 @@ html {
   background: #f7f9f6;
 }
 
+html.dark {
+  color-scheme: dark;
+  background: #0f1720;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -30,8 +35,217 @@ textarea {
   background: white;
 }
 
+.dark body,
+.dark .bg-paper {
+  background: #0f1720;
+  color: #edf2f6;
+}
+
+.dark .surface,
+.dark .exam-question,
+.dark .answer-card,
+.dark .answer-sheet,
+.dark .exam-footer {
+  border-color: rgb(255 255 255 / 0.1);
+  background: #17212b;
+  color: #edf2f6;
+}
+
+.dark .text-ink,
+.dark .text-ink\/75,
+.dark .text-ink\/70,
+.dark .text-ink\/65,
+.dark .text-ink\/60,
+.dark .text-ink\/55,
+.dark .text-ink\/50 {
+  color: rgb(237 242 246 / 0.72);
+}
+
+.dark .answer-card-selected {
+  border-color: #75b9a3;
+  background: rgb(79 143 122 / 0.22);
+  color: #c7f2e4;
+}
+
 .metric {
   border-radius: 8px;
   background: rgb(79 143 122 / 0.12);
   padding: 12px;
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid rgb(217 154 61 / 0.55);
+  outline-offset: 3px;
+}
+
+.primary-action {
+  display: flex;
+  min-height: 48px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 16px;
+  background: #203040;
+  padding: 10px 16px;
+  color: white;
+  font-weight: 800;
+}
+
+.primary-action:disabled,
+.exam-primary:disabled,
+.exam-secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.back-action {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  color: rgb(32 48 64 / 0.7);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.state-error {
+  border: 1px solid rgb(190 18 60 / 0.18);
+  border-radius: 16px;
+  background: rgb(255 241 242);
+  padding: 12px 16px;
+  color: #9f1239;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.status-pill {
+  border-radius: 999px;
+  background: rgb(79 143 122 / 0.12);
+  padding: 4px 8px;
+  color: #377563;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.exam-stage {
+  min-height: calc(100dvh - 136px);
+}
+
+.exam-header {
+  position: sticky;
+  top: 69px;
+  z-index: 15;
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: -16px -16px 16px;
+  padding: 12px max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left));
+  background: #203040;
+  color: white;
+  box-shadow: 0 10px 30px rgb(32 48 64 / 0.12);
+}
+
+.timer-chip {
+  display: inline-flex;
+  min-width: 70px;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.12);
+  padding: 6px 9px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-warning { background: #fef3c7; color: #92400e; }
+.timer-danger { background: #ffe4e6; color: #be123c; }
+
+.exam-question {
+  min-height: 420px;
+  border: 1px solid rgb(32 48 64 / 0.1);
+  border-radius: 28px;
+  background: white;
+  padding: 20px 16px;
+}
+
+.answer-card {
+  display: flex;
+  min-height: 58px;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgb(32 48 64 / 0.13);
+  border-radius: 18px;
+  background: white;
+  padding: 10px 12px;
+  text-align: right;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+
+.answer-card:active { transform: scale(0.99); }
+.answer-card-selected { border-color: #4f8f7a; background: rgb(79 143 122 / 0.1); color: #285e50; }
+.answer-key { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border-radius: 12px; background: #f0f3ef; font-weight: 900; }
+.answer-card-selected .answer-key { background: #4f8f7a; color: white; }
+
+.exam-footer {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  padding: 10px max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  border-top: 1px solid rgb(32 48 64 / 0.1);
+  background: rgb(255 255 255 / 0.97);
+  backdrop-filter: blur(16px);
+}
+
+.exam-primary,
+.exam-secondary,
+.exam-mark {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 15px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.exam-primary { background: #203040; color: white; }
+.exam-secondary { background: #eef1ed; color: #203040; }
+.exam-mark { background: white; color: rgb(32 48 64 / 0.65); }
+.exam-mark-active { background: #fef3c7; color: #92400e; }
+.exam-primary svg, .exam-secondary svg, .exam-mark svg { width: 17px; }
+
+.sheet-backdrop { position: fixed; inset: 0; z-index: 50; display: flex; align-items: end; justify-content: center; background: rgb(15 23 42 / 0.46); }
+.answer-sheet { width: 100%; max-width: 640px; max-height: 82dvh; overflow-y: auto; border-radius: 28px 28px 0 0; background: white; padding: 12px 18px max(20px, env(safe-area-inset-bottom)); box-shadow: 0 -20px 60px rgb(15 23 42 / 0.2); }
+.question-number { display: grid; aspect-ratio: 1; min-width: 42px; place-items: center; border: 1px solid rgb(32 48 64 / 0.18); border-radius: 14px; background: white; font-weight: 900; }
+.question-number small { margin-top: -7px; font-size: 9px; }
+.question-current { border: 2px solid #203040; box-shadow: inset 0 0 0 2px white; background: #203040; color: white; }
+.question-answered { border-color: #4f8f7a; background: rgb(79 143 122 / 0.13); color: #285e50; }
+.question-marked { border-style: dashed; border-color: #d99a3d; background: #fffbeb; color: #92400e; }
+.question-seen { border-color: #64748b; background: #f1f5f9; color: #475569; }
+.summary-success { background: #ecfdf5; color: #047857; }
+.summary-warning { background: #fffbeb; color: #b45309; }
+.summary-info { background: #eff6ff; color: #1d4ed8; }
+
+@media (min-width: 640px) {
+  .exam-footer { inset-inline: 50%; width: min(100%, 768px); transform: translateX(50%); }
+  .exam-question { padding: 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }

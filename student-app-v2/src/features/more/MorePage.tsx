@@ -6,6 +6,7 @@ import { getNotificationPermission, requestNotificationPermission, type Notifica
 
 export function MorePage() {
   const student = useStudentStore((state) => state.student);
+  const access = useStudentStore((state) => state.access);
   const user = useStudentStore((state) => state.user);
   const syncStatus = useStudentStore((state) => state.syncStatus);
   const logout = useStudentStore((state) => state.logout);
@@ -32,26 +33,26 @@ export function MorePage() {
   useEffect(() => {
     void loadNotifications();
     void loadAuthSessions();
-    void loadProfileDomains();
-  }, [loadAuthSessions, loadNotifications, loadProfileDomains]);
+    if (access?.mode === 'student') void loadProfileDomains();
+  }, [access?.mode, loadAuthSessions, loadNotifications, loadProfileDomains]);
 
   useEffect(() => { void getNotificationPermission().then(setNotificationPermission); }, []);
 
   return (
     <section className="space-y-4">
       <h1 className="text-2xl font-semibold">بیشتر</h1>
-      <article className="surface p-4">
+      {access?.mode === 'student' ? <article className="surface p-4">
         <h2 className="font-semibold">{student?.name || user?.username || 'دانش‌آموز'}</h2>
         <p className="mt-2 text-sm text-ink/65">{[student?.grade, student?.major].filter(Boolean).join(' | ') || 'پرونده دانش‌آموز'}</p>
-      </article>
-      <article className="surface p-4">
+      </article> : <article className="surface p-4"><h2 className="font-semibold">نمای خانواده</h2><p className="mt-2 text-sm leading-6 text-ink/65">این بخش فقط خواندنی است. ثبت گزارش و درخواست جبران باید با حساب دانش‌آموز انجام شود.</p></article>}
+      {access?.mode === 'student' ? <article className="surface p-4">
         <h2 className="font-semibold">درس‌ها و ارتباطات پرونده</h2>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           <div className="rounded-md bg-paper p-3"><strong className="text-sm">درس‌های فعال</strong><p className="mt-1 text-sm text-ink/65">{subjects.filter((item) => item.enabled).map((item) => item.displayName || item.subject.name).join('، ') || 'درسی ثبت نشده است.'}</p></div>
           <div className="rounded-md bg-paper p-3"><strong className="text-sm">ارتباط‌های فعال</strong><p className="mt-1 text-sm text-ink/65">{relationships.filter((item) => item.status === 'ACTIVE').map((item) => `${item.type}: ${[item.fromUser?.firstName, item.fromUser?.lastName].filter(Boolean).join(' ') || item.fromUser?.username || 'کاربر'}`).join('، ') || 'ارتباط فعالی ثبت نشده است.'}</p></div>
         </div>
         <div className="mt-2 rounded-md bg-paper p-3"><strong className="text-sm">اشتباه‌های نیازمند مرور</strong><p className="mt-1 text-sm text-ink/65">{mistakes.length ? `${mistakes.length.toLocaleString('fa-IR')} مورد در دفترچه اشتباهات` : 'موردی ثبت نشده است.'}</p></div>
-      </article>
+      </article> : null}
             <Link to="/learning" className="surface flex items-center justify-between gap-3 p-4">
               <div>
                 <h2 className="font-semibold">پیشرفت و مرور</h2>
@@ -59,7 +60,7 @@ export function MorePage() {
               </div>
               <BarChart3 className="shrink-0 text-mint" size={22} />
             </Link>
-      <article className="surface p-4">
+      {access?.mode === 'student' ? <><article className="surface p-4">
         <div className="flex items-start gap-3">
           <MoonStar className="mt-0.5 shrink-0 text-mint" size={20} />
           <div className="min-w-0 flex-1">
@@ -78,7 +79,7 @@ export function MorePage() {
             <RecoveryRequestForm draft={recoveryRequestDraft} onSave={saveRecoveryRequestDraft} onSubmit={submitRecoveryRequest} />
           </div>
         </div>
-      </article>
+      </article></> : null}
       <article className="surface p-4">
         <div className="flex items-start gap-3">
           <KeyRound className="mt-0.5 shrink-0 text-ink/45" size={20} />

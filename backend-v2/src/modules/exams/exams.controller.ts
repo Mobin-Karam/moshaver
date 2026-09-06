@@ -278,6 +278,15 @@ export class ExamsController {
     return this.exams.history(user.id).then(ok);
   }
 
+  @Get("student/exams/attempts/:id")
+  @Roles(UserRole.STUDENT)
+  resultForStudent(
+    @Param("id") id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.exams.resultForStudent(id, user.id).then(ok);
+  }
+
   @Get("student/exams/:id/progress")
   @Roles(UserRole.STUDENT)
   progress(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {

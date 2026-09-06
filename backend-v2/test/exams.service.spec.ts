@@ -132,4 +132,68 @@ describe("ExamsService student attempt safety", () => {
 
     expect(attempts.update).toHaveBeenCalledWith("attempt-1", { answers: [newer] });
   });
+
+  it("rejects changing an earlier answer after a later question was visited when back navigation is disabled", async () => {
+    const attempt = {
+      id: "attempt-1",
+      student: { id: "student-1" },
+      startedAt: new Date(),
+      finishedAt: null,
+      answers: [
+        { questionId: "q1", selectedOption: "a", visited: true, revision: 1, clientUpdatedAt: "2026-09-06T08:00:00Z" },
+        { questionId: "q2", selectedOption: null, visited: true, revision: 1, clientUpdatedAt: "2026-09-06T08:01:00Z" },
+      ],
+      exam: { id: "exam-1", duration: 60, allowBackNavigation: false, questions: [{ id: "q1" }, { id: "q2" }] },
+    } as any;
+    const service = new ExamsService(repository() as any, repository() as any, repository([attempt]) as any, repository([{ id: "student-1" }]) as any);
+
+    await expect(service.saveProgress("attempt-1", [
+      { questionId: "q1", selectedOption: "b", visited: true, revision: 2, clientUpdatedAt: "2026-09-06T08:02:00Z" },
+    ], "user-1")).rejects.toMatchObject({ response: { error: { code: "BACK_NAVIGATION_FORBIDDEN" } } });
+  });
+
+  it("withholds score and answer key until the configured release policy allows it", async () => {
+    const attempt = {
+      id: "attempt-1",
+      student: { id: "student-1" },
+      startedAt: new Date(),
+      answers: [],
+      finishedAt: null,
+      exam: {
+        id: "exam-1",
+        duration: 60,
+        endTime: null,
+        resultPolicy: "manual",
+        resultsReleased: false,
+        scoring: { correct: 3, wrong: -1, unanswered: 0, negativeMarking: true },
+        questions: [
+          { id: "q1", text: "Q1", options: ["A"], correctAnswer: "a" },
+          { id: "q2", text: "Q2", options: ["B"], correctAnswer: "b" },
+        ],
+      },
+    } as any;
+    const attempts = repository([attempt]);
+    const service = new ExamsService(
+      repository() as any,
+      repository() as any,
+      attempts as any,
+      repository([{ id: "student-1" }]) as any,
+    );
+
+    const result = await service.submit(
+      "attempt-1",
+      [
+        { questionId: "q1", selectedOption: "a" },
+        { questionId: "q2", selectedOption: "a" },
+      ],
+      "user-1",
+    );
+
+    expect(result).toMatchObject({ status: "withheld", score: null, total: 2 });
+    expect(result.review).toBeUndefined();
+    expect(attempts.update).toHaveBeenCalledWith(
+      "attempt-1",
+      expect.objectContaining({ score: 33 }),
+    );
+  });
 });

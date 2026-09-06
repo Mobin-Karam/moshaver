@@ -14,6 +14,7 @@ import {
 } from '@moshaver/student-core';
 import { apiClient } from './api-client';
 import { notifyNewNotifications } from './notification-service';
+import { portalAccess, type PortalAccess } from '../app/portal-access';
 
 type AuthStatus = 'checking' | 'anonymous' | 'authenticated';
 type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -73,6 +74,19 @@ interface BackendDashboard {
   recommendations?: unknown[];
 }
 
+interface GuardianDashboard {
+  student: BackendStudent;
+  today: { date: string; totalTasks: number; completedTasks: number };
+  weekly: {
+    totalTasks: number;
+    completedTasks: number;
+    completionPercent: number;
+    studyMinutes: number;
+  };
+  upcomingExams: BackendExam[];
+  schedule: BackendPlan[];
+}
+
 interface BackendExam {
   id: string;
   title: string;
@@ -81,6 +95,16 @@ interface BackendExam {
   startTime?: string | null;
   endTime?: string | null;
   questions?: unknown[];
+  subject?: string;
+  subjects?: string[];
+  mode?: 'standard' | 'konkur';
+  instructions?: string[];
+  allowBackNavigation?: boolean;
+  scoring?: ExamSummary['scoring'];
+  resultPolicy?: ExamSummary['resultPolicy'];
+  resultReleaseAt?: string | null;
+  sections?: ExamSummary['sections'];
+  delivery?: ExamSummary['delivery'];
 }
 
 interface BackendStudySession {
@@ -146,6 +170,11 @@ interface StudentState {
   syncStatus: SyncStatus;
   setSyncStatus(status: SyncStatus): void;
   user: BackendUser | null;
+  access: PortalAccess | null;
+  capabilities: string[];
+  guardianStudents: BackendStudent[];
+  selectedGuardianStudentId: string | null;
+  selectGuardianStudent(id: string): Promise<void>;
   student: BackendStudent | null;
   plan: StudentPlan;
   exams: ExamSummary[];
@@ -236,6 +265,10 @@ export const useStudentStore = create<StudentState>((set, get) => ({
   },
   activeSession: readFocusSession(),
   user: null,
+  access: null,
+  capabilities: [],
+  guardianStudents: [],
+  selectedGuardianStudentId: null,
   student: null,
   exams: [],
   notifications: [],
@@ -257,19 +290,20 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       const user = await apiClient.request<BackendUser>('GET', '/auth/me');
       apiClient.setCsrfToken(user.csrfToken);
       const context = await apiClient.request<BackendAccountContext>('GET', '/me/context');
-      if (!context.roles.includes('STUDENT')) {
+      const access = portalAccess(context.capabilities);
+      if (!access) {
         await apiClient.request('POST', '/auth/logout').catch(() => undefined);
         apiClient.setCsrfToken(null);
-        set({ authStatus: 'anonymous', user: null, student: null, plan: emptyPlan(), error: 'این نسخه فقط برای دانش‌آموز است.' });
+        set({ authStatus: 'anonymous', user: null, student: null, plan: emptyPlan(), error: 'این حساب به پرتال دانش‌آموز و خانواده دسترسی ندارد.' });
         return;
       }
-      set({ authStatus: 'authenticated', user: { ...user, roles: context.roles } });
+      set({ authStatus: 'authenticated', user: { ...user, roles: context.roles }, access, capabilities: context.capabilities });
       await get().loadProfileDomains();
       await get().loadDashboard();
       await get().loadExams();
       await get().loadNotifications();
       await get().loadLearning();
-      await get().restoreActiveSession();
+      if (access.mode === 'student') await get().restoreActiveSession();
     } catch {
       apiClient.setCsrfToken(null);
       set({ authStatus: 'anonymous', user: null, student: null, plan: emptyPlan() });
@@ -285,19 +319,20 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       );
       apiClient.setCsrfToken(session.csrfToken);
       const context = await apiClient.request<BackendAccountContext>('GET', '/me/context');
-      if (!context.roles.includes('STUDENT')) {
+      const access = portalAccess(context.capabilities);
+      if (!access) {
         await apiClient.request('POST', '/auth/logout').catch(() => undefined);
         apiClient.setCsrfToken(null);
-        set({ authStatus: 'anonymous', loadStatus: 'error', user: null, error: 'این حساب دانش‌آموز نیست.' });
+        set({ authStatus: 'anonymous', loadStatus: 'error', user: null, error: 'این حساب به پرتال دانش‌آموز و خانواده دسترسی ندارد.' });
         return;
       }
-      set({ authStatus: 'authenticated', user: { ...session.user, roles: context.roles }, loadStatus: 'idle' });
+      set({ authStatus: 'authenticated', user: { ...session.user, roles: context.roles }, access, capabilities: context.capabilities, loadStatus: 'idle' });
       await get().loadProfileDomains();
       await get().loadDashboard();
       await get().loadExams();
       await get().loadNotifications();
       await get().loadLearning();
-      await get().restoreActiveSession();
+      if (access.mode === 'student') await get().restoreActiveSession();
     } catch (error) {
       set({ loadStatus: 'error', error: readableError(error) });
     }
@@ -306,11 +341,49 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     set({ loadStatus: 'loading', error: null });
     await apiClient.request('POST', '/auth/logout').catch(() => undefined);
     apiClient.setCsrfToken(null);
-    set({ authStatus: 'anonymous', loadStatus: 'idle', user: null, student: null, plan: emptyPlan(), exams: [], notifications: [], subjects: [], relationships: [], mistakes: [], authSessions: [], error: null });
+    set({ authStatus: 'anonymous', loadStatus: 'idle', user: null, access: null, capabilities: [], guardianStudents: [], selectedGuardianStudentId: null, student: null, plan: emptyPlan(), exams: [], notifications: [], subjects: [], relationships: [], mistakes: [], authSessions: [], error: null });
+  },
+  async selectGuardianStudent(id) {
+    if (!get().guardianStudents.some((student) => student.id === id)) return;
+    localStorage.setItem('moshaver:v2:guardian-child', id);
+    set({
+      selectedGuardianStudentId: id,
+      student: get().guardianStudents.find((item) => item.id === id) || null,
+    });
+    await Promise.all([get().loadDashboard(), get().loadExams(), get().loadLearning()]);
   },
   async loadDashboard() {
     set({ loadStatus: 'loading', error: null });
     try {
+      if (get().access?.mode === 'guardian') {
+        const childId = get().selectedGuardianStudentId;
+        if (!childId) {
+          set({ loadStatus: 'ready', plan: emptyPlan() });
+          return;
+        }
+        const dashboard = await apiClient.request<GuardianDashboard>(
+          'GET',
+          `/guardian/students/${encodeURIComponent(childId)}/dashboard`,
+        );
+        const plan = dashboard.schedule[0];
+        set({
+          loadStatus: 'ready',
+          student: dashboard.student,
+          plan: {
+            id: plan?.id,
+            isoDate: plan?.date || dashboard.today.date,
+            title: 'خلاصه برنامه فرزند',
+            tasks: sortStudentTasks((plan?.tasks || []).map(mapTask)),
+          },
+          progress: {
+            studentId: childId,
+            completed: dashboard.weekly.completedTasks,
+            total: dashboard.weekly.totalTasks,
+            percent: dashboard.weekly.completionPercent,
+          },
+        });
+        return;
+      }
       const dashboard = await apiClient.request<BackendDashboard>('GET', '/student/dashboard');
       const tasks = dashboard.tasks ?? dashboard.plan?.tasks ?? [];
       set({
@@ -331,8 +404,11 @@ export const useStudentStore = create<StudentState>((set, get) => ({
   async loadPlan(date) {
     set({ loadStatus: 'loading', error: null });
     try {
-      const plans = await apiClient.request<BackendPlan[]>('GET', `/student/plans?date=${encodeURIComponent(date)}`);
-      const plan = plans[0] ?? null;
+      const childId = get().selectedGuardianStudentId;
+      const plans = get().access?.mode === 'guardian' && childId
+        ? await apiClient.request<BackendPlan[]>('GET', `/guardian/students/${encodeURIComponent(childId)}/schedule`)
+        : await apiClient.request<BackendPlan[]>('GET', `/student/plans?date=${encodeURIComponent(date)}`);
+      const plan = plans.find((item) => item.date === date) ?? plans[0] ?? null;
       const tasks = plan?.tasks ?? [];
       set({
         loadStatus: 'ready',
@@ -349,7 +425,11 @@ export const useStudentStore = create<StudentState>((set, get) => ({
   },
   async loadExams() {
     try {
-      const exams = await apiClient.request<BackendExam[]>('GET', '/student/exams');
+      const childId = get().selectedGuardianStudentId;
+      const path = get().access?.mode === 'guardian' && childId
+        ? `/guardian/students/${encodeURIComponent(childId)}/exams`
+        : '/student/exams';
+      const exams = await apiClient.request<BackendExam[]>('GET', path);
       set({ exams: exams.map(mapExam) });
     } catch {
       set({ exams: [] });
@@ -367,6 +447,17 @@ export const useStudentStore = create<StudentState>((set, get) => ({
   },
   async loadProfileDomains() {
     try {
+      if (get().access?.mode === 'guardian') {
+        const children = await apiClient.request<BackendStudent[]>('GET', '/guardian/students');
+        const cached = localStorage.getItem('moshaver:v2:guardian-child');
+        const selected = children.find((child) => child.id === cached) || children[0] || null;
+        set({
+          guardianStudents: children,
+          selectedGuardianStudentId: selected?.id || null,
+          student: selected,
+        });
+        return;
+      }
       const student = await apiClient.request<BackendStudent>('GET', '/students/me');
       const [subjects, relationships, mistakes] = await Promise.all([
         apiClient.request<StudentSubject[]>('GET', `/students/${encodeURIComponent(student.id)}/subjects`),
@@ -381,6 +472,27 @@ export const useStudentStore = create<StudentState>((set, get) => ({
   async loadLearning() {
     set({ learningLoadStatus: 'loading', learningError: null });
     try {
+      if (get().access?.mode === 'guardian') {
+        const childId = get().selectedGuardianStudentId;
+        if (!childId) {
+          set({ progress: null, reviews: [], learningLoadStatus: 'ready' });
+          return;
+        }
+        const result = await apiClient.request<{
+          weekly: { completedTasks: number; totalTasks: number; completionPercent: number };
+        }>('GET', `/guardian/students/${encodeURIComponent(childId)}/progress`);
+        set({
+          progress: {
+            studentId: childId,
+            completed: result.weekly.completedTasks,
+            total: result.weekly.totalTasks,
+            percent: result.weekly.completionPercent,
+          },
+          reviews: [],
+          learningLoadStatus: 'ready',
+        });
+        return;
+      }
       const [progress, reviews] = await Promise.all([
         apiClient.request<StudentProgress>('GET', '/student/progress'),
         apiClient.request<{ studentId: string | null; items: StudentReviewItem[] }>('GET', '/student/reviews'),
@@ -426,6 +538,7 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     set({ recoveryRequestDraft: saved });
   },
   async submitNightReport(draft) {
+    requireStudentMutation(get().access);
     await apiClient.request('POST', '/reports', {
       planDate: new Date().toISOString().slice(0, 10),
       focus: Math.max(0, Math.min(10, Number(draft.studyMinutes) ? Math.round(Math.min(10, Number(draft.studyMinutes) / 60)) : 0)),
@@ -438,6 +551,7 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     set({ nightReportDraft: null });
   },
   async submitRecoveryRequest(draft) {
+    requireStudentMutation(get().access);
     await apiClient.request('POST', '/recovery-requests', { planDate: draft.date, reason: draft.reason, note: draft.details });
     localStorage.removeItem(RECOVERY_REQUEST_DRAFT_KEY);
     set({ recoveryRequestDraft: null });
@@ -455,6 +569,7 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     }
   },
   async startTask(taskId) {
+    requireStudentMutation(get().access);
     try {
       const current = get().activeSession;
       if (current?.taskId === taskId && current.status === 'paused') {
@@ -475,6 +590,7 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     }
   },
   async pauseFocus() {
+    requireStudentMutation(get().access);
     try {
       const current = get().activeSession;
       if (!current || current.status === 'paused' || current.id.startsWith('local-')) return;
@@ -488,6 +604,7 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     }
   },
   async resumeFocus() {
+    requireStudentMutation(get().access);
     try {
       const current = get().activeSession;
       if (!current || current.status === 'running' || current.id.startsWith('local-')) return;
@@ -501,6 +618,7 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     }
   },
   async finishTask(taskId, feedback) {
+    requireStudentMutation(get().access);
     const previousPlan = get().plan;
     const task = previousPlan.tasks.find((item) => item.id === taskId);
     if (!task) return;
@@ -587,8 +705,16 @@ function mapExam(exam: BackendExam): ExamSummary {
     closeAt: exam.endTime ?? undefined,
     durationMinutes: exam.duration,
     maxAttempts: exam.attemptLimit,
-    delivery: {
-      canStart: true,
+    subjects: exam.subjects ?? (exam.subject ? [exam.subject] : []),
+    mode: exam.mode ?? 'standard',
+    instructions: exam.instructions ?? [],
+    allowBackNavigation: exam.allowBackNavigation ?? true,
+    scoring: exam.scoring,
+    resultPolicy: exam.resultPolicy,
+    resultReleaseAt: exam.resultReleaseAt,
+    sections: exam.sections,
+    delivery: exam.delivery ?? {
+      canStart: false,
       allowedAttempts: exam.attemptLimit,
       questionCount: exam.questions?.length ?? 0,
     },
@@ -619,4 +745,9 @@ function toMinutes(value: string) {
 
 function readableError(error: unknown) {
   return error instanceof Error ? error.message : 'درخواست ناموفق بود.';
+}
+
+function requireStudentMutation(access: PortalAccess | null) {
+  if (!access?.canMutateStudentWork)
+    throw new Error('این عملیات در حالت خانواده فقط خواندنی است.');
 }

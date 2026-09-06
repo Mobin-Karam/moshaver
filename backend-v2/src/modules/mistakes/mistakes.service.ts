@@ -41,6 +41,15 @@ export class MistakesService {
     return this.mistakes.save(mistake);
   }
 
+  async updateByQuestion(userId: string, questionId: string, body: { reason?: string; resolved?: boolean }) {
+    const student = await this.studentForUser(userId);
+    const mistake = await this.mistakes.findOne({ where: { studentId: student.id, questionId } });
+    if (!mistake) throw new ApiException(404, "MISTAKE_NOT_FOUND", "این سؤال در دفترچه اشتباهات ثبت نشده است.");
+    if (body.reason !== undefined) mistake.reason = String(body.reason).trim().slice(0, 100);
+    if (body.resolved !== undefined) mistake.resolved = Boolean(body.resolved);
+    return this.mistakes.save(mistake);
+  }
+
   private async studentForUser(userId: string) {
     const student = await this.students.findOne({ where: { user: { id: userId } } });
     if (!student) throw new ApiException(404, "STUDENT_NOT_FOUND", "پرونده دانش‌آموز پیدا نشد.");

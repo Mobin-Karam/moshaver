@@ -23,6 +23,11 @@ export class MistakesController {
     return this.mistakes.detail(user.id, id).then(ok);
   }
 
+  @Patch("question/:questionId")
+  classifyQuestion(@CurrentUser() user: AuthenticatedUser, @Param("questionId") questionId: string, @Body() body: { reason?: string; resolved?: boolean }) {
+    return this.mistakes.updateByQuestion(user.id, questionId, body).then(ok);
+  }
+
   @Patch(":id")
   update(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() body: { reason?: string; resolved?: boolean }) {
     return this.mistakes.update(user.id, id, body).then(ok);

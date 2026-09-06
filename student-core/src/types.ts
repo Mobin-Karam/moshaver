@@ -62,6 +62,16 @@ export interface ExamDelivery {
   questionCount?: number;
   activeAttemptId?: ID | null;
   state?: 'upcoming' | 'available' | 'active' | 'submitted' | 'calculating' | 'released' | 'withheld' | 'closed';
+  lastAttempt?: {
+    id: ID;
+    examId?: ID;
+    title?: string;
+    status: string;
+    score?: number | null;
+    startedAt: string;
+    finishedAt?: string | null;
+    answeredCount?: number;
+  } | null;
 }
 
 export type ExamMode = 'standard' | 'konkur';
@@ -117,6 +127,7 @@ export interface QuizRun {
   examCloseAt?: string | null;
   deadlineAt?: string;
   serverTime?: string;
+  remainingSeconds?: number;
   savedAnswers?: AttemptAnswer[];
   allowBackNavigation?: boolean;
   sections?: ExamSection[];

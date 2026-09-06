@@ -25,6 +25,30 @@ export class Exam {
   @Column({ default: false })
   published!: boolean;
 
+  @Column({ default: "standard" })
+  mode!: "standard" | "konkur";
+
+  @Column({ type: "simple-json", default: "[]" })
+  instructions!: string[];
+
+  @Column({ default: true })
+  allowBackNavigation!: boolean;
+
+  @Column({ type: "simple-json", default: '{"correct":1,"wrong":0,"unanswered":0,"negativeMarking":false}' })
+  scoring!: { correct: number; wrong: number; unanswered: number; negativeMarking: boolean };
+
+  @Column({ default: "immediate" })
+  resultPolicy!: "immediate" | "scheduled" | "manual";
+
+  @Column({ type: "datetime", nullable: true })
+  resultReleaseAt?: Date | null;
+
+  @Column({ default: true })
+  resultsReleased!: boolean;
+
+  @Column({ type: "simple-json", default: "[]" })
+  sections!: Array<{ id: string; name: string; questionIds: string[]; allocatedMinutes?: number }>;
+
   @Column({ type: "datetime", nullable: true })
   startTime?: Date | null;
 
