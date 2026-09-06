@@ -13,3 +13,10 @@ export const getStudentLearning=(id:string)=>api.get<LearningResponse>(`/student
 export const getStudentAttempts=(id:string)=>api.get<unknown[]>(`/students/${id}/exam-attempts`);
 export const getStudentWeekly=(id:string)=>api.get<Record<string,unknown>>(`/students/${id}/progress/weekly`);
 export const getStudentTopics=(id:string)=>api.get<unknown[]>(`/students/${id}/performance/topics?limit=8`);
+export type StudentAnalytics={planCompletion:number|null;taskCompletion:number|null;studyDurationMinutes:number|null;studySessions:number;examPerformance:number|null;examAttempts:number;questionAccuracy:number|null;quizAttempts:number;reviewConsistency:number;averageMastery:number|null;subjectPerformance:Array<{subject:string;items:number;mastery:number|null}>};
+export type StudentRecommendation={id:string;type:string;title:string;reason:string;evidence:Record<string,unknown>;status:"PROPOSED"|"ACCEPTED"|"REJECTED"|"DISMISSED";createdAt:string};
+export type StudentMistake={id:string;questionId:string;reason:string;resolved:boolean};
+export const getStudentAnalytics=(id:string)=>api.get<StudentAnalytics>(`/students/${id}/analytics`);
+export const getStudentRecommendations=(id:string)=>api.get<StudentRecommendation[]>(`/students/${id}/recommendations`);
+export const createStudentRecommendation=(id:string,body:{type:string;title:string;reason:string;evidence:Record<string,unknown>})=>api.post<StudentRecommendation>(`/students/${id}/recommendations`,body);
+export const getStudentMistakes=(id:string)=>api.get<StudentMistake[]>(`/students/${id}/mistakes`);

@@ -6,6 +6,7 @@ import {
   RotateCcw,
   Save,
   Search,
+  Users,
 } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -33,6 +34,7 @@ import {
   updateSubject,
 } from "../api/subjects.api";
 import type { Subject, SubjectsMode as Mode } from "../model/subject.types";
+import { TeacherAssignments } from "../components/TeacherAssignments";
 
 export function SubjectsPage() {
   const students = useStudentSelection(),
@@ -180,6 +182,11 @@ export function SubjectsPage() {
       ),
     });
   }
+  function openTeacherAssignments(subject: Subject) {
+    const organization=auth.context?.activeOrganization;
+    if(!organization)return;
+    modal.open({title:`دبیران ${subject.name}`,description:`تخصیص دبیر در ${organization.name}`,content:<TeacherAssignments subjectId={subject.id} organizationId={organization.id}/>});
+  }
   const activeQuery = mode === "catalog" ? subjects : assigned;
   return (
     <div className="grid gap-4">
@@ -278,6 +285,7 @@ export function SubjectsPage() {
                   key={row.id}
                   subject={row}
                   onEdit={canUpdate ? () => openCatalogEdit(row) : undefined}
+                  onTeachers={auth.can("organization.members.manage")&&auth.context?.activeOrganization?()=>openTeacherAssignments(row):undefined}
                 />
               ) : (
                 <StudentSubjectEditor
@@ -308,9 +316,11 @@ export function SubjectsPage() {
 function CatalogRow({
   subject,
   onEdit,
+  onTeachers,
 }: {
   subject: Subject;
   onEdit?: () => void;
+  onTeachers?: () => void;
 }) {
   return (
     <article className="flex flex-wrap items-center gap-3 rounded-lg border p-3">
@@ -331,6 +341,7 @@ function CatalogRow({
           <Edit3 size={15} /> ویرایش
         </Button>
       ) : null}
+      {onTeachers?<Button variant="soft" onClick={onTeachers}><Users size={15}/>دبیران</Button>:null}
     </article>
   );
 }

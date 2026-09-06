@@ -10,12 +10,14 @@ import {
   changeAdminPassword,
   downloadDatabaseBackup,
   getAudit,
+  getAppVersions,
   getDatabaseMeta,
   getImportHistory,
   getReleases,
   getSessions,
   restoreDatabase,
   saveAppRelease,
+  saveAppVersion,
 } from "../api/system.api";
 import { AccountSecurityPanel } from "../components/AccountSecurityPanel";
 import { DatabaseBackupPanel } from "../components/DatabaseBackupPanel";
@@ -23,6 +25,7 @@ import { ReleasePanel } from "../components/ReleasePanel";
 import { SystemHistory } from "../components/SystemHistory";
 import { SystemMetric } from "../components/SystemMetric";
 import { SystemSessionsPanel } from "../components/SystemSessionsPanel";
+import { AppVersionManager } from "../components/AppVersionManager";
 export function SystemPage() {
   const qc = useQueryClient();
   const modal = useModal();
@@ -61,6 +64,7 @@ export function SystemPage() {
     queryFn: getReleases,
     enabled: systemAvailable && historyTab === "releases",
   });
+  const versions = useQuery({ queryKey: ["app-versions"], queryFn: getAppVersions, enabled: auth.can("release.read") });
   const audit = useQuery({
     queryKey: ["audit"],
     queryFn: getAudit,
@@ -123,6 +127,7 @@ export function SystemPage() {
         "error",
       ),
   });
+  const updateVersion = useMutation({ mutationFn: ({app,value}:{app:string;value:{version:string;notes:string}})=>saveAppVersion(app,value), onSuccess:()=>{notify("نسخه فعال به‌روزرسانی شد.");void qc.invalidateQueries({queryKey:["app-versions"]});}, onError:(error)=>notify(error instanceof Error?error.message:"به‌روزرسانی نسخه انجام نشد.","error") });
   async function download() {
     const result = await backup.mutateAsync();
     const url = URL.createObjectURL(result.blob);
@@ -226,6 +231,7 @@ export function SystemPage() {
                 .then((confirmed) => confirmed && saveRelease.mutate())
             }
           />
+          {auth.can("release.read")?<AppVersionManager versions={versions.data} loading={versions.isLoading} error={versions.isError} busy={updateVersion.isPending} canManage={auth.can("release.manage")} onRetry={()=>void versions.refetch()} onSave={(app,value)=>updateVersion.mutate({app,value})}/>:null}
           <Card className="p-2">
             <div
               className="flex flex-wrap items-center gap-1"

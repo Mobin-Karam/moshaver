@@ -33,6 +33,7 @@ import { StudentList } from "../components/StudentList";
 import { StudentOverview } from "../components/StudentOverview";
 import { StudentOverviewStats } from "../components/StudentOverviewStats";
 import { StudentSecurity } from "../components/StudentSecurity";
+import { StudentSupportWorkspace } from "../components/StudentSupportWorkspace";
 import {
   getStudentProfileCompleteness,
   getStudentStatus,
@@ -764,7 +765,7 @@ export function StudentsPage() {
           />
         ) : null}
         {detailTab === "activity" ? (
-          <StudentInsights
+          <><StudentInsights
             onRetry={retryActivity}
             values={[
               {
@@ -796,7 +797,7 @@ export function StudentsPage() {
                 hint: "موضوع‌های تحلیل‌شده",
               },
             ]}
-          />
+          /><StudentSupportWorkspace studentId={selectedId} /></>
         ) : null}
         {detailTab === "profile" && auth.can("students.update") ? (
           <StudentEditor

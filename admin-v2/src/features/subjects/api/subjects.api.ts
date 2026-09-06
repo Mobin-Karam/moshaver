@@ -21,3 +21,7 @@ export const updateStudentSubject = (studentId: string, subject: Subject) =>
     mastery: subject.mastery || "",
     note: subject.note || "",
   });
+export type TeacherAssignment={id:string;teacher:{id:string;username:string;firstName?:string;lastName?:string};createdAt:string};
+export const getSubjectTeachers=(subjectId:string,organizationId:string)=>api.get<TeacherAssignment[]>(`/subjects/${subjectId}/teachers?organizationId=${encodeURIComponent(organizationId)}`);
+export const assignSubjectTeacher=(subjectId:string,teacherId:string,organizationId:string)=>api.post<TeacherAssignment>(`/subjects/${subjectId}/teachers`,{teacherId,organizationId});
+export const unassignSubjectTeacher=(subjectId:string,teacherId:string,organizationId:string)=>api.delete(`/subjects/${subjectId}/teachers/${teacherId}?organizationId=${encodeURIComponent(organizationId)}`);

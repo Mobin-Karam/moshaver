@@ -205,6 +205,19 @@ export class SubjectsService {
     );
   }
 
+  async listTeachers(u: AuthenticatedUser, subjectId: string, organizationId: string) {
+    const c = this.context(u);
+    this.authorization.requireCapability(c, "organization.members.manage");
+    if (!organizationId || !this.authorization.canAccessOrganization(c, organizationId, "organization.members.manage"))
+      throw new ApiException(404, "NOT_FOUND", "سازمان یافت نشد.");
+    const rows = await this.teacherSubjects.find({
+      where: { subject: { id: subjectId }, organization: { id: organizationId } },
+      relations: { teacher: true },
+      order: { createdAt: "ASC" },
+    });
+    return rows.map((row) => ({ id: row.id, teacher: { id: row.teacher.id, username: row.teacher.username, firstName: row.teacher.firstName, lastName: row.teacher.lastName }, createdAt: row.createdAt }));
+  }
+
   async unassignTeacher(
     u: AuthenticatedUser,
     subjectId: string,

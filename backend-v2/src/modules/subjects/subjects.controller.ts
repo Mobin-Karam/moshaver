@@ -49,6 +49,15 @@ export class SubjectsController {
   ) {
     return this.service.assignTeacher(u, id, d).then(ok);
   }
+  @Get("subjects/:id/teachers")
+  @RequireCapabilities("organization.members.manage")
+  teachers(
+    @CurrentUser() u: AuthenticatedUser,
+    @Param("id") id: string,
+    @Query("organizationId") organizationId: string,
+  ) {
+    return this.service.listTeachers(u, id, organizationId).then(ok);
+  }
   @Delete("subjects/:id/teachers/:teacherId")
   @RequireCapabilities("organization.members.manage")
   unassignTeacher(
