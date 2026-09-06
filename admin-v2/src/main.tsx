@@ -7,6 +7,7 @@ import { router } from "./app/router";
 import "./styles/globals.css";
 import { initializeTheme } from "./shared/theme/theme";
 import { API_WORK_CONTEXT_EVENT } from "./shared/api/api";
+import { AppErrorBoundary } from "./shared/errors";
 
 document.documentElement.dir = "rtl";
 document.documentElement.lang = "fa";
@@ -16,7 +17,9 @@ window.addEventListener(API_WORK_CONTEXT_EVENT, () => queryClient.clear());
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <AppProviders>
-      <RouterProvider router={router} />
+      <AppErrorBoundary>
+        <RouterProvider router={router} />
+      </AppErrorBoundary>
     </AppProviders>
   </React.StrictMode>,
 );

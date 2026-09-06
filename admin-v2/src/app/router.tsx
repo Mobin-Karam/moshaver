@@ -14,6 +14,7 @@ import { LivePage } from "../features/live";
 import { SystemPage } from "../features/system";
 import { FollowUpPage } from "../features/followup";
 import { OrganizationsPage, UsersPage } from "../features/access";
+import { RouteErrorBoundary } from "../shared/errors";
 
 const PlannerPage = lazy(() => import("../features/planner").then((module) => ({ default: module.PlannerPage })));
 const LearningPage = lazy(() => import("../features/learning").then((module) => ({ default: module.LearningPage })));
@@ -63,10 +64,11 @@ export function CapabilityRoute({ capability, children }: { capability: string; 
 }
 
 export const router = createBrowserRouter([
-  { path: "/login", element: <LoginPage /> },
+  { path: "/login", element: <LoginPage />, errorElement: <RouteErrorBoundary /> },
   {
     path: "/admin",
     element: <ProtectedRoute />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
         element: <AdminLayout />,
