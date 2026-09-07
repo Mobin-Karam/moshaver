@@ -138,7 +138,7 @@ export function HeaderNotifications() {
 
       <Link
         className="flex items-center justify-center gap-2 border-t border-slate-100 p-3 text-xs font-bold text-brand hover:bg-indigo-50 dark:border-slate-800 dark:hover:bg-slate-800"
-        to="/admin/notifications"
+        to="/admin/communication/notifications"
         onClick={() => setOpen(false)}
       >
         مشاهده مرکز اعلان‌ها

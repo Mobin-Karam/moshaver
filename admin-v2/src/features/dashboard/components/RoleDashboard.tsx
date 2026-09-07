@@ -260,7 +260,7 @@ function QuickActions() {
     { to: "/admin/planner", label: "برنامه‌ها", cap: "plans.read" },
     { to: "/admin/exams", label: "آزمون‌ها", cap: "exams.read" },
     { to: "/admin/quizzes", label: "آزمونک‌ها", cap: "quizzes.read" },
-    { to: "/admin/chat", label: "گفت‌وگو", cap: "chat.read" },
+    { to: "/admin/communication/chat", label: "گفت‌وگو", cap: "chat.read" },
     { to: "/admin/organizations", label: "سازمان", cap: "organization.read" },
     { to: "/admin/system", label: "سامانه", cap: "system.manage" },
   ].filter((item) => auth.can(item.cap));

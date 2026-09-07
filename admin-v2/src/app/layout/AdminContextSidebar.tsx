@@ -60,7 +60,7 @@ export function AdminContextSidebar({
       <nav className="grid min-h-0 flex-1 content-start gap-1 overflow-y-auto overscroll-contain pb-2">
         {items.map(({ path, title, icon: Icon }) => {
           const active = current.path === path;
-          const unread = path === "notifications" ? unreadNotifications : 0;
+          const unread = path === "communication/notifications" ? unreadNotifications : 0;
           const compactClasses = collapsed
             ? "justify-center px-2"
             : "justify-center px-2 xl:justify-start xl:gap-2 xl:px-3";

@@ -2,7 +2,13 @@ import { AlertTriangle, ExternalLink, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fa } from "../../../shared/lib/utils";
 import { Badge, Card } from "../../../shared/ui/ui";
-import { elapsed, needsAttention, stateLabel, stateTone } from "../lib/live-helpers";
+import {
+  attentionSignalCount,
+  elapsed,
+  needsAttention,
+  stateLabel,
+  stateTone,
+} from "../lib/live-helpers";
 import type { LiveStudent } from "../model/live.types";
 import { MiniMetric } from "./MiniMetric";
 
@@ -83,18 +89,18 @@ export function StudentCard({
         </div>
 
         <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-          <MiniMetric label="کار باقی‌مانده" value={fa(student.remainingTasks)} />
+          <MiniMetric label="کار عقب‌افتاده" value={fa(student.remainingTasks)} />
 
           <MiniMetric
-            label="مرور سررسید"
-            value={fa(student.dueReviews)}
-            warn={student.dueReviews >= 3}
+            label="درخواست باز"
+            value={fa(attentionSignalCount(student, "OPEN_RECOVERY"))}
+            warn={attentionSignalCount(student, "OPEN_RECOVERY") > 0}
           />
 
           <MiniMetric
-            label="آخرین آزمون"
-            value={student.lastExamPercent == null ? "—" : `${fa(student.lastExamPercent)}٪`}
-            warn={student.lastExamPercent != null && student.lastExamPercent < 50}
+            label="مسئله باز"
+            value={fa(attentionSignalCount(student, "TASK_ISSUE"))}
+            warn={attentionSignalCount(student, "TASK_ISSUE") > 0}
           />
         </div>
 
@@ -116,7 +122,7 @@ export function StudentCard({
 
           <Link
             className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-brand text-sm font-semibold text-white hover:bg-indigo-800"
-            to={`/admin/chat?studentId=${encodeURIComponent(student.id)}`}
+            to={`/admin/communication/chat?studentId=${encodeURIComponent(student.id)}`}
           >
             <MessageCircle size={15} />
             پیام

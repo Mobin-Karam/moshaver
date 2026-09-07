@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { normalizeLiveSnapshot } from "./api/live.api";
 import { filterLiveStudents, needsAttention, type LiveStudent } from "./LivePage";
 
 const students: LiveStudent[] = [
@@ -40,5 +41,36 @@ describe("live operations console", () => {
     expect(filterLiveStudents(students, "", "attention")).toEqual([students[1]]);
 
     expect(needsAttention(students[1])).toBe(true);
+  });
+
+  it("adapts the backend live array into the page snapshot without inventing metrics", () => {
+    const snapshot = normalizeLiveSnapshot([
+      {
+        id: "student-1",
+        name: "آرمان رضایی",
+        presence: {
+          online: true,
+          state: "studying",
+          lastSeenAt: new Date().toISOString(),
+          currentTask: { id: "task-1", title: "مطالعه زیست" },
+        },
+        attention: {
+          score: 5,
+          signals: [
+            { type: "MISSED_TASKS", count: 2, weight: 2 },
+            { type: "TASK_ISSUE", count: 1, weight: 3 },
+          ],
+        },
+      },
+    ]);
+
+    expect(snapshot.summary).toMatchObject({ total: 1, online: 1, studying: 1, attention: 1 });
+    expect(snapshot.students?.[0]).toMatchObject({
+      state: "studying",
+      remainingTasks: 2,
+      dueReviews: 0,
+      lastExamPercent: null,
+      attentionScore: 5,
+    });
   });
 });

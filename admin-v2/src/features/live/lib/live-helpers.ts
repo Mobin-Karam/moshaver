@@ -3,8 +3,14 @@ import type { LiveEvent, LiveFilter, LiveState, LiveStudent } from "../model/liv
 
 export function needsAttention(student: LiveStudent) {
   return (
-    student.dueReviews >= 3 || (student.lastExamPercent != null && student.lastExamPercent < 50)
+    Number(student.attentionScore || 0) > 0 ||
+    student.dueReviews >= 3 ||
+    (student.lastExamPercent != null && student.lastExamPercent < 50)
   );
+}
+
+export function attentionSignalCount(student: LiveStudent, type: string) {
+  return student.attentionSignals?.find((signal) => signal.type === type)?.count || 0;
 }
 
 export function filterLiveStudents(list: LiveStudent[], search: string, filter: LiveFilter) {

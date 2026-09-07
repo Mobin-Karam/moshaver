@@ -2,7 +2,13 @@ import { Injectable } from "@nestjs/common";
 import { Observable, Subject } from "rxjs";
 
 export type RealtimeEvent = {
-  type: "message" | "notification" | "plan.updated" | "exam.created" | "system.update" | "chat.message";
+  type:
+    | "message"
+    | "notification.created"
+    | "plan.updated"
+    | "exam.created"
+    | "system.update"
+    | "chat.message.created";
   data: unknown;
 };
 

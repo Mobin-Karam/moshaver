@@ -186,7 +186,7 @@ export function AttentionInbox({
 
                 <div className="flex gap-2 lg:justify-end">
                   <Link
-                    to={`/admin/notifications?studentId=${encodeURIComponent(student.id)}`}
+                    to={`/admin/communication/notifications?studentId=${encodeURIComponent(student.id)}`}
                     className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-brand px-3 text-xs font-bold text-white transition hover:brightness-90"
                   >
                     پیگیری

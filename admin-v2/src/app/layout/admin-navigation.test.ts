@@ -20,9 +20,9 @@ describe("admin navigation metadata", () => {
       "questions",
       "quizzes",
       "subjects",
-      "live",
-      "chat",
-      "notifications",
+      "communication/live",
+      "communication/chat",
+      "communication/notifications",
       "students",
       "users",
       "organizations",
@@ -38,7 +38,7 @@ describe("admin navigation metadata", () => {
     expect(mainAdminNavigation.map((item) => item.path)).toEqual([
       "",
       "planner",
-      "live",
+      "communication/live",
       "students",
       "system",
     ]);
@@ -109,6 +109,8 @@ describe("admin navigation metadata", () => {
     expect(adminDestination("exams", "آموزش", "student 1")).toBe(
       "/admin/exams?studentId=student%201",
     );
-    expect(adminDestination("chat", "ارتباط", "student-1")).toBe("/admin/chat");
+    expect(adminDestination("communication/chat", "ارتباط", "student-1")).toBe(
+      "/admin/communication/chat",
+    );
   });
 });

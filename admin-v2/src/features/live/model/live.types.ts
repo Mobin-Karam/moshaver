@@ -22,6 +22,8 @@ export type LiveStudent = {
   remainingTasks: number;
   lastExamPercent: number | null;
   lastActivityAt?: string | null;
+  attentionScore?: number;
+  attentionSignals?: Array<{ type: string; count: number; weight: number }>;
 };
 
 export type LiveEvent = {

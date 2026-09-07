@@ -218,12 +218,21 @@ export function ChatPage() {
     const source = api.openEvents((type, data) => {
       if (!type.startsWith("chat.")) return;
       if (active?.id && data.conversationId === active.id) {
+        const realtimeMessage = (data.message || data) as { id?: string };
         const nearBottom = isNearBottom(scrollRef.current);
         shouldStickRef.current = nearBottom;
-        if (type === "chat.message.created" && data.id)
-          appendRealtimeMessage(qc, active.id, normalizeChatMessage(data as { id: string }));
-        else if (type === "chat.message.edited" && data.id)
-          replaceRealtimeMessage(qc, active.id, normalizeChatMessage(data as { id: string }));
+        if (type === "chat.message.created" && realtimeMessage.id)
+          appendRealtimeMessage(
+            qc,
+            active.id,
+            normalizeChatMessage(realtimeMessage as { id: string }),
+          );
+        else if (type === "chat.message.edited" && realtimeMessage.id)
+          replaceRealtimeMessage(
+            qc,
+            active.id,
+            normalizeChatMessage(realtimeMessage as { id: string }),
+          );
         else if (type === "chat.message.deleted" && data.id)
           patchDeletedMessage(qc, active.id, String(data.id), String(data.deletedAt || ""));
         else void qc.invalidateQueries({ queryKey: ["chat-messages", active.id] });

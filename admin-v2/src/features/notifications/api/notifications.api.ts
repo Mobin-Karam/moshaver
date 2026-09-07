@@ -1,15 +1,21 @@
 import { api } from "../../../shared/api/api";
-import type { NotificationPage, PushPreferences, PushStatus } from "../model/notification-model";
+import {
+  normalizeAdminNotification,
+  type NotificationPage,
+  type PushPreferences,
+  type PushStatus,
+} from "../model/notification-model";
 import type {
   AdvisorInbox,
   RecoveryActionInput,
   TaskIssueActionInput,
 } from "../model/notification.types";
 
-export function getNotificationsPage(cursor?: string) {
-  return api.get<NotificationPage>(
+export async function getNotificationsPage(cursor?: string) {
+  const page = await api.get<NotificationPage>(
     `/notifications?limit=20${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`,
   );
+  return { ...page, items: page.items.map(normalizeAdminNotification) };
 }
 
 export function markNotificationRead(id: string) {

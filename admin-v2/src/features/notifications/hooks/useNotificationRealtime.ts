@@ -3,6 +3,7 @@ import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { api } from "../../../shared/api/api";
 import { notifications as sonner } from "../../../shared/ui/notifications";
 import {
+  normalizeAdminNotification,
   notificationAdminUrl,
   type AdminNotification,
   type NotificationPage,
@@ -31,7 +32,7 @@ export function useNotificationRealtime({
     try {
       source = api.openEvents((type, data) => {
         if (type === "notification.created") {
-          const item = data as AdminNotification;
+          const item = normalizeAdminNotification(data as AdminNotification);
 
           queryClient.setQueryData<InfiniteData<NotificationPage>>(["notifications"], (current) => {
             if (

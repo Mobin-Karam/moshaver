@@ -16,7 +16,7 @@ const destinations = [
   ["/admin/planner", "برنامه", "برنامه روزانه و هفتگی", CalendarDays, "plans.read"],
   ["/admin/exams", "آزمون", "آزمون‌ها و نتایج", NotebookTabs, "exams.read"],
   ["/admin/questions", "سؤال‌ها", "بانک سؤال دانش‌آموز", FileQuestion, "questions.read"],
-  ["/admin/chat", "گفتگو", "پیام و ارتباط مستقیم", MessageCircle, "chat.read"],
+  ["/admin/communication/chat", "گفتگو", "پیام و ارتباط مستقیم", MessageCircle, "chat.read"],
   ["/admin/reports", "گزارش", "عملکرد و مطالعه", BarChart3, "reports.read"],
   ["/admin", "داشبورد", "نمای کلی فعالیت", LayoutDashboard, ""],
 ] as const;

@@ -80,21 +80,21 @@ export const adminNavigation = [
     section: "ارتباط",
     items: [
       {
-        path: "live",
+        path: "communication/live",
         title: "فعالیت زنده",
         description: "پایش وضعیت و فعالیت جاری همه دانش‌آموزان",
         icon: Activity,
         capability: "student.live.read",
       },
       {
-        path: "chat",
+        path: "communication/chat",
         title: "گفتگو",
         description: "پیام‌های مستقیم و گروهی، حضور و پیگیری گفتگوها",
         icon: MessageSquare,
         capability: "chat.read",
       },
       {
-        path: "notifications",
+        path: "communication/notifications",
         title: "مرکز اعلان‌ها",
         description: "ارسال و پیگیری اعلان‌های دانش‌آموزان",
         icon: Bell,
@@ -190,8 +190,8 @@ const roleTitles: Record<string, Record<string, string>> = {
     students: "فرزندان",
     reports: "پیشرفت",
     planner: "برنامه",
-    chat: "پیام‌ها",
-    notifications: "اعلان‌ها",
+    "communication/chat": "پیام‌ها",
+    "communication/notifications": "اعلان‌ها",
     settings: "پروفایل",
   },
   ADVISOR: {
@@ -200,7 +200,7 @@ const roleTitles: Record<string, Record<string, string>> = {
     planner: "برنامه‌ریزی",
     learning: "یادگیری و مرور",
     exams: "آزمون و درخواست‌ها",
-    chat: "گفت‌وگوها",
+    "communication/chat": "گفت‌وگوها",
     reports: "گزارش پیشرفت",
   },
   TEACHER: {
@@ -210,14 +210,14 @@ const roleTitles: Record<string, Record<string, string>> = {
     questions: "بانک سؤال",
     quizzes: "آزمونک‌ها",
     subjects: "درس‌های من",
-    chat: "پیام‌ها",
+    "communication/chat": "پیام‌ها",
   },
   MENTOR: {
     "": "میز کار منتور",
     students: "دانش‌آموزان من",
     planner: "برنامه و هدف‌ها",
     reports: "روند پیشرفت",
-    chat: "گفت‌وگوها",
+    "communication/chat": "گفت‌وگوها",
   },
   CONTENT_MANAGER: {
     "": "استودیوی محتوا",

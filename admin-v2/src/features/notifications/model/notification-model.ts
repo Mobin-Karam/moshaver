@@ -25,6 +25,26 @@ export type PushStatus = {
   preferences: PushPreferences;
 };
 
+export function normalizeAdminNotification(
+  item: AdminNotification & { message?: string },
+): AdminNotification {
+  const type = String(item.type || "").toUpperCase();
+  const normalizedType =
+    type === "MESSAGE" || type === "CHAT"
+      ? "message"
+      : type === "EXAM_REMINDER" || type === "EXAM"
+        ? "exam"
+        : type === "PLAN_UPDATE" || type === "LESSON"
+          ? "lesson"
+          : "announcement";
+  return {
+    ...item,
+    type: normalizedType,
+    body: item.body || item.message || "",
+    isRead: Boolean(item.isRead || item.readAt),
+  };
+}
+
 export function notificationTone(type?: string) {
   if (type === "message") {
     return "blue" as const;
@@ -56,15 +76,20 @@ export function notificationTypeLabel(type?: string) {
 
 export function notificationAdminUrl(url?: string) {
   if (!url || url === "/") {
-    return "/admin/notifications";
+    return "/admin/communication/notifications";
   }
 
   if (url.startsWith("/admin/")) {
     return url;
   }
 
-  if (url.startsWith("/chat") || url.startsWith("/messages")) {
-    return "/admin/chat";
+  if (
+    url.startsWith("/communication/chat") ||
+    url.startsWith("/chat") ||
+    url.startsWith("/messages")
+  ) {
+    const query = url.includes("?") ? url.slice(url.indexOf("?")) : "";
+    return `/admin/communication/chat${query}`;
   }
 
   if (url.startsWith("/exams")) {
@@ -75,5 +100,5 @@ export function notificationAdminUrl(url?: string) {
     return "/admin/planner";
   }
 
-  return "/admin/notifications";
+  return "/admin/communication/notifications";
 }

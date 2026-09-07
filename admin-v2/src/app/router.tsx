@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet, useLocation } from "react-router-dom";
 import { lazy, Suspense, type ReactNode } from "react";
 import { RefreshCw } from "lucide-react";
 import { Button } from "../shared/ui/ui";
@@ -105,6 +105,11 @@ function ProtectedRoute() {
   return <Outlet />;
 }
 
+function CommunicationRedirect({ page }: { page: "live" | "chat" | "notifications" }) {
+  const location = useLocation();
+  return <Navigate to={`/admin/communication/${page}${location.search}${location.hash}`} replace />;
+}
+
 export function CapabilityRoute({
   capability,
   children,
@@ -152,16 +157,7 @@ export const router = createBrowserRouter([
               </RouteScreen>
             ),
           },
-          {
-            path: "live",
-            element: (
-              <CapabilityRoute capability="student.live.read">
-                <RouteScreen>
-                  <LivePage />
-                </RouteScreen>
-              </CapabilityRoute>
-            ),
-          },
+          { path: "live", element: <CommunicationRedirect page="live" /> },
           {
             path: "students",
             element: (
@@ -253,23 +249,42 @@ export const router = createBrowserRouter([
               </CapabilityRoute>
             ),
           },
+          { path: "chat", element: <CommunicationRedirect page="chat" /> },
+          { path: "notifications", element: <CommunicationRedirect page="notifications" /> },
           {
-            path: "chat",
-            element: (
-              <CapabilityRoute capability="chat.read">
-                <RouteScreen>
-                  <ChatPage />
-                </RouteScreen>
-              </CapabilityRoute>
-            ),
-          },
-          {
-            path: "notifications",
-            element: (
-              <RouteScreen>
-                <NotificationsPage />
-              </RouteScreen>
-            ),
+            path: "communication",
+            element: <Outlet />,
+            children: [
+              { index: true, element: <Navigate to="live" replace /> },
+              {
+                path: "live",
+                element: (
+                  <CapabilityRoute capability="student.live.read">
+                    <RouteScreen>
+                      <LivePage />
+                    </RouteScreen>
+                  </CapabilityRoute>
+                ),
+              },
+              {
+                path: "chat",
+                element: (
+                  <CapabilityRoute capability="chat.read">
+                    <RouteScreen>
+                      <ChatPage />
+                    </RouteScreen>
+                  </CapabilityRoute>
+                ),
+              },
+              {
+                path: "notifications",
+                element: (
+                  <RouteScreen>
+                    <NotificationsPage />
+                  </RouteScreen>
+                ),
+              },
+            ],
           },
           {
             path: "follow-up",

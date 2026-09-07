@@ -143,7 +143,7 @@ export function AdminMobileDrawer({
               <div className="grid gap-1">
                 {group.items.map(({ path, title, icon: Icon }) => {
                   const active = current.path === path;
-                  const unread = path === "notifications" ? unreadNotifications : 0;
+                  const unread = path === "communication/notifications" ? unreadNotifications : 0;
                   return (
                     <NavLink
                       key={path}

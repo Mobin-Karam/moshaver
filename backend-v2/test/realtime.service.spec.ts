@@ -7,8 +7,8 @@ describe("RealtimeService", () => {
     const receivedB: unknown[] = [];
     const subscriptionA = service.stream("user-a").subscribe((event) => receivedA.push(event));
     const subscriptionB = service.stream("user-b").subscribe((event) => receivedB.push(event));
-    service.emitToUser("user-a", "notification", { id: "n1" });
-    expect(receivedA).toEqual([{ type: "notification", data: { id: "n1" } }]);
+    service.emitToUser("user-a", "notification.created", { id: "n1" });
+    expect(receivedA).toEqual([{ type: "notification.created", data: { id: "n1" } }]);
     expect(receivedB).toEqual([]);
     expect(service.connectionCount()).toBe(2);
     subscriptionA.unsubscribe();
