@@ -10,12 +10,7 @@ export class ApiError extends Error {
   readonly code: string;
   readonly details: unknown;
 
-  constructor(
-    status: number,
-    message: string,
-    code = "HTTP_ERROR",
-    details: unknown = null,
-  ) {
+  constructor(status: number, message: string, code = "HTTP_ERROR", details: unknown = null) {
     super(message);
     this.name = "ApiError";
     this.status = status;
@@ -26,10 +21,24 @@ export class ApiError extends Error {
 
 const CSRF_KEY = "moshaver_admin_csrf";
 const DEV_BACKEND_KEY = "moshaver_admin_backend";
-const API_VERSION_KEY = "moshaver_admin_api_version";
-export type ApiVersion = "v1" | "v2";
 type AuthFailureListener = (error: ApiError) => void;
 const authFailureListeners = new Set<AuthFailureListener>();
+let activeOrganizationId = "";
+let activeWorkRole = "";
+export const API_WORK_CONTEXT_EVENT = "admin-api-work-context-change";
+
+export function setApiWorkContext(role?: string, organizationId?: string) {
+  const nextRole = role?.trim() || "";
+  const nextOrganizationId = organizationId?.trim() || "";
+  if (nextRole === activeWorkRole && nextOrganizationId === activeOrganizationId) return;
+  activeWorkRole = nextRole;
+  activeOrganizationId = nextOrganizationId;
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(API_WORK_CONTEXT_EVENT));
+}
+
+export function getApiWorkContextKey() {
+  return `${activeWorkRole || "none"}:${activeOrganizationId || "global"}`;
+}
 
 export const backendTargets = {
   local: "http://localhost:4000",
@@ -38,24 +47,12 @@ export const backendTargets = {
 
 export type BackendTarget = keyof typeof backendTargets;
 
-function configuredApiVersion(): ApiVersion {
-  return import.meta.env.VITE_API_VERSION === "v2" ? "v2" : "v1";
-}
-
-export function getSelectedApiVersion(): ApiVersion {
-  if (typeof window === "undefined") return configuredApiVersion();
-  const saved = window.localStorage.getItem(API_VERSION_KEY);
-  return saved === "v1" || saved === "v2" ? saved : configuredApiVersion();
-}
-
-export function setSelectedApiVersion(version: ApiVersion) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(API_VERSION_KEY, version);
-  document.cookie = `${API_VERSION_KEY}=${version}; Path=/; SameSite=Lax; Max-Age=31536000`;
+export function getSelectedApiVersion(): "v2" {
+  return "v2";
 }
 
 function versionedPath() {
-  return `/api/${getSelectedApiVersion()}`;
+  return "/api/v2";
 }
 
 function isBackendTarget(value: string | null): value is BackendTarget {
@@ -89,7 +86,10 @@ export function getApiBaseUrl() {
 
 export function getBackendTargetUrl() {
   const selected = getSelectedBackend();
-  if (selected) return `${backendTargets[selected]}${versionedPath()}`;
+  // In development the selected target is carried by a same-origin cookie and
+  // resolved by the Vite proxy. Returning the absolute backend URL here would
+  // bypass that proxy, reintroduce CORS, and make session cookies cross-site.
+  if (selected && import.meta.env.DEV) return versionedPath();
   return getApiBaseUrl();
 }
 
@@ -112,12 +112,10 @@ function isMutating(method: string) {
 }
 
 async function refreshCsrf() {
-  const me = await request<{ csrfToken?: string }>(
-    "GET",
-    "/auth/me",
-    undefined,
-    { noCsrfRetry: true, suppressAuthFailure: true },
-  );
+  const me = await request<{ csrfToken?: string }>("GET", "/auth/me", undefined, {
+    noCsrfRetry: true,
+    suppressAuthFailure: true,
+  });
   if (me.csrfToken) setCsrf(me.csrfToken);
   return me;
 }
@@ -133,26 +131,23 @@ export async function request<T>(
   } = {},
 ): Promise<T> {
   const controller = new AbortController();
-  const timeout = window.setTimeout(
-    () => controller.abort(),
-    options.timeoutMs ?? 20_000,
-  );
+  const timeout = window.setTimeout(() => controller.abort(), options.timeoutMs ?? 20_000);
   const headers = new Headers({ Accept: "application/json" });
+  if (activeWorkRole) headers.set("X-Work-Role", activeWorkRole);
+  if (activeOrganizationId) headers.set("X-Organization-Id", activeOrganizationId);
   if (body !== undefined) headers.set("Content-Type", "application/json");
   const token = csrf();
   if (isMutating(method) && token) headers.set("X-CSRF-Token", token);
 
   try {
-    const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    const response = await fetch(`${getBackendTargetUrl()}${path}`, {
       method,
       headers,
       credentials: "include",
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: controller.signal,
     });
-    const payload = (await response
-      .json()
-      .catch(() => null)) as ApiEnvelope<T> | null;
+    const payload = (await response.json().catch(() => null)) as ApiEnvelope<T> | null;
     if (response.ok && payload?.ok) {
       const data = payload.data as T & { csrfToken?: string };
       if (data?.csrfToken) setCsrf(data.csrfToken);
@@ -195,23 +190,21 @@ export const api = {
   patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
   delete: <T>(path: string) => request<T>("DELETE", path),
   async download(path: string) {
-    const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    const response = await fetch(`${getBackendTargetUrl()}${path}`, {
       method: "POST",
       credentials: "include",
       headers: csrf() ? { "X-CSRF-Token": csrf() } : undefined,
     });
-    if (!response.ok)
-      throw new ApiError(response.status, "دریافت فایل پشتیبان انجام نشد.");
+    if (!response.ok) throw new ApiError(response.status, "دریافت فایل پشتیبان انجام نشد.");
     return {
       blob: await response.blob(),
       filename:
-        response.headers
-          .get("content-disposition")
-          ?.match(/filename="?([^";]+)"?/)?.[1] || "moshaver-backup.sqlite",
+        response.headers.get("content-disposition")?.match(/filename="?([^";]+)"?/)?.[1] ||
+        "moshaver-backup.sqlite",
     };
   },
   async uploadBinary<T>(path: string, body: Blob) {
-    const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    const response = await fetch(`${getBackendTargetUrl()}${path}`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -220,9 +213,7 @@ export const api = {
       },
       body,
     });
-    const payload = (await response
-      .json()
-      .catch(() => null)) as ApiEnvelope<T> | null;
+    const payload = (await response.json().catch(() => null)) as ApiEnvelope<T> | null;
     if (response.ok && payload?.ok) return payload.data;
     const error = payload && "error" in payload ? payload.error : undefined;
     throw new ApiError(
@@ -272,13 +263,7 @@ export const api = {
     ];
     names.forEach((name) =>
       source.addEventListener(name, (event) =>
-        onEvent(
-          name,
-          JSON.parse((event as MessageEvent).data || "{}") as Record<
-            string,
-            unknown
-          >,
-        ),
+        onEvent(name, JSON.parse((event as MessageEvent).data || "{}") as Record<string, unknown>),
       ),
     );
     source.onopen = () => onState?.("open");

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { AccountSecurityPanel } from "./components/AccountSecurityPanel";
 import { DatabaseBackupPanel } from "./components/DatabaseBackupPanel";
+import { AppVersionManager } from "./components/AppVersionManager";
 import type { PasswordDraft } from "./model/system.types";
 
 function PasswordHarness({ onSubmit }: { onSubmit: () => void }) {
@@ -12,7 +13,14 @@ function PasswordHarness({ onSubmit }: { onSubmit: () => void }) {
     newPassword: "",
     confirmPassword: "",
   });
-  return <AccountSecurityPanel passwords={passwords} setPasswords={setPasswords} busy={false} onSubmit={onSubmit} />;
+  return (
+    <AccountSecurityPanel
+      passwords={passwords}
+      setPasswords={setPasswords}
+      busy={false}
+      onSubmit={onSubmit}
+    />
+  );
 }
 
 describe("system and security controls", () => {
@@ -34,11 +42,42 @@ describe("system and security controls", () => {
 
   it("rejects non-SQLite restore files before enabling a destructive action", () => {
     const setFile = vi.fn();
-    render(<DatabaseBackupPanel file={null} busy={false} downloading={false} setFile={setFile} onDownload={vi.fn()} onRestore={vi.fn()} />);
+    render(
+      <DatabaseBackupPanel
+        file={null}
+        busy={false}
+        downloading={false}
+        setFile={setFile}
+        onDownload={vi.fn()}
+        onRestore={vi.fn()}
+      />,
+    );
     fireEvent.change(screen.getByLabelText("فایل بازیابی SQLite"), {
       target: { files: [new File(["not sqlite"], "backup.txt", { type: "text/plain" })] },
     });
     expect(screen.getByRole("alert")).toHaveTextContent("فقط فایل SQLite");
     expect(screen.getByRole("button", { name: /اعتبارسنجی و بازیابی/ })).toBeDisabled();
+  });
+
+  it("edits the active app version through an accessible form", async () => {
+    const user = userEvent.setup();
+    const save = vi.fn();
+    render(
+      <AppVersionManager
+        versions={[{ app: "admin", version: "2.0.0", notes: "stable", updatedAt: "2026-01-01" }]}
+        loading={false}
+        error={false}
+        busy={false}
+        canManage
+        onRetry={vi.fn()}
+        onSave={save}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: /admin/ }));
+    const version = screen.getByLabelText("نسخه admin");
+    await user.clear(version);
+    await user.type(version, "2.1.0");
+    await user.click(screen.getByRole("button", { name: /ذخیره/ }));
+    expect(save).toHaveBeenCalledWith("admin", { version: "2.1.0", notes: "stable" });
   });
 });

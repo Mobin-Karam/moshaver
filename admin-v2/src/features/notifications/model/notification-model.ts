@@ -1,17 +1,7 @@
-export type AdminNotification = {
-  id: string;
-  title: string;
-  body?: string;
-  isRead?: boolean;
-  createdAt?: string;
-  type?:
-    | "message"
-    | "exam"
-    | "lesson"
-    | "announcement"
-    | string;
-  url?: string;
-};
+import type { NotificationContract } from "@moshaver/api-contract";
+
+export type AdminNotification = Partial<NotificationContract> &
+  Pick<NotificationContract, "id" | "title">;
 
 export type NotificationPage = {
   items: AdminNotification[];
@@ -29,17 +19,33 @@ export type PushPreferences = {
 
 export type PushStatus = {
   supported: boolean;
-  permission:
-    | NotificationPermission
-    | "unsupported";
+  permission: NotificationPermission | "unsupported";
   registered: boolean;
   serverConfigured: boolean;
   preferences: PushPreferences;
 };
 
-export function notificationTone(
-  type?: string,
-) {
+export function normalizeAdminNotification(
+  item: AdminNotification & { message?: string },
+): AdminNotification {
+  const type = String(item.type || "").toUpperCase();
+  const normalizedType =
+    type === "MESSAGE" || type === "CHAT"
+      ? "message"
+      : type === "EXAM_REMINDER" || type === "EXAM"
+        ? "exam"
+        : type === "PLAN_UPDATE" || type === "LESSON"
+          ? "lesson"
+          : "announcement";
+  return {
+    ...item,
+    type: normalizedType,
+    body: item.body || item.message || "",
+    isRead: Boolean(item.isRead || item.readAt),
+  };
+}
+
+export function notificationTone(type?: string) {
   if (type === "message") {
     return "blue" as const;
   }
@@ -55,24 +61,22 @@ export function notificationTone(
   return "neutral" as const;
 }
 
-export function notificationTypeLabel(
-  type?: string,
-) {
+export function notificationTypeLabel(type?: string) {
   return (
-    {
-      message: "پیام",
-      exam: "آزمون",
-      lesson: "برنامه",
-      announcement: "اطلاعیه",
-    } as Record<string, string>
-  )[type || ""] || "اعلان";
+    (
+      {
+        message: "پیام",
+        exam: "آزمون",
+        lesson: "برنامه",
+        announcement: "اطلاعیه",
+      } as Record<string, string>
+    )[type || ""] || "اعلان"
+  );
 }
 
-export function notificationAdminUrl(
-  url?: string,
-) {
+export function notificationAdminUrl(url?: string) {
   if (!url || url === "/") {
-    return "/admin/notifications";
+    return "/admin/communication/notifications";
   }
 
   if (url.startsWith("/admin/")) {
@@ -80,22 +84,21 @@ export function notificationAdminUrl(
   }
 
   if (
+    url.startsWith("/communication/chat") ||
     url.startsWith("/chat") ||
     url.startsWith("/messages")
   ) {
-    return "/admin/chat";
+    const query = url.includes("?") ? url.slice(url.indexOf("?")) : "";
+    return `/admin/communication/chat${query}`;
   }
 
   if (url.startsWith("/exams")) {
     return "/admin/exams";
   }
 
-  if (
-    url.startsWith("/schedule") ||
-    url.startsWith("/plans")
-  ) {
+  if (url.startsWith("/schedule") || url.startsWith("/plans")) {
     return "/admin/planner";
   }
 
-  return "/admin/notifications";
+  return "/admin/communication/notifications";
 }

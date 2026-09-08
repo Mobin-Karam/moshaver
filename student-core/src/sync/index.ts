@@ -53,18 +53,25 @@ export async function pushChanges(
   let pushed = 0;
   let failed = 0;
 
-  for (const item of pending) {
-    try {
-      await network.request(item.method, item.path, item.body, { skipSyncQueue: true });
-      await sync.remove(item.id);
-      pushed += 1;
-    } catch {
-      failed += 1;
-      break;
-    }
-  }
+  if (!pending.length) return { pushed, failed };
+  try {
+    const response = await network.request<{accepted:Array<{id:string}>;rejected:Array<{id?:string;code:string}>}>("POST", "/sync/upload", {
+      changes: pending.map((item) => ({ id: item.id, clientMutationId: item.id, type: syncMutationType(item.path), method: item.method, path: item.path, body: item.body, createdAt: item.createdAt })),
+    }, { skipSyncQueue: true });
+    for (const item of response.accepted) { await sync.remove(item.id); pushed += 1; }
+    failed = response.rejected.length;
+  } catch { failed = pending.length; }
 
   return { pushed, failed };
+}
+
+export type SyncPullResult = { cursor: string; reset?: boolean; [key: string]: unknown };
+export async function pullChanges(sync: SyncProvider, network: NetworkProvider, reconcile: (result: SyncPullResult) => Promise<void> | void) {
+  const cursor = await sync.getCursor?.();
+  const result = await network.request<SyncPullResult>("GET", `/sync${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`, null, { skipSyncQueue: true });
+  await reconcile(result);
+  if (result.cursor) await sync.setCursor?.(result.cursor);
+  return result;
 }
 
 export async function syncNow(
@@ -93,6 +100,7 @@ export class SyncWorker {
     private readonly sync: SyncProvider,
     private readonly network: NetworkProvider,
     private readonly isOnline: () => boolean = () => true,
+    private readonly pullUpdates?: () => Promise<void>,
   ) {}
 
   getStatus(): SyncStatus {
@@ -124,7 +132,8 @@ export class SyncWorker {
 
     this.setStatus("syncing");
     this.flushing = pushChanges(this.sync, this.network)
-      .then((result) => {
+      .then(async (result) => {
+        if (!result.failed && this.pullUpdates) await this.pullUpdates();
         this.setStatus(result.failed ? "failed" : "online");
         return result;
       })
@@ -147,6 +156,16 @@ export class SyncWorker {
     this.status = status;
     for (const listener of this.listeners) listener(status);
   }
+}
+
+function syncMutationType(path: string) {
+  if (path.includes("/complete")) return "task_completion";
+  if (path.includes("study-sessions")) return "study_session";
+  if (path === "/reports") return "daily_report";
+  if (path === "/recovery-requests") return "recovery_request";
+  if (path.includes("/review")) return "learning_review";
+  if (path.includes("/exams/attempts/")) return "exam_autosave";
+  return "student_mutation";
 }
 
 export function resolveConflict<T>(

@@ -7,39 +7,26 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  api,
-  ApiError,
-  onAuthFailure,
-} from "../../../shared/api/api";
-import type { User } from "../../../shared/types/domain";
-import {
-  getCurrentUser,
-  loginRequest,
-  logoutRequest,
-} from "../api/auth.api";
+import { api, ApiError, onAuthFailure, setApiWorkContext } from "../../../shared/api/api";
+import type { AccountContext, OrganizationSummary, User } from "../../../shared/types/domain";
+import { getCurrentUser, getAccountContext, loginRequest, logoutRequest } from "../api/auth.api";
 import {
   AUTH_SIGNAL_KEY,
   normalizeUser,
   PENDING_LOGOUT_KEY,
   signalAuthEvent,
 } from "../lib/auth-session";
-import type {
-  AuthState,
-  AuthStatus,
-} from "../model/auth.types";
+import type { AuthState, AuthStatus } from "../model/auth.types";
 
 export const AuthContext = createContext<AuthState | null>(null);
 
 const MAX_RESTORE_ATTEMPTS = 3;
 const RESTORE_RETRY_DELAY_MS = 1_800;
 
-export function AuthProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [accountContext, setAccountContext] = useState<AccountContext | null>(null);
+  const [activeRole, setActiveRoleState] = useState<AccountContext["roles"][number] | null>(null);
   const [status, setStatus] = useState<AuthStatus>("checking");
   const [message, setMessage] = useState("در حال بررسی نشست امن…");
   const operation = useRef(0);
@@ -47,37 +34,42 @@ export function AuthProvider({
   const restoreAttempts = useRef(0);
   const lastCheck = useRef(0);
 
-  const finishLocalLogout = useCallback(
-    (text: string, broadcast = true) => {
-      operation.current += 1;
-      api.setCsrf();
-      setUser(null);
-      setStatus("anonymous");
-      setMessage(text);
+  const finishLocalLogout = useCallback((text: string, broadcast = true) => {
+    operation.current += 1;
+    api.setCsrf();
+    setUser(null);
+    setAccountContext(null);
+    setActiveRoleState(null);
+    setApiWorkContext();
+    setStatus("anonymous");
+    setMessage(text);
 
-      if (broadcast) {
-        signalAuthEvent("logout");
-      }
-    },
-    [],
-  );
+    if (broadcast) {
+      signalAuthEvent("logout");
+    }
+  }, []);
 
   const restore = useCallback(async () => {
     const current = ++operation.current;
     window.clearTimeout(retryTimer.current);
 
-    setStatus((value) =>
-      value === "authenticated" ? value : "checking",
-    );
+    setStatus((value) => (value === "authenticated" ? value : "checking"));
 
     setMessage("در حال بررسی نشست امن…");
 
     try {
-      const me = normalizeUser(await getCurrentUser());
+      const raw = await getCurrentUser();
+      const context = await getAccountContext().catch(() => null);
+      const me = normalizeUser(
+        context ? { ...context.user, role: context.roles[0] ?? raw.role } : raw,
+      );
 
       if (current !== operation.current) return;
 
-      if (me.role !== "admin") {
+      const nonStudent = context
+        ? context.roles.some((role) => role !== "STUDENT")
+        : me.role === "admin";
+      if (!nonStudent) {
         try {
           await logoutRequest();
         } catch {
@@ -91,6 +83,10 @@ export function AuthProvider({
       lastCheck.current = Date.now();
       restoreAttempts.current = 0;
       setUser(me);
+      setAccountContext(context);
+      const role = context?.roles.find((item) => item !== "STUDENT") ?? null;
+      setActiveRoleState(role);
+      setApiWorkContext(role ?? undefined, context?.activeOrganization?.id);
       setStatus("authenticated");
       setMessage("");
     } catch (error) {
@@ -118,17 +114,12 @@ export function AuthProvider({
         `ارتباط با سرور برقرار نشد؛ تلاش ${restoreAttempts.current} از ${MAX_RESTORE_ATTEMPTS} انجام شد و دوباره تلاش می‌کنیم…`,
       );
 
-      retryTimer.current = window.setTimeout(
-        () => void restore(),
-        RESTORE_RETRY_DELAY_MS,
-      );
+      retryTimer.current = window.setTimeout(() => void restore(), RESTORE_RETRY_DELAY_MS);
     }
   }, [finishLocalLogout]);
 
   useEffect(() => {
-    if (
-      sessionStorage.getItem(PENDING_LOGOUT_KEY) === "1"
-    ) {
+    if (sessionStorage.getItem(PENDING_LOGOUT_KEY) === "1") {
       setStatus("logging-out");
 
       logoutRequest()
@@ -136,36 +127,23 @@ export function AuthProvider({
           sessionStorage.removeItem(PENDING_LOGOUT_KEY);
           finishLocalLogout("خروج قبلی تکمیل شد.");
         })
-        .catch(() =>
-          finishLocalLogout(
-            "خروج قبلی هنوز منتظر اتصال اینترنت است.",
-            false,
-          ),
-        );
+        .catch(() => finishLocalLogout("خروج قبلی هنوز منتظر اتصال اینترنت است.", false));
     } else {
       void restore();
     }
 
     const stopAuthFailure = onAuthFailure((error) =>
-      finishLocalLogout(
-        error.message ||
-          "نشست پایان یافته است. دوباره وارد شوید.",
-      ),
+      finishLocalLogout(error.message || "نشست پایان یافته است. دوباره وارد شوید."),
     );
 
     const sync = () => {
-      if (
-        !document.hidden &&
-        Date.now() - lastCheck.current > 15_000
-      ) {
+      if (!document.hidden && Date.now() - lastCheck.current > 15_000) {
         void restore();
       }
     };
 
     const online = () => {
-      if (
-        sessionStorage.getItem(PENDING_LOGOUT_KEY) === "1"
-      ) {
+      if (sessionStorage.getItem(PENDING_LOGOUT_KEY) === "1") {
         void logoutRequest().then(() => {
           sessionStorage.removeItem(PENDING_LOGOUT_KEY);
           finishLocalLogout("خروج سرور هم تکمیل شد.");
@@ -176,10 +154,7 @@ export function AuthProvider({
     };
 
     const storage = (event: StorageEvent) => {
-      if (
-        event.key !== AUTH_SIGNAL_KEY ||
-        !event.newValue
-      ) {
+      if (event.key !== AUTH_SIGNAL_KEY || !event.newValue) {
         return;
       }
 
@@ -189,10 +164,7 @@ export function AuthProvider({
         };
 
         if (data.kind === "logout") {
-          finishLocalLogout(
-            "نشست در تب دیگری خارج شد.",
-            false,
-          );
+          finishLocalLogout("نشست در تب دیگری خارج شد.", false);
         } else if (data.kind === "login") {
           void restore();
         }
@@ -225,10 +197,7 @@ export function AuthProvider({
       stopRestore() {
         window.clearTimeout(retryTimer.current);
         restoreAttempts.current = 0;
-        finishLocalLogout(
-          "بازیابی نشست متوقف شد. برای ادامه وارد حساب شوید.",
-          false,
-        );
+        finishLocalLogout("بازیابی نشست متوقف شد. برای ادامه وارد حساب شوید.", false);
       },
 
       async login(username, password) {
@@ -240,8 +209,14 @@ export function AuthProvider({
         if (current !== operation.current) return;
 
         const normalizedUser = normalizeUser(data.user);
-
-        if (normalizedUser.role !== "admin") {
+        const context = await getAccountContext().catch(() => null);
+        const contextUser = context
+          ? normalizeUser({ ...context.user, role: context.roles[0] ?? normalizedUser.role })
+          : normalizedUser;
+        const nonStudent = context
+          ? context.roles.some((role) => role !== "STUDENT")
+          : normalizedUser.role === "admin";
+        if (!nonStudent) {
           try {
             await logoutRequest();
           } catch {
@@ -254,7 +229,11 @@ export function AuthProvider({
 
         sessionStorage.removeItem(PENDING_LOGOUT_KEY);
         api.setCsrf(data.csrfToken);
-        setUser(normalizedUser);
+        setUser(contextUser);
+        setAccountContext(context);
+        const role = context?.roles.find((item) => item !== "STUDENT") ?? null;
+        setActiveRoleState(role);
+        setApiWorkContext(role ?? undefined, context?.activeOrganization?.id);
         setStatus("authenticated");
         restoreAttempts.current = 0;
         lastCheck.current = Date.now();
@@ -280,21 +259,35 @@ export function AuthProvider({
       },
 
       hasRole(role) {
-        return user?.role === role;
+        return (
+          accountContext?.roles.some((item) => item.toLowerCase() === String(role).toLowerCase()) ??
+          user?.role === role
+        );
+      },
+      context: accountContext,
+      can(capability) {
+        const scoped = accountContext?.workContexts?.find((item) => item.role === activeRole);
+        return (scoped?.capabilities ?? accountContext?.capabilities ?? []).includes(capability);
+      },
+      activeRole,
+      capabilities:
+        accountContext?.workContexts?.find((item) => item.role === activeRole)?.capabilities ??
+        accountContext?.capabilities ??
+        [],
+      setActiveRole(role) {
+        if (!accountContext?.roles.includes(role)) return;
+        setActiveRoleState(role);
+        setApiWorkContext(role, accountContext.activeOrganization?.id);
+      },
+      setActiveOrganization(organization: OrganizationSummary | null) {
+        setAccountContext((current) =>
+          current ? { ...current, activeOrganization: organization } : current,
+        );
+        setApiWorkContext(activeRole ?? undefined, organization?.id);
       },
     }),
-    [
-      finishLocalLogout,
-      message,
-      restore,
-      status,
-      user,
-    ],
+    [finishLocalLogout, message, restore, status, user, accountContext, activeRole],
   );
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

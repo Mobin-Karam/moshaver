@@ -12,10 +12,7 @@ export function normalizeUser(user: User): User {
 
 export function signalAuthEvent(kind: "login" | "logout") {
   try {
-    localStorage.setItem(
-      AUTH_SIGNAL_KEY,
-      JSON.stringify({ kind, at: Date.now() }),
-    );
+    localStorage.setItem(AUTH_SIGNAL_KEY, JSON.stringify({ kind, at: Date.now() }));
   } catch {
     /* Storage may be unavailable. */
   }

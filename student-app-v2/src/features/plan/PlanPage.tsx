@@ -16,6 +16,7 @@ export function PlanPage() {
   const finishTask = useStudentStore((state) => state.finishTask);
   const cancelFocus = useStudentStore((state) => state.cancelFocus);
   const storeError = useStudentStore((state) => state.error);
+  const canMutate = useStudentStore((state) => Boolean(state.access?.canMutateStudentWork));
   const [date, setDate] = useState(plan.isoDate);
   const [now, setNow] = useState(new Date());
   const [finishTaskId, setFinishTaskId] = useState<string | null>(null);
@@ -84,6 +85,7 @@ export function PlanPage() {
             index={index}
             nowTime={now.toTimeString().slice(0, 5)}
             running={activeSession?.taskId === task.id}
+            readOnly={!canMutate}
             onStart={() => startTask(task.id)}
             onFinish={() => {
               setFinishTaskId(task.id);
@@ -94,7 +96,7 @@ export function PlanPage() {
         )) : <article className="surface p-4 text-sm text-ink/60">برنامه منتشرشده‌ای برای این روز وجود ندارد.</article>}
       </section>
 
-      {activeTask ? (
+      {activeTask && canMutate ? (
         <div className="fixed inset-x-4 bottom-24 z-30 mx-auto max-w-3xl rounded-md border border-black/10 bg-ink p-3 text-white shadow-lg">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
@@ -116,7 +118,7 @@ export function PlanPage() {
         </div>
       ) : null}
 
-      {finishTaskId ? (
+      {finishTaskId && canMutate ? (
         <div className="fixed inset-0 z-40 grid place-items-end bg-black/35 p-4">
           <form
             className="surface w-full max-w-3xl space-y-3 p-4"
@@ -173,7 +175,7 @@ export function PlanPage() {
               <span className="rounded-md bg-paper px-3 py-2">{plannedMinutes(detailTask)} دقیقه</span>
             </div>
             <p className="rounded-md bg-paper px-3 py-3 text-sm text-ink/70">{detailTask.note || 'برای این فعالیت توضیحی ثبت نشده است.'}</p>
-            <div className="flex gap-2">
+            {canMutate ? <div className="flex gap-2">
               <button type="button" className="flex flex-1 items-center justify-center gap-2 rounded-md bg-paper px-3 py-3 text-sm" onClick={() => startTask(detailTask.id)}>
                 <Play size={16} /> شروع مطالعه
               </button>
@@ -184,8 +186,8 @@ export function PlanPage() {
               }}>
                 <CheckCircle2 size={16} /> ثبت انجام شد
               </button>
-            </div>
-            <p className="flex items-center gap-2 text-xs text-ink/55"><Info size={14} /> وضعیت‌های نیمه‌کامل و ردشده در API فعلی قابل ثبت نیستند.</p>
+            </div> : <p className="rounded-2xl bg-sky-50 p-3 text-sm text-sky-900">نمای خانواده فقط خواندنی است.</p>}
+            {canMutate ? <p className="flex items-center gap-2 text-xs text-ink/55"><Info size={14} /> وضعیت‌های نیمه‌کامل و ردشده در API فعلی قابل ثبت نیستند.</p> : null}
           </article>
         </div>
       ) : null}
@@ -193,7 +195,7 @@ export function PlanPage() {
   );
 }
 
-function TaskCard({ task, index, nowTime, running, onStart, onFinish, onDetails }: { task: StudentTask; index: number; nowTime: string; running: boolean; onStart: () => void; onFinish: () => void; onDetails: () => void }) {
+function TaskCard({ task, index, nowTime, running, readOnly, onStart, onFinish, onDetails }: { task: StudentTask; index: number; nowTime: string; running: boolean; readOnly: boolean; onStart: () => void; onFinish: () => void; onDetails: () => void }) {
   const status = running ? 'running' : statusForTask(task, nowTime, index);
   return (
     <article className={`surface relative overflow-hidden p-4 ${status === 'locked' ? 'opacity-60' : ''}`}>
@@ -217,10 +219,10 @@ function TaskCard({ task, index, nowTime, running, onStart, onFinish, onDetails 
             {task.pages ? <span className="rounded-md bg-paper px-2 py-1">{task.pages}</span> : null}
             <span className="rounded-md bg-paper px-2 py-1">{task.testCount || 0} تست</span>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className={`mt-4 grid gap-2 ${readOnly ? 'grid-cols-1' : 'grid-cols-2'}`}>
             <button className="flex items-center justify-center gap-2 rounded-md border border-black/10 px-3 py-2 text-sm" onClick={onDetails}><Info size={15} /> جزئیات</button>
-            <button className="rounded-md bg-paper px-3 py-2 text-sm disabled:opacity-50" disabled={status === 'locked' || status === 'done'} onClick={onStart}><Play size={15} className="inline" /> شروع</button>
-            <button className="rounded-md bg-ink px-3 py-2 text-sm text-white disabled:opacity-50" disabled={status === 'locked' || status === 'done'} onClick={onFinish}>اتمام</button>
+            {!readOnly ? <button className="rounded-md bg-paper px-3 py-2 text-sm disabled:opacity-50" disabled={status === 'locked' || status === 'done'} onClick={onStart}><Play size={15} className="inline" /> شروع</button> : null}
+            {!readOnly ? <button className="rounded-md bg-ink px-3 py-2 text-sm text-white disabled:opacity-50" disabled={status === 'locked' || status === 'done'} onClick={onFinish}>اتمام</button> : null}
           </div>
         </div>
       </div>

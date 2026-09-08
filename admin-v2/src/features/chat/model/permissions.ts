@@ -15,19 +15,12 @@ export const permissionLabels: Array<[PermissionKey, string]> = [
   ["admins_can_delete_messages", "مدیران بتوانند پیام‌ها را حذف کنند"],
 ];
 
-export function canUseMessageAction(
-  action: MessageAction,
-  mine: boolean,
-  group?: GroupDetail,
-) {
+export function canUseMessageAction(action: MessageAction, mine: boolean, group?: GroupDetail) {
   if (!group) return action === "react" || mine;
-  if (action === "react")
-    return group.myRole !== "member" || !!group.permissions.members_can_react;
+  if (action === "react") return group.myRole !== "member" || !!group.permissions.members_can_react;
   if (action === "edit")
-    return mine &&
-      (group.myRole !== "member" || !!group.permissions.members_can_edit_own_messages);
-  if (mine)
-    return group.myRole !== "member" || !!group.permissions.members_can_delete_own_messages;
+    return mine && (group.myRole !== "member" || !!group.permissions.members_can_edit_own_messages);
+  if (mine) return group.myRole !== "member" || !!group.permissions.members_can_delete_own_messages;
   return group.myRole !== "member" && !!group.permissions.admins_can_delete_messages;
 }
 

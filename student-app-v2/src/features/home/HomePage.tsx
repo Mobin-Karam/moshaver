@@ -1,4 +1,4 @@
-import { BookOpen, CheckCircle2, Clock3, Play, Sparkles } from 'lucide-react';
+import { AlertCircle, Bell, BookOpen, CalendarClock, CheckCircle2, Clock3, Play, RotateCcw, Sparkles, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 import type { StudentTask } from '@moshaver/student-core';
 import { useStudentStore, useTodaySummary } from '../../services/student-store';
@@ -10,8 +10,18 @@ export function HomePage() {
   const error = useStudentStore((state) => state.error);
   const startTask = useStudentStore((state) => state.startTask);
   const activeSession = useStudentStore((state) => state.activeSession);
+  const access = useStudentStore((state) => state.access);
+  const exams = useStudentStore((state) => state.exams);
+  const reviews = useStudentStore((state) => state.reviews);
+  const notifications = useStudentStore((state) => state.notifications);
+  const learningProgress = useStudentStore((state) => state.progress);
   const { current, next, metrics } = useTodaySummary();
   const progress = metrics.totalTasks ? Math.round(((metrics.doneTasks + metrics.partialTasks) / metrics.totalTasks) * 100) : 0;
+  const urgentExam = exams.find((item) => item.delivery?.state === 'active') || exams.find((item) => item.delivery?.state === 'available') || exams.find((item) => item.delivery?.state === 'upcoming');
+  const advisorMessage = notifications.find((item) => /chat|message|advisor|پیام/i.test(`${item.type || ''} ${item.title}`));
+  const unresolvedIssue = notifications.find((item) => /issue|recovery|retry|مشکل|جبران/i.test(`${item.type || ''} ${item.title}`));
+  const planned = plan.tasks.reduce((sum, task) => sum + plannedMinutes(task), 0);
+  const remainingStudy = Math.max(0, planned - metrics.actualMinutes);
 
   return (
     <div className="space-y-4">
@@ -48,13 +58,15 @@ export function HomePage() {
             <h2 className="text-lg font-semibold">{loadStatus === 'loading' ? 'در حال دریافت برنامه' : current ? taskTitle(current) : 'فعلا کاری نداری'}</h2>
           </div>
         </div>
-        {current ? (
+        {current && access?.canMutateStudentWork ? (
           <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-ink px-4 py-3 text-white" onClick={() => startTask(current.id)}>
             <Play size={18} />
             {activeSession?.taskId === current.id ? 'ادامه مطالعه' : 'شروع مطالعه'}
           </button>
         ) : null}
       </section>
+
+      {access?.mode === 'guardian' ? <p className="rounded-2xl bg-sky-50 p-3 text-sm leading-6 text-sky-900">نمای خانواده فقط خواندنی است؛ انجام فعالیت و ثبت گزارش فقط با حساب دانش‌آموز انجام می‌شود.</p> : null}
 
       <div className="grid grid-cols-3 gap-2">
         <div className="metric">
@@ -70,6 +82,15 @@ export function HomePage() {
           <strong className="block text-lg">{metrics.actualTests}</strong>
         </div>
       </div>
+
+      <section className="grid gap-3 sm:grid-cols-2" aria-label="وضعیت مهم امروز">
+        <DashboardItem icon={<CalendarClock />} title="آزمون پیش رو" value={urgentExam?.title || 'آزمون فوری نداری'} detail={urgentExam?.delivery?.state === 'active' ? 'تلاش نیمه‌تمام؛ آماده ادامه' : urgentExam?.openAt ? formatExamDate(urgentExam.openAt) : undefined} />
+        <DashboardItem icon={<Clock3 />} title="مطالعه باقی‌مانده" value={`${remainingStudy.toLocaleString('fa-IR')} دقیقه`} detail="بر اساس برنامه و زمان ثبت‌شده امروز" />
+        <DashboardItem icon={<RotateCcw />} title="مرورهای سررسید" value={`${reviews.length.toLocaleString('fa-IR')} مورد`} detail={reviews[0]?.title || 'مروری برای امروز ثبت نشده'} />
+        <DashboardItem icon={<Bell />} title="پیام اخیر مشاور" value={advisorMessage?.title || 'پیام تازه‌ای نیست'} detail={advisorMessage?.message} />
+        <DashboardItem icon={<AlertCircle />} title="موضوع حل‌نشده" value={unresolvedIssue?.title || 'مورد باز نداری'} detail={unresolvedIssue?.message} />
+        <DashboardItem icon={<TrendingUp />} title="روند هفتگی" value={learningProgress ? `${learningProgress.percent.toLocaleString('fa-IR')}٪ تکمیل` : 'داده کافی نیست'} detail={learningProgress ? `${learningProgress.completed.toLocaleString('fa-IR')} از ${learningProgress.total.toLocaleString('fa-IR')} فعالیت` : undefined} />
+      </section>
 
       <section className="surface p-4">
         <div className="mb-3 flex items-center gap-2">
@@ -94,6 +115,10 @@ export function HomePage() {
   );
 }
 
+function DashboardItem({ icon, title, value, detail }: { icon: React.ReactNode; title: string; value: string; detail?: string }) {
+  return <article className="surface flex gap-3 p-4"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-mint/10 text-mint [&>svg]:size-5">{icon}</span><div className="min-w-0"><h2 className="text-xs text-ink/55">{title}</h2><strong className="mt-1 block text-sm">{value}</strong>{detail ? <p className="mt-1 line-clamp-2 text-xs leading-5 text-ink/55">{detail}</p> : null}</div></article>;
+}
+
 function taskTitle(task: { subject?: string; title?: string }) {
   return [task.subject, task.title].filter(Boolean).join(' - ') || 'فعالیت';
 }
@@ -106,4 +131,8 @@ function plannedMinutes(task: Pick<StudentTask, 'start' | 'end'>) {
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(`${value}T12:00:00`));
+}
+
+function formatExamDate(value: string) {
+  return new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 }

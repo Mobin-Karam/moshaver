@@ -1,4 +1,4 @@
-import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Plan } from "./plan.entity";
 
 export enum TaskType {
@@ -54,4 +54,7 @@ export class Task {
 
   @Column({ type: "datetime", nullable: true })
   completedAt?: Date | null;
+  @CreateDateColumn() createdAt!: Date;
+  @UpdateDateColumn() updatedAt!: Date;
+  @Column({ type: "datetime", nullable: true }) deletedAt?: Date | null;
 }

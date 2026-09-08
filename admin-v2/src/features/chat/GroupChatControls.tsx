@@ -1,4 +1,1 @@
-export {
-  CreateGroupButton,
-  GroupInfoButton,
-} from "./components/group/GroupChatControls";
+export { CreateGroupButton, GroupInfoButton } from "./components/group/GroupChatControls";

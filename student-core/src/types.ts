@@ -60,6 +60,29 @@ export interface ExamDelivery {
   attemptsUsed?: number;
   allowedAttempts?: number;
   questionCount?: number;
+  activeAttemptId?: ID | null;
+  state?: 'upcoming' | 'available' | 'active' | 'submitted' | 'calculating' | 'released' | 'withheld' | 'closed';
+  lastAttempt?: {
+    id: ID;
+    examId?: ID;
+    title?: string;
+    status: string;
+    score?: number | null;
+    subjectSummary?: Array<{ subject: string; percentage: number; correct: number; wrong: number; unanswered: number; total: number }>;
+    startedAt: string;
+    finishedAt?: string | null;
+    answeredCount?: number;
+  } | null;
+}
+
+export type ExamMode = 'standard' | 'konkur';
+export type ExamResultPolicy = 'immediate' | 'scheduled' | 'manual';
+
+export interface ExamSection {
+  id: ID;
+  name: string;
+  questionIds: ID[];
+  allocatedMinutes?: number;
 }
 
 export interface ExamSummary {
@@ -72,12 +95,24 @@ export interface ExamSummary {
   durationMinutes?: number;
   maxAttempts?: number;
   delivery?: ExamDelivery;
+  subjects?: string[];
+  mode?: ExamMode;
+  instructions?: string[];
+  allowBackNavigation?: boolean;
+  scoring?: { correct: number; wrong: number; unanswered: number; negativeMarking: boolean };
+  resultPolicy?: ExamResultPolicy;
+  resultReleaseAt?: string | null;
+  sections?: ExamSection[];
 }
 
 export interface QuizQuestion {
   id: ID;
   question: string;
   options: [string, string, string, string];
+  sectionId?: ID;
+  subject?: string;
+  topic?: string;
+  mediaUrl?: string;
 }
 
 export interface QuizRun {
@@ -91,6 +126,23 @@ export interface QuizRun {
   };
   startedAt: string;
   examCloseAt?: string | null;
+  deadlineAt?: string;
+  serverTime?: string;
+  remainingSeconds?: number;
+  savedAnswers?: AttemptAnswer[];
+  allowBackNavigation?: boolean;
+  sections?: ExamSection[];
+}
+
+export type AnswerSaveState = 'local' | 'saving' | 'saved' | 'queued' | 'failed';
+
+export interface AttemptAnswer {
+  questionId: ID;
+  selectedOption: 'a' | 'b' | 'c' | 'd' | null;
+  marked?: boolean;
+  visited?: boolean;
+  clientUpdatedAt: string;
+  revision: number;
 }
 
 export interface QuizAnswer {
@@ -109,13 +161,7 @@ export interface ChatMessage {
   deletedAt?: string | null;
 }
 
-export interface NotificationItem {
-  id: ID;
-  title: string;
-  body: string;
-  isRead: boolean;
-  createdAt?: string;
-}
+export type { NotificationContract as NotificationItem, ApiErrorContract, SyncPullContract } from '@moshaver/api-contract';
 
 export interface ApiError {
   status: number;

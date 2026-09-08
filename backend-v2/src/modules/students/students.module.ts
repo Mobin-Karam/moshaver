@@ -8,11 +8,15 @@ import { LearningReview } from "../../database/entities/learning-review.entity";
 import { Session } from "../../database/entities/session.entity";
 import { StudentController, StudentParityController, StudentsController } from "./students.controller";
 import { StudentsService } from "./students.service";
+import { OrganizationMembership, UserRelationship } from "../../database/entities";
+import { StudentAdministrationService } from "./student-administration.service";
+import { StudentAdministrationController } from "./student-administration.controller";
+import { TaskIssue, RecoveryRequest, ExamRetryRequest } from "../../database/entities";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Student, User, TopicMastery, LearningItem, LearningReview, Session])],
-  controllers: [StudentController, StudentParityController, StudentsController],
-  providers: [StudentsService],
+  imports: [TypeOrmModule.forFeature([Student, User, TopicMastery, LearningItem, LearningReview, Session, OrganizationMembership, UserRelationship, TaskIssue, RecoveryRequest, ExamRetryRequest])],
+  controllers: [StudentController, StudentParityController, StudentsController, StudentAdministrationController],
+  providers: [StudentsService, StudentAdministrationService],
   exports: [StudentsService],
 })
 export class StudentsModule {}

@@ -69,15 +69,16 @@ export function ChatPage() {
   useEffect(() => {
     void loadMessages();
     const timer = window.setInterval(() => void loadMessages(), 15_000);
-    const source = apiClient.openEvents((type) => {
-      if (type === 'chat.message') void loadMessages();
-    });
+    const realtime = (event: Event) => {
+      if ((event as CustomEvent<{ type?: string }>).detail?.type === 'chat.message') void loadMessages();
+    };
+    window.addEventListener('moshaver:v2-event', realtime);
     const setOnlineState = () => setOnline(navigator.onLine);
     window.addEventListener('online', setOnlineState);
     window.addEventListener('offline', setOnlineState);
     return () => {
       window.clearInterval(timer);
-      source.close();
+      window.removeEventListener('moshaver:v2-event', realtime);
       window.removeEventListener('online', setOnlineState);
       window.removeEventListener('offline', setOnlineState);
     };

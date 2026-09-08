@@ -202,10 +202,7 @@ export function ExamForm({
       </Field>
 
       {submitted && error ? (
-        <p
-          role="alert"
-          className="rounded-md bg-rose-50 p-2 text-sm text-rose-700"
-        >
+        <p role="alert" className="rounded-md bg-rose-50 p-2 text-sm text-rose-700">
           {error}
         </p>
       ) : null}

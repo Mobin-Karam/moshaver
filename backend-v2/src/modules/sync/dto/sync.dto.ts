@@ -7,6 +7,16 @@ export class SyncChangeDto {
   @MaxLength(160)
   id!: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  clientMutationId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(48)
+  type?: string;
+
   @IsIn(["POST", "PATCH"])
   method!: "POST" | "PATCH";
 

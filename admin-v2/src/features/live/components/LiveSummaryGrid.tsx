@@ -1,15 +1,5 @@
-import {
-  AlertTriangle,
-  BookOpenCheck,
-  Clock3,
-  PauseCircle,
-  Users,
-  Wifi,
-} from "lucide-react";
-import type {
-  LiveFilter,
-  LiveSnapshot,
-} from "../model/live.types";
+import { AlertTriangle, BookOpenCheck, Clock3, PauseCircle, Users, Wifi } from "lucide-react";
+import type { LiveFilter, LiveSnapshot } from "../model/live.types";
 import { SummaryCard } from "./SummaryCard";
 
 export function LiveSummaryGrid({
@@ -17,15 +7,9 @@ export function LiveSummaryGrid({
   filter,
   onFilterChange,
 }: {
-  summary:
-    | NonNullable<
-        LiveSnapshot["summary"]
-      >
-    | undefined;
+  summary: NonNullable<LiveSnapshot["summary"]> | undefined;
   filter: LiveFilter;
-  onFilterChange: (
-    filter: LiveFilter,
-  ) => void;
+  onFilterChange: (filter: LiveFilter) => void;
 }) {
   return (
     <section className="grid shrink-0 grid-cols-3 gap-2 lg:grid-cols-6">
@@ -34,9 +18,7 @@ export function LiveSummaryGrid({
         label="همه"
         value={summary?.total}
         active={filter === "all"}
-        onClick={() =>
-          onFilterChange("all")
-        }
+        onClick={() => onFilterChange("all")}
       />
 
       <SummaryCard
@@ -44,14 +26,8 @@ export function LiveSummaryGrid({
         label="آنلاین"
         value={summary?.online}
         tone="green"
-        active={
-          filter === "online"
-        }
-        onClick={() =>
-          onFilterChange(
-            "online",
-          )
-        }
+        active={filter === "online"}
+        onClick={() => onFilterChange("online")}
       />
 
       <SummaryCard
@@ -59,14 +35,8 @@ export function LiveSummaryGrid({
         label="در حال مطالعه"
         value={summary?.studying}
         tone="blue"
-        active={
-          filter === "studying"
-        }
-        onClick={() =>
-          onFilterChange(
-            "studying",
-          )
-        }
+        active={filter === "studying"}
+        onClick={() => onFilterChange("studying")}
       />
 
       <SummaryCard
@@ -74,50 +44,26 @@ export function LiveSummaryGrid({
         label="توقف"
         value={summary?.paused}
         tone="amber"
-        active={
-          filter === "paused"
-        }
-        onClick={() =>
-          onFilterChange(
-            "paused",
-          )
-        }
+        active={filter === "paused"}
+        onClick={() => onFilterChange("paused")}
       />
 
       <SummaryCard
         icon={Clock3}
         label="در حال آزمون"
-        value={
-          summary?.takingExam
-        }
+        value={summary?.takingExam}
         tone="blue"
-        active={
-          filter ===
-          "taking_exam"
-        }
-        onClick={() =>
-          onFilterChange(
-            "taking_exam",
-          )
-        }
+        active={filter === "taking_exam"}
+        onClick={() => onFilterChange("taking_exam")}
       />
 
       <SummaryCard
         icon={AlertTriangle}
         label="نیازمند توجه"
-        value={
-          summary?.attention
-        }
+        value={summary?.attention}
         tone="red"
-        active={
-          filter ===
-          "attention"
-        }
-        onClick={() =>
-          onFilterChange(
-            "attention",
-          )
-        }
+        active={filter === "attention"}
+        onClick={() => onFilterChange("attention")}
       />
     </section>
   );

@@ -18,9 +18,7 @@ describe("localized calendar and loading controls", () => {
         <DatePicker value="2026-08-31" onChange={() => undefined} />
       </LocaleProvider>,
     );
-    expect(screen.getByRole("button", { name: /شهریور/ })).toHaveTextContent(
-      "۱۴۰۵",
-    );
+    expect(screen.getByRole("button", { name: /شهریور/ })).toHaveTextContent("۱۴۰۵");
     await userEvent.click(screen.getByRole("button", { name: /شهریور/ }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });

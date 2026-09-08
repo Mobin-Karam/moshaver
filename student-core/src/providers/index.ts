@@ -41,6 +41,8 @@ export interface SyncProvider {
   enqueue<T>(item: SyncQueueItem<T>): Promise<void>;
   pending(): Promise<SyncQueueItem[]>;
   remove(id: string): Promise<void>;
+  getCursor?(): Promise<string | null>;
+  setCursor?(cursor: string): Promise<void>;
 }
 
 export interface SyncQueueItem<T = unknown> {

@@ -1,8 +1,4 @@
-import {
-  CheckCircle2,
-  RefreshCw,
-  WifiOff,
-} from "lucide-react";
+import { CheckCircle2, RefreshCw, WifiOff } from "lucide-react";
 import { useBackendHealth } from "../hooks/useBackendHealth";
 
 export function BackendHealthStatus() {
@@ -11,7 +7,7 @@ export function BackendHealthStatus() {
   return (
     <div
       className={[
-        "mb-4 flex items-center gap-2 rounded-md border p-3 text-xs",
+        "mb-5 flex items-center gap-2.5 rounded-xl border px-3.5 py-3 text-xs",
         health.error
           ? "border-rose-200 bg-rose-50 text-rose-800"
           : "border-emerald-200 bg-emerald-50 text-emerald-800",
@@ -28,12 +24,12 @@ export function BackendHealthStatus() {
       <span className="min-w-0 flex-1 truncate">
         {health.loading
           ? "در حال بررسی اتصال…"
-          : health.error ||
-            `اتصال برقرار است • نسخه ${health.data?.version || "—"}`}
+          : health.error || `اتصال برقرار است • نسخه ${health.data?.version || "—"}`}
       </span>
 
       <button
         type="button"
+        className="grid size-8 place-items-center rounded-lg transition hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-current"
         aria-label="بررسی دوباره اتصال"
         onClick={() => void checkHealth()}
       >

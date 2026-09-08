@@ -1,76 +1,35 @@
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  getAdvisorInbox,
-  getDashboardChatConversations,
-  getDashboardOverview,
-} from "../api/dashboard.api";
-import {
-  getAttentionItems,
-  getInboxCount,
-  getUnreadConversationCount,
-} from "../lib/dashboard-metrics";
+import { useAuth } from "../../auth";
+import { getAdminAttention, getAdminDashboard } from "../api/dashboard.api";
 
-export function useDashboardData(
-  studentId: string,
-) {
-  const overview = useQuery({
-    queryKey: ["overview", studentId],
-    enabled: !!studentId,
-    queryFn: () =>
-      getDashboardOverview(studentId),
+export function useDashboardData() {
+  const auth = useAuth();
+  const context = auth.activeRole || "default";
+  const organization = auth.context?.activeOrganization?.id || "platform";
+  const summary = useQuery({
+    queryKey: ["role-dashboard", context, organization],
+    queryFn: getAdminDashboard,
+    refetchInterval: 30_000,
+    staleTime: 10_000,
   });
-
-  const inbox = useQuery({
-    queryKey: ["inbox", studentId],
-    enabled: !!studentId,
-    queryFn: () =>
-      getAdvisorInbox(studentId),
+  const attention = useQuery({
+    queryKey: ["admin-attention", context, organization],
+    queryFn: () => getAdminAttention(50),
+    enabled: auth.can("student.live.read"),
+    refetchInterval: 45_000,
+    staleTime: 15_000,
   });
-
-  const chat = useQuery({
-    queryKey: ["chat-conversations"],
-    queryFn:
-      getDashboardChatConversations,
-  });
-
-  const metrics =
-    overview.data?.todayMetrics ?? {};
-
-  const unread = useMemo(
-    () =>
-      getUnreadConversationCount(
-        chat.data ?? [],
-        studentId,
-      ),
-    [chat.data, studentId],
-  );
-
-  const inboxCount = useMemo(
-    () =>
-      getInboxCount(
-        inbox.data,
-        unread,
-      ),
-    [inbox.data, unread],
-  );
-
-  const attentionItems = useMemo(
-    () =>
-      getAttentionItems(
-        inbox.data,
-        unread,
-      ),
-    [inbox.data, unread],
-  );
-
+  const refresh = async () => {
+    await Promise.all([
+      summary.refetch(),
+      ...(auth.can("student.live.read") ? [attention.refetch()] : []),
+    ]);
+  };
   return {
-    overview,
-    inbox,
-    chat,
-    metrics,
-    unread,
-    inboxCount,
-    attentionItems,
+    summary,
+    attention,
+    attentionStudents: attention.data ?? [],
+    refresh,
+    refreshing: summary.isFetching || attention.isFetching,
   };
 }

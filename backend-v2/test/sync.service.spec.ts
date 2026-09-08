@@ -36,6 +36,28 @@ describe("SyncService", () => {
     expect(plans.find).toHaveBeenCalledWith(expect.objectContaining({ where: { student: { id: student.id } } }));
   });
 
+  it("queries learning items through the TypeORM student relation", async () => {
+    const learning = repository([{ id: "learning-1" }]);
+    const service = new SyncService(
+      repository([{ id: "student-1" }]) as any,
+      repository() as any,
+      repository() as any,
+      repository() as any,
+      repository() as any,
+      repository() as any,
+      {} as any,
+      {} as any,
+      repository() as any,
+      repository() as any,
+      repository() as any,
+      learning as any,
+    );
+
+    await service.pull({ id: "user-1" } as any);
+
+    expect(learning.find).toHaveBeenCalledWith(expect.objectContaining({ where: { student: { id: "student-1" } } }));
+  });
+
   it("dispatches owned task completion and records a replayable receipt", async () => {
     const mutations = repository();
     const tasks = { complete: jest.fn(async () => ({ id: "task-1", status: "done" })) };

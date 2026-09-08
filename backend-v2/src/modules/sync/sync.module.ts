@@ -10,6 +10,10 @@ import { TasksModule } from "../tasks/tasks.module";
 import { StudySessionsModule } from "../study-sessions/study-sessions.module";
 import { SyncController } from "./sync.controller";
 import { SyncService } from "./sync.service";
+import { Exam, ExamAssignment, LearningItem, LearningReview, Task } from "../../database/entities";
+import { ReportsModule } from "../reports/reports.module";
+import { StudentsModule } from "../students/students.module";
+import { ExamsModule } from "../exams/exams.module";
 
-@Module({ imports: [TypeOrmModule.forFeature([Student, Plan, StudySession, ExamAttempt, Notification, SyncMutation]), TasksModule, StudySessionsModule], controllers: [SyncController], providers: [SyncService] })
+@Module({ imports: [TypeOrmModule.forFeature([Student, Plan, StudySession, ExamAttempt, Notification, SyncMutation, Task, Exam, ExamAssignment, LearningItem, LearningReview]), TasksModule, StudySessionsModule, ReportsModule, StudentsModule, ExamsModule], controllers: [SyncController], providers: [SyncService] })
 export class SyncModule {}

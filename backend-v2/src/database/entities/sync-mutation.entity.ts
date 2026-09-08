@@ -11,6 +11,8 @@ export class SyncMutation {
 
   @Column({ length: 160 })
   mutationId!: string;
+  @Column({ length: 160 }) clientMutationId!: string;
+  @Column({ length: 48, default: "api_mutation" }) type!: string;
 
   @Column({ length: 20 })
   method!: string;

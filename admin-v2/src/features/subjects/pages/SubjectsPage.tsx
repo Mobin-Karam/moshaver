@@ -1,15 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  BookOpen,
-  BookPlus,
-  Edit3,
-  RotateCcw,
-  Save,
-  Search,
-} from "lucide-react";
+import { BookOpen, BookPlus, Edit3, RotateCcw, Save, Search, Users } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useStudentSelection } from "../../../shared/hooks/useStudentSelection";
+import { useAuth } from "../../auth/hooks/useAuth";
 import { fa, normalizePersianText } from "../../../shared/lib/utils";
 import { useModal } from "../../../shared/ui/modal";
 import { notify } from "../../../shared/ui/notifications";
@@ -32,17 +26,20 @@ import {
   updateSubject,
 } from "../api/subjects.api";
 import type { Subject, SubjectsMode as Mode } from "../model/subject.types";
+import { TeacherAssignments } from "../components/TeacherAssignments";
 
 export function SubjectsPage() {
   const students = useStudentSelection(),
     qc = useQueryClient(),
     modal = useModal(),
     [params, setParams] = useSearchParams();
-  const [mode, setMode] = useState<Mode>(
-      params.get("mode") === "catalog" ? "catalog" : "student",
-    ),
+  const [mode, setMode] = useState<Mode>(params.get("mode") === "catalog" ? "catalog" : "student"),
     [search, setSearch] = useState(params.get("q") || "");
   const deferredSearch = useDeferredValue(search);
+  const auth = useAuth();
+  const canCreate = auth.can("subjects.create");
+  const canUpdate = auth.can("subjects.update");
+  const canManageStudentSubjects = auth.can("studentSubjects.manage");
   const subjects = useQuery({ queryKey: ["subjects"], queryFn: getSubjects });
   const assigned = useQuery({
     queryKey: ["student-subjects", students.studentId],
@@ -56,10 +53,7 @@ export function SubjectsPage() {
       void refreshAll();
     },
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "ساخت درس ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "ساخت درس ناموفق بود.", "error"),
   });
   const updateCatalog = useMutation({
     mutationFn: updateSubject,
@@ -68,14 +62,10 @@ export function SubjectsPage() {
       void refreshAll();
     },
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "ویرایش درس ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "ویرایش درس ناموفق بود.", "error"),
   });
   const updateStudent = useMutation({
-    mutationFn: (subject: Subject) =>
-      updateStudentSubject(students.studentId, subject),
+    mutationFn: (subject: Subject) => updateStudentSubject(students.studentId, subject),
     onSuccess: () => {
       notify("وضعیت آموزشی دانش‌آموز ذخیره شد.");
       void qc.invalidateQueries({
@@ -83,10 +73,7 @@ export function SubjectsPage() {
       });
     },
     onError: (error) =>
-      notify(
-        error instanceof Error ? error.message : "ذخیره وضعیت درس ناموفق بود.",
-        "error",
-      ),
+      notify(error instanceof Error ? error.message : "ذخیره وضعیت درس ناموفق بود.", "error"),
   });
   const source = mode === "catalog" ? subjects.data : assigned.data;
   const rows = useMemo(
@@ -106,16 +93,12 @@ export function SubjectsPage() {
   );
   const summary = {
     total: source?.length || 0,
-    strong: (assigned.data || []).filter((row) => row.status === "green")
-      .length,
-    attention: (assigned.data || []).filter((row) => row.status === "red")
-      .length,
+    strong: (assigned.data || []).filter((row) => row.status === "green").length,
+    attention: (assigned.data || []).filter((row) => row.status === "red").length,
     average: assigned.data?.length
       ? Math.round(
-          assigned.data.reduce(
-            (sum, row) => sum + Number(row.progress || 0),
-            0,
-          ) / assigned.data.length,
+          assigned.data.reduce((sum, row) => sum + Number(row.progress || 0), 0) /
+            assigned.data.length,
         )
       : 0,
   };
@@ -126,9 +109,7 @@ export function SubjectsPage() {
           nextMode = next.mode ?? mode,
           nextQuery = next.q ?? search,
           nextStudent = next.studentId ?? students.studentId;
-        nextMode === "student"
-          ? copy.delete("mode")
-          : copy.set("mode", nextMode);
+        nextMode === "student" ? copy.delete("mode") : copy.set("mode", nextMode);
         nextQuery.trim() ? copy.set("q", nextQuery.trim()) : copy.delete("q");
         if (nextStudent) copy.set("studentId", nextStudent);
         return copy;
@@ -175,6 +156,15 @@ export function SubjectsPage() {
       ),
     });
   }
+  function openTeacherAssignments(subject: Subject) {
+    const organization = auth.context?.activeOrganization;
+    if (!organization) return;
+    modal.open({
+      title: `دبیران ${subject.name}`,
+      description: `تخصیص دبیر در ${organization.name}`,
+      content: <TeacherAssignments subjectId={subject.id} organizationId={organization.id} />,
+    });
+  }
   const activeQuery = mode === "catalog" ? subjects : assigned;
   return (
     <div className="grid gap-4">
@@ -211,9 +201,11 @@ export function SubjectsPage() {
           ) : (
             <div className="flex-1" />
           )}
-          <Button onClick={openCreate}>
-            <BookPlus size={16} /> درس جدید
-          </Button>
+          {canCreate ? (
+            <Button onClick={openCreate}>
+              <BookPlus size={16} /> درس جدید
+            </Button>
+          ) : null}
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <label className="flex h-10 min-w-56 flex-1 items-center gap-2 rounded-md border bg-slate-50 px-3">
@@ -270,27 +262,26 @@ export function SubjectsPage() {
                 <CatalogRow
                   key={row.id}
                   subject={row}
-                  onEdit={() => openCatalogEdit(row)}
+                  onEdit={canUpdate ? () => openCatalogEdit(row) : undefined}
+                  onTeachers={
+                    auth.can("organization.members.manage") && auth.context?.activeOrganization
+                      ? () => openTeacherAssignments(row)
+                      : undefined
+                  }
                 />
               ) : (
                 <StudentSubjectEditor
                   key={`${students.studentId}-${row.id}`}
                   initial={row}
                   onSave={(value) => updateStudent.mutate(value)}
-                  saving={
-                    updateStudent.isPending &&
-                    updateStudent.variables?.id === row.id
-                  }
+                  saving={updateStudent.isPending && updateStudent.variables?.id === row.id}
+                  editable={canManageStudentSubjects}
                 />
               ),
             )}
           </div>
         ) : (
-          <EmptyState
-            title={
-              search ? "درسی با این جستجو پیدا نشد." : "درسی ثبت نشده است."
-            }
-          />
+          <EmptyState title={search ? "درسی با این جستجو پیدا نشد." : "درسی ثبت نشده است."} />
         )}
       </Card>
     </div>
@@ -300,9 +291,11 @@ export function SubjectsPage() {
 function CatalogRow({
   subject,
   onEdit,
+  onTeachers,
 }: {
   subject: Subject;
-  onEdit: () => void;
+  onEdit?: () => void;
+  onTeachers?: () => void;
 }) {
   return (
     <article className="flex flex-wrap items-center gap-3 rounded-lg border p-3">
@@ -315,12 +308,18 @@ function CatalogRow({
           {subject.subject_key || subject.subjectKey}
         </p>
       </div>
-      <Badge>
-        ترتیب {fa(subject.display_order ?? subject.displayOrder ?? 0)}
-      </Badge>
-      <Button variant="soft" onClick={onEdit}>
-        <Edit3 size={15} /> ویرایش
-      </Button>
+      <Badge>ترتیب {fa(subject.display_order ?? subject.displayOrder ?? 0)}</Badge>
+      {onEdit ? (
+        <Button variant="soft" onClick={onEdit}>
+          <Edit3 size={15} /> ویرایش
+        </Button>
+      ) : null}
+      {onTeachers ? (
+        <Button variant="soft" onClick={onTeachers}>
+          <Users size={15} />
+          دبیران
+        </Button>
+      ) : null}
     </article>
   );
 }
@@ -328,10 +327,12 @@ function StudentSubjectEditor({
   initial,
   onSave,
   saving,
+  editable,
 }: {
   initial: Subject;
   onSave: (subject: Subject) => void;
   saving: boolean;
+  editable: boolean;
 }) {
   const [subject, setSubject] = useState(initial);
   useEffect(() => setSubject(initial), [initial]);
@@ -348,10 +349,9 @@ function StudentSubjectEditor({
       </div>
       <Field label="وضعیت">
         <Select
+          disabled={!editable}
           value={subject.status || "yellow"}
-          onChange={(event) =>
-            setSubject({ ...subject, status: event.target.value })
-          }
+          onChange={(event) => setSubject({ ...subject, status: event.target.value })}
         >
           <option value="green">خوب</option>
           <option value="yellow">نیازمند پیگیری</option>
@@ -360,41 +360,40 @@ function StudentSubjectEditor({
       </Field>
       <Field label={`پیشرفت ${fa(subject.progress || 0)}٪`}>
         <Input
+          disabled={!editable}
           type="range"
           min={0}
           max={100}
           value={subject.progress || 0}
-          onChange={(event) =>
-            setSubject({ ...subject, progress: Number(event.target.value) })
-          }
+          onChange={(event) => setSubject({ ...subject, progress: Number(event.target.value) })}
         />
       </Field>
       <Field label="تسلط">
         <Input
+          disabled={!editable}
           value={subject.mastery || ""}
-          onChange={(event) =>
-            setSubject({ ...subject, mastery: event.target.value })
-          }
+          onChange={(event) => setSubject({ ...subject, mastery: event.target.value })}
           placeholder="مثلاً متوسط"
         />
       </Field>
       <Field label="یادداشت مشاور">
         <Textarea
+          disabled={!editable}
           rows={1}
           value={subject.note || ""}
-          onChange={(event) =>
-            setSubject({ ...subject, note: event.target.value })
-          }
+          onChange={(event) => setSubject({ ...subject, note: event.target.value })}
         />
       </Field>
-      <Button
-        loading={saving}
-        variant={dirty ? "primary" : "soft"}
-        disabled={!dirty || saving}
-        onClick={() => onSave(subject)}
-      >
-        <Save size={15} /> ذخیره
-      </Button>
+      {editable ? (
+        <Button
+          loading={saving}
+          variant={dirty ? "primary" : "soft"}
+          disabled={!dirty || saving}
+          onClick={() => onSave(subject)}
+        >
+          <Save size={15} /> ذخیره
+        </Button>
+      ) : null}
     </article>
   );
 }
@@ -403,18 +402,12 @@ function CatalogForm({
   onSubmit,
 }: {
   initial?: Subject;
-  onSubmit: (value: {
-    name: string;
-    subjectKey: string;
-    displayOrder: number;
-  }) => Promise<void>;
+  onSubmit: (value: { name: string; subjectKey: string; displayOrder: number }) => Promise<void>;
 }) {
   const [value, setValue] = useState({
       name: initial?.name || "",
       subjectKey: initial?.subject_key || initial?.subjectKey || "",
-      displayOrder: Number(
-        initial?.display_order ?? initial?.displayOrder ?? 99,
-      ),
+      displayOrder: Number(initial?.display_order ?? initial?.displayOrder ?? 99),
     }),
     [busy, setBusy] = useState(false);
   return (
@@ -454,9 +447,7 @@ function CatalogForm({
           type="number"
           min={0}
           value={value.displayOrder}
-          onChange={(event) =>
-            setValue({ ...value, displayOrder: Number(event.target.value) })
-          }
+          onChange={(event) => setValue({ ...value, displayOrder: Number(event.target.value) })}
         />
       </Field>
       {initial ? (
@@ -467,9 +458,7 @@ function CatalogForm({
       <Button
         type="submit"
         loading={busy}
-        disabled={
-          busy || value.name.trim().length < 2 || !value.subjectKey.trim()
-        }
+        disabled={busy || value.name.trim().length < 2 || !value.subjectKey.trim()}
       >
         {initial ? "ذخیره تغییرات" : "ساخت درس"}
       </Button>
@@ -500,10 +489,7 @@ function Skeleton() {
   return (
     <div className="grid gap-2">
       {[1, 2, 3, 4].map((item) => (
-        <div
-          key={item}
-          className="h-24 animate-pulse rounded-lg bg-slate-100"
-        />
+        <div key={item} className="h-24 animate-pulse rounded-lg bg-slate-100" />
       ))}
     </div>
   );

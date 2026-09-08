@@ -2,6 +2,7 @@
  * Backward-compatible public entry for notification types/helpers.
  */
 export {
+  normalizeAdminNotification,
   notificationAdminUrl,
   notificationTone,
   notificationTypeLabel,

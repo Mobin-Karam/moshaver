@@ -49,7 +49,9 @@ export function initializeTheme() {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>(storedPreference);
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() => resolveTheme(preference));
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() =>
+    resolveTheme(preference),
+  );
 
   useEffect(() => {
     const media = window.matchMedia(SYSTEM_QUERY);
@@ -64,7 +66,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setPreferenceState(next);
   };
 
-  return <ThemeContext.Provider value={{ preference, resolvedTheme, setPreference }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ preference, resolvedTheme, setPreference }}>
+      {children}
+    </ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {
@@ -76,7 +82,11 @@ export function useTheme() {
 export function ThemeSwitcher() {
   const { preference, setPreference } = useTheme();
   return (
-    <div className="flex h-9 shrink-0 items-center rounded-lg border border-slate-200 bg-slate-100/80 p-0.5" role="group" aria-label="حالت نمایش">
+    <div
+      className="flex h-9 shrink-0 items-center rounded-lg border border-slate-200 bg-slate-100/80 p-0.5"
+      role="group"
+      aria-label="حالت نمایش"
+    >
       {themeOptions.map(({ value, label, icon: Icon }) => {
         const selected = preference === value;
         return (

@@ -2,9 +2,7 @@ import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { notify } from "../shared/ui/notifications";
 
 function message(error: unknown) {
-  return error instanceof Error
-    ? error.message
-    : "عملیات انجام نشد. دوباره تلاش کنید.";
+  return error instanceof Error ? error.message : "عملیات انجام نشد. دوباره تلاش کنید.";
 }
 
 export const queryClient = new QueryClient({
@@ -19,10 +17,7 @@ export const queryClient = new QueryClient({
     onSuccess: (_data, _variables, _context, mutation) => {
       const text = mutation.options.meta?.successMessage;
       if (text !== false)
-        notify(
-          typeof text === "string" ? text : "عملیات با موفقیت انجام شد.",
-          "success",
-        );
+        notify(typeof text === "string" ? text : "عملیات با موفقیت انجام شد.", "success");
     },
   }),
   defaultOptions: {

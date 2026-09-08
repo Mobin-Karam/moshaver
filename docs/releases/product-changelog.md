@@ -1,5 +1,14 @@
 # Moshaver | مشاور — Changelog
 
+## Unreleased — Admin v2 operations and contributor documentation
+
+- Added role-based development seed accounts for all Admin v2 personas.
+- Completed platform user and organization CRUD workflows with direct member workspaces.
+- Split System and Security into capability-specific API v2 workspaces.
+- Standardized the Admin layout, login spacing, navigation names, and removed duplicate page heroes.
+- Added reusable selectable `AdminDataTable` behavior for Students and Users, including authorized bulk account status actions.
+- Added canonical developer, feature/bug, maintenance, and documentation workflows under `docs/operations/`.
+
 ## 1.4.1 — Inline Exam in Daily Plan
 
 - Plan tasks can link directly to an exam using `examId`.

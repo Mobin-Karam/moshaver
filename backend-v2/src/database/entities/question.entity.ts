@@ -21,4 +21,25 @@ export class Question {
 
   @Column({ default: "" })
   explanation!: string;
+
+  @Column({ default: "" })
+  subject!: string;
+
+  @Column({ default: "" })
+  topic!: string;
+
+  @Column({ default: "" })
+  sectionId!: string;
+
+  @Column({ default: "" })
+  mediaUrl!: string;
+
+  @Column({ default: "medium" })
+  difficulty!: string;
+
+  @Column({ default: "" })
+  source!: string;
+
+  @Column({ type: "simple-json", default: "[]" })
+  tags!: string[];
 }

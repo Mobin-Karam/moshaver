@@ -4,6 +4,10 @@ import type {
   TaskRuntimeStatus,
 } from '../types.js';
 
+export function sortStudentTasks(tasks: StudentTask[]): StudentTask[] {
+  return [...tasks].sort((left, right) => left.start.localeCompare(right.start) || left.end.localeCompare(right.end) || left.id.localeCompare(right.id));
+}
+
 export function plannedMinutes(task: Pick<StudentTask, 'start' | 'end'>): number {
   const start = parseTime(task.start);
   const end = parseTime(task.end);

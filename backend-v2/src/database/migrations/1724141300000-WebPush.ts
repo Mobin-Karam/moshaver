@@ -1,0 +1,6 @@
+import { MigrationInterface,QueryRunner } from "typeorm";
+export class WebPush1724141300000 implements MigrationInterface{
+  name="WebPush1724141300000";
+  async up(q:QueryRunner){await q.query(`CREATE TABLE push_subscriptions(id varchar PRIMARY KEY NOT NULL,endpoint varchar(2048) NOT NULL,p256dh varchar(512) NOT NULL,auth varchar(256) NOT NULL,userAgent varchar NOT NULL DEFAULT ('API'),failureCount integer NOT NULL DEFAULT (0),lastSuccessAt datetime,createdAt datetime NOT NULL DEFAULT (datetime('now')),updatedAt datetime NOT NULL DEFAULT (datetime('now')),userId varchar NOT NULL,CONSTRAINT FK_push_user FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE)`);await q.query(`CREATE UNIQUE INDEX IDX_push_endpoint ON push_subscriptions(endpoint)`);await q.query(`CREATE INDEX IDX_push_user ON push_subscriptions(userId)`);await q.query(`CREATE TABLE notification_preferences(id varchar PRIMARY KEY NOT NULL,categories text NOT NULL DEFAULT ('{}'),enabled boolean NOT NULL DEFAULT (1),updatedAt datetime NOT NULL DEFAULT (datetime('now')),userId varchar NOT NULL UNIQUE,CONSTRAINT FK_preference_user FOREIGN KEY(userId) REFERENCES users(id) ON DELETE CASCADE)`);}
+  async down(q:QueryRunner){await q.query(`DROP TABLE notification_preferences`);await q.query(`DROP TABLE push_subscriptions`);}
+}

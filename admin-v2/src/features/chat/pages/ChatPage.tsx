@@ -12,7 +12,7 @@ import { ConversationSidebar } from "../components/conversation/ConversationSide
 import { MessageList, MessageSkeleton } from "../components/messages/MessageList";
 import { ChatHeader } from "../components/messages/ChatHeader";
 import { MessageSearchBar } from "../components/messages/MessageSearchBar";
-import { chatApi } from "../api/chat.api";
+import { chatApi, normalizeChatMessage } from "../api/chat.api";
 import { useChatSelectionParams } from "../hooks/useChatSelection";
 import { useConversation } from "../hooks/useConversation";
 import { useConversationFavorites } from "../hooks/useConversationFavorites";
@@ -23,7 +23,12 @@ import { useMessages } from "../hooks/useMessages";
 import { isNearBottom, mergeMessagePages, persistDraft, readDraft } from "../lib/chat-helpers";
 import { persistConversationScroll, readConversationScroll } from "../lib/chat-ui-storage";
 import { toFa } from "../lib/chat-formatters";
-import type { CombinedConversationPage, ConversationFilter, ConversationSort, MessagePage } from "../model/chat.types";
+import type {
+  CombinedConversationPage,
+  ConversationFilter,
+  ConversationSort,
+  MessagePage,
+} from "../model/chat.types";
 
 export function ChatPage() {
   const auth = useAuth();
@@ -32,7 +37,9 @@ export function ChatPage() {
   const { requestedStudentId, requestedConversationId } = selection;
   const [conversationId, setConversationId] = useState(requestedConversationId);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [showMessages, setShowMessages] = useState(!!requestedConversationId || !!requestedStudentId);
+  const [showMessages, setShowMessages] = useState(
+    !!requestedConversationId || !!requestedStudentId,
+  );
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<ChatMessage | null>(null);
@@ -59,7 +66,8 @@ export function ChatPage() {
   useEffect(() => {
     setDrafts((current) => {
       const next = { ...current };
-      for (const item of allConversations) if (!(item.id in next)) next[item.id] = readDraft(item.id);
+      for (const item of allConversations)
+        if (!(item.id in next)) next[item.id] = readDraft(item.id);
       return next;
     });
   }, [allConversations]);
@@ -74,22 +82,35 @@ export function ChatPage() {
       return item.type === conversationFilter;
     });
     return [...items].sort((a, b) => {
-      if (conversationSort === "unread") return Number(!!b.unread) - Number(!!a.unread) || activity(b) - activity(a);
-      if (conversationSort === "online") return Number(!!b.presence?.online) - Number(!!a.presence?.online) || activity(b) - activity(a);
-      if (conversationSort === "name") return conversationName(a).localeCompare(conversationName(b), "fa");
+      if (conversationSort === "unread")
+        return Number(!!b.unread) - Number(!!a.unread) || activity(b) - activity(a);
+      if (conversationSort === "online")
+        return (
+          Number(!!b.presence?.online) - Number(!!a.presence?.online) || activity(b) - activity(a)
+        );
+      if (conversationSort === "name")
+        return conversationName(a).localeCompare(conversationName(b), "fa");
       return activity(b) - activity(a);
     });
   }, [allConversations, conversationFilter, conversationSort, favorites, drafts]);
 
   const totalConversations = conversations.total;
   const totalUnread = conversations.unread;
-  const active = useMemo(() =>
-    allConversations.find((item) => item.id === conversationId) ??
-    allConversations.find((item) => item.id === requestedConversationId) ??
-    allConversations.find((item) => String(item.student?.id || "") === requestedStudentId) ??
-    (selectedConversation?.id === conversationId ? selectedConversation : undefined) ??
-    allConversations[0],
-  [allConversations, conversationId, requestedConversationId, requestedStudentId, selectedConversation]);
+  const active = useMemo(
+    () =>
+      allConversations.find((item) => item.id === conversationId) ??
+      allConversations.find((item) => item.id === requestedConversationId) ??
+      allConversations.find((item) => String(item.student?.id || "") === requestedStudentId) ??
+      (selectedConversation?.id === conversationId ? selectedConversation : undefined) ??
+      allConversations[0],
+    [
+      allConversations,
+      conversationId,
+      requestedConversationId,
+      requestedStudentId,
+      selectedConversation,
+    ],
+  );
 
   const messages = useMessages(active?.id);
   const messageItems = messages.items;
@@ -98,22 +119,57 @@ export function ChatPage() {
 
   const markRead = useMutation({
     mutationFn: chatApi.markRead,
-    onSuccess: (_, id) => qc.setQueriesData<InfiniteData<CombinedConversationPage>>({ queryKey: ["chat-conversations"] }, (current) => current ? ({ ...current, pages: current.pages.map((page) => ({ ...page, items: page.items.map((item) => item.id === id ? { ...item, unread: 0 } : item) })) }) : current),
+    onSuccess: (_, id) =>
+      qc.setQueriesData<InfiniteData<CombinedConversationPage>>(
+        { queryKey: ["chat-conversations"] },
+        (current) =>
+          current
+            ? {
+                ...current,
+                pages: current.pages.map((page) => ({
+                  ...page,
+                  items: page.items.map((item) => (item.id === id ? { ...item, unread: 0 } : item)),
+                })),
+              }
+            : current,
+      ),
   });
 
   const send = useMutation({
-    mutationFn: ({ id, body, replyToId, editingId }: { id: string; body: string; replyToId?: string; editingId?: string }) => editingId ? api.patch<ChatMessage>(`/chat/messages/${editingId}`, { text: body }) : api.post<ChatMessage>(`/chat/conversations/${id}/messages`, { text: body, replyToId }),
+    mutationFn: ({
+      id,
+      body,
+      replyToId,
+      editingId,
+    }: {
+      id: string;
+      body: string;
+      replyToId?: string;
+      editingId?: string;
+    }) => (editingId ? chatApi.edit(id, editingId, body) : chatApi.send(id, body, replyToId)),
     onMutate: async ({ id, body, replyToId, editingId }) => {
       const key = ["chat-messages", id] as const;
       await qc.cancelQueries({ queryKey: key });
       const previous = qc.getQueryData<InfiniteData<MessagePage>>(key);
       const pendingId = `pending-${crypto.randomUUID()}`;
       if (!editingId) {
-        const optimistic: ChatMessage = { id: pendingId, text: body, senderRole: "admin", senderUserId: auth.user?.id, createdAt: new Date().toISOString(), pending: true, replyToId };
+        const optimistic: ChatMessage = {
+          id: pendingId,
+          text: body,
+          senderRole: "admin",
+          senderUserId: auth.user?.id,
+          createdAt: new Date().toISOString(),
+          pending: true,
+          replyToId,
+        };
         qc.setQueryData<InfiniteData<MessagePage>>(key, (current) => {
-          if (!current?.pages.length) return { pages: [{ messages: [optimistic] }], pageParams: [""] };
+          if (!current?.pages.length)
+            return { pages: [{ messages: [optimistic] }], pageParams: [""] };
           const pages = [...current.pages];
-          pages[0] = { ...pages[0], messages: [...pages[0].messages, optimistic] };
+          pages[0] = {
+            ...pages[0],
+            messages: [...pages[0].messages, optimistic],
+          };
           return { ...current, pages };
         });
       }
@@ -127,7 +183,19 @@ export function ChatPage() {
     },
     onSuccess: (message, _, context) => {
       if (!context) return;
-      qc.setQueryData<InfiniteData<MessagePage>>(context.key, (current) => current ? { ...current, pages: current.pages.map((page) => ({ ...page, messages: page.messages.map((item) => item.id === context.pendingId || item.id === context.editingId ? message : item) })) } : current);
+      qc.setQueryData<InfiniteData<MessagePage>>(context.key, (current) =>
+        current
+          ? {
+              ...current,
+              pages: current.pages.map((page) => ({
+                ...page,
+                messages: page.messages.map((item) =>
+                  item.id === context.pendingId || item.id === context.editingId ? message : item,
+                ),
+              })),
+            }
+          : current,
+      );
       void qc.invalidateQueries({ queryKey: ["chat-conversations"] });
     },
     onError: (error, variables, context) => {
@@ -137,7 +205,10 @@ export function ChatPage() {
         setDrafts((current) => ({ ...current, [variables.id]: context.body }));
         persistDraft(variables.id, context.body);
       }
-      if (context?.editingId && context.previous) setEditing(mergeMessagePages(context.previous).find((item) => item.id === context.editingId) || null);
+      if (context?.editingId && context.previous)
+        setEditing(
+          mergeMessagePages(context.previous).find((item) => item.id === context.editingId) || null,
+        );
       notify(error instanceof Error ? error.message : "ارسال پیام ناموفق بود.", "error");
     },
   });
@@ -147,13 +218,26 @@ export function ChatPage() {
     const source = api.openEvents((type, data) => {
       if (!type.startsWith("chat.")) return;
       if (active?.id && data.conversationId === active.id) {
+        const realtimeMessage = (data.message || data) as { id?: string };
         const nearBottom = isNearBottom(scrollRef.current);
         shouldStickRef.current = nearBottom;
-        if (type === "chat.message.created" && data.id) appendRealtimeMessage(qc, active.id, data as unknown as ChatMessage);
-        else if (type === "chat.message.edited" && data.id) replaceRealtimeMessage(qc, active.id, data as unknown as ChatMessage);
-        else if (type === "chat.message.deleted" && data.id) patchDeletedMessage(qc, active.id, String(data.id), String(data.deletedAt || ""));
+        if (type === "chat.message.created" && realtimeMessage.id)
+          appendRealtimeMessage(
+            qc,
+            active.id,
+            normalizeChatMessage(realtimeMessage as { id: string }),
+          );
+        else if (type === "chat.message.edited" && realtimeMessage.id)
+          replaceRealtimeMessage(
+            qc,
+            active.id,
+            normalizeChatMessage(realtimeMessage as { id: string }),
+          );
+        else if (type === "chat.message.deleted" && data.id)
+          patchDeletedMessage(qc, active.id, String(data.id), String(data.deletedAt || ""));
         else void qc.invalidateQueries({ queryKey: ["chat-messages", active.id] });
-        if (!nearBottom && type === "chat.message.created") setNewMessageCount((count) => count + 1);
+        if (!nearBottom && type === "chat.message.created")
+          setNewMessageCount((count) => count + 1);
       }
       void qc.invalidateQueries({ queryKey: ["chat-conversations"] });
     });
@@ -167,7 +251,8 @@ export function ChatPage() {
   }, [active?.id, showMessages]);
 
   useEffect(() => {
-    if (active?.id && active.unread && messages.isSuccess && !markRead.isPending) markRead.mutate(active.id);
+    if (active?.id && active.unread && messages.isSuccess && !markRead.isPending)
+      markRead.mutate(active.id);
   }, [active?.id, active?.unread, messages.isSuccess]);
 
   useEffect(() => {
@@ -182,13 +267,22 @@ export function ChatPage() {
     const root = scrollRef.current;
     const target = olderSentinelRef.current;
     if (!root || !target || !messages.hasNextPage) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting || messages.isFetchingNextPage) return;
-      loadOlder();
-    }, { root, rootMargin: "500px 0px 0px 0px", threshold: 0 });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || messages.isFetchingNextPage) return;
+        loadOlder();
+      },
+      { root, rootMargin: "500px 0px 0px 0px", threshold: 0 },
+    );
     observer.observe(target);
     return () => observer.disconnect();
-  }, [active?.id, messageItems.length, messages.hasNextPage, messages.isFetchingNextPage, messages.fetchNextPage]);
+  }, [
+    active?.id,
+    messageItems.length,
+    messages.hasNextPage,
+    messages.isFetchingNextPage,
+    messages.fetchNextPage,
+  ]);
 
   useLayoutEffect(() => {
     const node = scrollRef.current;
@@ -217,7 +311,8 @@ export function ChatPage() {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null;
-      const typing = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
+      const typing =
+        target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f" && showMessages) {
         event.preventDefault();
         messageSearch.setOpen(true);
@@ -239,23 +334,30 @@ export function ChatPage() {
         event.preventDefault();
         const index = filtered.findIndex((item) => item.id === active.id);
         if (index < 0) return;
-        const nextIndex = event.key === "ArrowUp" ? Math.max(0, index - 1) : Math.min(filtered.length - 1, index + 1);
-        if (filtered[nextIndex] && filtered[nextIndex].id !== active.id) selectConversation(filtered[nextIndex]);
+        const nextIndex =
+          event.key === "ArrowUp"
+            ? Math.max(0, index - 1)
+            : Math.min(filtered.length - 1, index + 1);
+        if (filtered[nextIndex] && filtered[nextIndex].id !== active.id)
+          selectConversation(filtered[nextIndex]);
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [active?.id, filtered, messageSearch.open, showMessages]);
 
-  useEffect(() => () => {
-    if (highlightTimerRef.current) window.clearTimeout(highlightTimerRef.current);
-    persistConversationScroll(active?.id, scrollRef.current?.scrollTop || 0);
-  }, [active?.id]);
+  useEffect(
+    () => () => {
+      if (highlightTimerRef.current) window.clearTimeout(highlightTimerRef.current);
+      persistConversationScroll(active?.id, scrollRef.current?.scrollTop || 0);
+    },
+    [active?.id],
+  );
 
   function selectConversation(item: Conversation) {
     persistConversationScroll(active?.id, scrollRef.current?.scrollTop || 0);
     persistDraft(active?.id, text);
-    setDrafts((current) => active?.id ? ({ ...current, [active.id]: text }) : current);
+    setDrafts((current) => (active?.id ? { ...current, [active.id]: text } : current));
     shouldStickRef.current = true;
     setShowMessages(true);
     setConversationId(item.id);
@@ -271,14 +373,28 @@ export function ChatPage() {
 
   function submit() {
     const body = text.trim();
-    if (body && active?.id && !send.isPending) send.mutate({ id: active.id, body, replyToId: replyTo?.id, editingId: editing?.id });
+    if (body && active?.id && !send.isPending)
+      send.mutate({
+        id: active.id,
+        body,
+        replyToId: replyTo?.id,
+        editingId: editing?.id,
+      });
   }
 
   function loadOlder() {
-    if (!scrollRef.current || !messages.hasNextPage || messages.isFetchingNextPage || olderRequestRef.current) return;
+    if (
+      !scrollRef.current ||
+      !messages.hasNextPage ||
+      messages.isFetchingNextPage ||
+      olderRequestRef.current
+    )
+      return;
     olderRequestRef.current = true;
     historyHeightRef.current = scrollRef.current.scrollHeight;
-    void messages.fetchNextPage().finally(() => { olderRequestRef.current = false; });
+    void messages.fetchNextPage().finally(() => {
+      olderRequestRef.current = false;
+    });
   }
 
   function jumpToMessage(id: string, notifyIfMissing = true) {
@@ -324,40 +440,425 @@ export function ChatPage() {
           onToggleFavorite={toggleFavorite}
           onRetry={() => void conversations.refetch()}
           onMore={() => void conversations.fetchNextPage()}
-          onGroupCreated={(id) => { void conversations.refetch().then(() => { setConversationId(id); setShowMessages(true); }); }}
+          onGroupCreated={(id) => {
+            void conversations.refetch().then(() => {
+              setConversationId(id);
+              setShowMessages(true);
+            });
+          }}
         />
 
-        <Card className={`${showMessages ? "flex" : "hidden lg:flex"} min-h-0 flex-col overflow-hidden border-slate-200/90 p-0 shadow-[0_12px_35px_rgba(31,49,46,0.08)]`}>
-          {active ? <>
-            <ChatHeader conversation={active} group={groupDetail.data} groupLoading={groupDetail.isLoading} markingRead={markRead.isPending} searchOpen={messageSearch.open} onBack={() => { persistConversationScroll(active.id, scrollRef.current?.scrollTop || 0); setShowMessages(false); selection.clear(); }} onMarkRead={() => markRead.mutate(active.id)} onToggleSearch={() => messageSearch.setOpen(!messageSearch.open)} onGroupChanged={() => void conversations.refetch()} />
-            {messageSearch.open ? <MessageSearchBar value={messageSearch.query} count={messageSearch.matches.length} index={messageSearch.index} onChange={messageSearch.setQuery} onNext={messageSearch.next} onPrevious={messageSearch.previous} onClose={closeMessageSearch} /> : null}
-            <div ref={scrollRef} role="log" aria-live="polite" aria-label="پیام‌های گفتگو" onScroll={(event) => { const node = event.currentTarget; const nearBottom = isNearBottom(node); shouldStickRef.current = nearBottom; if (nearBottom) setNewMessageCount(0); if (node.scrollTop < 500) loadOlder(); }} className="chat-canvas min-h-0 flex-1 space-y-2 overflow-auto overscroll-contain px-2 py-3 sm:px-5 sm:py-4">
-              {messages.hasNextPage ? <div ref={olderSentinelRef} className="flex min-h-8 justify-center"><Button className="h-8" variant="soft" loading={messages.isFetchingNextPage} onClick={loadOlder}><ChevronUp size={15} /> {messages.isFetchingNextPage ? "در حال دریافت تاریخچه" : "پیام‌های قدیمی‌تر"}</Button></div> : <div ref={olderSentinelRef} className="text-center text-[10px] text-slate-400">ابتدای گفتگو</div>}
-              {messages.isLoading ? <MessageSkeleton /> : messages.isError ? <EmptyState title="دریافت پیام‌ها ناموفق بود." action={<Button variant="soft" onClick={() => void messages.refetch()}><WifiOff size={15} /> تلاش دوباره</Button>} /> : messageItems.length ? <MessageList items={messageItems} authUserId={auth.user?.id} isGroup={active.type === "group"} group={groupDetail.data} activeSearchId={messageSearch.currentId} highlightedId={highlightedMessageId} onJumpToMessage={jumpToMessage} setReplyTo={(message) => { setReplyTo(message); setEditing(null); }} setEditing={(message) => { setEditing(message); setReplyTo(null); setText(message.text); }} act={(method, path, body) => { if (method === "delete" && !path.includes("/reactions/")) void modal.confirm({ title: "حذف پیام؟", description: "متن پیام برای اعضای گفتگو حذف خواهد شد.", tone: "danger", confirmLabel: "حذف پیام" }).then((ok) => { if (ok) messageAction.mutate({ method, path, body }); }); else messageAction.mutate({ method, path, body }); }} /> : <EmptyState title="هنوز پیامی ثبت نشده است." />}
-              {newMessageCount ? <button type="button" className="sticky bottom-2 mx-auto flex items-center gap-1 rounded-full bg-brand px-3 py-2 text-xs font-bold text-white shadow-lg ring-4 ring-white/60 transition hover:-translate-y-0.5 dark:ring-black/20" onClick={() => { const node = scrollRef.current; if (node) node.scrollTop = node.scrollHeight; shouldStickRef.current = true; setNewMessageCount(0); }}><ArrowDown size={15} /> {toFa(newMessageCount)} پیام جدید</button> : null}
-            </div>
-            <MessageComposer
-              conversationId={active.id}
-              personName={active.type === "group" ? active.title : active.student?.name}
-              value={text}
-              replyTo={replyTo}
-              editing={editing}
-              busy={send.isPending}
-              disabled={active.type === "group" && groupDetail.data?.myRole === "member" && !groupDetail.data.permissions.members_can_send_messages}
-              onChange={(value) => { setText(value); setDrafts((current) => ({ ...current, [active.id]: value })); persistDraft(active.id, value); }}
-              onSubmit={submit}
-              onCancelContext={() => { const wasEditing = !!editing; setReplyTo(null); setEditing(null); if (wasEditing) { setText(""); setDrafts((current) => ({ ...current, [active.id]: "" })); persistDraft(active.id, ""); } }}
-            />
-          </> : <EmptyState title="یک گفتگو را انتخاب کنید." />}
+        <Card
+          className={`
+    ${showMessages ? "flex" : "hidden lg:flex"}
+
+    min-h-0
+    flex-col
+    overflow-hidden
+
+    border-slate-200/90
+    p-0
+
+    shadow-[0_12px_35px_rgba(31,49,46,0.08)]
+
+    dark:border-slate-800
+  `}
+        >
+          {active ? (
+            <>
+              <ChatHeader
+                conversation={active}
+                group={groupDetail.data}
+                groupLoading={groupDetail.isLoading}
+                markingRead={markRead.isPending}
+                searchOpen={messageSearch.open}
+                onBack={() => {
+                  persistConversationScroll(active.id, scrollRef.current?.scrollTop || 0);
+
+                  setShowMessages(false);
+
+                  selection.clear();
+                }}
+                onMarkRead={() => markRead.mutate(active.id)}
+                onToggleSearch={() => messageSearch.setOpen(!messageSearch.open)}
+                onGroupChanged={() => void conversations.refetch()}
+              />
+
+              {messageSearch.open ? (
+                <MessageSearchBar
+                  value={messageSearch.query}
+                  count={messageSearch.matches.length}
+                  index={messageSearch.index}
+                  onChange={messageSearch.setQuery}
+                  onNext={messageSearch.next}
+                  onPrevious={messageSearch.previous}
+                  onClose={closeMessageSearch}
+                />
+              ) : null}
+
+              <div
+                ref={scrollRef}
+                role="log"
+                aria-live="polite"
+                aria-label="پیام‌های گفتگو"
+                onScroll={(event) => {
+                  const node = event.currentTarget;
+
+                  const nearBottom = isNearBottom(node);
+
+                  shouldStickRef.current = nearBottom;
+
+                  if (nearBottom) {
+                    setNewMessageCount(0);
+                  }
+
+                  /*
+            Load history only near top
+          */
+
+                  if (node.scrollTop < 120 && !messages.isFetchingNextPage) {
+                    const previousHeight = node.scrollHeight;
+
+                    loadOlder();
+
+                    requestAnimationFrame(() => {
+                      const newHeight = node.scrollHeight;
+
+                      node.scrollTop += newHeight - previousHeight;
+                    });
+                  }
+                }}
+                className="
+          chat-canvas
+
+          relative
+
+          min-h-0
+          flex-1
+
+          space-y-2
+
+          overflow-auto
+
+          overscroll-contain
+
+          scroll-smooth
+
+          px-2
+          py-3
+
+          sm:px-5
+          sm:py-4
+        "
+              >
+                {messages.hasNextPage ? (
+                  <div
+                    ref={olderSentinelRef}
+                    className="
+                flex
+                min-h-10
+                justify-center
+              "
+                  >
+                    <Button
+                      className="h-8"
+                      variant="soft"
+                      loading={messages.isFetchingNextPage}
+                      onClick={loadOlder}
+                    >
+                      <ChevronUp size={15} />
+
+                      {messages.isFetchingNextPage ? "در حال دریافت تاریخچه" : "پیام‌های قدیمی‌تر"}
+                    </Button>
+                  </div>
+                ) : (
+                  <div
+                    ref={olderSentinelRef}
+                    className="
+                text-center
+                text-[10px]
+                text-slate-400
+              "
+                  >
+                    ابتدای گفتگو
+                  </div>
+                )}
+
+                {messages.isLoading ? (
+                  <MessageSkeleton />
+                ) : messages.isError ? (
+                  <EmptyState
+                    title="دریافت پیام‌ها ناموفق بود."
+                    action={
+                      <Button variant="soft" onClick={() => void messages.refetch()}>
+                        <WifiOff size={15} />
+                        تلاش دوباره
+                      </Button>
+                    }
+                  />
+                ) : messageItems.length ? (
+                  <MessageList
+                    conversationId={active.id}
+                    items={messageItems}
+                    authUserId={auth.user?.id}
+                    isGroup={active.type === "group"}
+                    group={groupDetail.data}
+                    activeSearchId={messageSearch.currentId}
+                    highlightedId={highlightedMessageId}
+                    onJumpToMessage={jumpToMessage}
+                    setReplyTo={(message) => {
+                      setReplyTo(message);
+
+                      setEditing(null);
+                    }}
+                    setEditing={(message) => {
+                      setEditing(message);
+
+                      setReplyTo(null);
+
+                      setText(message.text);
+                    }}
+                    act={(method, path, body) => {
+                      if (method === "delete" && !path.includes("/reactions/")) {
+                        void modal
+                          .confirm({
+                            title: "حذف پیام؟",
+
+                            description: "متن پیام برای اعضای گفتگو حذف خواهد شد.",
+
+                            tone: "danger",
+
+                            confirmLabel: "حذف پیام",
+                          })
+                          .then((ok) => {
+                            if (ok) {
+                              messageAction.mutate({
+                                method,
+                                path,
+                                body,
+                              });
+                            }
+                          });
+                      } else {
+                        messageAction.mutate({
+                          method,
+                          path,
+                          body,
+                        });
+                      }
+                    }}
+                  />
+                ) : (
+                  <EmptyState title="هنوز پیامی ثبت نشده است." />
+                )}
+
+                {newMessageCount > 0 || !shouldStickRef.current ? (
+                  <button
+                    type="button"
+                    className="
+                sticky
+
+                bottom-3
+
+                mx-auto
+
+
+                flex
+
+                items-center
+
+                gap-2
+
+
+                rounded-full
+
+
+                bg-brand
+
+
+                px-4
+
+                py-2
+
+
+                text-xs
+
+                font-bold
+
+
+                text-white
+
+
+                shadow-xl
+
+
+                ring-4
+
+                ring-white/60
+
+
+                transition
+
+
+                hover:-translate-y-0.5
+
+
+                dark:ring-black/20
+              "
+                    onClick={() => {
+                      const node = scrollRef.current;
+
+                      if (node) {
+                        node.scrollTo({
+                          top: node.scrollHeight,
+
+                          behavior: "smooth",
+                        });
+                      }
+
+                      shouldStickRef.current = true;
+
+                      setNewMessageCount(0);
+                    }}
+                  >
+                    <ArrowDown size={15} />
+
+                    {newMessageCount ? `${toFa(newMessageCount)} پیام جدید` : "رفتن به آخر گفتگو"}
+                  </button>
+                ) : null}
+              </div>
+
+              <MessageComposer
+                conversationId={active.id}
+                personName={active.type === "group" ? active.title : active.student?.name}
+                value={text}
+                replyTo={replyTo}
+                editing={editing}
+                busy={send.isPending}
+                disabled={
+                  active.type === "group" &&
+                  groupDetail.data?.myRole === "member" &&
+                  !groupDetail.data.permissions.members_can_send_messages
+                }
+                onChange={(value) => {
+                  setText(value);
+
+                  setDrafts((current) => ({
+                    ...current,
+
+                    [active.id]: value,
+                  }));
+
+                  persistDraft(active.id, value);
+                }}
+                onSubmit={submit}
+                onCancelContext={() => {
+                  const wasEditing = !!editing;
+
+                  setReplyTo(null);
+
+                  setEditing(null);
+
+                  if (wasEditing) {
+                    setText("");
+
+                    setDrafts((current) => ({
+                      ...current,
+
+                      [active.id]: "",
+                    }));
+
+                    persistDraft(active.id, "");
+                  }
+                }}
+                onAfterSend={() => {
+                  requestAnimationFrame(() => {
+                    const node = scrollRef.current;
+
+                    if (node && shouldStickRef.current) {
+                      node.scrollTo({
+                        top: node.scrollHeight,
+
+                        behavior: "smooth",
+                      });
+                    }
+                  });
+                }}
+              />
+            </>
+          ) : (
+            <EmptyState title="یک گفتگو را انتخاب کنید." />
+          )}
         </Card>
       </section>
     </div>
   );
 }
 
-function activity(item: Conversation) { return item.lastMessage?.createdAt ? new Date(item.lastMessage.createdAt).getTime() : 0; }
-function conversationName(item: Conversation) { return item.type === "group" ? item.title || "" : item.student?.name || ""; }
-function appendRealtimeMessage(qc: ReturnType<typeof useQueryClient>, conversationId: string, message: ChatMessage) { qc.setQueryData<InfiniteData<MessagePage>>(["chat-messages", conversationId], (current) => { if (!current?.pages.length || current.pages.some((page) => page.messages.some((item) => item.id === message.id))) return current; const pages = [...current.pages]; pages[0] = { ...pages[0], messages: [...pages[0].messages, message] }; return { ...current, pages }; }); }
-function replaceRealtimeMessage(qc: ReturnType<typeof useQueryClient>, conversationId: string, message: ChatMessage) { qc.setQueryData<InfiniteData<MessagePage>>(["chat-messages", conversationId], (current) => current ? ({ ...current, pages: current.pages.map((page) => ({ ...page, messages: page.messages.map((item) => item.id === message.id ? message : item) })) }) : current); }
-function patchDeletedMessage(qc: ReturnType<typeof useQueryClient>, conversationId: string, id: string, deletedAt: string) { qc.setQueryData<InfiniteData<MessagePage>>(["chat-messages", conversationId], (current) => current ? ({ ...current, pages: current.pages.map((page) => ({ ...page, messages: page.messages.map((item) => item.id === id ? { ...item, text: "", deletedAt } : item) })) }) : current); }
-function useDebouncedValue<T>(value: T, delay: number) { const [debounced, setDebounced] = useState(value); useEffect(() => { const timer = window.setTimeout(() => setDebounced(value), delay); return () => window.clearTimeout(timer); }, [value, delay]); return debounced; }
+function activity(item: Conversation) {
+  return item.lastMessage?.createdAt ? new Date(item.lastMessage.createdAt).getTime() : 0;
+}
+function conversationName(item: Conversation) {
+  return item.type === "group" ? item.title || "" : item.student?.name || "";
+}
+function appendRealtimeMessage(
+  qc: ReturnType<typeof useQueryClient>,
+  conversationId: string,
+  message: ChatMessage,
+) {
+  qc.setQueryData<InfiniteData<MessagePage>>(["chat-messages", conversationId], (current) => {
+    if (
+      !current?.pages.length ||
+      current.pages.some((page) => page.messages.some((item) => item.id === message.id))
+    )
+      return current;
+    const pages = [...current.pages];
+    pages[0] = { ...pages[0], messages: [...pages[0].messages, message] };
+    return { ...current, pages };
+  });
+}
+function replaceRealtimeMessage(
+  qc: ReturnType<typeof useQueryClient>,
+  conversationId: string,
+  message: ChatMessage,
+) {
+  qc.setQueryData<InfiniteData<MessagePage>>(["chat-messages", conversationId], (current) =>
+    current
+      ? {
+          ...current,
+          pages: current.pages.map((page) => ({
+            ...page,
+            messages: page.messages.map((item) => (item.id === message.id ? message : item)),
+          })),
+        }
+      : current,
+  );
+}
+function patchDeletedMessage(
+  qc: ReturnType<typeof useQueryClient>,
+  conversationId: string,
+  id: string,
+  deletedAt: string,
+) {
+  qc.setQueryData<InfiniteData<MessagePage>>(["chat-messages", conversationId], (current) =>
+    current
+      ? {
+          ...current,
+          pages: current.pages.map((page) => ({
+            ...page,
+            messages: page.messages.map((item) =>
+              item.id === id ? { ...item, text: "", deletedAt } : item,
+            ),
+          })),
+        }
+      : current,
+  );
+}
+function useDebouncedValue<T>(value: T, delay: number) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebounced(value), delay);
+    return () => window.clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}

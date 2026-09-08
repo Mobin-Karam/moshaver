@@ -1,0 +1,13 @@
+dist
+coverage
+release-report.md
+node_modules
+package-lock.json
+public/fonts
+public/sw.js
+tailwind.config.js
+tailwind.config.d.ts
+vite.config.js
+vite.config.d.ts
+vitest.config.js
+vitest.config.d.ts

@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Student } from "./student.entity";
+import { User } from "./user.entity";
+import { Organization } from "./organization.entity";
 
 export enum NotificationType {
   PLAN_UPDATE = "PLAN_UPDATE",
@@ -15,17 +16,27 @@ export class Notification {
   id!: string;
 
   @Index()
-  @ManyToOne(() => Student, (student) => student.notifications, { onDelete: "CASCADE" })
-  student!: Student;
+  @ManyToOne(() => User, { onDelete: "CASCADE" })
+  user!: User;
+
+  @ManyToOne(() => Organization, { nullable: true, onDelete: "CASCADE" })
+  organization?: Organization | null;
 
   @Column({ type: "varchar", length: 40 })
-  type!: NotificationType;
+  type!: string;
 
   @Column()
   title!: string;
 
   @Column()
-  message!: string;
+  body!: string;
+
+  @Column({ default: "general" }) category!: string;
+  @Column({ type: "varchar", nullable: true }) url?: string | null;
+  @Column({ type: "simple-json", nullable: true }) data?: Record<string, unknown> | null;
+  @Column({ default: "normal" }) priority!: string;
+  @Column({ type: "datetime", nullable: true }) expiresAt?: Date | null;
+  @Column({ type: "varchar", nullable: true }) dedupeKey?: string | null;
 
   @Column({ type: "datetime", nullable: true })
   readAt?: Date | null;

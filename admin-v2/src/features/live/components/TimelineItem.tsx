@@ -1,10 +1,5 @@
-import {
-  Activity,
-} from "lucide-react";
-import {
-  activityLabel,
-  activityMeta,
-} from "../lib/live-helpers";
+import { Activity } from "lucide-react";
+import { activityLabel, activityMeta } from "../lib/live-helpers";
 import type { LiveEvent } from "../model/live.types";
 
 export function TimelineItem({
@@ -12,9 +7,7 @@ export function TimelineItem({
   formatDateTime,
 }: {
   event: LiveEvent;
-  formatDateTime: (
-    value?: string | Date,
-  ) => string;
+  formatDateTime: (value?: string | Date) => string;
 }) {
   return (
     <article className="flex gap-3 p-4 hover:bg-slate-50">
@@ -24,22 +17,13 @@ export function TimelineItem({
 
       <div className="min-w-0 flex-1">
         <strong className="text-sm">
-          {event.studentName} —{" "}
-          {activityLabel(
-            event.eventType,
-          )}
+          {event.studentName} — {activityLabel(event.eventType)}
         </strong>
 
-        <p className="mt-1 truncate text-xs text-slate-500">
-          {activityMeta(event)}
-        </p>
+        <p className="mt-1 truncate text-xs text-slate-500">{activityMeta(event)}</p>
       </div>
 
-      <time className="shrink-0 text-[11px] text-slate-400">
-        {formatDateTime(
-          event.createdAt,
-        )}
-      </time>
+      <time className="shrink-0 text-[11px] text-slate-400">{formatDateTime(event.createdAt)}</time>
     </article>
   );
 }

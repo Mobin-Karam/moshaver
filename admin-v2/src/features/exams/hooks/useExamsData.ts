@@ -1,91 +1,50 @@
 import { useMemo } from "react";
-import {
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import {
-  getExams,
-  getRetryRequests,
-} from "../api/exams.api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getExams, getRetryRequests } from "../api/exams.api";
 import { matchesExam } from "../model/exam-model";
-import type {
-  ExamFilterStatus,
-  ExamVisibilityFilter,
-} from "../model/exam.types";
+import type { ExamFilterStatus, ExamVisibilityFilter } from "../model/exam.types";
 
 export function useExamsData({
   studentId,
   search,
   status,
   visibility,
+  canReadRetries = true,
 }: {
   studentId: string;
   search: string;
   status: ExamFilterStatus;
   visibility: ExamVisibilityFilter;
+  canReadRetries?: boolean;
 }) {
-  const queryClient =
-    useQueryClient();
+  const queryClient = useQueryClient();
 
   const exams = useQuery({
-    queryKey: [
-      "exams",
-      studentId,
-    ],
+    queryKey: ["exams", studentId],
     enabled: !!studentId,
-    queryFn: () =>
-      getExams(studentId),
+    queryFn: () => getExams(studentId),
   });
 
   const retries = useQuery({
-    queryKey: [
-      "exam-retry",
-      studentId,
-    ],
-    enabled: !!studentId,
-    queryFn: () =>
-      getRetryRequests(studentId),
+    queryKey: ["exam-retry", studentId],
+    enabled: !!studentId && canReadRetries,
+    queryFn: () => getRetryRequests(studentId),
   });
 
   const filtered = useMemo(
-    () =>
-      (exams.data ?? []).filter(
-        (exam) =>
-          matchesExam(
-            exam,
-            search,
-            status,
-            visibility,
-          ),
-      ),
-    [
-      exams.data,
-      search,
-      status,
-      visibility,
-    ],
+    () => (exams.data ?? []).filter((exam) => matchesExam(exam, search, status, visibility)),
+    [exams.data, search, status, visibility],
   );
 
-  const pendingRetries =
-    useMemo(
-      () =>
-        (
-          retries.data ?? []
-        ).filter(
-          (request) =>
-            !request.status ||
-            request.status ===
-              "pending",
-        ),
-      [retries.data],
-    );
+  const pendingRetries = useMemo(
+    () => (retries.data ?? []).filter((request) => !request.status || request.status === "pending"),
+    [retries.data],
+  );
 
   function refreshExams() {
-    return queryClient.invalidateQueries(
-      {
-        queryKey: ["exams"],
-      },
-    );
+    return queryClient.invalidateQueries({
+      queryKey: ["exams"],
+    });
   }
 
   return {

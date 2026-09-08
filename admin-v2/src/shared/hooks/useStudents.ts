@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { api } from "../api/api";
+import { API_WORK_CONTEXT_EVENT, api, getApiWorkContextKey } from "../api/api";
 import type { Student } from "../types/domain";
 
 export const STUDENT_SELECTION_EVENT = "admin-selected-student-change";
@@ -21,7 +21,7 @@ async function loadAllStudents() {
 
   while (true) {
     const page = await api.get<Student[] | StudentsPage>(
-      `/admin/students?limit=${STUDENTS_PAGE_SIZE}&offset=${offset}`,
+      `/students?limit=${STUDENTS_PAGE_SIZE}&offset=${offset}`,
     );
     if (Array.isArray(page)) return page;
 
@@ -33,15 +33,17 @@ async function loadAllStudents() {
   }
 }
 
-export function useStudents() {
+export function useStudents({ enabled = true }: { enabled?: boolean } = {}) {
+  const [contextKey, setContextKey] = useState(getApiWorkContextKey);
   const [studentId, setStudentIdState] = useState(() =>
     typeof window === "undefined"
       ? ""
       : window.localStorage.getItem("admin-selected-student-id") || "",
   );
   const query = useQuery({
-    queryKey: ["students"],
+    queryKey: ["students", contextKey],
     queryFn: loadAllStudents,
+    enabled,
   });
   const students = query.data ?? [];
   const selectedStudentId =
@@ -57,15 +59,17 @@ export function useStudents() {
     if (typeof window !== "undefined") {
       if (next) window.localStorage.setItem("admin-selected-student-id", next);
       else window.localStorage.removeItem("admin-selected-student-id");
-      window.dispatchEvent(
-        new CustomEvent(STUDENT_SELECTION_EVENT, { detail: next }),
-      );
+      window.dispatchEvent(new CustomEvent(STUDENT_SELECTION_EVENT, { detail: next }));
     }
   }, []);
   useEffect(() => {
+    const syncContext = () => setContextKey(getApiWorkContextKey());
+    window.addEventListener(API_WORK_CONTEXT_EVENT, syncContext);
+    return () => window.removeEventListener(API_WORK_CONTEXT_EVENT, syncContext);
+  }, []);
+  useEffect(() => {
     function sync(event: StorageEvent) {
-      if (event.key === "admin-selected-student-id")
-        setStudentIdState(event.newValue || "");
+      if (event.key === "admin-selected-student-id") setStudentIdState(event.newValue || "");
     }
     window.addEventListener("storage", sync);
     const syncSameWindow = (event: Event) =>

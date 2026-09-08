@@ -1,14 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useAdminNotifications } from "../../features/notifications";
+import { useAuth } from "../../features/auth";
 import { AdminCommandPalette } from "./AdminCommandPalette";
 import { AdminContextSidebar } from "./AdminContextSidebar";
 import { AdminHeader } from "./AdminHeader";
 import { AdminMainSidebar } from "./AdminMainSidebar";
 import { AdminMobileBottomNav, AdminMobileDrawer } from "./AdminMobileNavigation";
-import { adminBreadcrumbs, adminNavigation, resolveAdminNavigation } from "./admin-navigation";
+import {
+  adminBreadcrumbs,
+  navigationForCapabilities,
+  resolveAdminNavigation,
+} from "./admin-navigation";
 import { adminContentOffsetClass } from "./layout-geometry";
 import { usePersistentCollapse } from "./layout-storage";
+import { roleLabel } from "../../shared/lib/role-ui";
 
 function readSelectedStudentId(search: string) {
   const urlValue = new URLSearchParams(search).get("studentId");
@@ -31,19 +37,29 @@ function isEditableTarget(target: EventTarget | null) {
 }
 
 export function AdminLayout() {
+  const auth = useAuth();
   const notificationState = useAdminNotifications();
   const location = useLocation();
   const [mainCollapsed, setMainCollapsed] = usePersistentCollapse("admin-main-sidebar-collapsed");
-  const [contextCollapsed, setContextCollapsed] = usePersistentCollapse("admin-context-sidebar-collapsed");
+  const [contextCollapsed, setContextCollapsed] = usePersistentCollapse(
+    "admin-context-sidebar-collapsed",
+  );
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   const current = resolveAdminNavigation(location.pathname);
   const breadcrumbs = adminBreadcrumbs(location.pathname);
-  const contextual = adminNavigation.find((group) => group.section === current.section)?.items || [];
+  const contextual =
+    navigationForCapabilities(auth.capabilities, auth.activeRole).find(
+      (group) => group.section === current.section,
+    )?.items || [];
   const showContextRail = contextual.length > 1;
   const selectedStudentId = readSelectedStudentId(location.search);
-  const contentOffset = adminContentOffsetClass({ showContextRail, mainCollapsed, contextCollapsed });
+  const contentOffset = adminContentOffsetClass({
+    showContextRail,
+    mainCollapsed,
+    contextCollapsed,
+  });
 
   const openMobileNavigation = useCallback(() => setMobileNavigationOpen(true), []);
   const closeMobileNavigation = useCallback(() => setMobileNavigationOpen(false), []);
@@ -68,7 +84,10 @@ export function AdminLayout() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-paper text-ink">
+    <div
+      className="admin-role-shell min-h-screen bg-paper text-ink"
+      data-role={auth.activeRole ?? "DEFAULT"}
+    >
       <AdminMainSidebar
         collapsed={mainCollapsed}
         currentSection={current.section}
@@ -90,7 +109,9 @@ export function AdminLayout() {
         />
       ) : null}
 
-      <div className={`${contentOffset} min-h-screen min-w-0 transition-[margin] duration-200 motion-reduce:transition-none`}>
+      <div
+        className={`${contentOffset} min-h-screen min-w-0 transition-[margin] duration-200 motion-reduce:transition-none`}
+      >
         <AdminHeader
           current={current}
           breadcrumbs={breadcrumbs}
@@ -98,10 +119,15 @@ export function AdminLayout() {
           sticky={current.path !== "planner"}
           onOpenMobileNavigation={openMobileNavigation}
           onOpenSearch={openCommandPalette}
+          role={roleLabel(auth.activeRole)}
+          organization={auth.context?.activeOrganization?.name}
+          multipleRoles={(auth.context?.roles.filter((role) => role !== "STUDENT").length || 0) > 1}
         />
 
-        <main className="w-full min-w-0 p-2 pb-[calc(4rem+env(safe-area-inset-bottom))] sm:p-3 sm:pb-[calc(4rem+env(safe-area-inset-bottom))] lg:p-3 lg:pb-3 xl:p-4">
-          <Outlet />
+        <main className="w-full min-w-0 px-3 py-4 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:px-5 sm:py-5 lg:px-6 lg:pb-6 xl:px-8">
+          <div className="admin-page-shell mx-auto w-full max-w-[1600px]">
+            <Outlet />
+          </div>
         </main>
       </div>
 

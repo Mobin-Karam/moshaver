@@ -5,7 +5,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "../api/api";
 import { useStudents } from "./useStudents";
 
-vi.mock("../api/api", () => ({ api: { get: vi.fn() } }));
+vi.mock("../api/api", () => ({
+  api: { get: vi.fn() },
+  API_WORK_CONTEXT_EVENT: "admin-api-work-context-change",
+  getApiWorkContextKey: () => "none:global",
+}));
 
 function wrapper({ children }: { children: ReactNode }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -26,7 +30,9 @@ describe("useStudents education context", () => {
     localStorage.setItem("admin-selected-student-id", "removed-student");
     const { result } = renderHook(() => useStudents(), { wrapper });
     await waitFor(() => expect(result.current.studentId).toBe("student-1"));
-    await waitFor(() => expect(localStorage.getItem("admin-selected-student-id")).toBe("student-1"));
+    await waitFor(() =>
+      expect(localStorage.getItem("admin-selected-student-id")).toBe("student-1"),
+    );
   });
 
   it("persists a new selection for the next Education route", async () => {
@@ -71,9 +77,14 @@ describe("useStudents education context", () => {
 
     await waitFor(() => expect(result.current.students).toHaveLength(101));
     expect(result.current.studentId).toBe("student-101");
-    expect(api.get).toHaveBeenNthCalledWith(
-      2,
-      "/admin/students?limit=100&offset=100",
-    );
+    expect(api.get).toHaveBeenNthCalledWith(2, "/students?limit=100&offset=100");
+  });
+
+  it("does not request the roster when the active feature lacks student access", () => {
+    const { result } = renderHook(() => useStudents({ enabled: false }), { wrapper });
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(result.current.students).toEqual([]);
+    expect(api.get).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,8 @@
 export function formatTime(value?: string) {
   return value
-    ? new Intl.DateTimeFormat("fa-IR", { hour: "2-digit", minute: "2-digit" }).format(new Date(value))
+    ? new Intl.DateTimeFormat("fa-IR", { hour: "2-digit", minute: "2-digit" }).format(
+        new Date(value),
+      )
     : "";
 }
 

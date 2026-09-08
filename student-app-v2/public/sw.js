@@ -66,3 +66,15 @@ self.addEventListener('notificationclick', (event) => {
     }),
   );
 });
+
+self.addEventListener('push', (event) => {
+  let payload = {};
+  try { payload = event.data?.json() ?? {}; } catch { payload = { body: event.data?.text() ?? '' }; }
+  event.waitUntil(self.registration.showNotification(payload.title ?? 'مشاور', {
+    body: payload.body ?? payload.message ?? '',
+    tag: payload.id ?? payload.tag,
+    data: { url: payload.url ?? '/more' },
+    icon: '/icons/icon-192.svg',
+    badge: '/icons/icon-192.svg',
+  }));
+});

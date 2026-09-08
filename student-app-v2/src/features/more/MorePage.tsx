@@ -2,13 +2,19 @@ import { BarChart3, KeyRound, LogOut, Monitor, MoonStar, RotateCcw, ShieldCheck 
 import { useEffect, useState, type FormEvent, type InputHTMLAttributes } from 'react';
 import { Link } from 'react-router-dom';
 import { useStudentStore } from '../../services/student-store';
+import { getNotificationPermission, requestNotificationPermission, type NotificationPermission } from '../../services/notification-service';
 
 export function MorePage() {
   const student = useStudentStore((state) => state.student);
+  const access = useStudentStore((state) => state.access);
   const user = useStudentStore((state) => state.user);
   const syncStatus = useStudentStore((state) => state.syncStatus);
   const logout = useStudentStore((state) => state.logout);
   const notifications = useStudentStore((state) => state.notifications);
+  const subjects = useStudentStore((state) => state.subjects);
+  const relationships = useStudentStore((state) => state.relationships);
+  const mistakes = useStudentStore((state) => state.mistakes);
+  const loadProfileDomains = useStudentStore((state) => state.loadProfileDomains);
   const loadNotifications = useStudentStore((state) => state.loadNotifications);
   const markNotificationRead = useStudentStore((state) => state.markNotificationRead);
   const markAllNotificationsRead = useStudentStore((state) => state.markAllNotificationsRead);
@@ -22,19 +28,31 @@ export function MorePage() {
   const saveRecoveryRequestDraft = useStudentStore((state) => state.saveRecoveryRequestDraft);
   const submitNightReport = useStudentStore((state) => state.submitNightReport);
   const submitRecoveryRequest = useStudentStore((state) => state.submitRecoveryRequest);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
 
   useEffect(() => {
     void loadNotifications();
     void loadAuthSessions();
-  }, [loadAuthSessions, loadNotifications]);
+    if (access?.mode === 'student') void loadProfileDomains();
+  }, [access?.mode, loadAuthSessions, loadNotifications, loadProfileDomains]);
+
+  useEffect(() => { void getNotificationPermission().then(setNotificationPermission); }, []);
 
   return (
     <section className="space-y-4">
       <h1 className="text-2xl font-semibold">بیشتر</h1>
-      <article className="surface p-4">
+      {access?.mode === 'student' ? <article className="surface p-4">
         <h2 className="font-semibold">{student?.name || user?.username || 'دانش‌آموز'}</h2>
         <p className="mt-2 text-sm text-ink/65">{[student?.grade, student?.major].filter(Boolean).join(' | ') || 'پرونده دانش‌آموز'}</p>
-      </article>
+      </article> : <article className="surface p-4"><h2 className="font-semibold">نمای خانواده</h2><p className="mt-2 text-sm leading-6 text-ink/65">این بخش فقط خواندنی است. ثبت گزارش و درخواست جبران باید با حساب دانش‌آموز انجام شود.</p></article>}
+      {access?.mode === 'student' ? <article className="surface p-4">
+        <h2 className="font-semibold">درس‌ها و ارتباطات پرونده</h2>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <div className="rounded-md bg-paper p-3"><strong className="text-sm">درس‌های فعال</strong><p className="mt-1 text-sm text-ink/65">{subjects.filter((item) => item.enabled).map((item) => item.displayName || item.subject.name).join('، ') || 'درسی ثبت نشده است.'}</p></div>
+          <div className="rounded-md bg-paper p-3"><strong className="text-sm">ارتباط‌های فعال</strong><p className="mt-1 text-sm text-ink/65">{relationships.filter((item) => item.status === 'ACTIVE').map((item) => `${item.type}: ${[item.fromUser?.firstName, item.fromUser?.lastName].filter(Boolean).join(' ') || item.fromUser?.username || 'کاربر'}`).join('، ') || 'ارتباط فعالی ثبت نشده است.'}</p></div>
+        </div>
+        <div className="mt-2 rounded-md bg-paper p-3"><strong className="text-sm">اشتباه‌های نیازمند مرور</strong><p className="mt-1 text-sm text-ink/65">{mistakes.length ? `${mistakes.length.toLocaleString('fa-IR')} مورد در دفترچه اشتباهات` : 'موردی ثبت نشده است.'}</p></div>
+      </article> : null}
             <Link to="/learning" className="surface flex items-center justify-between gap-3 p-4">
               <div>
                 <h2 className="font-semibold">پیشرفت و مرور</h2>
@@ -42,12 +60,12 @@ export function MorePage() {
               </div>
               <BarChart3 className="shrink-0 text-mint" size={22} />
             </Link>
-      <article className="surface p-4">
+      {access?.mode === 'student' ? <><article className="surface p-4">
         <div className="flex items-start gap-3">
           <MoonStar className="mt-0.5 shrink-0 text-mint" size={20} />
           <div className="min-w-0 flex-1">
             <h2 className="font-semibold">گزارش شبانه</h2>
-            <p className="mt-1 text-sm text-ink/60">گزارش فعلاً به‌صورت پیش‌نویس روی همین دستگاه ذخیره می‌شود؛ endpoint سرور هنوز ارائه نشده است.</p>
+            <p className="mt-1 text-sm text-ink/60">پیش‌نویس ابتدا روی دستگاه حفظ و سپس با API v2 ثبت می‌شود.</p>
             <NightReportForm draft={nightReportDraft} onSave={saveNightReportDraft} onSubmit={submitNightReport} />
           </div>
         </div>
@@ -57,17 +75,17 @@ export function MorePage() {
           <RotateCcw className="mt-0.5 shrink-0 text-ink/45" size={20} />
           <div className="min-w-0 flex-1">
             <h2 className="font-semibold">درخواست جبران</h2>
-            <p className="mt-1 text-sm text-ink/60">درخواست فعلاً به‌صورت پیش‌نویس روی همین دستگاه ذخیره می‌شود؛ endpoint سرور هنوز ارائه نشده است.</p>
+            <p className="mt-1 text-sm text-ink/60">پیش‌نویس ابتدا روی دستگاه حفظ و سپس با API v2 ارسال می‌شود.</p>
             <RecoveryRequestForm draft={recoveryRequestDraft} onSave={saveRecoveryRequestDraft} onSubmit={submitRecoveryRequest} />
           </div>
         </div>
-      </article>
+      </article></> : null}
       <article className="surface p-4">
         <div className="flex items-start gap-3">
           <KeyRound className="mt-0.5 shrink-0 text-ink/45" size={20} />
           <div>
             <h2 className="font-semibold">رمز عبور</h2>
-            <p className="mt-1 text-sm text-ink/60">تغییر رمز عبور از سمت دانش‌آموز در backend-v2 ارائه نشده است.</p>
+            <p className="mt-1 text-sm text-ink/60">تغییر رمز حساب از مسیر امن API v2 انجام می‌شود و نشست‌های دیگر را می‌بندد.</p>
           </div>
         </div>
       </article>
@@ -98,6 +116,12 @@ export function MorePage() {
               <p className="mt-3 rounded-md bg-paper px-3 py-3 text-sm text-ink/60">نشستی برای نمایش وجود ندارد.</p>
             )}
           </div>
+        </div>
+      </article>
+      <article className="surface p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div><h2 className="font-semibold">اعلان دستگاه</h2><p className="mt-1 text-sm text-ink/60">اعلان پایدار سرور با SSE، Push وب یا اعلان بومی دستگاه.</p></div>
+          {notificationPermission === 'granted' ? <span className="rounded-full bg-mint/15 px-3 py-1 text-xs text-mint">فعال</span> : notificationPermission === 'unsupported' ? <span className="text-xs text-ink/50">پشتیبانی نمی‌شود</span> : <button type="button" className="rounded-md bg-ink px-3 py-2 text-sm text-white" onClick={() => void requestNotificationPermission().then(setNotificationPermission)}>فعال‌سازی</button>}
         </div>
       </article>
       <article className="surface p-4">

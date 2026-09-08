@@ -11,42 +11,315 @@ import {
   Settings,
   Sparkles,
   UsersRound,
+  Building2,
+  PackageOpen,
+  ShieldCheck,
 } from "lucide-react";
 
 export const adminNavigation = [
-  { section: "خانه", items: [{ path: "", title: "داشبورد", description: "نمای کلی امروز، سلامت سیستم و موارد نیازمند توجه", icon: LayoutDashboard }] },
-  { section: "آموزش", items: [
-    { path: "planner", title: "برنامه‌ریز", description: "مدیریت برنامه روزانه، هفتگی و وظایف دانش‌آموز", icon: CalendarDays },
-    { path: "learning", title: "سیستم یادگیری", description: "مدیریت مرورهای فاصله‌دار، تسلط و الگوهای خطای دانش‌آموز", icon: Sparkles, aliases: ["education", "students/:studentId/learning"] },
-    { path: "exams", title: "آزمون‌ها", description: "زمان‌بندی، انتشار، تلاش مجدد، بودجه و سؤال‌ها", icon: BookOpenCheck },
-    { path: "questions", title: "بانک سؤال", description: "ساخت، بازبینی و مرتب‌سازی سؤال‌های هر آزمون", icon: GraduationCap },
-    { path: "quizzes", title: "آزمونک‌ها", description: "مدیریت آزمونک‌ها، سؤال‌ها و وضعیت انتشار", icon: BookOpenCheck },
-    { path: "subjects", title: "درس‌ها", description: "مدیریت درس‌ها و شناسه‌های آموزشی", icon: BookOpen },
-  ] },
-  { section: "ارتباط", items: [
-    { path: "live", title: "فعالیت زنده", description: "پایش وضعیت و فعالیت جاری همه دانش‌آموزان", icon: Activity },
-    { path: "chat", title: "گفتگو", description: "پیام‌های مستقیم و گروهی، حضور و پیگیری گفتگوها", icon: MessageSquare },
-    { path: "notifications", title: "مرکز اعلان‌ها", description: "ارسال و پیگیری اعلان‌های دانش‌آموزان", icon: Bell },
-  ] },
-  { section: "مدیریت", items: [
-    { path: "students", title: "دانش‌آموزان", description: "مدیریت حساب، وضعیت و دسترسی دانش‌آموزان", icon: UsersRound },
-    { path: "reports", title: "گزارش‌ها", description: "گزارش عملکرد، مطالعه و روند پیشرفت دانش‌آموز", icon: LayoutDashboard },
-  ] },
-  { section: "سامانه", items: [
-    { path: "system", title: "سیستم و امنیت", description: "پشتیبان‌گیری، سلامت سرویس و رویدادهای امنیتی", icon: Database },
-    { path: "settings", title: "تنظیمات", description: "موقعیت، تقویم، نشست‌ها و اتصال API", icon: Settings },
-  ] },
+  {
+    section: "خانه",
+    items: [
+      {
+        path: "",
+        title: "داشبورد",
+        description: "نمای کلی امروز، سلامت سیستم و موارد نیازمند توجه",
+        icon: LayoutDashboard,
+      },
+    ],
+  },
+  {
+    section: "آموزش",
+    items: [
+      {
+        path: "planner",
+        title: "برنامه‌ریز",
+        description: "مدیریت برنامه روزانه، هفتگی و وظایف دانش‌آموز",
+        icon: CalendarDays,
+        capability: "plans.read",
+      },
+      {
+        path: "learning",
+        title: "سیستم یادگیری",
+        description: "مدیریت مرورهای فاصله‌دار، تسلط و الگوهای خطای دانش‌آموز",
+        icon: Sparkles,
+        capability: "learning.read",
+        aliases: ["education", "students/:studentId/learning"],
+      },
+      {
+        path: "exams",
+        title: "آزمون‌ها",
+        description: "زمان‌بندی، انتشار، تلاش مجدد، بودجه و سؤال‌ها",
+        icon: BookOpenCheck,
+        capability: "exams.read",
+      },
+      {
+        path: "questions",
+        title: "بانک سؤال",
+        description: "ساخت، بازبینی و مرتب‌سازی سؤال‌های هر آزمون",
+        icon: GraduationCap,
+        capability: "questions.read",
+      },
+      {
+        path: "quizzes",
+        title: "آزمونک‌ها",
+        description: "مدیریت آزمونک‌ها، سؤال‌ها و وضعیت انتشار",
+        icon: BookOpenCheck,
+        capability: "quizzes.read",
+      },
+      {
+        path: "subjects",
+        title: "درس‌ها",
+        description: "مدیریت درس‌ها و شناسه‌های آموزشی",
+        icon: BookOpen,
+        capability: "subjects.read",
+      },
+    ],
+  },
+  {
+    section: "ارتباط",
+    items: [
+      {
+        path: "communication/live",
+        title: "فعالیت زنده",
+        description: "پایش وضعیت و فعالیت جاری همه دانش‌آموزان",
+        icon: Activity,
+        capability: "student.live.read",
+      },
+      {
+        path: "communication/chat",
+        title: "گفتگو",
+        description: "پیام‌های مستقیم و گروهی، حضور و پیگیری گفتگوها",
+        icon: MessageSquare,
+        capability: "chat.read",
+      },
+      {
+        path: "communication/notifications",
+        title: "مرکز اعلان‌ها",
+        description: "ارسال و پیگیری اعلان‌های دانش‌آموزان",
+        icon: Bell,
+      },
+    ],
+  },
+  {
+    section: "مدیریت",
+    items: [
+      {
+        path: "students",
+        title: "دانش‌آموزان",
+        description: "مدیریت حساب، وضعیت و دسترسی دانش‌آموزان",
+        icon: UsersRound,
+        capability: "students.read",
+      },
+      {
+        path: "users",
+        title: "کاربران و کارکنان",
+        description: "مدیریت حساب‌ها، نقش‌ها و عضویت‌های سازمان",
+        icon: UsersRound,
+        capability: "users.read",
+      },
+      {
+        path: "organizations",
+        title: "سازمان‌ها",
+        description: "مدیریت سازمان‌ها و زمینه فعال",
+        icon: Building2,
+        capability: "organization.read",
+      },
+      {
+        path: "reports",
+        title: "گزارش‌ها",
+        description: "گزارش عملکرد، مطالعه و روند پیشرفت دانش‌آموز",
+        icon: LayoutDashboard,
+        capability: "reports.read",
+      },
+    ],
+  },
+  {
+    section: "سامانه",
+    items: [
+      {
+        path: "system",
+        title: "مرکز عملیات",
+        description: "سلامت سرویس و ابزارهای مجاز سامانه",
+        icon: Settings,
+        capability: "system.manage",
+      },
+      {
+        path: "releases",
+        title: "نسخه‌ها و انتشارها",
+        description: "نسخه فعال و تاریخچه انتشار برنامه‌ها",
+        icon: PackageOpen,
+        capability: "release.read",
+      },
+      {
+        path: "database",
+        title: "داده و پشتیبان",
+        description: "پشتیبان‌گیری و بازیابی کنترل‌شده",
+        icon: Database,
+        capability: "database.read",
+      },
+      {
+        path: "audit",
+        title: "ممیزی امنیتی",
+        description: "رویدادهای امنیتی و عملیاتی",
+        icon: ShieldCheck,
+        capability: "audit.read",
+      },
+      {
+        path: "settings",
+        title: "تنظیمات حساب",
+        description: "رمز، نشست‌ها، موقعیت و اتصال API",
+        icon: Settings,
+      },
+    ],
+  },
 ] as const;
 
-export const flatAdminNavigation = adminNavigation.flatMap((group) => group.items.map((item) => ({ ...item, section: group.section })));
+export const flatAdminNavigation = adminNavigation.flatMap((group) =>
+  group.items.map((item) => ({ ...item, section: group.section })),
+);
 export const mainAdminNavigation = adminNavigation.map((group) => ({
   ...group.items[0],
-  title: group.section,
+  title: {
+    خانه: "نمای کلی",
+    آموزش: "آموزش و برنامه‌ریزی",
+    ارتباط: "ارتباط و پیگیری",
+    مدیریت: "افراد و دسترسی",
+    سامانه: "سامانه و امنیت",
+  }[group.section],
   section: group.section,
 }));
 
+const roleSectionTitles: Record<
+  string,
+  Partial<Record<(typeof adminNavigation)[number]["section"], string>>
+> = {
+  GUARDIAN: {
+    خانه: "خانه خانواده",
+    آموزش: "برنامه فرزند",
+    ارتباط: "ارتباط با تیم",
+    مدیریت: "فرزند و گزارش",
+    سامانه: "حساب من",
+  },
+  ADVISOR: {
+    خانه: "میز کار مشاور",
+    آموزش: "برنامه و یادگیری",
+    ارتباط: "ارتباط و پیگیری",
+    مدیریت: "دانش‌آموزان و گزارش",
+  },
+  TEACHER: {
+    خانه: "میز کار دبیر",
+    آموزش: "آزمون و محتوا",
+    ارتباط: "کلاس و گفتگو",
+    مدیریت: "دانش‌آموزان",
+  },
+  MENTOR: {
+    خانه: "میز کار منتور",
+    آموزش: "هدف و برنامه",
+    ارتباط: "پیگیری و گفتگو",
+    مدیریت: "روند دانش‌آموزان",
+  },
+  CONTENT_MANAGER: { خانه: "استودیوی محتوا", آموزش: "محتوای آموزشی", ارتباط: "هماهنگی محتوا" },
+  ORGANIZATION_ADMIN: {
+    خانه: "نمای سازمان",
+    آموزش: "عملیات آموزشی",
+    ارتباط: "ارتباطات سازمان",
+    مدیریت: "اعضا و دسترسی",
+  },
+  PLATFORM_ADMIN: {
+    خانه: "نمای پلتفرم",
+    آموزش: "عملیات آموزشی",
+    ارتباط: "ارتباطات",
+    مدیریت: "کاربران و سازمان‌ها",
+    سامانه: "سامانه و امنیت",
+  },
+};
+
+export function mainNavigationForCapabilities(
+  capabilities: readonly string[],
+  role?: string | null,
+) {
+  const titles = role ? roleSectionTitles[role] : undefined;
+  return navigationForCapabilities(capabilities, role).map((group) => ({
+    ...group.items[0],
+    section: group.section,
+    title:
+      titles?.[group.section] ??
+      mainAdminNavigation.find((item) => item.section === group.section)?.title ??
+      group.section,
+  }));
+}
+
+const roleTitles: Record<string, Record<string, string>> = {
+  GUARDIAN: {
+    "": "خانه",
+    students: "فرزندان",
+    reports: "پیشرفت",
+    planner: "برنامه",
+    "communication/chat": "پیام‌ها",
+    "communication/notifications": "اعلان‌ها",
+    settings: "پروفایل",
+  },
+  ADVISOR: {
+    "": "میز کار",
+    students: "دانش‌آموزان من",
+    planner: "برنامه‌ریزی",
+    learning: "یادگیری و مرور",
+    exams: "آزمون و درخواست‌ها",
+    "communication/chat": "گفت‌وگوها",
+    reports: "گزارش پیشرفت",
+  },
+  TEACHER: {
+    "": "میز کار دبیر",
+    students: "دانش‌آموزان / کلاس‌ها",
+    exams: "آزمون‌ها",
+    questions: "بانک سؤال",
+    quizzes: "آزمونک‌ها",
+    subjects: "درس‌های من",
+    "communication/chat": "پیام‌ها",
+  },
+  MENTOR: {
+    "": "میز کار منتور",
+    students: "دانش‌آموزان من",
+    planner: "برنامه و هدف‌ها",
+    reports: "روند پیشرفت",
+    "communication/chat": "گفت‌وگوها",
+  },
+  CONTENT_MANAGER: {
+    "": "استودیوی محتوا",
+    subjects: "درس‌ها",
+    questions: "بانک سؤال",
+    quizzes: "آزمونک‌ها",
+    exams: "آزمون‌ها",
+  },
+  ORGANIZATION_ADMIN: {
+    "": "داشبورد سازمان",
+    students: "دانش‌آموزان",
+    users: "کارکنان",
+    organizations: "عضویت و دسترسی",
+    reports: "گزارش سازمان",
+  },
+  PLATFORM_ADMIN: { "": "داشبورد پلتفرم" },
+};
+
+export function navigationForCapabilities(capabilities: readonly string[], role?: string | null) {
+  const titles = role ? roleTitles[role] : undefined;
+  return adminNavigation
+    .map((group) => ({
+      ...group,
+      items: group.items
+        .filter((item) => !("capability" in item) || capabilities.includes(item.capability))
+        .map((item) => (titles?.[item.path] ? { ...item, title: titles[item.path] } : item)),
+    }))
+    .filter((group) => group.items.length);
+}
+
 export function normalizeAdminPath(pathname: string) {
-  return pathname.replace(/^https?:\/\/[^/]+/i, "").split(/[?#]/)[0].replace(/^\/admin\/?/, "").replace(/^\/+|\/+$/g, "");
+  return pathname
+    .replace(/^https?:\/\/[^/]+/i, "")
+    .split(/[?#]/)[0]
+    .replace(/^\/admin\/?/, "")
+    .replace(/^\/+|\/+$/g, "");
 }
 
 function routeMatches(pattern: string, path: string) {
@@ -59,7 +332,13 @@ function routeMatches(pattern: string, path: string) {
 
 export function resolveAdminNavigation(pathname: string) {
   const path = normalizeAdminPath(pathname);
-  return flatAdminNavigation.find((item) => routeMatches(item.path, path) || ("aliases" in item && item.aliases.some((alias) => routeMatches(alias, path)))) || flatAdminNavigation[0];
+  return (
+    flatAdminNavigation.find(
+      (item) =>
+        routeMatches(item.path, path) ||
+        ("aliases" in item && item.aliases.some((alias) => routeMatches(alias, path))),
+    ) || flatAdminNavigation[0]
+  );
 }
 
 export function adminDestination(path: string, section: string, studentId = "") {

@@ -1,4 +1,5 @@
 import type { StudentNotification } from './student-store';
+import { apiClient } from './api-client';
 
 const SEEN_NOTIFICATION_IDS = 'moshaver_v2_seen_notification_ids';
 const isTauri = '__TAURI_INTERNALS__' in window;
@@ -48,7 +49,26 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
     return plugin ? await plugin.requestPermission() : 'unsupported';
   }
   if (!('Notification' in window)) return 'unsupported';
-  return Notification.requestPermission();
+  const permission = await Notification.requestPermission();
+  if (permission === 'granted') await ensurePwaPushSubscription();
+  return permission;
+}
+
+export async function ensurePwaPushSubscription() {
+  if (isTauri || !('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+  const config = await apiClient.request<{ supported: boolean; vapidPublicKey: string }>('GET', '/push/config');
+  if (!config.supported || !config.vapidPublicKey || Notification.permission !== 'granted') return false;
+  const registration = await navigator.serviceWorker.ready;
+  let subscription = await registration.pushManager.getSubscription();
+  subscription ||= await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidKey(config.vapidPublicKey) });
+  await apiClient.request('POST', '/push/subscriptions', subscription.toJSON());
+  return true;
+}
+
+function vapidKey(value: string) {
+  const padding = '='.repeat((4 - value.length % 4) % 4);
+  const bytes = atob((value + padding).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(bytes, (character) => character.charCodeAt(0));
 }
 
 export function registerNotificationClickHandler() {

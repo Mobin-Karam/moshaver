@@ -68,7 +68,7 @@ export function DataTransferWorkspace(props: Props) {
     [result, setResult] = useState<ImportResult | null>(null);
   const preview = useMutation({
     mutationFn: (data: unknown) =>
-      api.post<TransferPreview>("/admin/import/preview", {
+      api.post<TransferPreview>("/import/preview", {
         studentId: props.studentId,
         data,
       }),
@@ -76,7 +76,7 @@ export function DataTransferWorkspace(props: Props) {
   });
   const commit = useMutation({
     mutationFn: ({ data, published }: { data: unknown; published: boolean }) =>
-      api.post<ImportResult>("/admin/import/commit", {
+      api.post<ImportResult>("/import/commit", {
         studentId: props.studentId,
         data,
         publishImported: published,
@@ -84,8 +84,7 @@ export function DataTransferWorkspace(props: Props) {
         replaceExistingExams: examPolicy === "replace",
         skipExistingPlans: planPolicy === "skip",
         skipExistingExams: examPolicy === "skip",
-        sourceName:
-          fileName || `Admin v2 ${props.scope} ${new Date().toISOString()}`,
+        sourceName: fileName || `Admin v2 ${props.scope} ${new Date().toISOString()}`,
       }),
     onSuccess(data) {
       setResult(data);
@@ -121,8 +120,7 @@ export function DataTransferWorkspace(props: Props) {
   function parse(text: string, action: (data: unknown) => void) {
     try {
       const data = JSON.parse(text);
-      if (!data || typeof data !== "object" || Array.isArray(data))
-        throw new Error();
+      if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error();
       action(data);
     } catch {
       modal.open({
@@ -141,25 +139,19 @@ export function DataTransferWorkspace(props: Props) {
       .join(" و ");
     void modal
       .confirm({
-        title: published
-          ? "ثبت و انتشار اطلاعات؟"
-          : "ثبت اطلاعات به‌صورت پیش‌نویس؟",
+        title: published ? "ثبت و انتشار اطلاعات؟" : "ثبت اطلاعات به‌صورت پیش‌نویس؟",
         description: (
           <div className="grid gap-1">
             <span>{summarySentence(preview.data)}</span>
             {replacing ? (
-              <strong className="text-rose-700">
-                {replacing} در صورت تطابق جایگزین می‌شوند.
-              </strong>
+              <strong className="text-rose-700">{replacing} در صورت تطابق جایگزین می‌شوند.</strong>
             ) : null}
           </div>
         ),
         tone: replacing ? "danger" : "default",
         confirmLabel: published ? "ثبت و انتشار" : "ثبت پیش‌نویس",
       })
-      .then(
-        (ok) => ok && parse(json, (data) => commit.mutate({ data, published })),
-      );
+      .then((ok) => ok && parse(json, (data) => commit.mutate({ data, published })));
   }
   function reset() {
     setJson("");
@@ -171,8 +163,8 @@ export function DataTransferWorkspace(props: Props) {
     preview.reset();
     if (fileRef.current) fileRef.current.value = "";
   }
-  const exportPath = `/admin/export/json?studentId=${encodeURIComponent(props.studentId)}&scope=${props.scope}${props.exportFrom ? `&from=${props.exportFrom}` : ""}${props.exportTo ? `&to=${props.exportTo}` : ""}`;
-  const templatePath = `/admin/import/template?studentId=${encodeURIComponent(props.studentId)}&scope=${props.scope}`;
+  const exportPath = `/export/json?studentId=${encodeURIComponent(props.studentId)}&scope=${props.scope}${props.exportFrom ? `&from=${props.exportFrom}` : ""}${props.exportTo ? `&to=${props.exportTo}` : ""}`;
+  const templatePath = `/import/template?studentId=${encodeURIComponent(props.studentId)}&scope=${props.scope}`;
   const filename = `moshaver-${props.scope}-${props.exportFrom || "all"}-${props.exportTo || "all"}.json`;
 
   return (
@@ -185,23 +177,15 @@ export function DataTransferWorkspace(props: Props) {
             </span>
             <div>
               <h3 className="text-lg font-black">{props.title}</h3>
-              <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
-                {props.description}
-              </p>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">{props.description}</p>
             </div>
           </div>
           <div className="flex rounded-lg bg-slate-100 p-1">
-            <TabButton
-              active={tab === "import"}
-              onClick={() => setTab("import")}
-            >
+            <TabButton active={tab === "import"} onClick={() => setTab("import")}>
               <FileUp size={16} />
               ورود اطلاعات
             </TabButton>
-            <TabButton
-              active={tab === "export"}
-              onClick={() => setTab("export")}
-            >
+            <TabButton active={tab === "export"} onClick={() => setTab("export")}>
               <Download size={16} />
               خروجی گرفتن
             </TabButton>
@@ -215,11 +199,7 @@ export function DataTransferWorkspace(props: Props) {
           ) : (
             <div className="grid gap-5 xl:grid-cols-[minmax(340px,.8fr)_minmax(0,1.2fr)]">
               <section className="grid content-start gap-3">
-                <Step
-                  number={1}
-                  title="فایل را انتخاب کنید"
-                  active={!preview.data}
-                />
+                <Step number={1} title="فایل را انتخاب کنید" active={!preview.data} />
                 <div
                   onDragEnter={(event) => {
                     event.preventDefault();
@@ -241,9 +221,7 @@ export function DataTransferWorkspace(props: Props) {
                       <UploadCloud size={42} className="text-slate-400" />
                     )}
                     <div>
-                      <strong className="block">
-                        {fileName || "فایل JSON را اینجا رها کنید"}
-                      </strong>
+                      <strong className="block">{fileName || "فایل JSON را اینجا رها کنید"}</strong>
                       <span className="mt-1 block text-xs text-slate-500">
                         {fileName
                           ? "فایل به‌صورت خودکار اعتبارسنجی شد"
@@ -257,11 +235,7 @@ export function DataTransferWorkspace(props: Props) {
                       accept="application/json,.json"
                       onChange={(event) => loadFile(event.target.files?.[0])}
                     />
-                    <Button
-                      type="button"
-                      variant="soft"
-                      onClick={() => fileRef.current?.click()}
-                    >
+                    <Button type="button" variant="soft" onClick={() => fileRef.current?.click()}>
                       {fileName ? "تغییر فایل" : "انتخاب فایل"}
                     </Button>
                   </div>
@@ -271,10 +245,7 @@ export function DataTransferWorkspace(props: Props) {
                   className="flex items-center gap-2 text-sm font-semibold text-brand"
                   onClick={() => setAdvanced((value) => !value)}
                 >
-                  <ChevronLeft
-                    size={16}
-                    className={`transition ${advanced ? "-rotate-90" : ""}`}
-                  />
+                  <ChevronLeft size={16} className={`transition ${advanced ? "-rotate-90" : ""}`} />
                   ورود دستی JSON
                 </button>
                 {advanced ? (
@@ -295,9 +266,7 @@ export function DataTransferWorkspace(props: Props) {
                       variant="soft"
                       loading={preview.isPending}
                       disabled={!json || !props.studentId}
-                      onClick={() =>
-                        parse(json, (data) => preview.mutate(data))
-                      }
+                      onClick={() => parse(json, (data) => preview.mutate(data))}
                     >
                       اعتبارسنجی متن
                     </Button>
@@ -306,10 +275,7 @@ export function DataTransferWorkspace(props: Props) {
                 <Button
                   variant="ghost"
                   disabled={!props.studentId}
-                  loading={
-                    download.isPending &&
-                    download.variables?.path === templatePath
-                  }
+                  loading={download.isPending && download.variables?.path === templatePath}
                   onClick={() =>
                     download.mutate({
                       path: templatePath,
@@ -321,11 +287,7 @@ export function DataTransferWorkspace(props: Props) {
                 </Button>
               </section>
               <section className="grid content-start gap-4">
-                <Step
-                  number={2}
-                  title="بررسی و رفع مشکل"
-                  active={!!preview.data}
-                />
+                <Step number={2} title="بررسی و رفع مشکل" active={!!preview.data} />
                 {preview.isPending ? (
                   <ReviewLoading />
                 ) : preview.data ? (
@@ -334,11 +296,7 @@ export function DataTransferWorkspace(props: Props) {
                   <EmptyReview />
                 )}
                 <div className="border-t border-slate-200 pt-4">
-                  <Step
-                    number={3}
-                    title="روش ثبت را انتخاب کنید"
-                    active={valid}
-                  />
+                  <Step number={3} title="روش ثبت را انتخاب کنید" active={valid} />
                   <div
                     className={`mt-3 grid gap-3 ${valid ? "" : "pointer-events-none opacity-45"}`}
                   >
@@ -430,13 +388,11 @@ export function DataTransferWorkspace(props: Props) {
             <ShieldCheck size={28} className="text-brand" />
             <h4 className="font-black">خروجی قابل بازیابی</h4>
             <p className="text-sm leading-6 text-slate-600">
-              شناسه‌های داخلی به ارجاع‌های قابل‌حمل تبدیل می‌شوند تا اتصال
-              برنامه و آزمون هنگام ورود مجدد حفظ شود.
+              شناسه‌های داخلی به ارجاع‌های قابل‌حمل تبدیل می‌شوند تا اتصال برنامه و آزمون هنگام ورود
+              مجدد حفظ شود.
             </p>
             <Button
-              loading={
-                download.isPending && download.variables?.path === exportPath
-              }
+              loading={download.isPending && download.variables?.path === exportPath}
               disabled={!props.studentId}
               onClick={() => download.mutate({ path: exportPath, filename })}
             >
@@ -472,15 +428,7 @@ function TabButton({
     </button>
   );
 }
-function Step({
-  number,
-  title,
-  active,
-}: {
-  number: number;
-  title: string;
-  active: boolean;
-}) {
+function Step({ number, title, active }: { number: number; title: string; active: boolean }) {
   return (
     <div className="flex items-center gap-2">
       <span
@@ -488,9 +436,7 @@ function Step({
       >
         {fa(number)}
       </span>
-      <strong className={active ? "text-ink" : "text-slate-400"}>
-        {title}
-      </strong>
+      <strong className={active ? "text-ink" : "text-slate-400"}>{title}</strong>
     </div>
   );
 }
@@ -499,9 +445,7 @@ function EmptyReview() {
     <div className="grid min-h-52 place-items-center rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
       <div>
         <FileJson className="mx-auto text-slate-300" size={38} />
-        <strong className="mt-3 block text-slate-500">
-          پیش‌نمایش هنوز آماده نیست
-        </strong>
+        <strong className="mt-3 block text-slate-500">پیش‌نمایش هنوز آماده نیست</strong>
         <p className="mt-1 text-xs text-slate-400">
           پس از انتخاب فایل، نتیجه بررسی اینجا نمایش داده می‌شود.
         </p>
@@ -514,9 +458,7 @@ function ReviewLoading() {
     <div className="grid min-h-52 place-items-center rounded-xl border border-slate-200 bg-slate-50">
       <div className="text-center">
         <span className="mx-auto block size-9 animate-spin rounded-full border-4 border-indigo-100 border-t-brand" />
-        <strong className="mt-3 block text-sm">
-          در حال بررسی ساختار و تداخل‌ها…
-        </strong>
+        <strong className="mt-3 block text-sm">در حال بررسی ساختار و تداخل‌ها…</strong>
       </div>
     </div>
   );
@@ -536,9 +478,7 @@ function Review({ preview }: { preview: TransferPreview }) {
         )}
         <div>
           <strong className={hasErrors ? "text-rose-800" : "text-emerald-800"}>
-            {hasErrors
-              ? "فایل نیاز به اصلاح دارد"
-              : "فایل معتبر و آماده ثبت است"}
+            {hasErrors ? "فایل نیاز به اصلاح دارد" : "فایل معتبر و آماده ثبت است"}
           </strong>
           <p className="mt-1 text-xs text-slate-600">
             نسخه ساختار: {fa(preview.schemaVersion || 2)}
@@ -550,32 +490,16 @@ function Review({ preview }: { preview: TransferPreview }) {
         <Count label="فعالیت" value={summary.tasks} />
         <Count label="آزمون" value={summary.exams} />
         <Count label="سؤال" value={summary.questions} />
-        <Count
-          label="تداخل"
-          value={summary.conflicts}
-          warning={!!summary.conflicts}
-        />
+        <Count label="تداخل" value={summary.conflicts} warning={!!summary.conflicts} />
       </div>
       {preview.errors?.length ? (
-        <IssueList
-          title="خطاهای مسدودکننده"
-          items={preview.errors}
-          tone="red"
-        />
+        <IssueList title="خطاهای مسدودکننده" items={preview.errors} tone="red" />
       ) : null}
       {preview.warnings?.length ? (
-        <IssueList
-          title="موارد نیازمند توجه"
-          items={preview.warnings}
-          tone="amber"
-        />
+        <IssueList title="موارد نیازمند توجه" items={preview.warnings} tone="amber" />
       ) : null}
       {preview.conflicts?.length ? (
-        <IssueList
-          title="تداخل‌های زمانی"
-          items={preview.conflicts}
-          tone="amber"
-        />
+        <IssueList title="تداخل‌های زمانی" items={preview.conflicts} tone="amber" />
       ) : null}
     </div>
   );
@@ -593,9 +517,7 @@ function Count({
     <div
       className={`rounded-lg border bg-white p-3 text-center ${warning ? "border-amber-200" : "border-slate-200"}`}
     >
-      <strong className={warning ? "text-amber-700" : "text-ink"}>
-        {fa(value)}
-      </strong>
+      <strong className={warning ? "text-amber-700" : "text-ink"}>{fa(value)}</strong>
       <span className="mt-1 block text-xs text-slate-500">{label}</span>
     </div>
   );
@@ -668,9 +590,7 @@ function ConflictPolicyPicker({
             />
             <span>
               <strong className="block text-xs">{option.label}</strong>
-              <small className="text-[11px] text-slate-500">
-                {option.hint}
-              </small>
+              <small className="text-[11px] text-slate-500">{option.hint}</small>
             </span>
           </label>
         ))}
@@ -678,13 +598,7 @@ function ConflictPolicyPicker({
     </fieldset>
   );
 }
-function ResultView({
-  result,
-  onReset,
-}: {
-  result: ImportResult;
-  onReset: () => void;
-}) {
+function ResultView({ result, onReset }: { result: ImportResult; onReset: () => void }) {
   return (
     <div className="grid min-h-80 place-items-center p-6 text-center">
       <div className="max-w-xl">
@@ -705,8 +619,8 @@ function ResultView({
         </div>
         {result.skippedPlans || result.skippedExams ? (
           <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            {fa((result.skippedPlans || 0) + (result.skippedExams || 0))} مورد
-            تکراری بدون تغییر رد شد.
+            {fa((result.skippedPlans || 0) + (result.skippedExams || 0))} مورد تکراری بدون تغییر رد
+            شد.
           </p>
         ) : null}
         <Button className="mt-5" variant="soft" onClick={onReset}>

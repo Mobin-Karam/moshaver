@@ -13,8 +13,8 @@ export class SyncController {
   constructor(private readonly syncService: SyncService) {}
 
   @Get()
-  sync(@CurrentUser() user: AuthenticatedUser, @Query("lastSync") lastSync?: string) {
-    return this.syncService.pull(user, lastSync).then(ok);
+  sync(@CurrentUser() user: AuthenticatedUser, @Query("cursor") cursor?: string, @Query("lastSync") lastSync?: string) {
+    return this.syncService.pull(user, cursor || lastSync).then(ok);
   }
 
   @Post("upload")

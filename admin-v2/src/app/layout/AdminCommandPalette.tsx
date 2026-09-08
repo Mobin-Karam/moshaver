@@ -1,9 +1,16 @@
 import { Clock3, CornerDownLeft, Search, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../features/auth";
 import { normalizePersianText } from "../../shared/lib/utils";
-import { adminDestination, flatAdminNavigation } from "./admin-navigation";
+import { adminDestination, navigationForCapabilities } from "./admin-navigation";
 import { readStoredList, writeStoredList } from "./layout-storage";
 import type { AdminCurrentNavigation } from "./layout-types";
 
@@ -39,6 +46,14 @@ export function AdminCommandPalette({
   onClose: () => void;
 }) {
   const navigate = useNavigate();
+  const auth = useAuth();
+  const availableNavigation = useMemo(
+    () =>
+      navigationForCapabilities(auth.capabilities, auth.activeRole).flatMap((group) =>
+        group.items.map((item) => ({ ...item, section: group.section })),
+      ),
+    [auth.capabilities, auth.activeRole],
+  );
   const inputRef = useRef<HTMLInputElement | null>(null);
   const dialogRef = useRef<HTMLElement | null>(null);
   const [query, setQuery] = useState("");
@@ -58,22 +73,22 @@ export function AdminCommandPalette({
     () =>
       recentTokens.flatMap((token) => {
         const path = tokenPath(token);
-        const item = flatAdminNavigation.find((candidate) => candidate.path === path);
+        const item = availableNavigation.find((candidate) => candidate.path === path);
         return item ? [item] : [];
       }),
-    [recentTokens],
+    [recentTokens, availableNavigation],
   );
 
   const normalizedQuery = normalizePersianText(query.trim().toLowerCase());
   const results = useMemo(() => {
-    if (!normalizedQuery) return recentItems.length ? recentItems : flatAdminNavigation.slice(0, 8);
-    return flatAdminNavigation.filter((item) => {
+    if (!normalizedQuery) return recentItems.length ? recentItems : availableNavigation.slice(0, 8);
+    return availableNavigation.filter((item) => {
       const haystack = normalizePersianText(
         `${item.title} ${item.description} ${item.section} ${item.path}`.toLowerCase(),
       );
       return haystack.includes(normalizedQuery);
     });
-  }, [normalizedQuery, recentItems]);
+  }, [normalizedQuery, recentItems, availableNavigation]);
 
   useEffect(() => {
     if (!open) return;
@@ -81,7 +96,8 @@ export function AdminCommandPalette({
     setQuery("");
     setActiveIndex(0);
     const previousOverflow = document.body.style.overflow;
-    const previousActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousActive =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.body.style.overflow = "hidden";
     const timer = window.setTimeout(() => inputRef.current?.focus(), 0);
 
@@ -121,7 +137,9 @@ export function AdminCommandPalette({
     if (!open) return;
     const active = results[activeIndex];
     if (!active) return;
-    document.getElementById(`admin-command-${pathToken(active.path)}`)?.scrollIntoView({ block: "nearest" });
+    document
+      .getElementById(`admin-command-${pathToken(active.path)}`)
+      ?.scrollIntoView({ block: "nearest" });
   }, [activeIndex, open, results]);
 
   useEffect(() => {
@@ -159,7 +177,10 @@ export function AdminCommandPalette({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] flex items-start justify-center bg-slate-950/40 px-3 pt-[8dvh] backdrop-blur-sm" onMouseDown={onClose}>
+    <div
+      className="fixed inset-0 z-[120] flex items-start justify-center bg-slate-950/40 px-3 pt-[8dvh] backdrop-blur-sm"
+      onMouseDown={onClose}
+    >
       <section
         ref={dialogRef}
         className="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
@@ -181,7 +202,11 @@ export function AdminCommandPalette({
             aria-autocomplete="list"
             aria-expanded="true"
             aria-controls="admin-command-results"
-            aria-activedescendant={results[activeIndex] ? `admin-command-${pathToken(results[activeIndex].path)}` : undefined}
+            aria-activedescendant={
+              results[activeIndex]
+                ? `admin-command-${pathToken(results[activeIndex].path)}`
+                : undefined
+            }
           />
           <button
             type="button"
@@ -204,12 +229,17 @@ export function AdminCommandPalette({
           </span>
           <span className="hidden items-center gap-2 sm:flex" dir="rtl">
             <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5">↑ ↓</kbd> انتخاب
-            <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5">Enter</kbd> بازکردن
+            <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5">Enter</kbd>{" "}
+            بازکردن
             <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5">Esc</kbd> بستن
           </span>
         </div>
 
-        <div id="admin-command-results" role="listbox" className="max-h-[min(60dvh,30rem)] overflow-y-auto overscroll-contain p-2">
+        <div
+          id="admin-command-results"
+          role="listbox"
+          className="max-h-[min(60dvh,30rem)] overflow-y-auto overscroll-contain p-2"
+        >
           {results.length ? (
             results.map((item, index) => {
               const Icon = item.icon;
@@ -225,15 +255,21 @@ export function AdminCommandPalette({
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => choose(index)}
                 >
-                  <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${active ? "bg-white" : "bg-slate-50"}`}>
+                  <span
+                    className={`grid size-9 shrink-0 place-items-center rounded-lg ${active ? "bg-white" : "bg-slate-50"}`}
+                  >
                     <Icon size={18} />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex min-w-0 items-center gap-2">
                       <strong className="truncate text-sm">{item.title}</strong>
-                      <small className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold text-slate-500">{item.section}</small>
+                      <small className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold text-slate-500">
+                        {item.section}
+                      </small>
                     </span>
-                    <small className="mt-0.5 block truncate text-[10px] text-slate-400">{item.description}</small>
+                    <small className="mt-0.5 block truncate text-[10px] text-slate-400">
+                      {item.description}
+                    </small>
                   </span>
                   {active ? <CornerDownLeft size={15} className="shrink-0" /> : null}
                 </button>
@@ -244,7 +280,9 @@ export function AdminCommandPalette({
               <div>
                 <Search className="mx-auto mb-2" size={24} />
                 مسیری با این عبارت پیدا نشد.
-                <p className="mt-1 text-[11px] text-slate-400">نام بخش یا صفحه دیگری را امتحان کنید.</p>
+                <p className="mt-1 text-[11px] text-slate-400">
+                  نام بخش یا صفحه دیگری را امتحان کنید.
+                </p>
               </div>
             </div>
           )}

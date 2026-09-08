@@ -15,13 +15,7 @@ import {
 import { useEffect, useState } from "react";
 import { useModal } from "../../../../shared/ui/modal";
 import { notifications } from "../../../../shared/ui/notifications";
-import {
-  Badge,
-  Button,
-  Field,
-  Input,
-  Textarea,
-} from "../../../../shared/ui/ui";
+import { Badge, Button, Field, Input, Textarea } from "../../../../shared/ui/ui";
 import { api } from "../../../../shared/api/api";
 import { permissionLabels, roleLabel } from "../../model/permissions";
 import type {
@@ -32,11 +26,7 @@ import type {
   GroupRole,
 } from "../../model/group.types";
 
-export function CreateGroupButton({
-  onCreated,
-}: {
-  onCreated: (id: string) => void;
-}) {
+export function CreateGroupButton({ onCreated }: { onCreated: (id: string) => void }) {
   const modal = useModal();
   return (
     <Button
@@ -45,13 +35,27 @@ export function CreateGroupButton({
       onClick={() =>
         modal.open({
           title: "ساخت گفتگوی گروهی",
+
+          description: "یک گفتگوی گروهی جدید بسازید و اعضای موردنظر را اضافه کنید.",
+
           size: "lg",
+
           content: (
             <CreateGroupForm
               onCancel={modal.close}
               onCreated={(id) => {
                 modal.close();
+
+                notifications.success("گفتگوی گروهی با موفقیت ساخته شد.", {
+                  description: "گروه جدید آماده استفاده است.",
+                });
+
                 onCreated(id);
+              }}
+              onError={(error) => {
+                notifications.error("ساخت گفتگوی گروهی انجام نشد.", {
+                  description: error instanceof Error ? error.message : "خطای ناشناخته رخ داد.",
+                });
               }}
             />
           ),
@@ -65,45 +69,66 @@ export function CreateGroupButton({
 
 export function CreateGroupForm({
   onCancel,
+
   onCreated,
+
+  onError,
 }: {
   onCancel: () => void;
+
   onCreated: (id: string) => void;
+
+  onError?: (error: unknown) => void;
 }) {
   const [title, setTitle] = useState("");
+
   const [description, setDescription] = useState("");
+
   const [search, setSearch] = useState("");
-  const deferredSearch = useDebouncedValue(search.trim(), 250);
+
   const [selected, setSelected] = useState<ChatUser[]>([]);
+
+  const deferredSearch = useDebouncedValue(search.trim(), 250);
+
   const users = useQuery({
     queryKey: ["chat-users", deferredSearch],
+
     enabled: deferredSearch.length > 1,
+
     queryFn: () =>
-      api.get<ChatUser[]>(
-        `/chat/users?limit=15&search=${encodeURIComponent(deferredSearch)}`,
-      ),
+      api.get<ChatUser[]>(`/chat/users?limit=15&search=${encodeURIComponent(deferredSearch)}`),
   });
+
   const create = useMutation({
     mutationFn: () =>
       api.post<GroupDetail>("/chat/groups", {
         title: title.trim(),
+
         description: description.trim(),
+
         memberIds: selected.map((item) => item.id),
       }),
+
     onSuccess: (group) => {
-      notifications.success("گروه ساخته شد.");
       onCreated(group.id);
     },
-    onError: (error) =>
-      notifications.error(
-        error instanceof Error ? error.message : "ساخت گروه ناموفق بود.",
-      ),
+
+    onError: (error) => {
+      onError?.(error);
+    },
   });
+
   return (
     <form
-      className="grid gap-3"
+      className="
+      grid
+      gap-4
+      "
       onSubmit={(event) => {
         event.preventDefault();
+
+        if (create.isPending) return;
+
         create.mutate();
       }}
     >
@@ -116,6 +141,7 @@ export function CreateGroupForm({
           onChange={(event) => setTitle(event.target.value)}
         />
       </Field>
+
       <Field label="توضیحات">
         <Textarea
           rows={3}
@@ -124,57 +150,104 @@ export function CreateGroupForm({
           onChange={(event) => setDescription(event.target.value)}
         />
       </Field>
+
       <Field label="افزودن اعضای اولیه">
         <Input
           value={search}
+          placeholder="
+          نام یا نام کاربری
+          "
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="نام یا نام کاربری"
         />
       </Field>
-      {selected.length ? (
-        <div className="flex flex-wrap gap-2">
+
+      {selected.length > 0 && (
+        <div
+          className="
+        flex
+        flex-wrap
+        gap-2
+        "
+        >
           {selected.map((user) => (
             <button
               type="button"
               key={user.id}
-              className="rounded-full bg-indigo-50 px-3 py-1 text-xs text-brand"
-              onClick={() =>
-                setSelected((items) =>
-                  items.filter((item) => item.id !== user.id),
-                )
-              }
+              className="
+              rounded-full
+              bg-brand-soft
+              px-3
+              py-1
+              text-xs
+              text-brand
+              "
+              onClick={() => {
+                setSelected((items) => items.filter((item) => item.id !== user.id));
+              }}
             >
               {user.name} ×
             </button>
           ))}
         </div>
-      ) : null}
+      )}
+
       {users.data?.length ? (
-        <div className="max-h-40 overflow-auto rounded-md border">
+        <div
+          className="
+          max-h-40
+          overflow-auto
+          rounded-lg
+          border
+          "
+        >
           {users.data
+
             .filter((user) => !selected.some((item) => item.id === user.id))
+
             .map((user) => (
               <button
-                type="button"
                 key={user.id}
-                className="flex w-full items-center justify-between border-b p-2 text-right text-sm hover:bg-slate-50"
-                onClick={() => setSelected((items) => [...items, user])}
+                type="button"
+                className="
+                flex
+                w-full
+                items-center
+                justify-between
+                border-b
+                p-3
+                text-right
+                text-sm
+                hover:bg-slate-50
+                "
+                onClick={() => {
+                  setSelected((items) => [...items, user]);
+                }}
               >
                 <span>{user.name}</span>
+
                 <small dir="ltr">@{user.username}</small>
               </button>
             ))}
         </div>
       ) : null}
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="ghost" onClick={onCancel}>
+
+      <div
+        className="
+        flex
+        justify-end
+        gap-2
+        "
+      >
+        <Button type="button" variant="ghost" disabled={create.isPending} onClick={onCancel}>
           انصراف
         </Button>
+
         <Button
+          type="submit"
           loading={create.isPending}
           disabled={title.trim().length < 2 || create.isPending}
         >
-          ساخت گروه
+          {create.isPending ? "در حال ساخت..." : "ساخت گروه"}
         </Button>
       </div>
     </form>
@@ -226,15 +299,11 @@ export function GroupManager({
   const modal = useModal();
   const [candidateSearch, setCandidateSearch] = useState("");
   const [memberSearch, setMemberSearch] = useState("");
-  const deferredCandidateSearch = useDebouncedValue(
-    candidateSearch.trim(),
-    250,
-  );
+  const deferredCandidateSearch = useDebouncedValue(candidateSearch.trim(), 250);
   const deferredMemberSearch = useDebouncedValue(memberSearch.trim(), 250);
   const detail = useQuery({
     queryKey: ["chat-group", conversationId],
-    queryFn: () =>
-      api.get<GroupDetail>(`/chat/conversations/${conversationId}`),
+    queryFn: () => api.get<GroupDetail>(`/chat/conversations/${conversationId}`),
   });
   const members = useQuery({
     queryKey: ["chat-group-members", conversationId, deferredMemberSearch],
@@ -244,16 +313,11 @@ export function GroupManager({
       ),
   });
   const candidates = useQuery({
-    queryKey: [
-      "chat-group-candidates",
-      conversationId,
-      deferredCandidateSearch,
-    ],
+    queryKey: ["chat-group-candidates", conversationId, deferredCandidateSearch],
     enabled:
       deferredCandidateSearch.length > 1 &&
       !!detail.data &&
-      (detail.data.myRole !== "member" ||
-        !!detail.data.permissions.members_can_add_members),
+      (detail.data.myRole !== "member" || !!detail.data.permissions.members_can_add_members),
     queryFn: () =>
       api.get<ChatUser[]>(
         `/chat/groups/${conversationId}/candidates?limit=15&search=${encodeURIComponent(deferredCandidateSearch)}`,
@@ -284,9 +348,7 @@ export function GroupManager({
       refresh();
     },
     onError: (error) =>
-      notifications.error(
-        error instanceof Error ? error.message : "عملیات گروه ناموفق بود.",
-      ),
+      notifications.error(error instanceof Error ? error.message : "عملیات گروه ناموفق بود."),
   });
   if (detail.isLoading || members.isLoading)
     return <div className="h-72 animate-pulse rounded-lg bg-slate-100" />;
@@ -358,9 +420,7 @@ export function GroupManager({
                 />
               ))
             ) : (
-              <p className="p-3 text-center text-sm text-slate-500">
-                عضوی با این جستجو پیدا نشد.
-              </p>
+              <p className="p-3 text-center text-sm text-slate-500">عضوی با این جستجو پیدا نشد.</p>
             )}
           </div>
           {group.memberCount > 50 && !memberSearch ? (
@@ -435,8 +495,7 @@ export function GroupManager({
               void modal
                 .confirm({
                   title: "بایگانی گروه؟",
-                  description:
-                    "گروه از فهرست گفتگوهای فعال همه اعضا خارج می‌شود.",
+                  description: "گروه از فهرست گفتگوهای فعال همه اعضا خارج می‌شود.",
                   tone: "danger",
                   confirmLabel: "بایگانی",
                 })
@@ -461,8 +520,7 @@ export function GroupManager({
               void modal
                 .confirm({
                   title: "ترک گروه؟",
-                  description:
-                    "برای دسترسی دوباره باید یکی از مدیران شما را به گروه اضافه کند.",
+                  description: "برای دسترسی دوباره باید یکی از مدیران شما را به گروه اضافه کند.",
                   tone: "danger",
                   confirmLabel: "ترک گروه",
                 })
@@ -503,17 +561,11 @@ export function GroupMeta({
       <div className="mb-3 flex items-center gap-2">
         <Shield size={18} />
         <strong>مشخصات گروه</strong>
-        <Badge tone={group.myRole === "owner" ? "amber" : "blue"}>
-          {roleLabel(group.myRole)}
-        </Badge>
+        <Badge tone={group.myRole === "owner" ? "amber" : "blue"}>{roleLabel(group.myRole)}</Badge>
       </div>
       {canManage ? (
         <div className="grid gap-2">
-          <Input
-            value={title}
-            maxLength={80}
-            onChange={(event) => setTitle(event.target.value)}
-          />
+          <Input value={title} maxLength={80} onChange={(event) => setTitle(event.target.value)} />
           <Textarea
             rows={2}
             maxLength={500}
@@ -524,17 +576,13 @@ export function GroupMeta({
             className="justify-self-end"
             loading={busy}
             disabled={busy || title.trim().length < 2}
-            onClick={() =>
-              save({ title: title.trim(), description: description.trim() })
-            }
+            onClick={() => save({ title: title.trim(), description: description.trim() })}
           >
             <Settings size={15} /> ذخیره مشخصات
           </Button>
         </div>
       ) : (
-        <p className="text-sm text-slate-600">
-          {group.description || "بدون توضیحات"}
-        </p>
+        <p className="text-sm text-slate-600">{group.description || "بدون توضیحات"}</p>
       )}
     </section>
   );
@@ -557,8 +605,7 @@ export function MemberRow({
   transfer: () => void;
   confirm: ReturnType<typeof useModal>["confirm"];
 }) {
-  const manageable =
-    myRole === "owner" || (myRole === "admin" && member.role === "member");
+  const manageable = myRole === "owner" || (myRole === "admin" && member.role === "member");
   return (
     <div className="flex flex-wrap items-center gap-2 border-b p-2 text-sm">
       <span className="min-w-0 flex-1">
@@ -568,13 +615,7 @@ export function MemberRow({
         </small>
       </span>
       <Badge
-        tone={
-          member.role === "owner"
-            ? "amber"
-            : member.role === "admin"
-              ? "blue"
-              : "neutral"
-        }
+        tone={member.role === "owner" ? "amber" : member.role === "admin" ? "blue" : "neutral"}
       >
         {roleLabel(member.role)}
       </Badge>
@@ -584,9 +625,7 @@ export function MemberRow({
             type="button"
             disabled={busy}
             className="text-xs text-brand"
-            onClick={() =>
-              changeRole(member.role === "admin" ? "member" : "admin")
-            }
+            onClick={() => changeRole(member.role === "admin" ? "member" : "admin")}
           >
             {member.role === "admin" ? "عضو شود" : "مدیر شود"}
           </button>
@@ -649,9 +688,7 @@ export function PermissionEditor({
             <input
               type="checkbox"
               checked={!!permissions[key]}
-              onChange={(event) =>
-                setPermissions({ ...permissions, [key]: event.target.checked })
-              }
+              onChange={(event) => setPermissions({ ...permissions, [key]: event.target.checked })}
             />
             {label}
           </label>

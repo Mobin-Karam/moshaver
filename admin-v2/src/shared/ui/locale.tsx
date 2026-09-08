@@ -1,11 +1,4 @@
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 
 export type LocationId = "iran" | "afghanistan" | "international";
 export type LocationProfile = {
@@ -48,10 +41,7 @@ const key = "moshaver-admin-location";
 const LocaleContext = createContext<{
   profile: LocationProfile;
   setLocation: (id: LocationId) => void;
-  formatDate: (
-    value?: string | Date,
-    options?: Intl.DateTimeFormatOptions,
-  ) => string;
+  formatDate: (value?: string | Date, options?: Intl.DateTimeFormatOptions) => string;
   formatDateTime: (value?: string | Date) => string;
 } | null>(null);
 
@@ -59,8 +49,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const [location, setLocationState] = useState<LocationId>(
     () => (localStorage.getItem(key) as LocationId) || "iran",
   );
-  const profile =
-    locations.find((item) => item.id === location) || locations[0];
+  const profile = locations.find((item) => item.id === location) || locations[0];
   useEffect(() => {
     document.documentElement.lang = profile.locale;
     document.documentElement.dir = profile.direction;
@@ -72,39 +61,28 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
         localStorage.setItem(key, id);
         setLocationState(id);
       },
-      formatDate(
-        value?: string | Date,
-        options: Intl.DateTimeFormatOptions = {},
-      ) {
+      formatDate(value?: string | Date, options: Intl.DateTimeFormatOptions = {}) {
         if (!value) return "";
-        return new Intl.DateTimeFormat(
-          `${profile.locale}-u-ca-${profile.calendar}`,
-          {
-            timeZone: profile.timeZone,
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            ...options,
-          },
-        ).format(toDate(value));
+        return new Intl.DateTimeFormat(`${profile.locale}-u-ca-${profile.calendar}`, {
+          timeZone: profile.timeZone,
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          ...options,
+        }).format(toDate(value));
       },
       formatDateTime(value?: string | Date) {
         if (!value) return "";
-        return new Intl.DateTimeFormat(
-          `${profile.locale}-u-ca-${profile.calendar}`,
-          {
-            timeZone: profile.timeZone,
-            dateStyle: "medium",
-            timeStyle: "short",
-          },
-        ).format(toDate(value));
+        return new Intl.DateTimeFormat(`${profile.locale}-u-ca-${profile.calendar}`, {
+          timeZone: profile.timeZone,
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(toDate(value));
       },
     }),
     [profile],
   );
-  return (
-    <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
-  );
+  return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
 
 function toDate(value: string | Date) {

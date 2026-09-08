@@ -4,7 +4,11 @@ import { ViewportPopover } from "./popover";
 
 describe("viewport popover", () => {
   it("opens through a trigger, renders in a portal, and closes with Escape", () => {
-    render(<ViewportPopover width={300} trigger={(props) => <button {...props}>بازکردن</button>}><p>محتوای شناور</p></ViewportPopover>);
+    render(
+      <ViewportPopover width={300} trigger={(props) => <button {...props}>بازکردن</button>}>
+        <p>محتوای شناور</p>
+      </ViewportPopover>,
+    );
     fireEvent.click(screen.getByRole("button", { name: "بازکردن" }));
     expect(screen.getByRole("dialog")).toHaveTextContent("محتوای شناور");
     expect(screen.getByRole("dialog").parentElement).toBe(document.body);

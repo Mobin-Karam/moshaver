@@ -19,13 +19,20 @@ describe("admin theme switcher", () => {
   });
 
   it("offers light, dark and system modes and persists the selection", () => {
-    render(<ThemeProvider><ThemeSwitcher /></ThemeProvider>);
+    render(
+      <ThemeProvider>
+        <ThemeSwitcher />
+      </ThemeProvider>,
+    );
 
     expect(screen.getAllByRole("button")).toHaveLength(3);
     act(() => fireEvent.click(screen.getByRole("button", { name: "حالت تیره" })));
 
     expect(document.documentElement).toHaveClass("dark");
     expect(window.localStorage.getItem("admin-theme-preference")).toBe("dark");
-    expect(screen.getByRole("button", { name: "حالت تیره" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "حالت تیره" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   });
 });

@@ -11,18 +11,12 @@ export function MiniMetric({
     <div
       className={[
         "rounded-lg border p-2",
-        warn
-          ? "border-amber-200 bg-amber-50"
-          : "border-slate-200",
+        warn ? "border-amber-200 bg-amber-50" : "border-slate-200",
       ].join(" ")}
     >
-      <strong className="block text-sm">
-        {value}
-      </strong>
+      <strong className="block text-sm">{value}</strong>
 
-      <small className="text-[10px] text-slate-500">
-        {label}
-      </small>
+      <small className="text-[10px] text-slate-500">{label}</small>
     </div>
   );
 }

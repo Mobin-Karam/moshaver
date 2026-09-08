@@ -1,9 +1,4 @@
-export type LiveState =
-  | "online"
-  | "offline"
-  | "studying"
-  | "paused"
-  | "taking_exam";
+export type LiveState = "online" | "offline" | "studying" | "paused" | "taking_exam";
 
 export type LiveStudent = {
   id: string;
@@ -11,11 +6,7 @@ export type LiveStudent = {
   grade?: string;
   major?: string;
   state: LiveState;
-  freshness:
-    | "live"
-    | "recent"
-    | "stale"
-    | "offline";
+  freshness: "live" | "recent" | "stale" | "offline";
   presence?: {
     online?: boolean;
     lastSeenAt?: string;
@@ -31,6 +22,8 @@ export type LiveStudent = {
   remainingTasks: number;
   lastExamPercent: number | null;
   lastActivityAt?: string | null;
+  attentionScore?: number;
+  attentionSignals?: Array<{ type: string; count: number; weight: number }>;
 };
 
 export type LiveEvent = {
@@ -56,11 +49,6 @@ export type LiveSnapshot = {
   timeline?: LiveEvent[];
 };
 
-export type LiveFilter =
-  | "all"
-  | LiveState
-  | "attention";
+export type LiveFilter = "all" | LiveState | "attention";
 
-export type LivePanel =
-  | "students"
-  | "timeline";
+export type LivePanel = "students" | "timeline";

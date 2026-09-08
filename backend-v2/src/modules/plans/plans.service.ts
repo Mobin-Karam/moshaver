@@ -23,6 +23,16 @@ export class PlansService {
     return plans.map((plan) => this.presentPlan(plan));
   }
 
+  async studentIdForPlan(id: string) {
+    const plan = await this.plans.findOneOrFail({ where: { id }, relations: { student: true } });
+    return plan.student.id;
+  }
+
+  async studentIdForTask(id: string) {
+    const task = await this.tasks.findOneOrFail({ where: { id }, relations: { plan: { student: true } } });
+    return task.plan.student.id;
+  }
+
   async previewImport(dto: ImportPlanDto) {
     const warnings: string[] = [];
     if (!dto.tasks?.length) warnings.push("هیچ فعالیتی در برنامه نیست.");

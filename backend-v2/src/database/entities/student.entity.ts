@@ -2,7 +2,6 @@ import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, Prim
 import { User } from "./user.entity";
 import { Plan } from "./plan.entity";
 import { ExamAttempt } from "./exam-attempt.entity";
-import { Notification } from "./notification.entity";
 import { DailyReport } from "./daily-report.entity";
 import { RecoveryRequest } from "./recovery-request.entity";
 import { LearningItem } from "./learning-item.entity";
@@ -51,9 +50,6 @@ export class Student {
 
   @OneToMany(() => ExamAttempt, (attempt) => attempt.student)
   examAttempts!: ExamAttempt[];
-
-  @OneToMany(() => Notification, (notification) => notification.student)
-  notifications!: Notification[];
 
   @OneToMany(() => DailyReport, (report) => report.student)
   dailyReports!: DailyReport[];

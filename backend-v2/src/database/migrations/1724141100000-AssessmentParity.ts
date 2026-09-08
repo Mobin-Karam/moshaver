@@ -1,0 +1,23 @@
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class AssessmentParity1724141100000 implements MigrationInterface {
+  name = "AssessmentParity1724141100000";
+  async up(q: QueryRunner): Promise<void> {
+    await q.query(`CREATE TABLE "exam_syllabus" ("id" varchar PRIMARY KEY NOT NULL, "subject" varchar(200) NOT NULL, "description" varchar NOT NULL DEFAULT (''), "required" boolean NOT NULL DEFAULT (0), "track" varchar NOT NULL DEFAULT (''), "examId" varchar NOT NULL, CONSTRAINT "FK_syllabus_exam" FOREIGN KEY ("examId") REFERENCES "exams" ("id") ON DELETE CASCADE)`);
+    await q.query(`CREATE INDEX "IDX_syllabus_exam" ON "exam_syllabus" ("examId")`);
+    await q.query(`CREATE TABLE "syllabus_progress" ("id" varchar PRIMARY KEY NOT NULL, "status" text NOT NULL DEFAULT ('unread'), "accuracy" integer NOT NULL DEFAULT (0), "note" varchar NOT NULL DEFAULT (''), "updatedAt" datetime NOT NULL DEFAULT (datetime('now')), "studentId" varchar NOT NULL, "syllabusId" varchar NOT NULL, CONSTRAINT "UQ_syllabus_progress" UNIQUE ("studentId", "syllabusId"), CONSTRAINT "FK_progress_student" FOREIGN KEY ("studentId") REFERENCES "students" ("id") ON DELETE CASCADE, CONSTRAINT "FK_progress_syllabus" FOREIGN KEY ("syllabusId") REFERENCES "exam_syllabus" ("id") ON DELETE CASCADE)`);
+    await q.query(`CREATE INDEX "IDX_progress_student" ON "syllabus_progress" ("studentId")`);
+    await q.query(`CREATE TABLE "exam_retry_requests" ("id" varchar PRIMARY KEY NOT NULL, "message" varchar NOT NULL DEFAULT (''), "status" text NOT NULL DEFAULT ('pending'), "moderatorNote" varchar NOT NULL DEFAULT (''), "resolvedAt" datetime, "createdAt" datetime NOT NULL DEFAULT (datetime('now')), "updatedAt" datetime NOT NULL DEFAULT (datetime('now')), "examId" varchar NOT NULL, "studentId" varchar NOT NULL, "resolvedById" varchar, CONSTRAINT "FK_retry_exam" FOREIGN KEY ("examId") REFERENCES "exams" ("id") ON DELETE CASCADE, CONSTRAINT "FK_retry_student" FOREIGN KEY ("studentId") REFERENCES "students" ("id") ON DELETE CASCADE, CONSTRAINT "FK_retry_user" FOREIGN KEY ("resolvedById") REFERENCES "users" ("id") ON DELETE SET NULL)`);
+    await q.query(`CREATE INDEX "IDX_retry_student" ON "exam_retry_requests" ("studentId")`);
+    await q.query(`CREATE TABLE "quizzes" ("id" varchar PRIMARY KEY NOT NULL, "title" varchar(220) NOT NULL, "subject" varchar NOT NULL DEFAULT (''), "durationMinutes" integer NOT NULL DEFAULT (20), "active" boolean NOT NULL DEFAULT (1), "createdAt" datetime NOT NULL DEFAULT (datetime('now')), "updatedAt" datetime NOT NULL DEFAULT (datetime('now')), "examId" varchar, "organizationId" varchar, CONSTRAINT "FK_quiz_exam" FOREIGN KEY ("examId") REFERENCES "exams" ("id") ON DELETE CASCADE, CONSTRAINT "FK_quiz_org" FOREIGN KEY ("organizationId") REFERENCES "organizations" ("id") ON DELETE CASCADE)`);
+    await q.query(`CREATE TABLE "quiz_questions" ("id" varchar PRIMARY KEY NOT NULL, "text" varchar NOT NULL, "options" text NOT NULL, "correctAnswer" varchar NOT NULL, "explanation" varchar NOT NULL DEFAULT (''), "sortOrder" integer NOT NULL DEFAULT (0), "quizId" varchar NOT NULL, CONSTRAINT "FK_quiz_question" FOREIGN KEY ("quizId") REFERENCES "quizzes" ("id") ON DELETE CASCADE)`);
+    await q.query(`CREATE INDEX "IDX_quiz_question" ON "quiz_questions" ("quizId")`);
+    await q.query(`CREATE TABLE "quiz_attempts" ("id" varchar PRIMARY KEY NOT NULL, "startedAt" datetime NOT NULL, "submittedAt" datetime, "answers" text NOT NULL DEFAULT ('[]'), "correct" integer NOT NULL DEFAULT (0), "wrong" integer NOT NULL DEFAULT (0), "blank" integer NOT NULL DEFAULT (0), "percent" integer NOT NULL DEFAULT (0), "quizId" varchar NOT NULL, "studentId" varchar NOT NULL, CONSTRAINT "FK_attempt_quiz" FOREIGN KEY ("quizId") REFERENCES "quizzes" ("id") ON DELETE CASCADE, CONSTRAINT "FK_attempt_student" FOREIGN KEY ("studentId") REFERENCES "students" ("id") ON DELETE CASCADE)`);
+    await q.query(`CREATE INDEX "IDX_quiz_attempt_student" ON "quiz_attempts" ("studentId")`);
+    for (const key of ["syllabus.manage","retry_requests.read","retry_requests.moderate","quizzes.read","quizzes.create","quizzes.update","quiz_questions.manage","mistakes.read"]) await q.query(`INSERT OR IGNORE INTO permissions (id,code,description) VALUES (lower(hex(randomblob(16))), ?, '')`, [key]);
+    await q.query(`INSERT OR IGNORE INTO role_permissions (id,roleId,permissionId) SELECT lower(hex(randomblob(16))),r.id,p.id FROM roles r CROSS JOIN permissions p WHERE r.code='PLATFORM_ADMIN'`);
+  }
+  async down(q: QueryRunner): Promise<void> {
+    for (const table of ["quiz_attempts","quiz_questions","quizzes","exam_retry_requests","syllabus_progress","exam_syllabus"]) await q.query(`DROP TABLE IF EXISTS "${table}"`);
+  }
+}

@@ -1,4 +1,14 @@
-import { IsArray, IsOptional, IsString, ValidateNested } from "class-validator";
+import {
+  IsArray,
+  IsBoolean,
+  IsDateString,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateNested,
+} from "class-validator";
 import { Type } from "class-transformer";
 
 export class ExamAnswerDto {
@@ -6,8 +16,25 @@ export class ExamAnswerDto {
   questionId!: string;
 
   @IsOptional()
-  @IsString()
+  @IsIn(["a", "b", "c", "d"])
   selectedOption?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  marked?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  visited?: boolean;
+
+  @IsOptional()
+  @IsDateString()
+  clientUpdatedAt?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  revision?: number;
 }
 
 export class SubmitExamDto {

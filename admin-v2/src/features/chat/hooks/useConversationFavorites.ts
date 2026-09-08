@@ -7,7 +7,8 @@ export function useConversationFavorites() {
   const toggleFavorite = useCallback((id: string) => {
     setFavorites((current) => {
       const next = new Set(current);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       writeFavoriteConversationIds(next);
       return next;
     });

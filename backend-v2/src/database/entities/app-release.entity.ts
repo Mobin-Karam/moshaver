@@ -1,0 +1,1 @@
+import { Column,CreateDateColumn,Entity,Index,PrimaryGeneratedColumn } from "typeorm";@Entity("app_releases")export class AppRelease{@PrimaryGeneratedColumn("uuid")id!:string;@Index()@Column({length:40})app!:string;@Column({length:40})version!:string;@Column({default:""})notes!:string;@CreateDateColumn()createdAt!:Date;}

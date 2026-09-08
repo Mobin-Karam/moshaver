@@ -38,10 +38,9 @@ export function useConversations(search: string) {
   return {
     ...query,
     items,
-    total:
-      query.data?.pages[0]
-        ? query.data.pages[0].directTotal + query.data.pages[0].groupTotal
-        : items.length,
+    total: query.data?.pages[0]
+      ? query.data.pages[0].directTotal + query.data.pages[0].groupTotal
+      : items.length,
     unread: items.reduce((sum: number, item: Conversation) => sum + Number(item.unread || 0), 0),
   };
 }

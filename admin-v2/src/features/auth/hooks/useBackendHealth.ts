@@ -1,8 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { useCallback, useEffect, useState } from "react";
 import { checkBackendHealth } from "../api/auth.api";
 import type { BackendHealth } from "../model/auth.types";
 
@@ -13,10 +9,9 @@ type BackendHealthState = {
 };
 
 export function useBackendHealth() {
-  const [health, setHealth] =
-    useState<BackendHealthState>({
-      loading: true,
-    });
+  const [health, setHealth] = useState<BackendHealthState>({
+    loading: true,
+  });
 
   const checkHealth = useCallback(async () => {
     setHealth({ loading: true });

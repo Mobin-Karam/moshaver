@@ -1,9 +1,5 @@
-import {
-  RefreshCw,
-} from "lucide-react";
-import {
-  Button,
-} from "../../../shared/ui/ui";
+import { RefreshCw } from "lucide-react";
+import { Button } from "../../../shared/ui/ui";
 
 export function LiveHeader({
   generatedAt,
@@ -13,9 +9,7 @@ export function LiveHeader({
 }: {
   generatedAt?: string;
   fetching: boolean;
-  formatDateTime: (
-    value?: string | Date,
-  ) => string;
+  formatDateTime: (value?: string | Date) => string;
   onRefresh: () => void;
 }) {
   return (
@@ -25,25 +19,17 @@ export function LiveHeader({
           <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60" />
           <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
         </span>
-
         عملیات بلادرنگ
       </div>
 
       <div className="mr-auto flex flex-wrap items-center gap-3">
         <span className="text-xs text-slate-500">
           {generatedAt
-            ? `آخرین همگام‌سازی: ${formatDateTime(
-                generatedAt,
-              )}`
+            ? `آخرین همگام‌سازی: ${formatDateTime(generatedAt)}`
             : "در انتظار اولین همگام‌سازی"}
         </span>
 
-        <Button
-          variant="soft"
-          loading={fetching}
-          loadingLabel="در حال دریافت"
-          onClick={onRefresh}
-        >
+        <Button variant="soft" loading={fetching} loadingLabel="در حال دریافت" onClick={onRefresh}>
           <RefreshCw size={16} />
           تازه‌سازی
         </Button>

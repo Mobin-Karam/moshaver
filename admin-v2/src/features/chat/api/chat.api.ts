@@ -6,82 +6,101 @@ import type {
   ConversationPage,
   MessagePage,
 } from "../model/chat.types";
-import type { ChatUser, GroupDetail, GroupMember, GroupPermissions, GroupRole } from "../model/group.types";
+import type {
+  ChatUser,
+  GroupDetail,
+  GroupMember,
+  GroupPermissions,
+  GroupRole,
+} from "../model/group.types";
+
+type WireChatMessage = Partial<ChatMessage> & {
+  id: string;
+  content?: unknown;
+  type?: string;
+};
+
+export function normalizeChatMessage(message: WireChatMessage): ChatMessage {
+  const rawType = String(message.type || "text").toLowerCase();
+  return {
+    ...message,
+    text: String(message.text ?? message.content ?? ""),
+    senderRole: message.senderRole || "student",
+    type: rawType,
+  } as ChatMessage;
+}
+
+function normalizeMessagePage(result: MessagePage | WireChatMessage[]): MessagePage {
+  if (Array.isArray(result)) {
+    return { messages: result.map(normalizeChatMessage), hasMore: false };
+  }
+  return { ...result, messages: result.messages.map(normalizeChatMessage) };
+}
 
 export async function fetchConversationPage(
-  cursor: ConversationCursor,
+  _cursor: ConversationCursor,
   search: string,
 ): Promise<CombinedConversationPage> {
-  const suffix = search ? `&search=${encodeURIComponent(search)}` : "";
-  const [directResult, groupResult] = await Promise.all([
-    cursor.directDone
-      ? Promise.resolve<ConversationPage>({ items: [], total: 0, totalUnread: 0, hasMore: false })
-      : api.get<ConversationPage | ConversationPage["items"]>(
-          `/admin/chat/conversations?limit=40&offset=${cursor.directOffset}${suffix}`,
-        ),
-    cursor.groupDone
-      ? Promise.resolve<ConversationPage>({ items: [], total: 0, totalUnread: 0, hasMore: false })
-      : api.get<ConversationPage>(
-          `/chat/conversations?limit=40&offset=${cursor.groupOffset}${suffix}`,
-        ),
-  ]);
-  const direct = Array.isArray(directResult)
-    ? {
-        items: directResult,
-        total: directResult.length,
-        totalUnread: directResult.reduce((sum, item) => sum + Number(item.unread || 0), 0),
-        hasMore: false,
-      }
-    : directResult;
-  const groups = groupResult.items ?? [];
-  const directDone = cursor.directDone || !direct.hasMore;
-  const groupDone = cursor.groupDone || !groupResult.hasMore;
+  const result = await api.get<ConversationPage | ConversationPage["items"]>("/chat/conversations");
+  const all = Array.isArray(result) ? result : result.items;
+  const normalized = all.filter(
+    (item) =>
+      !search ||
+      `${item.title || ""} ${item.student?.name || ""}`
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+  );
+  const direct = normalized.filter((item) => item.type !== "group");
+  const groups = normalized.filter((item) => item.type === "group");
   return {
-    items: [...direct.items, ...groups],
-    directTotal: cursor.directDone ? 0 : direct.total,
-    groupTotal: cursor.groupDone ? 0 : groupResult.total,
-    totalUnread:
-      direct.totalUnread + groups.reduce((sum, item) => sum + Number(item.unread || 0), 0),
-    next:
-      directDone && groupDone
-        ? undefined
-        : {
-            directOffset: cursor.directOffset + direct.items.length,
-            groupOffset: cursor.groupOffset + groups.length,
-            directDone,
-            groupDone,
-          },
+    items: [...direct, ...groups],
+    directTotal: direct.length,
+    groupTotal: groups.length,
+    totalUnread: normalized.reduce((sum, item) => sum + Number(item.unread || 0), 0),
+    next: undefined,
   };
 }
 
-export function fetchMessages(conversationId: string, beforeMessageId = "") {
-  return api.get<MessagePage>(
+export async function fetchMessages(conversationId: string, beforeMessageId = "") {
+  const result = await api.get<MessagePage | WireChatMessage[]>(
     `/chat/conversations/${conversationId}/messages?limit=50${beforeMessageId ? `&beforeMessageId=${encodeURIComponent(beforeMessageId)}` : ""}`,
   );
+  return normalizeMessagePage(result);
 }
 
 export const chatApi = {
-  markRead: (conversationId: string) =>
-    api.post(`/chat/conversations/${conversationId}/read`, {}),
-  send: (conversationId: string, text: string, replyToId?: string) =>
-    api.post<ChatMessage>(`/chat/conversations/${conversationId}/messages`, { text, replyToId }),
-  edit: (messageId: string, text: string) =>
-    api.patch<ChatMessage>(`/chat/messages/${messageId}`, { text }),
-  remove: (messageId: string) => api.delete(`/chat/messages/${messageId}`),
-  react: (messageId: string, emoji: string) =>
-    api.post(`/chat/messages/${messageId}/reactions`, { emoji }),
-  removeReaction: (messageId: string, emoji: string) =>
-    api.delete(`/chat/messages/${messageId}/reactions/${encodeURIComponent(emoji)}`),
-  group: (conversationId: string) =>
-    api.get<GroupDetail>(`/chat/conversations/${conversationId}`),
+  markRead: (conversationId: string) => api.post(`/chat/conversations/${conversationId}/read`, {}),
+  send: async (conversationId: string, text: string, replyToId?: string) =>
+    normalizeChatMessage(
+      await api.post<WireChatMessage>(`/chat/conversations/${conversationId}/messages`, {
+        text,
+        replyToId,
+      }),
+    ),
+  edit: async (conversationId: string, messageId: string, text: string) =>
+    normalizeChatMessage(
+      await api.patch<WireChatMessage>(
+        `/chat/conversations/${conversationId}/messages/${messageId}`,
+        { text },
+      ),
+    ),
+  remove: (conversationId: string, messageId: string) =>
+    api.delete(`/chat/conversations/${conversationId}/messages/${messageId}`),
+  react: (conversationId: string, messageId: string, emoji: string) =>
+    api.post(`/chat/conversations/${conversationId}/messages/${messageId}/reactions`, { emoji }),
+  group: (conversationId: string) => api.get<GroupDetail>(`/chat/conversations/${conversationId}`),
   createGroup: (body: { title: string; description: string; memberIds: string[] }) =>
     api.post<GroupDetail>("/chat/groups", body),
   users: (search: string) =>
     api.get<ChatUser[]>(`/chat/users?limit=15&search=${encodeURIComponent(search)}`),
   members: (conversationId: string, search = "") =>
-    api.get<GroupMember[]>(`/chat/groups/${conversationId}/members?limit=50${search ? `&search=${encodeURIComponent(search)}` : ""}`),
+    api.get<GroupMember[]>(
+      `/chat/groups/${conversationId}/members?limit=50${search ? `&search=${encodeURIComponent(search)}` : ""}`,
+    ),
   candidates: (conversationId: string, search: string) =>
-    api.get<ChatUser[]>(`/chat/groups/${conversationId}/candidates?limit=15&search=${encodeURIComponent(search)}`),
+    api.get<ChatUser[]>(
+      `/chat/groups/${conversationId}/candidates?limit=15&search=${encodeURIComponent(search)}`,
+    ),
   addMember: (conversationId: string, userId: string) =>
     api.post(`/chat/groups/${conversationId}/members`, { userId }),
   removeMember: (conversationId: string, userId: string) =>
@@ -96,6 +115,5 @@ export const chatApi = {
     api.patch(`/chat/groups/${conversationId}/permissions`, body),
   mute: (conversationId: string, muted: boolean) =>
     api.patch(`/chat/conversations/${conversationId}/mute`, { muted }),
-  leave: (conversationId: string) =>
-    api.post(`/chat/groups/${conversationId}/leave`, {}),
+  leave: (conversationId: string) => api.post(`/chat/groups/${conversationId}/leave`, {}),
 };

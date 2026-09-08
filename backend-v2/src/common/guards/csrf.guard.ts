@@ -10,7 +10,7 @@ export class CsrfGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    if (!mutating.has(request.method) || request.url.endsWith("/auth/logout")) return true;
+    if (!mutating.has(request.method)) return true;
     if (!request.user?.sessionId) return true;
     const token = request.headers["x-csrf-token"];
     if (!token || typeof token !== "string" || !(await this.auth.verifyCsrf(request.user.sessionId, token))) {

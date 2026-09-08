@@ -9,7 +9,9 @@ describe("Sonner notification adapter", () => {
 
   it("renders typed RTL notifications", async () => {
     render(<AppToaster />);
-    act(() => { notify("ذخیره شد", "success"); });
+    act(() => {
+      notify("ذخیره شد", "success");
+    });
     expect(await screen.findByText("ذخیره شد")).toBeInTheDocument();
     expect(document.querySelector("[data-sonner-toaster]")).toHaveAttribute("dir", "rtl");
   });
@@ -17,10 +19,16 @@ describe("Sonner notification adapter", () => {
   it("updates and dismisses a notification by id", async () => {
     render(<AppToaster />);
     let id: string | number = "";
-    act(() => { id = notifications.loading("در حال ذخیره"); });
+    act(() => {
+      id = notifications.loading("در حال ذخیره");
+    });
     expect(await screen.findByText("در حال ذخیره")).toBeInTheDocument();
-    act(() => { notifications.update(id, "ذخیره شد"); });
+    act(() => {
+      notifications.update(id, "ذخیره شد");
+    });
     expect(await screen.findByText("ذخیره شد")).toBeInTheDocument();
-    act(() => { notifications.dismiss(id); });
+    act(() => {
+      notifications.dismiss(id);
+    });
   });
 });
