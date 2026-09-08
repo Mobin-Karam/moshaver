@@ -4,7 +4,7 @@
 
 Audit date: 2026-09-05
 
-Scope: current `v1.4/backend` (`/api/v1`) and `backend-v2` (`/api/v2`). This is a source audit, not a statement that every route was exercised end to end.
+Scope at audit time: the now-archived `v1.4/backend` (`/api/v1`) and `backend-v2` (`/api/v2`). The v1 source is available on `archive/v1.4`; paths below are historical and are not present on active v2 branches. This is a source audit, not a statement that every route was exercised end to end.
 
 ## Executive summary
 

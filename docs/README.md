@@ -1,6 +1,6 @@
 # Moshaver documentation
 
-This directory is the navigation hub for the Moshaver monorepo. Documentation is grouped by intent so a person or an agent can distinguish current architecture from migration plans and historical evidence.
+This directory is the navigation hub for the active Moshaver v2 monorepo. Documentation is grouped by intent so a person or an agent can distinguish current architecture from migration plans and historical evidence. The complete v1.4 tree is preserved on `archive/v1.4`.
 
 Last repository inspection: 2026-09-08.
 
@@ -8,8 +8,7 @@ Last repository inspection: 2026-09-08.
 
 1. [System map](./architecture/system-map.md) — applications, APIs, data stores, runtime relationships, and version boundaries.
 2. [Repository runbook](./operations/repository-runbook.md) — local commands, validation, deployment entry points, and known script caveats.
-3. Choose the relevant version:
-   - [v1.4 runtime architecture](./architecture/backend-v1-4-runtime.md)
+3. Choose the relevant v2 runtime:
    - [backend v2 design](./architecture/backend-v2-design.md)
    - [student v2/Tauri runtime](./architecture/student-v2-tauri-runtime.md)
 4. To change the project safely, read the [developer handbook](./operations/developer-handbook.md).
@@ -32,22 +31,18 @@ Current behavior belongs in `architecture/`, `components/`, or `operations/`. Un
 ## Architecture
 
 - [System map](./architecture/system-map.md)
-- [v1.4 runtime architecture](./architecture/backend-v1-4-runtime.md)
 - [Backend v2 design](./architecture/backend-v2-design.md)
 - [Student core boundary](./architecture/student-core-boundary.md)
 - [Student v2 and Tauri runtime](./architecture/student-v2-tauri-runtime.md)
 
 ## Components and APIs
 
-- [Backend v1.4 service](./components/backend-v1-4-service.md)
 - [Backend v2 service](./components/backend-v2-service.md)
 - [Backend v2 HTTP API](./components/backend-v2-http-api.md)
 - [Admin v2 application](./components/admin-v2-application.md)
 - [Admin v2 Communication workspace](./components/admin-v2-communication-workspace.md)
 - [Admin v2 capability matrix](./ADMIN_V2_CAPABILITY_MATRIX.md) — current backend, frontend, permission, test, and status mapping.
 - [Student and Family exam experience audit](./migrations/STUDENT_FAMILY_EXAM_AUDIT.md) — current learner/family baseline, integrity gaps, and phased delivery matrix.
-
-The v1.4 static Admin and Student applications are described with their backend in the [v1.4 runtime architecture](./architecture/backend-v1-4-runtime.md).
 
 ## Operations
 
@@ -56,9 +51,6 @@ The v1.4 static Admin and Student applications are described with their backend 
 - [Feature and bug playbook](./operations/feature-and-bug-playbook.md) — secure vertical implementation and diagnosis.
 - [Maintenance guide](./operations/maintenance-guide.md) — recurring care, incidents, dependencies, data, and rollback.
 - [Documentation maintenance](./operations/documentation-maintenance.md) — ownership, update triggers, and review rules.
-- [v1.4 security model](./operations/security-v1-4.md)
-- [v1.4 Runflare deployment](./operations/runflare-v1-4-deployment.md)
-- [v1.4 chat and realtime SSE](./operations/chat-realtime-sse-v1-4.md)
 - [Plan import schema version 2](./operations/plan-import-schema-v2.md)
 - [Admin v2 Web Push verification](./operations/admin-v2-web-push-verification.md)
 - [Backend v2 product demo seed](./operations/backend-v2-product-demo-seed.md)
@@ -82,9 +74,6 @@ The v1.4 static Admin and Student applications are described with their backend 
 - [Version roadmap](./product/version-roadmap.md)
 - [Application icon catalog](./product/application-icon-catalog.md)
 - [Product changelog](./releases/product-changelog.md)
-- [v1.4.0 — Admin and exams](./releases/v1-4-0-admin-exams.md)
-- [v1.4.1 — Inline exams](./releases/v1-4-1-inline-exams.md)
-- [v1.4.2 — Daily motivation](./releases/v1-4-2-daily-motivation.md)
 
 ## Historical evidence
 

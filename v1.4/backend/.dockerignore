@@ -1,6 +1,0 @@
-node_modules
-npm-debug.log
-.env
-data/*.sqlite
-data/*.sqlite-*
-.git

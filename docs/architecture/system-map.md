@@ -1,15 +1,6 @@
-# Moshaver system map
+# Moshaver v2 system map
 
-This is the shortest reliable map of the system currently present in the repository. It describes source layout and wiring inspected on 2026-09-08; release readiness still depends on the validation gates in the [repository runbook](../operations/repository-runbook.md).
-
-## Two product generations coexist
-
-| Generation | Applications | API | Persistence | Intended use |
-| --- | --- | --- | --- | --- |
-| v1.4 line | `v1.4/admin-app`, `v1.4/student-app` | `v1.4/backend`, `/api/v1` | Node SQLite at a configured file path | Stable legacy/product line and Runflare deployment |
-| v2 line | `admin-v2`, `student-app-v2` | `backend-v2`, `/api/v2` | TypeORM with SQLite now and a PostgreSQL configuration path | Active migration and root Compose stack |
-
-The generations are separate contracts. A v1 client must not be pointed at `/api/v2` merely because both services use port `4000` in their own launch modes.
+This map describes the active source on `main` and `develop`, inspected on 2026-09-08.
 
 ## Runtime relationships
 
@@ -17,50 +8,41 @@ The generations are separate contracts. A v1 client must not be pointed at `/api
 Browser: student-app-v2 :8080 ─┐
                                ├─ same-origin /api/v2 proxy ─> backend-v2 :4000
 Browser: admin-v2 :8081 ───────┘                                  │
-                                                                  └─ SQLite volume
+                                                                  └─ TypeORM database
 
-Browser: v1.4/student-app ─────┐
-                               ├─ same-origin /api/v1 proxy ─> v1.4/backend
-Browser: v1.4/admin-app ───────┘                              │
-                                                             └─ SQLite file
-
-student-app-v2 ─> @moshaver/student-core ─> storage, notification, clock,
-                                           API, and sync provider interfaces
-student-app-v2 ─> Tauri v2 shell for native desktop/Android builds
+student-app-v2 ─> @moshaver/student-core ─> runtime provider interfaces
+student-app-v2 ─> web/PWA adapters or Tauri v2 shell
 ```
 
-## Root-level source ownership
+## Source ownership
 
 | Path | Ownership |
 | --- | --- |
-| `backend-v2/` | NestJS/Fastify `/api/v2`, TypeORM entities/migrations, auth, admin, student, learning, plans, tasks, exams, chat, reports, realtime, notifications, and sync modules |
-| `admin-v2/` | React/Vite/TypeScript administration UI organized by feature |
-| `student-app-v2/` | React/Vite student UI, PWA adapters, sync layer, and Tauri v2 shell |
-| `student-core/` | Framework-neutral student domain types and provider interfaces |
-| `v1.4/` | Self-contained dependency-light Node/SQLite backend and Vanilla JS Admin/Student PWAs |
-| `backup/` | Rollback/reference copies; not an active runtime |
-| `deploy/` | Deployment and dual-API proxy material |
-| `examples/` | Planner/exam JSON examples |
-| `scripts/`, `tests/` | Repository helpers; some still target paths from the pre-`v1.4/` layout, as documented in the runbook |
+| `backend-v2/` | NestJS/Fastify `/api/v2`, TypeORM entities and migrations, auth, RBAC, and product modules |
+| `admin-v2/` | React/Vite administration application organized by feature |
+| `student-app-v2/` | React/Vite student UI, PWA adapters, synchronization, and Tauri shell |
+| `student-core/` | Framework-neutral student domain types and provider contracts |
+| `docs/` | Current v2 documentation plus clearly identified migration/history evidence |
+| `examples/` | Import and domain examples used by v2 workflows |
 
-## Root Compose is v2
+Root `docker-compose.yml` is the canonical container topology. Both frontends use `/api/v2` and proxy to `backend-v2`; the backend persists SQLite in the `moshaver_v2_sqlite` volume by default.
 
-`docker-compose.yml` builds `backend-v2`, `student-app-v2`, and `admin-v2`. The frontends receive `/api/v2` at build time and proxy it to `backend-v2`. The backend uses the `moshaver_v2_sqlite` volume at `/data/moshaver-v2.sqlite`.
+## Security and data boundaries
 
-The v1.4 Runflare deployment is documented separately because its services and data are under `v1.4/` and use `/api/v1`.
+- Authentication is session based and mutating requests require CSRF protection.
+- Backend capability checks are authoritative; frontend role gating improves navigation but is not a security boundary.
+- Organization scope and resource ownership must be validated server-side.
+- `student-core` stays UI- and runtime-independent; platform storage and notifications belong in adapters.
+- Migrations and seed/reset work must target disposable data unless an explicit reviewed production procedure applies.
 
-## Important boundaries
+## Archived v1.4 line
 
-- Authentication is cookie/session based; mutating requests use CSRF protection.
-- Browser origins and API base paths are different concepts. CORS allows browser origins; frontend API configuration selects `/api/v1` or `/api/v2`.
-- Backend notifications are durable state. SSE is a live in-app signal; Web Push is optional delivery.
-- `student-core` must remain UI- and runtime-agnostic. Web storage and Tauri SQLite are adapters in `student-app-v2`.
-- Database migration and client replacement are separate release gates. Never overwrite a v1 database as a routine migration test.
+The v1.4 Node/SQLite backend and Vanilla JavaScript applications are preserved on `archive/v1.4` at `cf63c233bce116371519fef61c231143bbd902b1`. Use a separate worktree as described in the [repository runbook](../operations/repository-runbook.md#access-the-v14-archive). Migration and historical documents in this branch are evidence, not active runtime contracts.
 
-## Where to continue
+## Continue reading
 
-- To run or validate: [repository runbook](../operations/repository-runbook.md)
-- To change v1.4: [v1.4 runtime architecture](./backend-v1-4-runtime.md)
-- To change v2 backend: [backend v2 design](./backend-v2-design.md) and [HTTP API](../components/backend-v2-http-api.md)
-- To assess incomplete parity: [migration documents](../migrations/)
-- To deploy v1.4: [Runflare guide](../operations/runflare-v1-4-deployment.md)
+- [Repository runbook](../operations/repository-runbook.md)
+- [Backend v2 design](./backend-v2-design.md)
+- [Backend v2 HTTP API](../components/backend-v2-http-api.md)
+- [Admin v2 application](../components/admin-v2-application.md)
+- [Student v2 and Tauri runtime](./student-v2-tauri-runtime.md)
