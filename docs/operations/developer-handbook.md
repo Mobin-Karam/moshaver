@@ -2,14 +2,13 @@
 
 This is the starting point for humans extending or maintaining Moshaver. It applies to the repository inspected on 2026-09-08. Read the [system map](../architecture/system-map.md) before changing code and use the [repository runbook](./repository-runbook.md) for commands.
 
-## Identify the product generation
+## Identify the active product line
 
 | Target | Frontend | Backend | API |
 | --- | --- | --- | --- |
 | Current v2 development | `admin-v2`, `student-app-v2` | `backend-v2` | `/api/v2` |
-| Maintained legacy line | `v1.4/admin-app`, `v1.4/student-app` | `v1.4/backend` | `/api/v1` |
 
-Do not copy routes, schemas, or runtime assumptions between generations without an explicit compatibility change. Direct source and tests are authoritative; migration audits describe gaps at the time they were written.
+The v1.4 line is archived on `archive/v1.4` and is not maintained in `main` or `develop`. Do not copy its routes, schemas, or runtime assumptions into v2 without an explicit compatibility change. Direct source and tests are authoritative; migration audits describe gaps at the time they were written.
 
 ## Prepare a local checkout
 
@@ -82,12 +81,6 @@ rg --files admin-v2/src backend-v2/src | rg 'test|spec|migration'
 - Keep browser, PWA, Tauri, SQLite, notification, and device behavior in `student-app-v2` adapters.
 - Validate web and native runtimes separately.
 
-### v1.4
-
-- Preserve its Vanilla JavaScript router, API wrapper, and service-worker architecture.
-- Do not introduce a framework migration or second service worker during maintenance.
-- Run v1.4 commands from its package directories.
-
 ## Complete a change
 
 1. Reproduce or define current behavior.
@@ -110,4 +103,3 @@ rg --files admin-v2/src backend-v2/src | rg 'test|spec|migration'
 - Documentation states what was and was not verified.
 
 Continue with the [feature and bug playbook](./feature-and-bug-playbook.md), [maintenance guide](./maintenance-guide.md), and [documentation maintenance guide](./documentation-maintenance.md).
-

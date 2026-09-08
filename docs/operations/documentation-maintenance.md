@@ -28,7 +28,7 @@ Historical documents are evidence. Do not rewrite an old audit to look current; 
 
 ## Rules and checks
 
-- State `v1.4` or `v2` when ambiguous.
+- Treat unqualified current documentation as v2. Label v1 material as archived or historical and direct runnable legacy instructions to `archive/v1.4`.
 - Use repository-relative links and verified commands.
 - Separate confirmed behavior, plans, and history.
 - Never include secrets, tokens, personal data, or production database contents.
@@ -43,4 +43,3 @@ git diff --check -- docs
 ```
 
 Verify relative links, source paths, and package commands. Generated graphs help navigation but current source remains authoritative.
-

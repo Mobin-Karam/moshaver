@@ -4,7 +4,7 @@ Date: 2026-09-01
 
 ## Executive Decision
 
-`v1.4/student-app/` is the current feature baseline. `student-app-v2/` is a React/Vite/Tauri replacement foundation, not a drop-in replacement. Do not retire the legacy student app or route production users to v2 until the parity gates in this document pass.
+> **Historical migration gate.** This document records the 2026-09-01 baseline. The legacy source has since moved to `archive/v1.4`, while `student-app-v2/` is the active client on `main` and `develop`. Reassess any open item against current source before treating it as a release blocker.
 
 Implementation update (2026-09-01): the first study-session vertical slice is now implemented. `backend-v2` has authenticated student-scoped study-session persistence and `student-app-v2` calls it for active-session restore, start, pause, resume, and finish before task completion. The local session record is retained as a restart fallback, but it is not yet part of the durable sync queue.
 

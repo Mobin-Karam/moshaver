@@ -4,7 +4,7 @@ Date: 2026-09-06
 
 ## Decision
 
-The repository implementation, contracts, migration tool, parity gates, and local release-quality checks for Prompts 0–28 are complete. It is ready for a controlled staging cutover. v1 remains frozen as rollback evidence and must not be removed until the production cutover and monitoring gate succeeds.
+The repository implementation, contracts, migration tool, parity gates, and local release-quality checks for Prompts 0–28 are complete. The active `main` and `develop` lines are v2-only. The complete v1.4 state is frozen as rollback evidence on `archive/v1.4` at `cf63c233bce116371519fef61c231143bbd902b1`.
 
 ## Delivered architecture
 
