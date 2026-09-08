@@ -75,7 +75,7 @@ export function AdminContextSidebar({
               title={title}
               aria-label={title}
               aria-current={active ? "page" : undefined}
-              className={`relative flex h-10 items-center rounded-lg text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-brand ${compactClasses} ${active ? "bg-white font-bold text-brand shadow-sm ring-1 ring-slate-200" : "text-slate-600 hover:bg-white hover:text-ink"}`}
+              className={`relative flex h-11 items-center rounded-xl text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-brand ${compactClasses} ${active ? "bg-brand/10 font-bold text-brand shadow-sm ring-1 ring-brand/20" : "text-slate-600 hover:bg-white hover:text-ink"}`}
             >
               {active ? (
                 <span

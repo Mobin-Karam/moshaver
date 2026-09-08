@@ -22,7 +22,7 @@ export function AppVersionManager({
 }) {
   const [editing, setEditing] = useState<AppVersion | null>(null);
   return (
-    <Card>
+    <Card className="p-5 sm:p-6">
       <div className="mb-4 flex items-start gap-3">
         <span className="grid size-10 place-items-center rounded-xl bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
           <AppWindow size={19} />
@@ -101,6 +101,11 @@ export function AppVersionManager({
             </Button>
           </div>
         </form>
+      ) : null}
+      {!canManage && !loading && !error ? (
+        <p className="mt-3 text-xs text-slate-500">
+          این نما فقط خواندنی است؛ تغییر نسخه به مجوز مدیریت انتشار نیاز دارد.
+        </p>
       ) : null}
     </Card>
   );

@@ -84,7 +84,10 @@ export function AdminLayout() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-paper text-ink">
+    <div
+      className="admin-role-shell min-h-screen bg-paper text-ink"
+      data-role={auth.activeRole ?? "DEFAULT"}
+    >
       <AdminMainSidebar
         collapsed={mainCollapsed}
         currentSection={current.section}
@@ -121,8 +124,10 @@ export function AdminLayout() {
           multipleRoles={(auth.context?.roles.filter((role) => role !== "STUDENT").length || 0) > 1}
         />
 
-        <main className="w-full min-w-0 p-2 pb-[calc(4rem+env(safe-area-inset-bottom))] sm:p-3 sm:pb-[calc(4rem+env(safe-area-inset-bottom))] lg:p-3 lg:pb-3 xl:p-4">
-          <Outlet />
+        <main className="w-full min-w-0 px-3 py-4 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:px-5 sm:py-5 lg:px-6 lg:pb-6 xl:px-8">
+          <div className="admin-page-shell mx-auto w-full max-w-[1600px]">
+            <Outlet />
+          </div>
         </main>
       </div>
 

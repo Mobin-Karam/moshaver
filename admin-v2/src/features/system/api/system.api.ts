@@ -4,9 +4,13 @@ import type {
   HistoryRow,
   PasswordDraft,
   ReleaseDraft,
+  Readiness,
+  ServiceHealth,
   Session,
 } from "../model/system.types";
 export const getDatabaseMeta = () => api.get<DatabaseMeta>("/system/database");
+export const getServiceHealth = () => api.get<ServiceHealth>("/health");
+export const getReadiness = () => api.get<Readiness>("/ready");
 export const getSessions = () => api.get<Session[]>("/auth/sessions");
 export const getImportHistory = () => api.get<HistoryRow[]>("/import/history");
 export const getReleases = () => api.get<HistoryRow[]>("/app-releases");

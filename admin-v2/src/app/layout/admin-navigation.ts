@@ -139,36 +139,36 @@ export const adminNavigation = [
     items: [
       {
         path: "system",
-        title: "سیستم",
-        description: "تنظیمات و سلامت سرویس",
+        title: "مرکز عملیات",
+        description: "سلامت سرویس و ابزارهای مجاز سامانه",
         icon: Settings,
         capability: "system.manage",
       },
       {
         path: "releases",
-        title: "انتشارها",
-        description: "نسخه‌ها و انتشار برنامه‌ها",
+        title: "نسخه‌ها و انتشارها",
+        description: "نسخه فعال و تاریخچه انتشار برنامه‌ها",
         icon: PackageOpen,
         capability: "release.read",
       },
       {
         path: "database",
-        title: "پایگاه داده",
+        title: "داده و پشتیبان",
         description: "پشتیبان‌گیری و بازیابی کنترل‌شده",
         icon: Database,
         capability: "database.read",
       },
       {
         path: "audit",
-        title: "ممیزی",
+        title: "ممیزی امنیتی",
         description: "رویدادهای امنیتی و عملیاتی",
         icon: ShieldCheck,
         capability: "audit.read",
       },
       {
         path: "settings",
-        title: "تنظیمات",
-        description: "موقعیت، تقویم، نشست‌ها و اتصال API",
+        title: "تنظیمات حساب",
+        description: "رمز، نشست‌ها، موقعیت و اتصال API",
         icon: Settings,
       },
     ],
@@ -180,9 +180,75 @@ export const flatAdminNavigation = adminNavigation.flatMap((group) =>
 );
 export const mainAdminNavigation = adminNavigation.map((group) => ({
   ...group.items[0],
-  title: group.section,
+  title: {
+    خانه: "نمای کلی",
+    آموزش: "آموزش و برنامه‌ریزی",
+    ارتباط: "ارتباط و پیگیری",
+    مدیریت: "افراد و دسترسی",
+    سامانه: "سامانه و امنیت",
+  }[group.section],
   section: group.section,
 }));
+
+const roleSectionTitles: Record<
+  string,
+  Partial<Record<(typeof adminNavigation)[number]["section"], string>>
+> = {
+  GUARDIAN: {
+    خانه: "خانه خانواده",
+    آموزش: "برنامه فرزند",
+    ارتباط: "ارتباط با تیم",
+    مدیریت: "فرزند و گزارش",
+    سامانه: "حساب من",
+  },
+  ADVISOR: {
+    خانه: "میز کار مشاور",
+    آموزش: "برنامه و یادگیری",
+    ارتباط: "ارتباط و پیگیری",
+    مدیریت: "دانش‌آموزان و گزارش",
+  },
+  TEACHER: {
+    خانه: "میز کار دبیر",
+    آموزش: "آزمون و محتوا",
+    ارتباط: "کلاس و گفتگو",
+    مدیریت: "دانش‌آموزان",
+  },
+  MENTOR: {
+    خانه: "میز کار منتور",
+    آموزش: "هدف و برنامه",
+    ارتباط: "پیگیری و گفتگو",
+    مدیریت: "روند دانش‌آموزان",
+  },
+  CONTENT_MANAGER: { خانه: "استودیوی محتوا", آموزش: "محتوای آموزشی", ارتباط: "هماهنگی محتوا" },
+  ORGANIZATION_ADMIN: {
+    خانه: "نمای سازمان",
+    آموزش: "عملیات آموزشی",
+    ارتباط: "ارتباطات سازمان",
+    مدیریت: "اعضا و دسترسی",
+  },
+  PLATFORM_ADMIN: {
+    خانه: "نمای پلتفرم",
+    آموزش: "عملیات آموزشی",
+    ارتباط: "ارتباطات",
+    مدیریت: "کاربران و سازمان‌ها",
+    سامانه: "سامانه و امنیت",
+  },
+};
+
+export function mainNavigationForCapabilities(
+  capabilities: readonly string[],
+  role?: string | null,
+) {
+  const titles = role ? roleSectionTitles[role] : undefined;
+  return navigationForCapabilities(capabilities, role).map((group) => ({
+    ...group.items[0],
+    section: group.section,
+    title:
+      titles?.[group.section] ??
+      mainAdminNavigation.find((item) => item.section === group.section)?.title ??
+      group.section,
+  }));
+}
 
 const roleTitles: Record<string, Record<string, string>> = {
   GUARDIAN: {

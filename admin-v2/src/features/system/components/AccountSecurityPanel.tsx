@@ -18,7 +18,7 @@ export function AccountSecurityPanel({
   const matches = passwords.newPassword === passwords.confirmPassword;
   const valid = Boolean(passwords.currentPassword) && longEnough && matches;
   return (
-    <Card className="h-full">
+    <Card className="h-full p-5 sm:p-6">
       <div className="mb-4 flex items-start gap-3">
         <span className="grid size-10 place-items-center rounded-lg bg-emerald-50 text-emerald-700">
           <ShieldCheck size={20} />

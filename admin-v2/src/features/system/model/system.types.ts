@@ -1,12 +1,10 @@
 export type DatabaseMeta = {
-  status?: string;
-  database?: string;
-  version?: string;
-  environment?: string;
-  uptimeSeconds?: number;
-  activeSessions?: number;
-  realtimeConnections?: number;
-  sizeBytes?: number;
+  engine: string;
+  status: string;
+  sizeBytes: number;
+  path: string;
+  migrations: number;
+  remoteRestoreEnabled: boolean;
 };
 export type Session = {
   id: string;
@@ -16,6 +14,8 @@ export type Session = {
   lastSeenAt?: string;
 };
 export type HistoryRow = Record<string, unknown>;
+export type ServiceHealth = { service: string; status: string };
+export type Readiness = { database: string };
 export type ReleaseDraft = { app: string; version: string; notes: string };
 export type PasswordDraft = {
   currentPassword: string;

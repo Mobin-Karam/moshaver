@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { adminDestination, navigationForCapabilities } from "./admin-navigation";
+import { adminDestination, mainNavigationForCapabilities } from "./admin-navigation";
 import { useAuth } from "../../features/auth";
 import { rolePortalTitle } from "../../shared/lib/role-ui";
 
@@ -20,9 +20,7 @@ export function AdminMainSidebar({
   onOpenSearch: () => void;
 }) {
   const auth = useAuth();
-  const visibleMainNavigation = navigationForCapabilities(auth.capabilities, auth.activeRole).map(
-    (group) => ({ ...group.items[0], section: group.section }),
-  );
+  const visibleMainNavigation = mainNavigationForCapabilities(auth.capabilities, auth.activeRole);
   return (
     <aside
       className={`fixed inset-y-0 right-0 z-50 hidden flex-col border-l border-slate-200 bg-white shadow-sm transition-[width,padding] duration-200 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-950 lg:flex ${collapsed ? "w-[4.5rem] p-2" : "w-64 p-3"}`}
@@ -92,7 +90,7 @@ export function AdminMainSidebar({
               title={collapsed ? title : undefined}
               aria-label={title}
               aria-current={active ? "location" : undefined}
-              className={`relative flex h-11 items-center rounded-lg text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-brand ${collapsed ? "justify-center px-2" : "gap-3 px-3"} ${active ? "bg-indigo-50 text-brand" : "text-slate-600 hover:bg-slate-50 hover:text-ink"}`}
+              className={`relative flex h-12 items-center rounded-xl text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-brand ${collapsed ? "justify-center px-2" : "gap-3 px-3.5"} ${active ? "bg-brand/10 text-brand" : "text-slate-600 hover:bg-slate-50 hover:text-ink"}`}
             >
               {active ? (
                 <span

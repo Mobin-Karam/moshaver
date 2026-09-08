@@ -9,6 +9,9 @@ export function DatabaseBackupPanel({
   setFile,
   onDownload,
   onRestore,
+  canBackup = true,
+  canRestore = true,
+  restoreEnabled = true,
 }: {
   file: File | null;
   busy: boolean;
@@ -16,6 +19,9 @@ export function DatabaseBackupPanel({
   setFile: (file: File | null) => void;
   onDownload: () => void;
   onRestore: () => void;
+  canBackup?: boolean;
+  canRestore?: boolean;
+  restoreEnabled?: boolean;
 }) {
   const [acknowledged, setAcknowledged] = useState(false),
     [fileError, setFileError] = useState("");
@@ -41,7 +47,7 @@ export function DatabaseBackupPanel({
     setFile(next);
   }
   return (
-    <Card>
+    <Card className="p-5 sm:p-6">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,.9fr)]">
         <section>
           <div className="mb-3 flex items-start gap-3">
@@ -55,10 +61,19 @@ export function DatabaseBackupPanel({
               </p>
             </div>
           </div>
-          <Button loading={downloading} disabled={downloading || busy} onClick={onDownload}>
+          <Button
+            loading={downloading}
+            disabled={!canBackup || downloading || busy}
+            onClick={onDownload}
+          >
             <Download size={16} />
             دانلود نسخه جدید
           </Button>
+          {!canBackup ? (
+            <p className="mt-2 text-xs text-slate-500">
+              مجوز تهیه نسخه پشتیبان برای نقش شما فعال نیست.
+            </p>
+          ) : null}
         </section>
         <section className="rounded-xl border border-rose-200 bg-rose-50/50 p-3">
           <div className="mb-2 flex items-center gap-2 font-bold text-rose-800">
@@ -69,7 +84,7 @@ export function DatabaseBackupPanel({
             aria-label="فایل بازیابی SQLite"
             type="file"
             accept=".sqlite,.sqlite3,.db,application/vnd.sqlite3,application/octet-stream"
-            disabled={busy}
+            disabled={!canRestore || !restoreEnabled || busy}
             onChange={(event) => choose(event.target.files?.[0] || null)}
           />
           {file ? (
@@ -101,12 +116,21 @@ export function DatabaseBackupPanel({
             className="mt-3 w-full"
             loading={busy}
             variant="danger"
-            disabled={!file || !acknowledged || busy || downloading}
+            disabled={
+              !canRestore || !restoreEnabled || !file || !acknowledged || busy || downloading
+            }
             onClick={onRestore}
           >
             <Upload size={16} />
             اعتبارسنجی و بازیابی
           </Button>
+          {!canRestore ? (
+            <p className="mt-2 text-xs text-rose-700">نقش شما مجوز بازیابی پایگاه داده را ندارد.</p>
+          ) : !restoreEnabled ? (
+            <p className="mt-2 text-xs text-rose-700">
+              بازیابی راه‌دور در تنظیمات سرور غیرفعال است.
+            </p>
+          ) : null}
         </section>
       </div>
     </Card>

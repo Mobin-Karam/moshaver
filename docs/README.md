@@ -2,7 +2,7 @@
 
 This directory is the navigation hub for the Moshaver monorepo. Documentation is grouped by intent so a person or an agent can distinguish current architecture from migration plans and historical evidence.
 
-Last repository inspection: 2026-09-02.
+Last repository inspection: 2026-09-08.
 
 ## Read first
 
@@ -12,6 +12,7 @@ Last repository inspection: 2026-09-02.
    - [v1.4 runtime architecture](./architecture/backend-v1-4-runtime.md)
    - [backend v2 design](./architecture/backend-v2-design.md)
    - [student v2/Tauri runtime](./architecture/student-v2-tauri-runtime.md)
+4. To change the project safely, read the [developer handbook](./operations/developer-handbook.md).
 
 ## Directory contract
 
@@ -51,6 +52,10 @@ The v1.4 static Admin and Student applications are described with their backend 
 ## Operations
 
 - [Repository runbook](./operations/repository-runbook.md)
+- [Developer handbook](./operations/developer-handbook.md) — onboarding, conventions, and definition of done.
+- [Feature and bug playbook](./operations/feature-and-bug-playbook.md) — secure vertical implementation and diagnosis.
+- [Maintenance guide](./operations/maintenance-guide.md) — recurring care, incidents, dependencies, data, and rollback.
+- [Documentation maintenance](./operations/documentation-maintenance.md) — ownership, update triggers, and review rules.
 - [v1.4 security model](./operations/security-v1-4.md)
 - [v1.4 Runflare deployment](./operations/runflare-v1-4-deployment.md)
 - [v1.4 chat and realtime SSE](./operations/chat-realtime-sse-v1-4.md)

@@ -11,7 +11,7 @@ export function WorkContextBar({
 }) {
   return (
     <aside
-      className="flex h-10 min-w-0 max-w-[48vw] shrink items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-2.5 text-xs text-slate-600 shadow-sm sm:max-w-sm sm:gap-3 sm:px-3 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300"
+      className="flex h-10 min-w-0 max-w-[48vw] shrink items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-2.5 text-xs text-slate-600 shadow-sm sm:max-w-sm sm:gap-3 sm:px-3 dark:text-slate-300"
       aria-label="زمینه کاری فعال"
       title={[role, organization || "سطح پلتفرم"].join(" — ")}
     >

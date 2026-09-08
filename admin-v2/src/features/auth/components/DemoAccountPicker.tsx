@@ -27,8 +27,7 @@ export function DemoAccountPicker({
         <ChevronDown size={16} className="transition group-open:rotate-180" />
       </summary>
       <p className="mt-2 text-xs text-slate-500">
-        ابتدا در Backend v2 دستور <code dir="ltr">npm run seed:demo</code> را روی پایگاه توسعه اجرا
-        کنید.
+        ابتدا در Backend v2 دستور <code dir="ltr">npm run seed</code> را روی پایگاه توسعه اجرا کنید.
       </p>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {demoAccounts.map((account) => (

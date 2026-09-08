@@ -321,7 +321,7 @@ export const router = createBrowserRouter([
             element: (
               <CapabilityRoute capability="system.manage">
                 <RouteScreen>
-                  <SystemPage />
+                  <SystemPage view="overview" />
                 </RouteScreen>
               </CapabilityRoute>
             ),
@@ -331,7 +331,7 @@ export const router = createBrowserRouter([
             element: (
               <CapabilityRoute capability="release.read">
                 <RouteScreen>
-                  <SystemPage />
+                  <SystemPage view="releases" />
                 </RouteScreen>
               </CapabilityRoute>
             ),
@@ -341,7 +341,7 @@ export const router = createBrowserRouter([
             element: (
               <CapabilityRoute capability="database.read">
                 <RouteScreen>
-                  <SystemPage />
+                  <SystemPage view="database" />
                 </RouteScreen>
               </CapabilityRoute>
             ),
@@ -351,7 +351,7 @@ export const router = createBrowserRouter([
             element: (
               <CapabilityRoute capability="audit.read">
                 <RouteScreen>
-                  <SystemPage />
+                  <SystemPage view="audit" />
                 </RouteScreen>
               </CapabilityRoute>
             ),

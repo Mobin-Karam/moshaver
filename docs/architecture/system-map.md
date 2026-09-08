@@ -1,6 +1,6 @@
 # Moshaver system map
 
-This is the shortest reliable map of the system currently present in the repository. It describes source layout and wiring inspected on 2026-09-02; release readiness still depends on the validation gates in the [repository runbook](../operations/repository-runbook.md).
+This is the shortest reliable map of the system currently present in the repository. It describes source layout and wiring inspected on 2026-09-08; release readiness still depends on the validation gates in the [repository runbook](../operations/repository-runbook.md).
 
 ## Two product generations coexist
 

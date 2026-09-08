@@ -20,7 +20,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       className={cn(
         `
           inline-flex
-          h-10
+          h-11
           items-center
           justify-center
 
@@ -28,7 +28,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 
           rounded-xl
 
-          px-4
+          px-[1.125rem]
 
           text-sm
           font-semibold

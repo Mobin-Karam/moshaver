@@ -1,115 +1,113 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Activity, Database, FileClock, PackageOpen, RefreshCw, ShieldCheck } from "lucide-react";
 import { useState } from "react";
-import { AlertTriangle, History } from "lucide-react";
-import { getSelectedApiVersion } from "../../../shared/api/api";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { useModal } from "../../../shared/ui/modal";
 import { notify } from "../../../shared/ui/notifications";
-import { Button, Card } from "../../../shared/ui/ui";
+import { Badge, Button, Card, EmptyState } from "../../../shared/ui/ui";
 import {
-  changeAdminPassword,
   downloadDatabaseBackup,
-  getAudit,
   getAppVersions,
+  getAudit,
   getDatabaseMeta,
   getImportHistory,
+  getReadiness,
   getReleases,
-  getSessions,
+  getServiceHealth,
   restoreDatabase,
   saveAppRelease,
   saveAppVersion,
 } from "../api/system.api";
-import { AccountSecurityPanel } from "../components/AccountSecurityPanel";
+import { AppVersionManager } from "../components/AppVersionManager";
 import { DatabaseBackupPanel } from "../components/DatabaseBackupPanel";
 import { ReleasePanel } from "../components/ReleasePanel";
 import { SystemHistory } from "../components/SystemHistory";
-import { SystemMetric } from "../components/SystemMetric";
-import { SystemSessionsPanel } from "../components/SystemSessionsPanel";
-import { AppVersionManager } from "../components/AppVersionManager";
-export function SystemPage() {
-  const qc = useQueryClient();
-  const modal = useModal();
-  const auth = useAuth();
-  const systemAvailable =
-    auth.can("database.read") || auth.can("release.read") || auth.can("audit.read");
+
+export type SystemView = "overview" | "releases" | "database" | "audit";
+function QueryError({ retry }: { retry: () => void }) {
+  return (
+    <EmptyState
+      title="دریافت اطلاعات ناموفق بود."
+      action={
+        <Button variant="soft" onClick={retry}>
+          <RefreshCw size={15} />
+          تلاش دوباره
+        </Button>
+      }
+    />
+  );
+}
+
+export function SystemPage({ view = "overview" }: { view?: SystemView }) {
+  const auth = useAuth(),
+    qc = useQueryClient(),
+    modal = useModal();
   const [file, setFile] = useState<File | null>(null);
-  const [passwords, setPasswords] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+  const [release, setRelease] = useState({ app: "admin", version: "", notes: "" });
+  const canReadDatabase = auth.can("database.read"),
+    canReadReleases = auth.can("release.read"),
+    canManageReleases = auth.can("release.manage"),
+    canReadAudit = auth.can("audit.read"),
+    canReadImports = auth.can("import.preview");
+  const health = useQuery({
+    queryKey: ["system-health"],
+    queryFn: getServiceHealth,
+    enabled: view === "overview",
   });
-  const [release, setRelease] = useState({
-    app: "admin",
-    version: "",
-    notes: "",
+  const ready = useQuery({
+    queryKey: ["system-ready"],
+    queryFn: getReadiness,
+    enabled: view === "overview",
   });
-  const [historyTab, setHistoryTab] = useState<"audit" | "imports" | "releases">("audit");
   const database = useQuery({
     queryKey: ["system-database"],
     queryFn: getDatabaseMeta,
-    enabled: systemAvailable,
-  });
-  const sessions = useQuery({ queryKey: ["sessions"], queryFn: getSessions });
-  const imports = useQuery({
-    queryKey: ["import-history"],
-    queryFn: getImportHistory,
-    enabled: systemAvailable && historyTab === "imports",
-  });
-  const releases = useQuery({
-    queryKey: ["app-releases"],
-    queryFn: getReleases,
-    enabled: systemAvailable && historyTab === "releases",
+    enabled: view === "database" && canReadDatabase,
   });
   const versions = useQuery({
     queryKey: ["app-versions"],
     queryFn: getAppVersions,
-    enabled: auth.can("release.read"),
+    enabled: view === "releases" && canReadReleases,
+  });
+  const releases = useQuery({
+    queryKey: ["app-releases"],
+    queryFn: getReleases,
+    enabled: view === "releases" && canReadReleases,
   });
   const audit = useQuery({
     queryKey: ["audit"],
     queryFn: getAudit,
-    enabled: systemAvailable && historyTab === "audit",
+    enabled: view === "audit" && canReadAudit,
   });
-  const restore = useMutation({
-    mutationFn: () => {
-      if (!file) throw new Error("فایل انتخاب نشده است.");
-      return restoreDatabase(file);
-    },
-    onSuccess: () => {
-      setFile(null);
-      notify("نسخه پشتیبان اعتبارسنجی و برای بازیابی ثبت شد.");
-      void qc.invalidateQueries({ queryKey: ["system-database"] });
-    },
-    onError: (error) =>
-      notify(error instanceof Error ? error.message : "بازیابی پایگاه داده انجام نشد.", "error"),
+  const imports = useQuery({
+    queryKey: ["import-history"],
+    queryFn: getImportHistory,
+    enabled: view === "database" && canReadImports,
   });
   const backup = useMutation({
     mutationFn: downloadDatabaseBackup,
-    onError: (error) =>
-      notify(error instanceof Error ? error.message : "دریافت نسخه پشتیبان انجام نشد.", "error"),
+    onError: (e) =>
+      notify(e instanceof Error ? e.message : "دریافت نسخه پشتیبان انجام نشد.", "error"),
   });
-  const changePassword = useMutation({
-    mutationFn: () => changeAdminPassword(passwords),
+  const restore = useMutation({
+    mutationFn: () =>
+      file ? restoreDatabase(file) : Promise.reject(new Error("فایل انتخاب نشده است.")),
     onSuccess: () => {
-      setPasswords({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-      notify("رمز مدیر تغییر کرد و نشست‌های دیگر بسته شدند.");
+      setFile(null);
+      notify("پایگاه داده با موفقیت بازیابی شد.");
+      void qc.invalidateQueries({ queryKey: ["system-database"] });
     },
-    onError: (error) =>
-      notify(error instanceof Error ? error.message : "تغییر رمز انجام نشد.", "error"),
+    onError: (e) => notify(e instanceof Error ? e.message : "بازیابی انجام نشد.", "error"),
   });
   const saveRelease = useMutation({
     mutationFn: () => saveAppRelease(release),
     onSuccess: () => {
       setRelease({ ...release, version: "", notes: "" });
-      notify("انتشار جدید ثبت شد.");
+      notify("انتشار ثبت شد.");
       void qc.invalidateQueries({ queryKey: ["app-releases"] });
     },
-    onError: (error) =>
-      notify(error instanceof Error ? error.message : "ثبت انتشار انجام نشد.", "error"),
+    onError: (e) => notify(e instanceof Error ? e.message : "ثبت انتشار انجام نشد.", "error"),
   });
   const updateVersion = useMutation({
     mutationFn: ({ app, value }: { app: string; value: { version: string; notes: string } }) =>
@@ -118,8 +116,7 @@ export function SystemPage() {
       notify("نسخه فعال به‌روزرسانی شد.");
       void qc.invalidateQueries({ queryKey: ["app-versions"] });
     },
-    onError: (error) =>
-      notify(error instanceof Error ? error.message : "به‌روزرسانی نسخه انجام نشد.", "error"),
+    onError: (e) => notify(e instanceof Error ? e.message : "به‌روزرسانی نسخه انجام نشد.", "error"),
   });
   async function download() {
     const result = await backup.mutateAsync();
@@ -131,73 +128,109 @@ export function SystemPage() {
     URL.revokeObjectURL(url);
     notify("نسخه پشتیبان دانلود شد.");
   }
-  const meta = database.data;
-  return (
-    <div className="grid gap-4">
-      {!systemAvailable ? (
-        <div
-          className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
-          role="status"
-        >
-          <AlertTriangle className="mt-0.5 shrink-0" size={17} />
-          <span>
-            ابزارهای عملیاتی این صفحه فقط برای نقش‌هایی با مجوز مدیریت سامانه در دسترس‌اند. امنیت
-            حساب و نشست‌ها همچنان قابل استفاده است.
-          </span>
-        </div>
-      ) : null}
-      <section className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-        <SystemMetric
-          label="پایگاه داده"
-          value={
-            systemAvailable
-              ? meta?.database || meta?.status || (database.isLoading ? "در حال بررسی…" : "نامشخص")
-              : "بدون دسترسی"
-          }
-        />
-        <SystemMetric label="نسخه" value={meta?.version || `API ${getSelectedApiVersion()}`} />
-        <SystemMetric
-          label="نشست فعال"
-          value={String(meta?.activeSessions ?? sessions.data?.length ?? 0)}
-        />
-        <SystemMetric label="اتصال زنده" value={String(meta?.realtimeConnections || 0)} />
-      </section>
-      <section className="grid gap-4 lg:grid-cols-2">
-        <AccountSecurityPanel
-          passwords={passwords}
-          setPasswords={setPasswords}
-          busy={changePassword.isPending}
-          onSubmit={() =>
-            void modal
-              .confirm({
-                title: "تغییر رمز مدیر؟",
-                description: "هویت شما دوباره بررسی و نشست‌های دیگر این حساب بسته می‌شوند.",
-                confirmLabel: "تغییر رمز",
-              })
-              .then((confirmed) => confirmed && changePassword.mutate())
-          }
-        />
-        <SystemSessionsPanel sessions={sessions.data} loading={sessions.isLoading} />
-      </section>
-      {systemAvailable ? (
-        <>
-          <DatabaseBackupPanel
-            file={file}
-            busy={restore.isPending}
-            downloading={backup.isPending}
-            setFile={setFile}
-            onDownload={() => void download()}
-            onRestore={() =>
-              void modal
-                .confirm({
-                  title: "آخرین تأیید بازیابی پایگاه داده",
-                  description: `فایل ${file?.name || "انتخاب‌شده"} پس از اعتبارسنجی جایگزین داده فعلی می‌شود. پیش از اجرا یک snapshot خودکار ساخته خواهد شد.`,
-                  tone: "danger",
-                  confirmLabel: "بازیابی پایگاه داده",
-                })
-                .then((confirmed) => confirmed && restore.mutate())
-            }
-          />
+
+  if (view === "overview") {
+    const destinations = [
+      {
+        to: "/admin/releases",
+        title: "نسخه‌ها و انتشارها",
+        detail: "نسخه فعال و سابقه انتشار",
+        icon: PackageOpen,
+        show: canReadReleases,
+      },
+      {
+        to: "/admin/database",
+        title: "پایگاه داده",
+        detail: "اطلاعات، پشتیبان و بازیابی",
+        icon: Database,
+        show: canReadDatabase,
+      },
+      {
+        to: "/admin/audit",
+        title: "ممیزی امنیتی",
+        detail: "رویدادهای حساس و قابل رهگیری",
+        icon: ShieldCheck,
+        show: canReadAudit,
+      },
+      {
+        to: "/admin/settings",
+        title: "امنیت حساب من",
+        detail: "رمز، نشست‌ها و تنظیمات محلی",
+        icon: FileClock,
+        show: true,
+      },
+    ].filter((item) => item.show);
+    return (
+      <div className="grid gap-5">
+        <section className="grid gap-3 sm:grid-cols-2">
+          <Card className="p-5">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2 font-bold">
+                <Activity size={18} />
+                سرویس API
+              </span>
+              <Badge tone={health.data?.status === "ok" ? "green" : "neutral"}>
+                {health.isLoading ? "در حال بررسی" : health.data?.status || "نامشخص"}
+              </Badge>
+            </div>
+            {health.isError ? (
+              <QueryError retry={() => void health.refetch()} />
+            ) : (
+              <p className="mt-3 text-sm text-slate-500">
+                {health.data?.service || "اتصال به سرویس v2"}
+              </p>
+            )}
+          </Card>
+          <Card className="p-5">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2 font-bold">
+                <Database size={18} />
+                آمادگی داده
+              </span>
+              <Badge tone={ready.data?.database === "ready" ? "green" : "neutral"}>
+                {ready.isLoading ? "در حال بررسی" : ready.data?.database || "نامشخص"}
+              </Badge>
+            </div>
+            {ready.isError ? (
+              <QueryError retry={() => void ready.refetch()} />
+            ) : (
+              <p className="mt-3 text-sm text-slate-500">آزمون مستقیم اتصال پایگاه داده</p>
+            )}
+          </Card>
+        </section>
+        <section aria-labelledby="system-tools">
+          <h2
+            id="system-tools"
+            className="mb-3 text-sm font-black text-slate-700 dark:text-slate-200"
+          >
+            ابزارهای در دسترس شما
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {destinations.map(({ to, title, detail, icon: Icon }) => (
+              <Link
+                key={to}
+                to={to}
+                className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:border-slate-700 dark:bg-slate-900"
+              >
+                <Icon className="text-brand" size={22} />
+                <strong className="mt-5 block">{title}</strong>
+                <span className="mt-1 block text-xs leading-5 text-slate-500">{detail}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
+  if (view === "releases")
+    return (
+      <div className="grid gap-5">
+        {!canManageReleases ? (
+          <div className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-sky-800 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-300">
+            این بخش برای نقش شما فقط خواندنی است.
+          </div>
+        ) : null}
+        {canManageReleases ? (
           <ReleasePanel
             release={release}
             setRelease={setRelease}
@@ -206,75 +239,103 @@ export function SystemPage() {
               void modal
                 .confirm({
                   title: "ثبت انتشار جدید؟",
-                  description: `${release.app} • ${release.version}`,
+                  description: `${release.app} · ${release.version}`,
                   confirmLabel: "ثبت انتشار",
                 })
-                .then((confirmed) => confirmed && saveRelease.mutate())
+                .then((ok) => ok && saveRelease.mutate())
             }
           />
-          {auth.can("release.read") ? (
-            <AppVersionManager
-              versions={versions.data}
-              loading={versions.isLoading}
-              error={versions.isError}
-              busy={updateVersion.isPending}
-              canManage={auth.can("release.manage")}
-              onRetry={() => void versions.refetch()}
-              onSave={(app, value) => updateVersion.mutate({ app, value })}
-            />
-          ) : null}
-          <Card className="p-2">
-            <div
-              className="flex flex-wrap items-center gap-1"
-              role="tablist"
-              aria-label="نوع تاریخچه"
-            >
-              <History size={16} className="mx-2 text-slate-400" />
-              {(
-                [
-                  ["audit", "ممیزی"],
-                  ["imports", "ورود JSON"],
-                  ["releases", "انتشارها"],
-                ] as const
-              ).map(([id, label]) => (
-                <Button
-                  key={id}
-                  className="h-8"
-                  variant={historyTab === id ? "primary" : "ghost"}
-                  onClick={() => setHistoryTab(id)}
-                >
-                  {label}
-                </Button>
-              ))}
-            </div>
+        ) : null}
+        <AppVersionManager
+          versions={versions.data}
+          loading={versions.isLoading}
+          error={versions.isError}
+          busy={updateVersion.isPending}
+          canManage={canManageReleases}
+          onRetry={() => void versions.refetch()}
+          onSave={(app, value) => updateVersion.mutate({ app, value })}
+        />
+        <SystemHistory
+          title="تاریخچه انتشارها"
+          rows={releases.data}
+          loading={releases.isLoading}
+          error={releases.isError}
+          onRetry={() => void releases.refetch()}
+        />
+      </div>
+    );
+  if (view === "database")
+    return (
+      <div className="grid gap-5">
+        {database.isError ? (
+          <Card className="p-5">
+            <QueryError retry={() => void database.refetch()} />
           </Card>
-          {historyTab === "audit" ? (
-            <SystemHistory
-              title="گزارش ممیزی"
-              rows={audit.data}
-              loading={audit.isLoading}
-              error={audit.isError}
-              onRetry={() => void audit.refetch()}
-            />
-          ) : historyTab === "imports" ? (
-            <SystemHistory
-              title="تاریخچه ورود JSON"
-              rows={imports.data}
-              loading={imports.isLoading}
-              error={imports.isError}
-              onRetry={() => void imports.refetch()}
-            />
-          ) : (
-            <SystemHistory
-              title="تاریخچه انتشار"
-              rows={releases.data}
-              loading={releases.isLoading}
-              error={releases.isError}
-              onRetry={() => void releases.refetch()}
-            />
-          )}
-        </>
-      ) : null}
+        ) : (
+          <section
+            className="grid grid-cols-2 gap-3 lg:grid-cols-4"
+            aria-label="اطلاعات پایگاه داده"
+          >
+            {[
+              ["موتور", database.data?.engine],
+              ["وضعیت", database.data?.status],
+              ["مهاجرت‌ها", database.data?.migrations?.toLocaleString("fa-IR")],
+              [
+                "حجم",
+                database.data
+                  ? `${(database.data.sizeBytes / 1024 / 1024).toLocaleString("fa-IR", { maximumFractionDigits: 1 })} MB`
+                  : undefined,
+              ],
+            ].map(([label, value]) => (
+              <Card key={label} className="p-4">
+                <span className="text-xs text-slate-500">{label}</span>
+                <strong className="mt-2 block">
+                  {database.isLoading ? "در حال بررسی…" : value || "نامشخص"}
+                </strong>
+              </Card>
+            ))}
+          </section>
+        )}
+        <DatabaseBackupPanel
+          file={file}
+          busy={restore.isPending}
+          downloading={backup.isPending}
+          setFile={setFile}
+          canBackup={auth.can("database.backup")}
+          canRestore={auth.can("database.restore")}
+          restoreEnabled={Boolean(database.data?.remoteRestoreEnabled)}
+          onDownload={() => void download()}
+          onRestore={() =>
+            void modal
+              .confirm({
+                title: "بازیابی پایگاه داده؟",
+                description: `فایل ${file?.name || "انتخاب‌شده"} داده فعلی را جایگزین می‌کند و پیش از آن snapshot ساخته می‌شود.`,
+                tone: "danger",
+                confirmLabel: "بازیابی پایگاه داده",
+              })
+              .then((ok) => ok && restore.mutate())
+          }
+        />
+        {canReadImports ? (
+          <SystemHistory
+            title="تاریخچه ورود داده"
+            rows={imports.data}
+            loading={imports.isLoading}
+            error={imports.isError}
+            onRetry={() => void imports.refetch()}
+          />
+        ) : null}
+      </div>
+    );
+  return (
+    <div className="grid gap-5">
+      <SystemHistory
+        title="رویدادهای ممیزی"
+        rows={audit.data}
+        loading={audit.isLoading}
+        error={audit.isError}
+        onRetry={() => void audit.refetch()}
+      />
     </div>
   );
 }

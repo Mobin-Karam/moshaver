@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from "@nestjs/common";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { RequireCapabilities } from "../../common/decorators/capabilities.decorator";
 import { ok } from "../../common/utils/envelope";
@@ -14,6 +14,7 @@ export class UsersController { constructor(private service:UsersService){}
 @Patch(":id") @RequireCapabilities("users.manage") update(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string,@Body()d:UpdateUserDto){return this.service.update(u,id,d).then(ok)}
 @Post(":id/activate") @RequireCapabilities("users.manage") activate(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string){return this.service.setActive(u,id,true).then(ok)}
 @Post(":id/deactivate") @RequireCapabilities("users.manage") deactivate(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string){return this.service.setActive(u,id,false).then(ok)}
+@Delete(":id") @RequireCapabilities("users.manage") archive(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string){return this.service.archive(u,id).then(ok)}
 @Get(":id/roles") roles(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string){return this.service.get(u,id).then((x)=>ok(x.assignments))}
 @Put(":id/roles") @RequireCapabilities("users.manage") setRoles(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string,@Body()d:SetRolesDto){return this.service.setRoles(u,id,d).then(ok)}
 @Get(":id/capabilities") capabilities(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string){return this.service.capabilities(u,id).then(ok)} }

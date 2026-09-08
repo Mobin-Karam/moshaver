@@ -5,8 +5,20 @@ import { Student } from "../entities/student.entity";
 import { User, UserRole } from "../entities/user.entity";
 import { Role } from "../entities/role.entity";
 import { UserRoleAssignment } from "../entities/user-role-assignment.entity";
+import { seedSecurityMatrix } from "./security-matrix";
 
 async function main() {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Refusing to create development seed identities in production.");
+  }
+
+  // Keep the default development seed aligned with the accounts offered by
+  // Admin v2's role picker. The security matrix also runs pending migrations
+  // and creates the organization memberships/relationships required by the
+  // authorization context returned after login.
+  process.env.ALLOW_E2E_SEED = "true";
+  await seedSecurityMatrix();
+
   await dataSource.initialize();
   const users = dataSource.getRepository(User);
   const students = dataSource.getRepository(Student);
@@ -36,7 +48,8 @@ async function main() {
   }
   await students.save(sara);
 
-  console.log(`Seeded users: ${admin.username}, ${saraUser.username}`);
+  console.log(`Seeded base users: ${admin.username}, ${saraUser.username}`);
+  console.log("Admin v2 role accounts use password: Moshaver-e2e-2026!");
   await dataSource.destroy();
 }
 
@@ -60,5 +73,6 @@ async function upsertUser(users: ReturnType<typeof dataSource.getRepository<User
 
 main().catch((error) => {
   console.error(error);
-  process.exit(1);
+  if (dataSource.isInitialized) void dataSource.destroy();
+  process.exitCode = 1;
 });

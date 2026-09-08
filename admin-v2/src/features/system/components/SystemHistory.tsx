@@ -15,7 +15,7 @@ export function SystemHistory({
   onRetry?: () => void;
 }) {
   return (
-    <Card className="min-h-72">
+    <Card className="min-h-72 p-5 sm:p-6">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h3 className="flex items-center gap-2 font-bold">
           <History size={17} />
@@ -46,13 +46,15 @@ export function SystemHistory({
           {rows.map((row, index) => (
             <article key={String(row.id || index)} className="rounded-lg border p-3 text-sm">
               <div className="flex items-start justify-between gap-2">
-                <strong>{String(row.app_name || row.action || row.type || "رکورد")}</strong>
+                <strong>
+                  {String(row.app || row.action || row.type || row.schemaVersion || "رکورد")}
+                </strong>
                 <time className="shrink-0 text-[10px] text-slate-400">
-                  {String(row.created_at || row.updated_at || "")}
+                  {String(row.createdAt || row.updatedAt || row.created_at || row.updated_at || "")}
                 </time>
               </div>
               <p className="mt-1 break-words text-xs text-slate-500">
-                {String(row.version || row.notes || row.message || "")}
+                {String(row.version || row.notes || row.message || row.entity || row.result || "")}
               </p>
             </article>
           ))}

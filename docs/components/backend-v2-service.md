@@ -41,13 +41,17 @@ Student login:
 
 ### Admin v2 role demo accounts
 
-For a disposable development database, seed every Admin v2 role with:
+The default development seed also creates every account displayed by the Admin v2 role picker:
 
 ```bash
-npm run seed:demo
+npm run seed
 ```
 
-The Admin v2 development login screen then offers one-click account selection for guardian, advisor, teacher, mentor, content manager, organization administrator, platform administrator, and a multi-role account. All use the development-only password `Moshaver-e2e-2026!`. The seed refuses to run with `NODE_ENV=production`; never use these identities or this password in a deployed environment.
+The Admin v2 development login screen then offers one-click account selection for guardian, advisor, teacher, mentor, content manager, organization administrator, platform administrator, and a multi-role account. All use the development-only password `Moshaver-e2e-2026!`. The seed runs pending migrations and creates the organization scope needed by those roles. It refuses to run with `NODE_ENV=production`; never use these identities or this password in a deployed environment.
+
+For the larger disposable product showcase dataset, follow [the product demo seed runbook](../operations/backend-v2-product-demo-seed.md). That guarded seed requires an explicitly demo-named `DATABASE_PATH`.
+
+For implementation and maintenance conventions, use the [developer handbook](../operations/developer-handbook.md), [feature and bug playbook](../operations/feature-and-bug-playbook.md), and [maintenance guide](../operations/maintenance-guide.md). The generated [OpenAPI document](./backend-v2-http-api.md) is the route-discovery contract.
 
 ## Production Notes
 

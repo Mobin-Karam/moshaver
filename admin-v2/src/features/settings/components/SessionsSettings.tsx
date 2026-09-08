@@ -14,7 +14,7 @@ export function SessionsSettings({
   confirm: (id: string) => void;
 }) {
   return (
-    <Card>
+    <Card className="p-5 sm:p-6">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <span className="grid size-10 place-items-center rounded-lg bg-indigo-50 text-brand">

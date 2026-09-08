@@ -41,6 +41,16 @@ Live operations, Chat, and Notifications are one role-aware Communication sectio
 
 The old flat paths redirect to their canonical Communication destinations and preserve query parameters. See the [Communication workspace contract](./admin-v2-communication-workspace.md) for API, realtime, authorization, and UI-state details.
 
+## Administration workspace conventions
+
+- `AdminLayout` owns the page title, description, and breadcrumbs; features do not repeat a hero title.
+- Navigation is filtered by active role and capabilities. Write controls are gated separately from read routes.
+- Students uses a directory/detail workflow. Users shares the reusable `shared/ui/admin-data-table.tsx` primitive and supports authorized batch status operations. Organizations uses a directory/workspace flow that can manage members without changing global context.
+- `AdminDataTable` provides typed columns, controlled row selection, select-all-visible, clear selection, sortable headers, active rows, batch-action space, and loading/error/empty states. The feature supplies authorized operations and defines whether rows represent a page or all filtered results.
+- System destinations are separate workspaces for health, releases, database operations, audit, and personal settings, using exact `/api/v2` capability boundaries.
+
+Read the [developer handbook](../operations/developer-handbook.md) and [feature playbook](../operations/feature-and-bug-playbook.md) before adding an Admin workflow.
+
 ## Migration
 
 `backup/admin-app-legacy/` is a byte-for-byte copy of the old static Admin app. Keep `admin-app/` deployed until v2 is validated, then switch static hosting to `admin-v2/dist` without changing backend or Student app.

@@ -26,7 +26,7 @@ export function LoginForm() {
 
   return (
     <form
-      className="grid gap-4"
+      className="grid gap-5"
       onSubmit={handleSubmit(async (data) => {
         setError("");
 
@@ -39,13 +39,18 @@ export function LoginForm() {
       })}
     >
       <Field label="نام کاربری" error={formState.errors.username?.message}>
-        <Input autoComplete="username" disabled={checking} {...register("username")} />
+        <Input
+          className="h-12"
+          autoComplete="username"
+          disabled={checking}
+          {...register("username")}
+        />
       </Field>
 
       <Field label="رمز عبور" error={formState.errors.password?.message}>
         <div className="relative">
           <Input
-            className="pl-11"
+            className="h-12 pl-11"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             disabled={checking}
@@ -77,7 +82,7 @@ export function LoginForm() {
         <p
           role="alert"
           className={[
-            "rounded-md p-3 text-sm",
+            "rounded-xl border p-3.5 text-sm",
             checking && !error ? "bg-sky-50 text-sky-800" : "bg-rose-50 text-rosewood",
           ].join(" ")}
         >
@@ -85,7 +90,7 @@ export function LoginForm() {
         </p>
       ) : null}
 
-      <Button disabled={checking || formState.isSubmitting}>
+      <Button className="h-12 w-full text-[15px]" disabled={checking || formState.isSubmitting}>
         {checking ? "در حال بازیابی نشست…" : formState.isSubmitting ? "در حال ورود…" : "ورود"}
       </Button>
     </form>

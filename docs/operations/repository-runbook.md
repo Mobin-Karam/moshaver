@@ -1,6 +1,6 @@
 # Moshaver repository runbook
 
-This runbook describes the repository as inspected on 2026-09-02. Start with the [system map](../architecture/system-map.md) if the two product generations are unfamiliar.
+This runbook describes the repository as inspected on 2026-09-08. Start with the [system map](../architecture/system-map.md) if the two product generations are unfamiliar. New contributors should also read the [developer handbook](./developer-handbook.md).
 
 ## Choose the generation first
 
@@ -49,6 +49,8 @@ npm --prefix backend-v2 run lint
 npm --prefix backend-v2 test
 npm --prefix backend-v2 run build
 npm --prefix admin-v2 test
+npm --prefix admin-v2 run typecheck
+npm --prefix admin-v2 run lint
 npm --prefix admin-v2 run build
 npm --prefix student-core run build
 npm --prefix student-core test
@@ -112,6 +114,8 @@ For public deployment, set exact browser origins, secure cookie settings, persis
 | v1.4 backend | `npm run check`, focused tests, and `npm run smoke` when behavior changes |
 | v1.4 static UI | syntax/shared-asset checks plus browser verification |
 | Docs | internal link check and source-path check |
+
+Use the [feature and bug playbook](./feature-and-bug-playbook.md) for implementation sequencing and the [maintenance guide](./maintenance-guide.md) for recurring and incident work.
 
 ## Data safety
 

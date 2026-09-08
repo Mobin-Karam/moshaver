@@ -3,6 +3,8 @@
 Date: 2026-09-06  
 Scope: current `backend-v2` controllers and `admin-v2` consumers on `feat/v2-parity-completion`.
 
+Snapshot notice: “current” below means the dated 2026-09-06 checkout. Use the [capability matrix](../ADMIN_V2_CAPABILITY_MATRIX.md) and generated [OpenAPI contract](../components/backend-v2-http-api.md) for the present source.
+
 ## Findings and delivered fixes
 
 | Workflow | Backend finding | Admin v2 finding | Resolution | Verification |
@@ -18,7 +20,7 @@ Scope: current `backend-v2` controllers and `admin-v2` consumers on `feat/v2-par
 
 ## UX acceptance
 
-New workspaces use the existing design system and include responsive layouts, keyboard-submit forms, capability-based action visibility, disabled/busy states, empty states, inline failures, and explicit retry actions. Destructive member removal is visually marked; a follow-up can add modal confirmation if product policy requires it.
+New workspaces use the existing design system and include responsive layouts, keyboard-submit forms, capability-based action visibility, disabled/busy states, empty states, inline failures, and explicit retry actions. The later Admin operations refresh added confirmation before destructive member removal and relationship rejection.
 
 ## Verification record
 

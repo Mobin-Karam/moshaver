@@ -1,8 +1,8 @@
 # Admin v2 capability matrix
 
-Last source audit: 2026-09-06
+Last source audit: 2026-09-08
 
-Scope: `admin-v2` consumers and canonical `backend-v2` `/api/v2` contracts on `feat/v2-parity-completion`.
+Scope: current working-tree `admin-v2` consumers and canonical `backend-v2` `/api/v2` contracts. This describes source behavior, not branch ancestry.
 
 This is the current source of truth for Admin v2 capability coverage. Historical migration audits remain useful evidence, but their old gap labels do not override this matrix.
 
@@ -43,6 +43,7 @@ Status meanings: **Complete** is implemented in both layers and covered by an au
 | Organizations   | Organization CRUD            | `/organizations`, `/organizations/:id`                                                                 | `features/access`                                 | `organization.read/manage`                             | Security E2E                             | Complete |
 | Organizations   | Members/relationships        | `/organizations/:id/members`, `/relationships`                                                         | `OrganizationWorkspace`                           | `organization.members.manage`                          | Security E2E, HTTP smoke                 | Complete |
 | Organizations   | Users and roles              | `/users`, `/users/:id`, `/users/:id/roles`                                                             | `UsersPage`                                       | `users.read/manage`                                    | Security E2E                             | Complete |
+| Shared Admin UI | Selectable data directories  | Existing domain endpoints                                                                              | `shared/ui/AdminDataTable`, Students, Users       | Owning feature supplies permitted batch actions        | Component selection/sort tests           | Complete |
 | Live operations | Student timeline             | `GET /students/:id/activity`                                                                           | `LiveActivityTimeline`                            | `student.activity.read`                                | Source, parity gate                      | Complete |
 
 ## Current release boundaries

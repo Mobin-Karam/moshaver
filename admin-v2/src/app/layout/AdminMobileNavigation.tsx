@@ -1,7 +1,11 @@
 import { Search, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
-import { adminDestination, navigationForCapabilities } from "./admin-navigation";
+import {
+  adminDestination,
+  mainNavigationForCapabilities,
+  navigationForCapabilities,
+} from "./admin-navigation";
 import type { AdminCurrentNavigation } from "./layout-types";
 import { useAuth } from "../../features/auth";
 
@@ -151,7 +155,7 @@ export function AdminMobileDrawer({
                       end={path === ""}
                       onClick={onClose}
                       aria-current={active ? "page" : undefined}
-                      className={`relative flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-brand ${active ? "bg-indigo-50 text-brand" : "text-slate-600 hover:bg-slate-50 hover:text-ink"}`}
+                      className={`relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-brand ${active ? "bg-brand/10 text-brand" : "text-slate-600 hover:bg-slate-50 hover:text-ink"}`}
                     >
                       {active ? (
                         <span
@@ -190,9 +194,7 @@ export function AdminMobileBottomNav({
   selectedStudentId: string;
 }) {
   const auth = useAuth();
-  const visibleMainNavigation = navigationForCapabilities(auth.capabilities, auth.activeRole).map(
-    (group) => ({ ...group.items[0], section: group.section }),
-  );
+  const visibleMainNavigation = mainNavigationForCapabilities(auth.capabilities, auth.activeRole);
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-slate-200 bg-white/95 px-1 pt-1 shadow-[0_-8px_24px_rgba(15,23,42,0.05)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 lg:hidden"
@@ -209,7 +211,7 @@ export function AdminMobileBottomNav({
             end={destinationPath === ""}
             aria-current={active ? "location" : undefined}
             aria-label={title}
-            className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1.5 text-[10px] font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-brand sm:text-[11px] ${active ? "bg-indigo-50 text-brand" : "text-slate-500 hover:bg-slate-50"}`}
+            className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-brand sm:text-[11px] ${active ? "bg-brand/10 text-brand" : "text-slate-500 hover:bg-slate-50"}`}
           >
             <Icon size={19} strokeWidth={active ? 2.5 : 1.9} />
             <span className="max-w-full truncate">{title}</span>

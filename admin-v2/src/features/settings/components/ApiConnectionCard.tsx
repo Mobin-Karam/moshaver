@@ -12,7 +12,7 @@ export function ApiConnectionCard() {
     window.setTimeout(() => setCopied(false), 1500);
   }
   return (
-    <Card className="h-full">
+    <Card className="h-full p-5 sm:p-6">
       <div className="mb-4 flex items-start gap-3">
         <span className="grid size-10 place-items-center rounded-lg bg-violet-50 text-violet-700">
           <Server size={20} />

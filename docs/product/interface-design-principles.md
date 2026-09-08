@@ -16,6 +16,8 @@ The Advisor dashboard is exception/action oriented: missed work, task issues, re
 
 The planner supports day/week/month inspection, draft/publish, copy/duplicate, workload/conflict warnings and JSON import. Chat is a desktop split-pane interface with all student conversations in one list.
 
+The persistent Admin layout owns the page title, breadcrumbs, role, and work context. Feature pages should not repeat hero headers. Operational directories keep search, filters, result counts, primary actions, and authorized batch actions close to the records they affect. Reuse `AdminDataTable` for tabular directories and preserve list context while opening detail or edit workspaces.
+
 ## Interaction rules
 
 - Large, finger-friendly primary actions on Student.
@@ -23,4 +25,6 @@ The planner supports day/week/month inspection, draft/publish, copy/duplicate, w
 - No interruptive PWA update while a study timer or quiz is active.
 - Offline state and sync state are visible without exposing technical jargon.
 - Motion is subtle and respects reduced-motion settings.
+- Loading, empty, error, retry, disabled, read-only, and destructive states are designed explicitly.
+- Selection never implies permission: features supply only batch actions authorized for the active role and scope.
 - No external icon library, font CDN, blur-heavy visual effects or unnecessary animation framework.

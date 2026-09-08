@@ -14,7 +14,7 @@ export function ReleasePanel({
 }) {
   const validVersion = /^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(release.version.trim());
   return (
-    <Card>
+    <Card className="p-5 sm:p-6">
       <div className="mb-4 flex items-start gap-3">
         <span className="grid size-10 place-items-center rounded-lg bg-violet-50 text-violet-700">
           <Rocket size={20} />

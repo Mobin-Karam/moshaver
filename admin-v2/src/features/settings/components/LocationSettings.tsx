@@ -9,7 +9,7 @@ export function LocationSettings({
   onChange?: (id: LocationId) => void;
 }) {
   return (
-    <Card className="h-full">
+    <Card className="h-full p-5 sm:p-6">
       <div className="mb-4 flex items-start gap-3">
         <span className="grid size-10 place-items-center rounded-lg bg-sky-50 text-sky-700">
           <MapPin size={20} />

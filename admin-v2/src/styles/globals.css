@@ -51,6 +51,101 @@
   accent-color: rgb(var(--color-brand));
 }
 
+/* The active work context changes emphasis, never authorization. Feature pages
+   keep one visual system while each role gets a recognizable accent. */
+.admin-role-shell[data-role="GUARDIAN"] {
+  --color-brand: 190 50 90;
+  --color-brand-strong: 159 18 57;
+  --color-brand-soft: 255 228 230;
+}
+.admin-role-shell[data-role="ADVISOR"] {
+  --color-brand: 15 118 110;
+  --color-brand-strong: 17 94 89;
+  --color-brand-soft: 204 251 241;
+}
+.admin-role-shell[data-role="TEACHER"] {
+  --color-brand: 2 132 199;
+  --color-brand-strong: 3 105 161;
+  --color-brand-soft: 224 242 254;
+}
+.admin-role-shell[data-role="MENTOR"] {
+  --color-brand: 180 83 9;
+  --color-brand-strong: 146 64 14;
+  --color-brand-soft: 254 243 199;
+}
+.admin-role-shell[data-role="CONTENT_MANAGER"] {
+  --color-brand: 194 65 12;
+  --color-brand-strong: 154 52 18;
+  --color-brand-soft: 255 237 213;
+}
+.admin-role-shell[data-role="ORGANIZATION_ADMIN"] {
+  --color-brand: 37 99 235;
+  --color-brand-strong: 29 78 216;
+  --color-brand-soft: 219 234 254;
+}
+.admin-role-shell[data-role="PLATFORM_ADMIN"] {
+  --color-brand: 79 70 229;
+  --color-brand-strong: 67 56 202;
+  --color-brand-soft: 224 231 255;
+}
+
+.dark .admin-role-shell[data-role="GUARDIAN"] {
+  --color-brand: 251 113 133;
+  --color-brand-strong: 244 63 94;
+  --color-brand-soft: 76 5 25;
+}
+.dark .admin-role-shell[data-role="ADVISOR"] {
+  --color-brand: 45 212 191;
+  --color-brand-strong: 20 184 166;
+  --color-brand-soft: 19 78 74;
+}
+.dark .admin-role-shell[data-role="TEACHER"] {
+  --color-brand: 56 189 248;
+  --color-brand-strong: 14 165 233;
+  --color-brand-soft: 12 74 110;
+}
+.dark .admin-role-shell[data-role="MENTOR"] {
+  --color-brand: 251 191 36;
+  --color-brand-strong: 245 158 11;
+  --color-brand-soft: 69 26 3;
+}
+.dark .admin-role-shell[data-role="CONTENT_MANAGER"] {
+  --color-brand: 251 146 60;
+  --color-brand-strong: 249 115 22;
+  --color-brand-soft: 67 20 7;
+}
+.dark .admin-role-shell[data-role="ORGANIZATION_ADMIN"] {
+  --color-brand: 96 165 250;
+  --color-brand-strong: 59 130 246;
+  --color-brand-soft: 23 37 84;
+}
+.dark .admin-role-shell[data-role="PLATFORM_ADMIN"] {
+  --color-brand: 129 140 248;
+  --color-brand-strong: 99 102 241;
+  --color-brand-soft: 30 27 75;
+}
+
+.admin-page-shell > * {
+  animation: admin-page-enter 180ms ease-out;
+}
+
+@keyframes admin-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-page-shell > * {
+    animation: none;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -105,13 +200,13 @@ body {
     color: rgb(var(--color-brand));
   }
   .dark .bg-brand {
-    background-color: #0f766e;
+    background-color: rgb(var(--color-brand-strong));
   }
   .dark .border-brand {
-    border-color: #2dd4bf;
+    border-color: rgb(var(--color-brand));
   }
   .dark .ring-brand {
-    --tw-ring-color: #2dd4bf;
+    --tw-ring-color: rgb(var(--color-brand));
   }
 
   .dark .bg-white {

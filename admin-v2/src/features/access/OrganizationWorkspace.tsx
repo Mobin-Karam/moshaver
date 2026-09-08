@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Link2, UserPlus, Users } from "lucide-react";
 import type { RoleCode } from "../../shared/types/domain";
 import { Button, Card, EmptyState, Field, Select } from "../../shared/ui/ui";
+import { useModal } from "../../shared/ui/modal";
+import { roleLabels } from "../../shared/lib/role-ui";
 import {
   acceptRelationship,
   addOrganizationMember,
@@ -15,6 +17,8 @@ import {
 } from "./api/access.api";
 
 const roles: Array<{ value: RoleCode; label: string }> = [
+  { value: "STUDENT", label: "دانش‌آموز" },
+  { value: "GUARDIAN", label: "سرپرست" },
   { value: "ADVISOR", label: "مشاور" },
   { value: "TEACHER", label: "دبیر" },
   { value: "MENTOR", label: "منتور" },
@@ -30,6 +34,7 @@ export function OrganizationWorkspace({
   organizationName: string;
 }) {
   const qc = useQueryClient();
+  const modal = useModal();
   const [userId, setUserId] = useState("");
   const [role, setRole] = useState<RoleCode>("ADVISOR");
   const members = useQuery({
@@ -55,8 +60,15 @@ export function OrganizationWorkspace({
     },
   });
   const update = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: "ACTIVE" | "INACTIVE" }) =>
-      updateOrganizationMember(organizationId, id, { status }),
+    mutationFn: ({
+      id,
+      status,
+      roleCodes,
+    }: {
+      id: string;
+      status?: "ACTIVE" | "INACTIVE";
+      roleCodes?: RoleCode[];
+    }) => updateOrganizationMember(organizationId, id, { status, roleCodes }),
     onSuccess: refresh,
   });
   const remove = useMutation({
@@ -77,7 +89,7 @@ export function OrganizationWorkspace({
 
   return (
     <div className="grid gap-4">
-      <Card>
+      <Card className="p-5">
         <div className="mb-4 flex items-start gap-3">
           <span className="grid size-10 place-items-center rounded-xl bg-brand/10 text-brand">
             <Building2 size={19} />
@@ -124,7 +136,7 @@ export function OrganizationWorkspace({
           </p>
         ) : null}
       </Card>
-      <Card>
+      <Card className="p-5">
         <div className="mb-3 flex items-center gap-2">
           <Users size={18} />
           <h3 className="font-bold">اعضای سازمان</h3>
@@ -153,10 +165,28 @@ export function OrganizationWorkspace({
                       member.user.username}
                   </strong>
                   <p className="text-xs text-slate-500">
-                    {member.roles.join("، ") || "بدون نقش"} · {member.status}
+                    {member.roles.map((item) => roleLabels[item] || item).join("، ") || "بدون نقش"}{" "}
+                    · {member.status === "ACTIVE" ? "فعال" : "غیرفعال"}
                   </p>
                 </div>
                 <div className="flex gap-2">
+                  <Select
+                    aria-label={`نقش ${member.user.username}`}
+                    value={member.roles[0] || "ADVISOR"}
+                    disabled={update.isPending}
+                    onChange={(event) =>
+                      update.mutate({
+                        id: member.user.id,
+                        roleCodes: [event.target.value as RoleCode],
+                      })
+                    }
+                  >
+                    {roles.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </Select>
                   <Button
                     variant="soft"
                     loading={update.isPending}
@@ -172,7 +202,16 @@ export function OrganizationWorkspace({
                   <Button
                     variant="danger"
                     loading={remove.isPending}
-                    onClick={() => remove.mutate(member.user.id)}
+                    onClick={() =>
+                      void modal
+                        .confirm({
+                          title: "حذف عضو از سازمان؟",
+                          description: `عضویت ${member.user.firstName || member.user.username} حذف می‌شود؛ حساب کاربری او حذف نخواهد شد.`,
+                          tone: "danger",
+                          confirmLabel: "حذف عضویت",
+                        })
+                        .then((confirmed) => confirmed && remove.mutate(member.user.id))
+                    }
                   >
                     حذف
                   </Button>
@@ -182,7 +221,7 @@ export function OrganizationWorkspace({
           </div>
         )}
       </Card>
-      <Card>
+      <Card className="p-5">
         <div className="mb-3 flex items-center gap-2">
           <Link2 size={18} />
           <h3 className="font-bold">درخواست‌های ارتباط</h3>
@@ -212,7 +251,12 @@ export function OrganizationWorkspace({
                     ← {item.student.name}
                   </strong>
                   <p className="text-xs text-slate-500">
-                    {item.type} · {item.status}
+                    {item.type === "GUARDIAN_STUDENT" ? "سرپرست و دانش‌آموز" : item.type} ·{" "}
+                    {item.status === "PENDING"
+                      ? "در انتظار بررسی"
+                      : item.status === "ACCEPTED"
+                        ? "تأییدشده"
+                        : "ردشده"}
                   </p>
                 </div>
                 {item.status === "PENDING" ? (
@@ -226,7 +270,20 @@ export function OrganizationWorkspace({
                     <Button
                       variant="danger"
                       loading={decide.isPending}
-                      onClick={() => decide.mutate({ id: item.id, action: "reject" })}
+                      onClick={() =>
+                        void modal
+                          .confirm({
+                            title: "رد درخواست ارتباط؟",
+                            description:
+                              "این درخواست رد می‌شود و برای ایجاد ارتباط، درخواست تازه‌ای لازم خواهد بود.",
+                            tone: "danger",
+                            confirmLabel: "رد درخواست",
+                          })
+                          .then(
+                            (confirmed) =>
+                              confirmed && decide.mutate({ id: item.id, action: "reject" }),
+                          )
+                      }
                     >
                       رد
                     </Button>

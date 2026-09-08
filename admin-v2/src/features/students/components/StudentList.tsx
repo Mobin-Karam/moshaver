@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import type { Student } from "../../../shared/types/domain";
 import { Button, Card, EmptyState, Input, LoadingState } from "../../../shared/ui/ui";
+import { AdminDataTable } from "../../../shared/ui/admin-data-table";
+import { useState } from "react";
 import {
   formatStudentLastSeen,
   getStudentProfileCompleteness,
@@ -69,33 +71,6 @@ function Completeness({ student, compact = false }: { student: Student; compact?
   );
 }
 
-function SortButton({
-  label,
-  value,
-  sort,
-  direction,
-  onSort,
-}: {
-  label: string;
-  value: StudentSort;
-  sort: StudentSort;
-  direction: StudentSortDirection;
-  onSort: (value: StudentSort) => void;
-}) {
-  const active = sort === value;
-  return (
-    <button
-      type="button"
-      className="inline-flex items-center gap-1 rounded-md px-1 py-1 font-semibold hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-      onClick={() => onSort(value)}
-      aria-label={`مرتب‌سازی بر اساس ${label}`}
-    >
-      <span>{label}</span>
-      {active ? direction === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} /> : null}
-    </button>
-  );
-}
-
 export function StudentList({
   students,
   total,
@@ -143,6 +118,7 @@ export function StudentList({
   onRetry?: () => void;
   creating?: boolean;
 }) {
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const hasFilters = !!search.trim() || status !== "all" || profileFilter !== "all";
   const startItem = filteredTotal ? (page - 1) * pageSize + 1 : 0;
   const endItem = Math.min(page * pageSize, filteredTotal);
@@ -272,117 +248,82 @@ export function StudentList({
         </div>
       ) : students.length ? (
         <>
-          <div className="hidden overflow-x-auto md:block">
-            <table className="w-full min-w-[820px] text-sm">
-              <thead>
-                <tr className="border-y border-slate-200 bg-slate-50/70 text-right text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
-                  <th className="px-3 py-2 font-semibold">
-                    <SortButton
-                      label="دانش‌آموز"
-                      value="name"
-                      sort={sort}
-                      direction={sortDirection}
-                      onSort={onSort}
-                    />
-                  </th>
-                  <th className="px-3 font-semibold">
-                    <SortButton
-                      label="پایه / رشته"
-                      value="grade"
-                      sort={sort}
-                      direction={sortDirection}
-                      onSort={onSort}
-                    />
-                  </th>
-                  <th className="px-3 font-semibold">هدف</th>
-                  <th className="px-3 font-semibold">
-                    <SortButton
-                      label="آخرین فعالیت"
-                      value="lastSeen"
-                      sort={sort}
-                      direction={sortDirection}
-                      onSort={onSort}
-                    />
-                  </th>
-                  <th className="px-3 font-semibold">
-                    <SortButton
-                      label="پرونده"
-                      value="completeness"
-                      sort={sort}
-                      direction={sortDirection}
-                      onSort={onSort}
-                    />
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {students.map((student) => {
-                  const selected = selectedId === student.id && !creating;
-                  const education =
-                    [student.grade, student.major].filter(Boolean).join(" / ") || "ثبت نشده";
-                  const target =
-                    [
-                      student.targetField || student.target_major,
-                      student.targetUniversity || student.target_city,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ") || "ثبت نشده";
-                  return (
-                    <tr
-                      key={student.id}
-                      className={`cursor-pointer transition-colors ${selected ? "bg-brand/5 dark:bg-brand/10" : "hover:bg-slate-50 dark:hover:bg-slate-900/70"}`}
-                      onClick={() => onSelect(student)}
-                    >
-                      <td className="px-3 py-3.5">
-                        <button
-                          type="button"
-                          aria-pressed={selected}
-                          className="flex max-w-[260px] items-center gap-3 rounded-lg text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            onSelect(student);
-                          }}
-                        >
-                          <span
-                            className={`grid size-10 shrink-0 place-items-center rounded-full ${selected ? "bg-brand text-white" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300"}`}
-                          >
-                            <UserRound size={18} />
-                          </span>
-                          <span className="min-w-0">
-                            <span className="flex min-w-0 flex-wrap items-center gap-2">
-                              <strong className="truncate text-sm text-ink">{student.name}</strong>
-                              <StudentStatus student={student} />
-                            </span>
-                            <span
-                              className="mt-1 block truncate text-xs text-slate-500 dark:text-slate-400"
-                              dir="ltr"
-                            >
-                              {getStudentUsername(student) || "بدون نام کاربری"}
-                            </span>
-                          </span>
-                        </button>
-                      </td>
-                      <td className="max-w-[190px] px-3">
-                        <p className="truncate font-semibold text-slate-700 dark:text-slate-200">
-                          {education}
-                        </p>
-                      </td>
-                      <td className="max-w-[220px] px-3">
-                        <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                          {target}
-                        </p>
-                      </td>
-                      <td className="px-3 text-xs text-slate-500 dark:text-slate-400">
-                        {formatStudentLastSeen(student.last_seen_at)}
-                      </td>
-                      <td className="px-3">
-                        <Completeness student={student} />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="hidden md:block">
+            <AdminDataTable
+              rows={students}
+              rowId={(student) => student.id}
+              label="فهرست دانش‌آموزان"
+              activeId={creating ? undefined : selectedId}
+              selectedIds={selectedRows}
+              onSelectionChange={setSelectedRows}
+              sortId={sort}
+              sortDirection={sortDirection}
+              onSort={(value) => onSort(value as StudentSort)}
+              onRowClick={onSelect}
+              columns={[
+                {
+                  id: "name",
+                  header: "دانش‌آموز",
+                  sortLabel: "دانش‌آموز",
+                  cell: (student) => (
+                    <div className="flex max-w-[260px] items-center gap-3">
+                      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                        <UserRound size={18} />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="flex flex-wrap items-center gap-2">
+                          <strong className="truncate text-sm text-ink">{student.name}</strong>
+                          <StudentStatus student={student} />
+                        </span>
+                        <span className="mt-1 block truncate text-xs text-slate-500" dir="ltr">
+                          {getStudentUsername(student) || "بدون نام کاربری"}
+                        </span>
+                      </span>
+                    </div>
+                  ),
+                },
+                {
+                  id: "grade",
+                  header: "پایه / رشته",
+                  sortLabel: "پایه و رشته",
+                  cell: (student) => (
+                    <p className="max-w-[190px] truncate font-semibold text-slate-700 dark:text-slate-200">
+                      {[student.grade, student.major].filter(Boolean).join(" / ") || "ثبت نشده"}
+                    </p>
+                  ),
+                },
+                {
+                  id: "target",
+                  header: "هدف",
+                  cell: (student) => (
+                    <p className="max-w-[220px] truncate text-xs text-slate-500">
+                      {[
+                        student.targetField || student.target_major,
+                        student.targetUniversity || student.target_city,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ") || "ثبت نشده"}
+                    </p>
+                  ),
+                },
+                {
+                  id: "lastSeen",
+                  header: "آخرین فعالیت",
+                  sortLabel: "آخرین فعالیت",
+                  cell: (student) => (
+                    <span className="text-xs text-slate-500">
+                      {formatStudentLastSeen(student.last_seen_at)}
+                    </span>
+                  ),
+                },
+                {
+                  id: "completeness",
+                  header: "پرونده",
+                  sortLabel: "تکمیل پرونده",
+                  cell: (student) => <Completeness student={student} />,
+                },
+              ]}
+            />
           </div>
 
           <div className="grid gap-2 p-3 md:hidden">

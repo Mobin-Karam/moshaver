@@ -1,71 +1,67 @@
-# API v2
+# Backend v2 HTTP API
 
-All routes are under `/api/v2` except health checks.
+Inspected: 2026-09-08. Controllers under `backend-v2/src/modules/` and the generated OpenAPI document are authoritative.
 
-## Health
+## Discovery
+
+The NestJS service applies `/api/v2` globally, except health routes:
 
 - `GET /health`
 - `GET /ready`
+- Swagger UI: `GET /api/v2/docs`
+- OpenAPI JSON: `GET /api/v2/openapi.json`
 
-## Auth
+Use the OpenAPI document for an exact route/schema inventory. Do not manually copy a historical endpoint count into release gates.
 
-- `POST /api/v2/auth/login`
-- `GET /api/v2/auth/me`
-- `POST /api/v2/auth/logout`
-
-Login returns:
-
-```json
-{
-  "ok": true,
-  "data": {
-    "user": { "id": "...", "username": "admin", "role": "ADMIN" },
-    "csrfToken": "...",
-    "expiresAt": "..."
-  }
-}
+```bash
+curl -fsS http://localhost:4000/api/v2/openapi.json > /tmp/moshaver-v2-openapi.json
 ```
 
-Mutating requests should send `X-CSRF-Token`.
+## Protocol contract
 
-## Student
+- Successful JSON responses use `{ "ok": true, "data": ... }`.
+- Authentication uses an HTTP-only session cookie.
+- Mutations require the current `X-CSRF-Token`.
+- Protected staff operations use exact capabilities; student and guardian operations also enforce ownership/scope.
+- `401` means authentication is missing or expired. `403` means the authenticated identity lacks role, capability, or resource scope.
+- SSE is served from `GET /api/v2/events`.
 
-- `GET /api/v2/students/me`
-- `GET /api/v2/student/dashboard`
-- `GET /api/v2/student/today`
-- `GET /api/v2/student/plans`
-- `POST /api/v2/student/tasks/:id/complete`
-- `GET /api/v2/student/progress`
-- `GET /api/v2/student/reviews`
-- `GET /api/v2/student/exams`
-- `POST /api/v2/student/exams/:id/start`
-- `POST /api/v2/student/exams/:id/submit`
+## Current route families
 
-## Admin
+| Domain | Canonical families |
+| --- | --- |
+| Identity | `/auth/*`, `/me/context`, `/users/*`, `/organizations/*`, `/relationships/*` |
+| Students | `/students/*`, `/student/*`, `/guardian/students/*` |
+| Planning | `/plans/*`, `/tasks/*`, `/student/tasks/*`, `/student/study-sessions/*` |
+| Learning | `/students/:id/learning*`, progress, topics, analytics, recommendations, mistakes |
+| Assessments | `/exams/*`, `/questions/*`, `/syllabus/*`, `/exam-attempt-requests/*`, `/quizzes/*` |
+| Communication | `/chat/*`, `/notifications/*`, `/push/*`, `/events` |
+| Operations | `/dashboard`, `/live`, `/attention`, `/reports`, `/recovery-requests` |
+| Transfer | `/import/template`, `/import/preview`, `/import/commit`, `/import/history`, `/export/json` |
+| System | `/app-versions`, `/app-releases`, `/audit`, `/system/database*` |
+| Sync | `/sync`, `/sync/upload` |
 
-- `GET /api/v2/admin/dashboard`
-- `GET /api/v2/admin/students`
-- `GET /api/v2/admin/students/:id`
-- `GET /api/v2/admin/students/:id/analytics`
-- `POST /api/v2/admin/plans/import/preview`
-- `POST /api/v2/admin/plans/import`
-- `POST /api/v2/admin/exams`
-- `POST /api/v2/admin/questions/import`
-- `POST /api/v2/admin/recommendations`
+The [Admin capability matrix](../ADMIN_V2_CAPABILITY_MATRIX.md) maps product workflows to endpoints and permissions. The [historical v1/v2 audit](../API_V1_V2_AUDIT.md) is migration evidence, not the live route catalog.
 
-## Sync
+## Authentication example
 
-- `GET /api/v2/sync?lastSync=...`
-- `POST /api/v2/sync/upload`
+`POST /api/v2/auth/login` accepts a username and password. The response includes user summary, CSRF token, and expiry. Clients keep the cookie in the browser cookie jar and store the CSRF token only for the session. Use `GET /api/v2/auth/me` to restore identity and `GET /api/v2/me/context` for roles, capabilities, memberships, and organizations.
 
-## Realtime
+Personal security endpoints are:
 
-- `GET /api/v2/events`
+- `POST /api/v2/auth/change-password`
+- `GET /api/v2/auth/sessions`
+- `DELETE /api/v2/auth/sessions/:id`
+- `POST /api/v2/auth/logout`
 
-SSE event names:
+## Adding or changing an endpoint
 
-- `message`
-- `notification`
-- `plan.updated`
-- `exam.created`
-- `system.update`
+1. Define the DTO and validation.
+2. Enforce capability plus organization/student ownership in the backend.
+3. Preserve the response/error envelope.
+4. Add backend tests, including a forbidden role and cross-scope case.
+5. Update frontend adapters and shared types.
+6. Regenerate/inspect OpenAPI and update the capability matrix.
+7. Run a disposable HTTP smoke for security-sensitive workflows.
+
+See the [developer handbook](../operations/developer-handbook.md) and [feature playbook](../operations/feature-and-bug-playbook.md).

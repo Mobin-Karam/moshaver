@@ -3,6 +3,8 @@
 Date: 2026-09-06
 Branch: `feat/v2-parity-completion`
 
+Snapshot notice: this document records the 2026-09-06 audit. For current behavior use the [capability matrix](../ADMIN_V2_CAPABILITY_MATRIX.md), [Admin v2 component guide](../components/admin-v2-application.md), and current source.
+
 ## Role coverage
 
 | Role | Development account | Primary experience | Verified dashboard contract |
@@ -16,7 +18,7 @@ Branch: `feat/v2-parity-completion`
 | Platform administrator | `e2e.platform` | Organizations, users, system, releases, database and audit | platform totals, health, release and security summary |
 | Multi-role staff | `e2e.multi` | Switchable advisor and teacher work contexts | server-selected contract for active role |
 
-All development accounts use `Moshaver-e2e-2026!` and are created only through the guarded `npm run seed:demo` command. The login shortcuts compile out of production builds.
+The audited role accounts used `Moshaver-e2e-2026!`. Current local role-account seed behavior is documented in the [Backend v2 service guide](../components/backend-v2-service.md); production seeding remains prohibited.
 
 ## UX corrections
 

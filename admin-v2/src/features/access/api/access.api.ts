@@ -40,9 +40,23 @@ export const createUser = (body: {
 }) => api.post<PortalUser>("/users", body);
 export const setUserActive = (id: string, active: boolean) =>
   api.post(`/users/${id}/${active ? "activate" : "deactivate"}`, {});
+export const updateUser = (
+  id: string,
+  body: { username?: string; firstName?: string; lastName?: string },
+) => api.patch<PortalUser>(`/users/${id}`, body);
+export const setUserRoles = (
+  id: string,
+  body: { roleCodes: RoleCode[]; organizationId?: string },
+) => api.put(`/users/${id}/roles`, body);
+export const archiveUser = (id: string) => api.delete(`/users/${id}`);
 export const listOrganizations = () => api.get<PortalOrganization[]>("/organizations");
 export const createOrganization = (body: { name: string; type: string }) =>
   api.post<PortalOrganization>("/organizations", body);
+export const updateOrganization = (
+  id: string,
+  body: { name?: string; type?: string; status?: string },
+) => api.patch<PortalOrganization>(`/organizations/${id}`, body);
+export const archiveOrganization = (id: string) => api.delete(`/organizations/${id}`);
 export const listOrganizationMembers = (id: string) =>
   api.get<OrganizationMember[]>(`/organizations/${id}/members`);
 export const addOrganizationMember = (

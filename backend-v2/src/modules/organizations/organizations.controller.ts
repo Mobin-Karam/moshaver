@@ -13,6 +13,7 @@ export class OrganizationsController {
   @Get(":id") @RequireCapabilities("organization.read") get(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) { return this.service.get(user, id).then(ok); }
   @Post() @RequireCapabilities("organization.manage") create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateOrganizationDto) { return this.service.create(user, dto).then(ok); }
   @Patch(":id") @RequireCapabilities("organization.manage") update(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: UpdateOrganizationDto) { return this.service.update(user, id, dto).then(ok); }
+  @Delete(":id") @RequireCapabilities("organization.manage") archive(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) { return this.service.archive(user, id).then(ok); }
   @Get(":id/members") @RequireCapabilities("organization.members.manage") members(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string) { return this.service.listMembers(user, id).then(ok); }
   @Post(":id/members") @RequireCapabilities("organization.members.manage") add(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Body() dto: AddMemberDto) { return this.service.addMember(user, id, dto).then(ok); }
   @Patch(":id/members/:userId") @RequireCapabilities("organization.members.manage") updateMember(@CurrentUser() user: AuthenticatedUser, @Param("id") id: string, @Param("userId") userId: string, @Body() dto: UpdateMemberDto) { return this.service.updateMember(user, id, userId, dto).then(ok); }

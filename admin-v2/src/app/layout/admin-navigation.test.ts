@@ -5,6 +5,7 @@ import {
   adminNavigation,
   flatAdminNavigation,
   mainAdminNavigation,
+  mainNavigationForCapabilities,
   navigationForCapabilities,
   normalizeAdminPath,
   resolveAdminNavigation,
@@ -43,11 +44,25 @@ describe("admin navigation metadata", () => {
       "system",
     ]);
     expect(mainAdminNavigation.map((item) => item.title)).toEqual([
-      "خانه",
-      "آموزش",
-      "ارتباط",
-      "مدیریت",
-      "سامانه",
+      "نمای کلی",
+      "آموزش و برنامه‌ریزی",
+      "ارتباط و پیگیری",
+      "افراد و دسترسی",
+      "سامانه و امنیت",
+    ]);
+  });
+
+  it("uses meaningful role-aware names in the primary sidebar", () => {
+    const platform = mainNavigationForCapabilities(
+      ["plans.read", "chat.read", "users.read", "system.manage"],
+      "PLATFORM_ADMIN",
+    );
+    expect(platform.map((item) => item.title)).toEqual([
+      "نمای پلتفرم",
+      "عملیات آموزشی",
+      "ارتباطات",
+      "کاربران و سازمان‌ها",
+      "سامانه و امنیت",
     ]);
   });
 
@@ -101,7 +116,7 @@ describe("admin navigation metadata", () => {
     expect(adminBreadcrumbs("settings").map((item) => item.title)).toEqual([
       "خانه",
       "سامانه",
-      "تنظیمات",
+      "تنظیمات حساب",
     ]);
   });
 
