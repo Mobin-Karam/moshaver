@@ -1,40 +1,65 @@
 # Admin v2 API compatibility
 
-The target contract is the existing `admin-v2` client contract with the same
-path after either `/api/v1` or `/api/v2`. Response bodies use the shared
-`{ ok, data }` envelope.
+Last source audit: 2026-09-08
 
-## Native v2 coverage
+Scope: the current `admin-v2` client and the canonical `backend-v2`
+`/api/v2` contract. This document describes implemented source behavior, not
+deployment or branch state. The detailed feature-by-feature status is maintained
+in [`docs/ADMIN_V2_CAPABILITY_MATRIX.md`](../docs/ADMIN_V2_CAPABILITY_MATRIX.md).
 
-- Authentication and session management
-- Student list, create, edit, archive, overview
-- Planner range listing, create, update, delete, duplicate and publish
-- Planner task create, update, reschedule and delete
-- Import preview and commit
-- Exam list/create/update/delete
-- Exam question list/create/update/delete/import
-- Student exam attempt history and review
-- Basic direct chat conversations/messages/read state
-- Notifications list/read state
-- Reports, realtime events, sync and study sessions
+## Contract
 
-## Remaining parity work
+- Backend v2 is mounted at `/api/v2`; `/health` and `/ready` remain unprefixed.
+- Successful JSON responses use the shared `{ ok, data }` envelope.
+- Protected requests use the secure session cookie. Authenticated mutations also
+  require the session CSRF header.
+- Authorization is enforced by global session, role, capability, and CSRF guards;
+  organization and student scope is enforced in the domain services.
+- Request DTOs are validated with transformation, whitelisting, and rejection of
+  unknown fields.
+- The generated OpenAPI contract is available at `/api/v2/openapi.json`, with its
+  interactive documentation at `/api/v2/docs`.
 
-- Subject catalog and student-subject state
-- Quiz CRUD and quiz-question management
-- Exam syllabus and retry-request workflows
-- Group chat members, roles, permissions, reactions, edits, mute and leave
-- Admin notification inbox/preferences/push subscription routes
-- Realtime student-monitor snapshot
-- Audit history, application releases, import history and database operations
-- Full dashboard/advisor-inbox metrics instead of placeholder summaries
+## Admin v2 compatibility coverage
 
-Student lifecycle actions, password reset/session revocation, weekly/topic detail,
-and durable learning-item CRUD/review history are now implemented. They remain
-behind the production cutover gate until disposable API and browser smokes pass.
-The ordered gap matrix is maintained in
-`docs/migrations/admin-v2-api-gap-plan.md`.
+- Authentication, session listing/revocation, password changes, work context,
+  roles, and capabilities
+- Role-aware dashboard summaries and advisor inbox workflows
+- Student directory, profile, lifecycle, security actions, overview, progress,
+  analytics, recommendations, mistakes, and durable learning records
+- Plan and task CRUD, rescheduling, duplication, range publication, and JSON
+  import/export
+- Subject catalog, per-student subject state, and scoped teacher assignments
+- Exam lifecycle, assignments, questions, attempts/results, syllabus, and retry
+  request moderation
+- Quiz lifecycle, quiz-question management, student runs, submission, and history
+- Direct and group chat, including members, roles, permissions, ownership transfer,
+  message edits/deletes, reactions, mute, read state, and leave flows
+- Notification inbox, read state, preferences, Push subscriptions/status/testing,
+  and realtime events
+- Live student monitoring, attention/activity timelines, reports, recovery
+  requests, task issues, study sessions, and synchronization
+- Organizations, memberships, relationships, users, and role administration
+- Import preview/commit/history, audit history, application versions/releases,
+  database metadata, backup, and guarded restore
 
-These remaining routes must not be treated as complete merely because the v1
-service remains available beside v2. Keep `VITE_API_VERSION=v1` as the
-production default until the parity list is empty and contract tests pass.
+The Admin v2 parity audit currently represents all 12 legacy capability areas and
+46 required client integrations. This is a source-level contract gate; it does not
+replace authenticated API, browser, or deployment verification.
+
+## Release boundaries
+
+There is no known Admin v2 endpoint family still missing from the current backend
+source. The remaining work is acceptance and rollout evidence:
+
+- Receive a real VAPID-backed Push notification in a production-like browser.
+- Exercise database restore only against a disposable deployment, because restore
+  intentionally replaces the SQLite database and restarts the backend.
+- Complete the historical Admin v1.6 retirement browser smoke suite on the target
+  environment.
+- Keep rollback available until target-environment monitoring and acceptance pass.
+
+Do not infer production readiness from route presence alone. Before retiring the
+legacy admin deployment, run the backend tests/build and disposable security/API
+smokes, then run the Admin v2 tests, build, parity audit, and browser acceptance
+listed in [`admin-v2/MIGRATION-AUDIT.md`](../admin-v2/MIGRATION-AUDIT.md).

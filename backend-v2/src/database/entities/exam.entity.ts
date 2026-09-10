@@ -14,6 +14,9 @@ export class Exam {
   title!: string;
 
   @Column({ default: "" })
+  description!: string;
+
+  @Column({ default: "" })
   subject!: string;
 
   @Column({ default: 0 })
@@ -26,7 +29,34 @@ export class Exam {
   published!: boolean;
 
   @Column({ default: "standard" })
-  mode!: "standard" | "konkur";
+  mode!: "standard" | "konkur" | "mock" | "practice" | "quiz" | "diagnostic";
+
+  @Column({ default: "scheduled" })
+  lifecycleStatus!: "draft" | "scheduled" | "cancelled";
+
+  @Column({ default: "free" })
+  navigationMode!: "free" | "section_only" | "sequential";
+
+  @Column({ default: "whole_exam" })
+  timerMode!: "whole_exam" | "per_section";
+
+  @Column({ default: true })
+  allowResume!: boolean;
+
+  @Column({ default: false })
+  allowLateStart!: boolean;
+
+  @Column({ default: false })
+  allowPracticeAfterDeadline!: boolean;
+
+  @Column({ default: true })
+  autoSubmitOnTimeout!: boolean;
+
+  @Column({ default: "allow_resume" })
+  sessionPolicy!: "single_session" | "allow_resume";
+
+  @Column({ default: false })
+  integrityMonitoring!: boolean;
 
   @Column({ type: "simple-json", default: "[]" })
   instructions!: string[];
@@ -43,11 +73,23 @@ export class Exam {
   @Column({ type: "datetime", nullable: true })
   resultReleaseAt?: Date | null;
 
+  @Column({ type: "datetime", nullable: true })
+  answerKeyReleaseAt?: Date | null;
+
+  @Column({ type: "datetime", nullable: true })
+  explanationReleaseAt?: Date | null;
+
+  @Column({ type: "datetime", nullable: true })
+  rankingReleaseAt?: Date | null;
+
+  @Column({ type: "datetime", nullable: true })
+  latestStartAt?: Date | null;
+
   @Column({ default: true })
   resultsReleased!: boolean;
 
   @Column({ type: "simple-json", default: "[]" })
-  sections!: Array<{ id: string; name: string; questionIds: string[]; allocatedMinutes?: number }>;
+  sections!: Array<{ id: string; name: string; order?: number; questionIds: string[]; allocatedMinutes?: number; navigationMode?: "free" | "section_only" | "sequential" }>;
 
   @Column({ type: "datetime", nullable: true })
   startTime?: Date | null;

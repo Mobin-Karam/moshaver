@@ -12,6 +12,7 @@ import { ReportCard } from "../components/ReportCard";
 import { ReportCompactList } from "../components/ReportCompactList";
 import { ReportSummary } from "../components/ReportSummary";
 import { reportDate, reportText, summarizeReports } from "../report-utils";
+import { ManagementPageHeader } from "../../../shared/ui/management-workspace";
 
 type ViewMode = "cards" | "compact";
 type SortMode = "newest" | "oldest";
@@ -57,6 +58,7 @@ export function ReportsPage() {
 
   return (
     <div className="grid gap-4 sm:gap-5">
+      <ManagementPageHeader eyebrow="افراد و دسترسی" title="گزارش‌های دانش‌آموزان" description="دانش‌آموز، بازه زمانی و گزارش را در یک جریان انتخاب و بررسی کنید." />
       <Card>
         <div className="grid gap-4">
           <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_minmax(160px,0.7fr)_minmax(160px,0.7fr)]">

@@ -14,7 +14,12 @@ export class LoggingInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap({
         next: () => this.logger.log(JSON.stringify({ requestId, method: request.method, path: request.url, durationMs: Date.now() - started })),
-        error: (error) => this.logger.error(JSON.stringify({ requestId, method: request.method, path: request.url, durationMs: Date.now() - started, error: error?.message })),
+        error: (error) => {
+          const status = typeof error?.getStatus === "function" ? error.getStatus() : Number(error?.status || error?.statusCode || 500);
+          const entry = JSON.stringify({ requestId, method: request.method, path: request.url, status, durationMs: Date.now() - started, error: error?.message });
+          if (status >= 500) this.logger.error(entry);
+          else this.logger.warn(entry);
+        },
       }),
     );
   }

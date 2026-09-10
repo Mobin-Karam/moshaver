@@ -8,6 +8,7 @@ import { useModal } from "../../shared/ui/modal";
 import { notify } from "../../shared/ui/notifications";
 import { Button, Card, EmptyState, Field, Input, Select } from "../../shared/ui/ui";
 import { AdminDataTable } from "../../shared/ui/admin-data-table";
+import { ManagementPageHeader, ManagementStat, ManagementSummaryBar } from "../../shared/ui/management-workspace";
 import {
   archiveOrganization,
   archiveUser,
@@ -58,6 +59,7 @@ export function UsersPage() {
   const [search, setSearch] = useState(""),
     [status, setStatus] = useState("ALL"),
     [creating, setCreating] = useState(false),
+    [selectedUserId, setSelectedUserId] = useState(""),
     [selectedIds, setSelectedIds] = useState<string[]>([]);
   const users = useQuery({
     queryKey: ["users", organizationId || "platform"],
@@ -154,6 +156,7 @@ export function UsersPage() {
       }),
     [search, status, users.data],
   );
+  const selectedUser = (users.data || []).find((user) => user.id === selectedUserId) || null;
   const startEdit = (user: PortalUser) => {
     const assignment =
       user.assignments.find((item) => item.organizationId === organizationId) ??
@@ -170,32 +173,20 @@ export function UsersPage() {
 
   return (
     <div className="grid gap-5">
+      <ManagementPageHeader eyebrow="افراد و دسترسی" title="کاربران و کارکنان" description="جستجو، نقش، سازمان و وضعیت حساب‌ها را از یک فضای کاری یکپارچه مدیریت کنید." />
       <section className="grid gap-3" aria-label="ابزارهای فهرست کاربران">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2" aria-label="خلاصه کاربران">
-            <SummaryPill label="همه حساب‌ها" value={users.data?.length ?? 0} />
-            <SummaryPill
+        <ManagementSummaryBar action={canManage ? <Button onClick={() => { setEditing(null); setCreating((value) => !value); }}><Plus size={16}/>{creating ? "بستن فرم" : "کاربر جدید"}</Button> : null}>
+            <ManagementStat label="همه حساب‌ها" value={users.data?.length ?? 0} />
+            <ManagementStat
               label="فعال"
               value={users.data?.filter((x) => x.status === "ACTIVE").length ?? 0}
-              tone="green"
+              tone="success"
             />
-            <SummaryPill
+            <ManagementStat
               label="نقش"
               value={new Set(users.data?.flatMap((x) => x.assignments.map((a) => a.role))).size}
             />
-          </div>
-          {canManage ? (
-            <Button
-              onClick={() => {
-                setEditing(null);
-                setCreating((value) => !value);
-              }}
-            >
-              <Plus size={16} />
-              {creating ? "بستن فرم" : "کاربر جدید"}
-            </Button>
-          ) : null}
-        </div>
+        </ManagementSummaryBar>
         <Card className="p-4">
           <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_220px_180px]">
             <Field label="جستجو">
@@ -391,7 +382,7 @@ export function UsersPage() {
           </form>
         </Card>
       ) : null}
-      <Card className="overflow-hidden" aria-label="فهرست کاربران">
+      <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(340px,.65fr)]"><Card className="overflow-hidden" aria-label="فهرست کاربران">
         <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
           <h2 className="font-black">فهرست کاربران</h2>
           <p className="text-xs text-slate-500">
@@ -411,6 +402,8 @@ export function UsersPage() {
             rows={visible}
             rowId={(user) => user.id}
             label="فهرست کاربران"
+            activeId={selectedUserId}
+            onRowClick={(user) => setSelectedUserId(user.id)}
             selectedIds={selectedIds}
             onSelectionChange={canManage ? setSelectedIds : undefined}
             batchActions={(selectedRows) => (
@@ -544,7 +537,7 @@ export function UsersPage() {
             ]}
           />
         )}
-      </Card>
+      </Card><div className="xl:sticky xl:top-20">{selectedUser ? <Card className="overflow-hidden p-0"><div className="bg-gradient-to-br from-slate-950 to-slate-700 p-5 text-white"><span className="grid size-12 place-items-center rounded-2xl bg-white/10 text-xl font-black">{nameOf(selectedUser).slice(0,1)}</span><h2 className="mt-3 text-lg font-black">{nameOf(selectedUser)}</h2><p className="mt-1 text-xs text-white/60" dir="ltr">{selectedUser.username}</p></div><div className="grid gap-3 p-4"><div className="flex items-center justify-between"><span className="text-xs text-slate-500">وضعیت حساب</span><StatusPill status={selectedUser.status}/></div><div><p className="text-xs text-slate-500">نقش‌ها و محدوده‌ها</p><div className="mt-2 flex flex-wrap gap-2">{selectedUser.assignments.map((item,index) => <span key={`${item.role}-${index}`} className="rounded-full bg-brand/10 px-2 py-1 text-xs font-bold text-brand">{roleLabels[item.role] || item.role}</span>)}</div></div>{canManage ? <Button variant="soft" onClick={() => startEdit(selectedUser)}><Pencil size={15}/>ویرایش حساب و دسترسی</Button> : null}</div></Card> : <Card className="p-6"><EmptyState title="یک کاربر را برای مشاهده جزئیات انتخاب کنید."/></Card>}</div></section>
     </div>
   );
 }
@@ -600,32 +593,20 @@ export function OrganizationsPage() {
     } as OrganizationSummary);
   return (
     <div className="grid gap-5">
+      <ManagementPageHeader eyebrow="افراد و دسترسی" title="سازمان‌ها" description="سازمان را از فهرست انتخاب کنید و اعضا، نقش‌ها و زمینه کاری آن را در پنل کناری مدیریت کنید." />
       <section className="grid gap-3" aria-label="ابزارهای فهرست سازمان‌ها">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            <SummaryPill label="همه سازمان‌ها" value={organizations.data?.length ?? 0} />
-            <SummaryPill
+        <ManagementSummaryBar action={canManage ? <Button onClick={() => { setEditing(null); setCreating((value) => !value); }}><Plus size={16}/>{creating ? "بستن فرم" : "سازمان جدید"}</Button> : null}>
+            <ManagementStat label="همه سازمان‌ها" value={organizations.data?.length ?? 0} />
+            <ManagementStat
               label="فعال"
               value={organizations.data?.filter((x) => x.status === "ACTIVE").length ?? 0}
-              tone="green"
+              tone="success"
             />
-            <SummaryPill
+            <ManagementStat
               label="بایگانی"
               value={organizations.data?.filter((x) => x.status === "ARCHIVED").length ?? 0}
             />
-          </div>
-          {canManage ? (
-            <Button
-              onClick={() => {
-                setEditing(null);
-                setCreating((value) => !value);
-              }}
-            >
-              <Plus size={16} />
-              {creating ? "بستن فرم" : "سازمان جدید"}
-            </Button>
-          ) : null}
-        </div>
+        </ManagementSummaryBar>
         <Card className="p-4">
           <Field label="جستجوی سازمان">
             <div className="relative">
@@ -835,24 +816,6 @@ export function OrganizationsPage() {
   );
 }
 
-function SummaryPill({
-  label,
-  value,
-  tone = "brand",
-}: {
-  label: string;
-  value: number;
-  tone?: "brand" | "green";
-}) {
-  return (
-    <div
-      className={`rounded-xl border px-3 py-2 ${tone === "green" ? "border-emerald-200 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20" : "border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"}`}
-    >
-      <strong className="text-base">{value.toLocaleString("fa-IR")}</strong>
-      <span className="mr-1.5 text-xs text-slate-500">{label}</span>
-    </div>
-  );
-}
 function SectionTitle({
   icon,
   title,

@@ -21,18 +21,29 @@ function repository<T>(items: T[] = []) {
 }
 
 describe("ExamsService student attempt safety", () => {
+  it("does not leak answer keys or explanations from student exam detail", async () => {
+    const exam = { id: "exam-1", title: "Secure", published: true, lifecycleStatus: "scheduled", duration: 60, attemptLimit: 1, startTime: new Date(Date.now() - 60_000), endTime: new Date(Date.now() + 60_000), questions: [{ id: "q1", text: "Secret question", options: ["A", "B", "C", "D"], correctAnswer: "b", explanation: "Secret explanation", subject: "زیست" }], attempts: [] } as any;
+    const service = new ExamsService(repository([exam]) as any, repository() as any, repository() as any, repository([{ id: "student-1" }]) as any);
+    const detail = await service.detail("exam-1", "user-1");
+    const serialized = JSON.stringify(detail);
+    expect(serialized).not.toContain("correctAnswer");
+    expect(serialized).not.toContain("correctOption");
+    expect(serialized).not.toContain("Secret explanation");
+    expect(serialized).not.toContain("isCorrect");
+  });
+
   it("saves only owned question answers and returns them on resume", async () => {
     const attempt = { id: "attempt-1", student: { id: "student-1" }, startedAt: new Date(), answers: [], finishedAt: null, exam: { id: "exam-1", duration: 60, questions: [{ id: "question-1", text: "Q", options: ["A"], correctAnswer: "A", explanation: "" }] } } as any;
     const attempts = repository([attempt]);
     const service = new ExamsService(repository() as any, repository() as any, attempts as any, repository([{ id: "student-1" }]) as any);
 
-    const progress = await service.saveProgress("attempt-1", [{ questionId: "question-1", selectedOption: "A" }, { questionId: "unknown", selectedOption: "A" }], "user-1");
+    const progress = await service.saveProgress("attempt-1", [{ questionId: "question-1", selectedOption: "a" }], "user-1");
 
     expect(attempts.update).toHaveBeenCalledWith("attempt-1", {
       answers: [
         expect.objectContaining({
           questionId: "question-1",
-          selectedOption: "A",
+          selectedOption: "a",
           revision: 1,
         }),
       ],
@@ -40,10 +51,16 @@ describe("ExamsService student attempt safety", () => {
     expect(progress.savedAnswers).toEqual([
       expect.objectContaining({
         questionId: "question-1",
-        selectedOption: "A",
+        selectedOption: "a",
         revision: 1,
       }),
     ]);
+  });
+
+  it("rejects an answer for a question outside the attempt exam", async () => {
+    const attempt = { id: "attempt-1", student: { id: "student-1" }, startedAt: new Date(), answers: [], finishedAt: null, exam: { id: "exam-1", duration: 60, questions: [{ id: "question-1" }] } } as any;
+    const service = new ExamsService(repository() as any, repository() as any, repository([attempt]) as any, repository([{ id: "student-1" }]) as any);
+    await expect(service.saveProgress("attempt-1", [{ questionId: "foreign-question", selectedOption: "a" }], "user-1")).rejects.toMatchObject({ response: { error: { code: "QUESTION_NOT_IN_EXAM" } } });
   });
 
   it("rejects an attempt that is not owned by the authenticated student", async () => {

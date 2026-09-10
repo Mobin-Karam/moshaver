@@ -28,6 +28,14 @@ export class Question {
   @Column({ default: "" })
   topic!: string;
 
+  @Column({ default: "" }) book!: string;
+  @Column({ default: "" }) grade!: string;
+  @Column({ default: "" }) chapter!: string;
+  @Column({ default: "" }) lesson!: string;
+  @Column({ default: "" }) subtopic!: string;
+  @Column({ default: "multiple_choice" }) questionType!: string;
+  @Column({ type: "float", default: 1 }) weight!: number;
+
   @Column({ default: "" })
   sectionId!: string;
 

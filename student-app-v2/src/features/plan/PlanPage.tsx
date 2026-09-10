@@ -1,301 +1,45 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BookOpen, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Clock3, Info, LockKeyhole, Pause, Play, Square, X } from 'lucide-react';
-import { planMetrics, taskStatus, type StudentTask, type TaskRuntimeStatus } from '@moshaver/student-core';
+import { CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Clock3, Filter, Info, Pause, Play, Square, X } from 'lucide-react';
+import { planMetrics, taskStatus, type StudentTask } from '@moshaver/student-core';
 import { useStudentStore } from '../../services/student-store';
+import { useSearchParams } from 'react-router-dom';
 
-type UiTaskStatus = TaskRuntimeStatus | 'locked' | 'running' | 'missed';
+type Result = 'done' | 'partial' | 'skipped';
+type FilterValue = 'all' | 'open' | 'active' | 'done' | 'missed' | StudentTask['type'];
 
 export function PlanPage() {
-  const plan = useStudentStore((state) => state.plan);
-  const loadPlan = useStudentStore((state) => state.loadPlan);
-  const loadStatus = useStudentStore((state) => state.loadStatus);
-  const activeSession = useStudentStore((state) => state.activeSession);
-  const startTask = useStudentStore((state) => state.startTask);
-  const pauseFocus = useStudentStore((state) => state.pauseFocus);
-  const resumeFocus = useStudentStore((state) => state.resumeFocus);
-  const finishTask = useStudentStore((state) => state.finishTask);
-  const cancelFocus = useStudentStore((state) => state.cancelFocus);
-  const storeError = useStudentStore((state) => state.error);
-  const canMutate = useStudentStore((state) => Boolean(state.access?.canMutateStudentWork));
-  const [date, setDate] = useState(plan.isoDate);
-  const [now, setNow] = useState(new Date());
-  const [finishTaskId, setFinishTaskId] = useState<string | null>(null);
-  const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState({ actualTests: '', difficulty: 'متوسط', note: '' });
-  const [finishError, setFinishError] = useState<string | null>(null);
-  const [isFinishing, setIsFinishing] = useState(false);
-  const metrics = planMetrics(plan.tasks);
-  const activeTask = useMemo(() => plan.tasks.find((task) => task.id === activeSession?.taskId) ?? null, [activeSession?.taskId, plan.tasks]);
-  const detailTask = useMemo(() => plan.tasks.find((task) => task.id === detailTaskId) ?? null, [detailTaskId, plan.tasks]);
-  const elapsedSeconds = activeSession
-    ? activeSession.elapsedSeconds + (activeSession.status === 'running' ? Math.max(0, Math.floor((now.getTime() - new Date(activeSession.startedAt).getTime()) / 1000)) : 0)
-    : 0;
-
+  const [searchParams] = useSearchParams();
+  const plan = useStudentStore((state) => state.plan); const loadPlan = useStudentStore((state) => state.loadPlan); const loadStatus = useStudentStore((state) => state.loadStatus); const storeError = useStudentStore((state) => state.error);
+  const session = useStudentStore((state) => state.activeSession); const startTask = useStudentStore((state) => state.startTask); const pause = useStudentStore((state) => state.pauseFocus); const resume = useStudentStore((state) => state.resumeFocus); const finishTask = useStudentStore((state) => state.finishTask); const canMutate = useStudentStore((state) => Boolean(state.access?.canMutateStudentWork));
+  const [date, setDate] = useState(plan.isoDate); const [now, setNow] = useState(Date.now()); const [filter, setFilter] = useState<FilterValue>('all'); const [filterOpen, setFilterOpen] = useState(false); const [detailIndex, setDetailIndex] = useState<number | null>(null); const [finishId, setFinishId] = useState<string | null>(null); const [saving, setSaving] = useState(false); const [finishError, setFinishError] = useState<string | null>(null); const [feedback, setFeedback] = useState({ status: 'done' as Result, actualTests: '', difficulty: 'متوسط', note: '' });
+  const metrics = planMetrics(plan.tasks); const time = new Date(now).toTimeString().slice(0, 5); const elapsed = session ? session.elapsedSeconds + (session.status === 'running' ? Math.max(0, Math.floor((now - new Date(session.startedAt).getTime()) / 1000)) : 0) : 0;
+  const visible = useMemo(() => plan.tasks.filter((task) => matches(task, filter, time, session?.taskId)), [filter, plan.tasks, session?.taskId, time]); const detail = detailIndex === null ? null : plan.tasks[detailIndex];
+  useEffect(() => { const id = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(id); }, []);
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(timer);
-  }, []);
+    const taskId = searchParams.get('task');
+    if (!taskId) return;
+    const index = plan.tasks.findIndex((task) => task.id === taskId);
+    if (index >= 0) setDetailIndex(index);
+  }, [plan.tasks, searchParams]);
+  function pick(value: string) { setDate(value); void loadPlan(value); } function openTask(task: StudentTask) { setDetailIndex(plan.tasks.findIndex((item) => item.id === task.id)); } function openFinish(task: StudentTask) { setFinishId(task.id); setFeedback({ status: 'done', actualTests: String(task.testCount || ''), difficulty: 'متوسط', note: '' }); setFinishError(null); }
 
-  function move(days: number) {
-    const next = addDays(date, days);
-    setDate(next);
-    void loadPlan(next);
-  }
-
-  function pick(value: string) {
-    setDate(value);
-    void loadPlan(value);
-  }
-
-  return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <span className="text-xs text-ink/60">برنامه</span>
-          <h1 className="mt-1 text-2xl font-semibold">نمای روزانه</h1>
-        </div>
-        <span className="grid size-10 place-items-center rounded-md bg-mint/15 text-mint">
-          <CalendarDays size={22} />
-        </span>
-      </div>
-
-      <div className="surface grid grid-cols-[44px_1fr_44px] items-center gap-2 p-2">
-        <button className="grid size-10 place-items-center rounded-md bg-paper" onClick={() => move(-1)} aria-label="روز قبل">
-          <ChevronRight size={18} />
-        </button>
-        <input className="h-10 rounded-md border border-black/10 px-3 text-center" type="date" value={date} onChange={(event) => pick(event.target.value)} />
-        <button className="grid size-10 place-items-center rounded-md bg-paper" onClick={() => move(1)} aria-label="روز بعد">
-          <ChevronLeft size={18} />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-3 gap-2">
-        <Metric label="فعالیت" value={`${metrics.doneTasks}/${metrics.totalTasks}`} />
-        <Metric label="دقیقه" value={metrics.plannedMinutes} />
-        <Metric label="تست" value={metrics.plannedTests} />
-      </div>
-
-      <section className="space-y-3">
-        {loadStatus === 'loading' ? <article className="surface p-4 text-sm text-ink/60">در حال دریافت برنامه...</article> : null}
-        {loadStatus === 'error' && storeError ? <article className="surface space-y-3 p-4 text-sm text-red-700"><p>{storeError}</p><button className="rounded-md bg-ink px-3 py-2 text-white" onClick={() => void loadPlan(date)}>تلاش دوباره</button></article> : null}
-        {plan.tasks.length ? plan.tasks.map((task, index) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            index={index}
-            nowTime={now.toTimeString().slice(0, 5)}
-            running={activeSession?.taskId === task.id}
-            readOnly={!canMutate}
-            onStart={() => startTask(task.id)}
-            onFinish={() => {
-              setFinishTaskId(task.id);
-              setFeedback({ actualTests: String(task.testCount || ''), difficulty: 'متوسط', note: '' });
-            }}
-            onDetails={() => setDetailTaskId(task.id)}
-          />
-        )) : <article className="surface p-4 text-sm text-ink/60">برنامه منتشرشده‌ای برای این روز وجود ندارد.</article>}
-      </section>
-
-      {activeTask && canMutate ? (
-        <div className="fixed inset-x-4 bottom-24 z-30 mx-auto max-w-3xl rounded-md border border-black/10 bg-ink p-3 text-white shadow-lg">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <span className="text-xs text-white/60">حالت مطالعه</span>
-              <strong className="block truncate">{taskTitle(activeTask)}</strong>
-              <span className="text-xs text-white/70" dir="ltr">{formatElapsed(elapsedSeconds)}</span>
-            </div>
-            <div className="flex gap-2">
-              {activeSession ? <button className="grid size-10 place-items-center rounded-md bg-white/10" onClick={() => activeSession.status === 'running' ? pauseFocus() : resumeFocus()} aria-label={activeSession.status === 'running' ? 'مکث' : 'ادامه'}>
-                {activeSession.status === 'running' ? <Pause size={18} /> : <Play size={18} />}
-              </button> : null}
-              <button className="grid size-10 place-items-center rounded-md bg-white/10" onClick={cancelFocus} aria-label="لغو"><X size={18} /></button>
-              <button className="grid size-10 place-items-center rounded-md bg-mint text-white" onClick={() => {
-                setFinishTaskId(activeTask.id);
-                setFeedback({ actualTests: String(activeTask.testCount || ''), difficulty: 'متوسط', note: '' });
-              }} aria-label="پایان"><Square size={18} /></button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {finishTaskId && canMutate ? (
-        <div className="fixed inset-0 z-40 grid place-items-end bg-black/35 p-4">
-          <form
-            className="surface w-full max-w-3xl space-y-3 p-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              setIsFinishing(true);
-              setFinishError(null);
-              void finishTask(finishTaskId, { actualTests: Number(feedback.actualTests || 0), difficulty: feedback.difficulty, note: feedback.note })
-                .then(() => setFinishTaskId(null))
-                .catch((error) => setFinishError(error instanceof Error ? error.message : 'ثبت پایان مطالعه ناموفق بود.'))
-                .finally(() => setIsFinishing(false));
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold">مطالعه کامل شد؟</h2>
-              <button type="button" className="grid size-9 place-items-center rounded-md bg-paper" onClick={() => setFinishTaskId(null)} aria-label="بستن"><X size={18} /></button>
-            </div>
-            <label className="block space-y-1">
-              <span className="text-sm text-ink/65">تعداد تست</span>
-              <input className="h-11 w-full rounded-md border border-black/10 px-3" inputMode="numeric" value={feedback.actualTests} onChange={(event) => setFeedback((current) => ({ ...current, actualTests: event.target.value }))} />
-            </label>
-            <label className="block space-y-1">
-              <span className="text-sm text-ink/65">درجه سختی</span>
-              <select className="h-11 w-full rounded-md border border-black/10 px-3" value={feedback.difficulty} onChange={(event) => setFeedback((current) => ({ ...current, difficulty: event.target.value }))}>
-                <option>آسان</option>
-                <option>متوسط</option>
-                <option>سخت</option>
-              </select>
-            </label>
-            <label className="block space-y-1">
-              <span className="text-sm text-ink/65">یادداشت</span>
-              <textarea className="min-h-24 w-full rounded-md border border-black/10 px-3 py-2" value={feedback.note} onChange={(event) => setFeedback((current) => ({ ...current, note: event.target.value }))} />
-            </label>
-            {finishError ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">{finishError}</p> : null}
-            <button className="w-full rounded-md bg-ink px-4 py-3 text-white disabled:opacity-60" disabled={isFinishing}>
-              {isFinishing ? 'در حال ثبت...' : 'ثبت پایان مطالعه'}
-            </button>
-          </form>
-        </div>
-      ) : null}
-
-      {detailTask ? (
-        <div className="fixed inset-0 z-40 grid place-items-end bg-black/35 p-4" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && setDetailTaskId(null)}>
-          <article className="surface w-full max-w-3xl space-y-4 p-4" role="dialog" aria-modal="true" aria-labelledby="task-detail-title">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <span className="text-xs text-ink/60">جزئیات فعالیت</span>
-                <h2 id="task-detail-title" className="mt-1 text-lg font-semibold">{taskTitle(detailTask)}</h2>
-              </div>
-              <button type="button" className="grid size-9 place-items-center rounded-md bg-paper" onClick={() => setDetailTaskId(null)} aria-label="بستن"><X size={18} /></button>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <span className="rounded-md bg-paper px-3 py-2" dir="ltr">{detailTask.start} - {detailTask.end}</span>
-              <span className="rounded-md bg-paper px-3 py-2">{plannedMinutes(detailTask)} دقیقه</span>
-            </div>
-            <p className="rounded-md bg-paper px-3 py-3 text-sm text-ink/70">{detailTask.note || 'برای این فعالیت توضیحی ثبت نشده است.'}</p>
-            {canMutate ? <div className="flex gap-2">
-              <button type="button" className="flex flex-1 items-center justify-center gap-2 rounded-md bg-paper px-3 py-3 text-sm" onClick={() => startTask(detailTask.id)}>
-                <Play size={16} /> شروع مطالعه
-              </button>
-              <button type="button" className="flex flex-1 items-center justify-center gap-2 rounded-md bg-ink px-3 py-3 text-sm text-white" onClick={() => {
-                setDetailTaskId(null);
-                setFinishTaskId(detailTask.id);
-                setFeedback({ actualTests: String(detailTask.testCount || ''), difficulty: 'متوسط', note: '' });
-              }}>
-                <CheckCircle2 size={16} /> ثبت انجام شد
-              </button>
-            </div> : <p className="rounded-2xl bg-sky-50 p-3 text-sm text-sky-900">نمای خانواده فقط خواندنی است.</p>}
-            {canMutate ? <p className="flex items-center gap-2 text-xs text-ink/55"><Info size={14} /> وضعیت‌های نیمه‌کامل و ردشده در API فعلی قابل ثبت نیستند.</p> : null}
-          </article>
-        </div>
-      ) : null}
-    </section>
-  );
+  return <section className="plan-page">
+    <div className="plan-toolbar"><PersianDatePicker value={date} onChange={pick} /><div className="task-filter"><button type="button" aria-expanded={filterOpen} onClick={() => setFilterOpen((value) => !value)}><Filter /><span>{filterLabel(filter)}</span><ChevronDown /></button>{filterOpen ? <div role="menu">{filterOptions.map((item) => <button type="button" key={item.value} className={filter === item.value ? 'is-active' : ''} onClick={() => { setFilter(item.value); setFilterOpen(false); }}>{item.label}</button>)}</div> : null}</div></div>
+    <div className="plan-metrics"><Metric label="فعالیت" value={`${metrics.doneTasks}/${metrics.totalTasks}`} /><Metric label="دقیقه" value={metrics.plannedMinutes} /><Metric label="تست" value={metrics.plannedTests} /></div>
+    {loadStatus === 'loading' ? <p className="plan-state">در حال دریافت برنامه…</p> : null}{loadStatus === 'error' ? <div className="plan-state is-error"><p>{storeError}</p><button onClick={() => void loadPlan(date)}>تلاش دوباره</button></div> : null}
+    <div className="task-rows">{visible.map((task) => <TaskRow key={task.id} task={task} now={time} active={session?.taskId === task.id} readOnly={!canMutate} onOpen={() => openTask(task)} onStart={() => void startTask(task.id)} onFinish={() => openFinish(task)} />)}{loadStatus !== 'loading' && !visible.length ? <p className="plan-state">فعالیتی با این فیلتر پیدا نشد.</p> : null}</div>
+    {detail ? <div className="task-focus-backdrop"><article className="task-focus" role="dialog" aria-modal="true" aria-labelledby="task-focus-title"><header><button onClick={() => setDetailIndex(null)} aria-label="بستن"><X /></button><span>{(detailIndex! + 1).toLocaleString('fa-IR')} از {plan.tasks.length.toLocaleString('fa-IR')}</span><div><button disabled={detailIndex === 0} onClick={() => setDetailIndex((value) => Math.max(0, (value || 0) - 1))} aria-label="فعالیت قبلی"><ChevronRight /></button><button disabled={detailIndex === plan.tasks.length - 1} onClick={() => setDetailIndex((value) => Math.min(plan.tasks.length - 1, (value || 0) + 1))} aria-label="فعالیت بعدی"><ChevronLeft /></button></div></header><div className="task-focus__content"><span className="task-focus__type">{taskTypeLabel(detail.type)}</span><h2 id="task-focus-title">{taskTitle(detail)}</h2><div className="task-focus__time"><Clock3 /><strong dir="ltr">{detail.start} — {detail.end}</strong><span>{plannedMinutes(detail).toLocaleString('fa-IR')} دقیقه</span></div>{session?.taskId === detail.id ? <div className="task-focus__timer"><small>{session.status === 'running' ? 'در حال مطالعه' : 'مکث شده'}</small><strong dir="ltr">{formatElapsed(elapsed)}</strong></div> : null}<dl><Meta label="تعداد تست" value={(detail.testCount || 0).toLocaleString('fa-IR')} /><Meta label="وضعیت" value={statusLabel(detail, time, session?.taskId)} /></dl><p>{detail.note || 'برای این فعالیت توضیح بیشتری ثبت نشده است.'}</p></div>{canMutate ? <footer>{session?.taskId === detail.id ? <button className="secondary" onClick={() => void (session.status === 'running' ? pause() : resume())}>{session.status === 'running' ? <Pause /> : <Play />}{session.status === 'running' ? 'مکث' : 'ادامه'}</button> : <button className="secondary" onClick={() => void startTask(detail.id)}><Play />شروع</button>}<button className="primary" onClick={() => openFinish(detail)}><CheckCircle2 />ثبت نتیجه</button></footer> : null}</article></div> : null}
+    {finishId ? <div className="finish-backdrop"><form className="finish-sheet" onSubmit={(event) => { event.preventDefault(); setSaving(true); setFinishError(null); void finishTask(finishId, { ...feedback, actualTests: Number(feedback.actualTests || 0) }).then(() => { setFinishId(null); setDetailIndex(null); }).catch((error) => setFinishError(error instanceof Error ? error.message : 'ثبت نتیجه ناموفق بود.')).finally(() => setSaving(false)); }}><header><h2>نتیجه فعالیت</h2><button type="button" onClick={() => setFinishId(null)} aria-label="بستن"><X /></button></header><div className="completion-options">{(['done', 'partial', 'skipped'] as Result[]).map((value) => <button type="button" key={value} className={`${value} ${feedback.status === value ? 'is-active' : ''}`} onClick={() => setFeedback((state) => ({ ...state, status: value }))}>{value === 'done' ? 'کامل' : value === 'partial' ? 'نیمه‌کامل' : 'انجام نشد'}</button>)}</div><label>تعداد تست<input inputMode="numeric" value={feedback.actualTests} onChange={(event) => setFeedback({ ...feedback, actualTests: event.target.value })} /></label><label>سختی<select value={feedback.difficulty} onChange={(event) => setFeedback({ ...feedback, difficulty: event.target.value })}><option>آسان</option><option>متوسط</option><option>سخت</option></select></label><label>یادداشت<textarea value={feedback.note} onChange={(event) => setFeedback({ ...feedback, note: event.target.value })} /></label>{finishError ? <p role="alert">{finishError}</p> : null}<button className="submit" disabled={saving}>{saving ? 'در حال ثبت…' : 'ثبت نتیجه'}</button></form></div> : null}
+  </section>;
 }
 
-function TaskCard({ task, index, nowTime, running, readOnly, onStart, onFinish, onDetails }: { task: StudentTask; index: number; nowTime: string; running: boolean; readOnly: boolean; onStart: () => void; onFinish: () => void; onDetails: () => void }) {
-  const status = running ? 'running' : statusForTask(task, nowTime, index);
-  return (
-    <article className={`surface relative overflow-hidden p-4 ${status === 'locked' ? 'opacity-60' : ''}`}>
-      <div className="grid grid-cols-[56px_1fr] gap-3">
-        <div className="flex flex-col items-center">
-          <span className={`grid size-11 place-items-center rounded-md ${statusClass(status)}`}>
-            {statusIcon(status)}
-          </span>
-          <span className="mt-2 text-xs text-ink/50" dir="ltr">{task.start}</span>
-        </div>
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-paper px-2 py-1 text-xs text-ink/60">{taskTypeLabel(task.type)}</span>
-            <span className="rounded-md bg-paper px-2 py-1 text-xs text-ink/60">{statusLabel(status)}</span>
-          </div>
-          <h2 className="mt-2 font-semibold">{taskTitle(task)}</h2>
-          {task.note ? <p className="mt-1 text-sm text-ink/60">{task.note}</p> : null}
-          <div className="mt-3 flex flex-wrap gap-2 text-xs text-ink/60">
-            <span className="rounded-md bg-paper px-2 py-1" dir="ltr">{task.start} - {task.end}</span>
-            <span className="rounded-md bg-paper px-2 py-1">{plannedMinutes(task)} دقیقه</span>
-            {task.pages ? <span className="rounded-md bg-paper px-2 py-1">{task.pages}</span> : null}
-            <span className="rounded-md bg-paper px-2 py-1">{task.testCount || 0} تست</span>
-          </div>
-          <div className={`mt-4 grid gap-2 ${readOnly ? 'grid-cols-1' : 'grid-cols-2'}`}>
-            <button className="flex items-center justify-center gap-2 rounded-md border border-black/10 px-3 py-2 text-sm" onClick={onDetails}><Info size={15} /> جزئیات</button>
-            {!readOnly ? <button className="rounded-md bg-paper px-3 py-2 text-sm disabled:opacity-50" disabled={status === 'locked' || status === 'done'} onClick={onStart}><Play size={15} className="inline" /> شروع</button> : null}
-            {!readOnly ? <button className="rounded-md bg-ink px-3 py-2 text-sm text-white disabled:opacity-50" disabled={status === 'locked' || status === 'done'} onClick={onFinish}>اتمام</button> : null}
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
+function TaskRow({ task, now, active, readOnly, onOpen, onStart, onFinish }: { task: StudentTask; now: string; active: boolean; readOnly: boolean; onOpen(): void; onStart(): void; onFinish(): void }) { return <article className={`task-row ${active ? 'is-active' : ''}`} onClick={onOpen}><div className="task-row__time"><strong dir="ltr">{task.start}</strong><span dir="ltr">{task.end}</span></div><div className="task-row__body"><span>{taskTypeLabel(task.type)} · {statusLabel(task, now, active ? task.id : undefined)}</span><h2>{taskTitle(task)}</h2><p>{plannedMinutes(task).toLocaleString('fa-IR')} دقیقه · {(task.testCount || 0).toLocaleString('fa-IR')} تست</p></div><div className="task-row__actions" onClick={(event) => event.stopPropagation()}><button onClick={onOpen} aria-label="جزئیات"><Info /></button>{!readOnly && !task.completion ? <button onClick={onStart} aria-label={active ? 'ادامه' : 'شروع'}><Play /></button> : null}{!readOnly && !task.completion ? <button onClick={onFinish} aria-label="ثبت نتیجه"><Square /></button> : null}</div></article>; }
 
-function Metric({ label, value }: { label: string; value: number | string }) {
-  return <div className="metric"><span className="text-xs text-ink/60">{label}</span><strong className="block text-lg">{value}</strong></div>;
-}
+function PersianDatePicker({ value, onChange }: { value: string; onChange(value: string): void }) { const [open, setOpen] = useState(false); const [cursor, setCursor] = useState(value); const grid = useMemo(() => calendarGrid(cursor), [cursor]); const title = new Intl.DateTimeFormat('fa-IR-u-ca-persian', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${value}T12:00:00`)); return <div className="persian-picker"><button type="button" onClick={() => setOpen((state) => !state)} aria-expanded={open}><CalendarDays /><span>{title}</span><ChevronDown /></button>{open ? <div className="persian-calendar"><header><button onClick={() => setCursor(shiftMonth(cursor, -1))}><ChevronRight /></button><strong>{new Intl.DateTimeFormat('fa-IR-u-ca-persian', { month: 'long', year: 'numeric' }).format(new Date(`${cursor}T12:00:00`))}</strong><button onClick={() => setCursor(shiftMonth(cursor, 1))}><ChevronLeft /></button></header><div className="persian-weekdays">{['ش','ی','د','س','چ','پ','ج'].map((day) => <span key={day}>{day}</span>)}</div><div className="persian-days">{grid.map((day, index) => day ? <button type="button" key={day.iso} className={`${day.iso === value ? 'is-selected' : ''} ${day.iso === todayIso() ? 'is-today' : ''}`} onClick={() => { onChange(day.iso); setCursor(day.iso); setOpen(false); }}>{day.day.toLocaleString('fa-IR')}</button> : <span key={index} />)}</div><button type="button" className="today" onClick={() => { onChange(todayIso()); setCursor(todayIso()); setOpen(false); }}>امروز</button></div> : null}</div>; }
 
-function addDays(iso: string, days: number) {
-  const date = new Date(`${iso}T12:00:00`);
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
-function taskTypeLabel(type: string) {
-  if (type === 'test') return 'تست';
-  if (type === 'review') return 'مرور';
-  if (type === 'exam') return 'آزمون';
-  if (type === 'break') return 'استراحت';
-  return 'مطالعه';
-}
-
-function statusForTask(task: StudentTask, nowTime: string, index: number): UiTaskStatus {
-  const status = taskStatus(task, nowTime);
-  if (status === 'next') {
-    const previousRequired = index > 0 && !task.completion && task.start > nowTime;
-    return previousRequired ? 'locked' : 'next';
-  }
-  if (status === 'overdue') return 'missed';
-  return status;
-}
-
-function statusLabel(status: string) {
-  if (status === 'locked') return 'قفل';
-  if (status === 'running') return 'در حال اجرا';
-  if (status === 'done') return 'انجام شد';
-  if (status === 'partial') return 'نیمه‌کامل';
-  if (status === 'missed' || status === 'skipped') return 'از دست رفته';
-  if (status === 'current') return 'آماده';
-  return 'بعدی';
-}
-
-function statusClass(status: string) {
-  if (status === 'done') return 'bg-mint/15 text-mint';
-  if (status === 'running' || status === 'current') return 'bg-ink text-white';
-  if (status === 'missed' || status === 'skipped') return 'bg-red-50 text-red-700';
-  if (status === 'locked') return 'bg-slate-100 text-slate-400';
-  return 'bg-saffron/15 text-saffron';
-}
-
-function statusIcon(status: string) {
-  if (status === 'done') return <CheckCircle2 size={20} />;
-  if (status === 'running' || status === 'current') return <Play size={19} />;
-  if (status === 'locked') return <LockKeyhole size={18} />;
-  if (status === 'missed' || status === 'skipped') return <X size={18} />;
-  return <BookOpen size={19} />;
-}
-
-function taskTitle(task: { subject?: string; title?: string }) {
-  return [task.subject, task.title].filter(Boolean).join(' - ') || 'فعالیت';
-}
-
-function plannedMinutes(task: Pick<StudentTask, 'start' | 'end'>) {
-  const [startHour = '0', startMinute = '0'] = task.start.split(':');
-  const [endHour = '0', endMinute = '0'] = task.end.split(':');
-  return Math.max(0, Number(endHour) * 60 + Number(endMinute) - (Number(startHour) * 60 + Number(startMinute)));
-}
-
-function formatElapsed(seconds: number) {
-  const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
-  const rest = String(seconds % 60).padStart(2, '0');
-  return `${minutes}:${rest}`;
-}
+const filterOptions: Array<{ value: FilterValue; label: string }> = [{ value: 'all', label: 'همه فعالیت‌ها' }, { value: 'open', label: 'انجام‌نشده' }, { value: 'active', label: 'در حال انجام' }, { value: 'done', label: 'تکمیل‌شده' }, { value: 'missed', label: 'ازدست‌رفته' }, { value: 'study', label: 'مطالعه' }, { value: 'review', label: 'مرور' }, { value: 'test', label: 'تست' }, { value: 'exam', label: 'آزمون' }, { value: 'break', label: 'استراحت' }];
+function matches(task: StudentTask, filter: FilterValue, now: string, activeId?: string) { if (filter === 'all') return true; if (filter === 'active') return task.id === activeId; if (filter === 'done') return Boolean(task.completion); if (filter === 'open') return !task.completion; if (filter === 'missed') return !task.completion && task.end < now; return task.type === filter; } function filterLabel(value: FilterValue) { return filterOptions.find((item) => item.value === value)?.label || 'فیلتر'; }
+function statusLabel(task: StudentTask, now: string, activeId?: string) { if (task.id === activeId) return 'در حال انجام'; const status = taskStatus(task, now); return status === 'done' ? 'انجام شد' : status === 'partial' ? 'نیمه‌کامل' : status === 'skipped' || status === 'overdue' ? 'از دست رفته' : status === 'current' ? 'آماده' : 'برنامه‌ریزی‌شده'; }
+function Metric({ label, value }: { label: string; value: number | string }) { return <div><span>{label}</span><strong>{value}</strong></div>; } function Meta({ label, value }: { label: string; value: string }) { return <div><dt>{label}</dt><dd>{value}</dd></div>; } function taskTypeLabel(type: string) { return type === 'test' ? 'تست' : type === 'review' ? 'مرور' : type === 'exam' ? 'آزمون' : type === 'break' ? 'استراحت' : 'مطالعه'; } function taskTitle(task: Pick<StudentTask, 'subject' | 'title'>) { return [task.subject, task.title].filter(Boolean).join(' · ') || 'فعالیت'; }
+function plannedMinutes(task: Pick<StudentTask, 'start' | 'end'>) { const [sh, sm] = task.start.split(':').map(Number); const [eh, em] = task.end.split(':').map(Number); return Math.max(0, eh * 60 + em - sh * 60 - sm); } function formatElapsed(value: number) { return `${String(Math.floor(value / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`; } function todayIso() { return new Date().toISOString().slice(0, 10); } function addDays(iso: string, days: number) { const date = new Date(`${iso}T12:00:00`); date.setDate(date.getDate() + days); return date.toISOString().slice(0, 10); }
+function parts(iso: string) { const values = new Intl.DateTimeFormat('fa-IR-u-ca-persian-nu-latn', { year: 'numeric', month: 'numeric', day: 'numeric' }).formatToParts(new Date(`${iso}T12:00:00`)); const get = (type: string) => Number(values.find((item) => item.type === type)?.value); return { month: get('month'), day: get('day') }; } function calendarGrid(cursor: string) { let first = cursor; for (let i = 0; i < 35 && parts(first).day !== 1; i++) first = addDays(first, -1); const result: Array<{ iso: string; day: number } | null> = Array((new Date(`${first}T12:00:00`).getDay() + 1) % 7).fill(null); const month = parts(first).month; for (let iso = first; parts(iso).month === month; iso = addDays(iso, 1)) result.push({ iso, day: parts(iso).day }); return result; } function shiftMonth(cursor: string, delta: number) { const month = parts(cursor).month; let next = cursor; for (let i = 0; i < 40; i++) { next = addDays(next, delta > 0 ? 1 : -1); if (parts(next).month !== month) break; } return next; }

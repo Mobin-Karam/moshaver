@@ -39,6 +39,9 @@ export class Student {
   @Column({ default: "active" })
   accountStatus!: "active" | "inactive" | "archived";
 
+  @Column({ length: 32, default: "ASSIGNED" })
+  onboardingStatus!: "PENDING_ASSIGNMENT" | "ASSIGNED";
+
   @CreateDateColumn()
   createdAt!: Date;
 

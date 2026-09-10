@@ -9,6 +9,7 @@ import { useModal } from "../../../shared/ui/modal";
 import { useAuth } from "../../auth";
 import { getApiWorkContextKey } from "../../../shared/api/api";
 import { Button, Card } from "../../../shared/ui/ui";
+import { ManagementMasterDetail } from "../../../shared/ui/management-workspace";
 import {
   archiveStudent,
   createStudent,
@@ -801,8 +802,11 @@ export function StudentsPage() {
         ) : null}
       </header>
 
-      <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(420px,0.75fr)] 2xl:grid-cols-[minmax(0,1.4fr)_minmax(460px,0.6fr)]">
-        <div className={mobileDirectory ? "block" : "hidden xl:block"}>
+      <ManagementMasterDetail
+        directoryVisible={mobileDirectory}
+        detailVisible={!mobileDirectory}
+        detailWidth="minmax(420px,.75fr)"
+        directory={<div>
           <StudentList
             students={pagedStudents}
             total={students.length}
@@ -827,9 +831,8 @@ export function StudentsPage() {
             onRetry={() => void studentStore.refetch()}
             creating={creating}
           />
-        </div>
-
-        <div className={mobileDirectory ? "hidden xl:block" : "block"}>
+        </div>}
+        detail={<div>
           {mode === "create" ? (
             <Card className="overflow-hidden p-0 xl:sticky xl:top-20 xl:max-h-[calc(100vh-6rem)]">
               <div className="border-b border-slate-200 p-3 xl:hidden dark:border-slate-800">
@@ -889,8 +892,8 @@ export function StudentsPage() {
               </div>
             </Card>
           )}
-        </div>
-      </section>
+        </div>}
+      />
     </div>
   );
 }

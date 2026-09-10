@@ -31,3 +31,8 @@ export const getAppVersions = () => api.get<AppVersion[]>("/app-versions");
 export const saveAppVersion = (app: string, body: { version: string; notes: string }) =>
   api.put<AppVersion>(`/app-versions/${encodeURIComponent(app)}`, body);
 export const downloadDatabaseBackup = () => api.download("/system/database-backup");
+export type RelaxationTrack = { id: string; title: string; artist: string; url: string; active: boolean; updatedAt: string };
+export type RelaxationTrackDraft = { title: string; artist: string; url: string; active: boolean };
+export const getRelaxationTracks = () => api.get<RelaxationTrack[]>("/system/relaxation-tracks");
+export const createRelaxationTrack = (body: RelaxationTrackDraft) => api.post<RelaxationTrack>("/system/relaxation-tracks", body);
+export const updateRelaxationTrack = (id: string, body: RelaxationTrackDraft) => api.patch<RelaxationTrack>(`/system/relaxation-tracks/${encodeURIComponent(id)}`, body);

@@ -18,14 +18,17 @@ export class AuthController {
   @Post("login")
   async login(@Body() dto: LoginDto, @Req() req: FastifyRequest, @Res({ passthrough: true }) res: FastifyReply) {
     const result = await this.auth.login(dto.username, dto.password, req.ip);
-    res.setCookie(this.config.get<string>("cookieName", "moshaver_v2_session"), result.token, {
-      path: "/",
-      httpOnly: true,
-      secure: this.config.get<boolean>("cookieSecure", false),
-      sameSite: this.config.get<"lax" | "strict" | "none">("cookieSameSite", "lax"),
-      expires: result.expiresAt,
-    });
-    return ok({ user: { id: result.user.id, username: result.user.username, role: result.user.role }, csrfToken: result.csrfToken, expiresAt: result.expiresAt });
+    this.setAuthCookies(res, result);
+    return ok({ user: { id: result.user.id, username: result.user.username, role: result.user.role }, csrfToken: result.csrfToken, expiresAt: result.expiresAt, refreshExpiresAt: result.refreshExpiresAt });
+  }
+
+  @Post("refresh")
+  async refresh(@Req() req: FastifyRequest, @Res({ passthrough: true }) res: FastifyReply) {
+    const refreshCookieName = this.config.get<string>("refreshCookieName", "moshaver_v2_refresh");
+    const csrfToken = req.headers["x-csrf-token"];
+    const result = await this.auth.refresh(req.cookies?.[refreshCookieName], typeof csrfToken === "string" ? csrfToken : undefined);
+    this.setAuthCookies(res, result);
+    return ok({ csrfToken: result.csrfToken, expiresAt: result.expiresAt, refreshExpiresAt: result.refreshExpiresAt });
   }
 
   @Get("me")
@@ -44,8 +47,10 @@ export class AuthController {
   @Post("logout")
   async logout(@Req() req: FastifyRequest, @Res({ passthrough: true }) res: FastifyReply) {
     const cookieName = this.config.get<string>("cookieName", "moshaver_v2_session");
-    await this.auth.logout(req.cookies?.[cookieName]);
+    const refreshCookieName = this.config.get<string>("refreshCookieName", "moshaver_v2_refresh");
+    await this.auth.logout(req.cookies?.[cookieName], req.cookies?.[refreshCookieName]);
     res.clearCookie(cookieName, { path: "/" });
+    res.clearCookie(refreshCookieName, { path: "/" });
     return ok({ loggedOut: true });
   }
 
@@ -59,5 +64,16 @@ export class AuthController {
   async revokeSession(@CurrentUser() user: AuthenticatedUser | null, @Param("id") id: string) {
     if (!user) throw new ApiException(401, "UNAUTHORIZED", "لطفاً وارد حساب شوید.");
     return this.auth.revokeSession(user, id).then(ok);
+  }
+
+  private setAuthCookies(res: FastifyReply, result: { accessToken: string; refreshToken: string; expiresAt: Date; refreshExpiresAt: Date }) {
+    const options = {
+      path: "/",
+      httpOnly: true,
+      secure: this.config.get<boolean>("cookieSecure", false),
+      sameSite: this.config.get<"lax" | "strict" | "none">("cookieSameSite", "lax"),
+    } as const;
+    res.setCookie(this.config.get<string>("cookieName", "moshaver_v2_session"), result.accessToken, { ...options, expires: result.expiresAt });
+    res.setCookie(this.config.get<string>("refreshCookieName", "moshaver_v2_refresh"), result.refreshToken, { ...options, expires: result.refreshExpiresAt });
   }
 }

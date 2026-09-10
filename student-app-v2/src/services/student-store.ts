@@ -15,6 +15,7 @@ import {
 import { apiClient } from './api-client';
 import { notifyNewNotifications } from './notification-service';
 import { portalAccess, type PortalAccess } from '../app/portal-access';
+import { resetRelaxationPlayer } from './relaxation-player';
 
 type AuthStatus = 'checking' | 'anonymous' | 'authenticated';
 type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -59,6 +60,11 @@ interface BackendTask {
   note?: string;
   priority?: number;
   completedAt?: string | null;
+  status?: TaskCompletionStatus;
+  actualMinutes?: number;
+  actualTests?: number;
+  completionDifficulty?: string;
+  completionNote?: string;
 }
 
 interface BackendPlan {
@@ -97,7 +103,7 @@ interface BackendExam {
   questions?: unknown[];
   subject?: string;
   subjects?: string[];
-  mode?: 'standard' | 'konkur';
+  mode?: ExamSummary['mode'] | 'standard';
   instructions?: string[];
   allowBackNavigation?: boolean;
   scoring?: ExamSummary['scoring'];
@@ -341,6 +347,8 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     set({ loadStatus: 'loading', error: null });
     await apiClient.request('POST', '/auth/logout').catch(() => undefined);
     apiClient.setCsrfToken(null);
+    saveFocusSession(null);
+    resetRelaxationPlayer();
     set({ authStatus: 'anonymous', loadStatus: 'idle', user: null, access: null, capabilities: [], guardianStudents: [], selectedGuardianStudentId: null, student: null, plan: emptyPlan(), exams: [], notifications: [], subjects: [], relationships: [], mistakes: [], authSessions: [], error: null });
   },
   async selectGuardianStudent(id) {
@@ -646,10 +654,11 @@ export const useStudentStore = create<StudentState>((set, get) => ({
           note: feedback?.note,
         });
       }
-      await apiClient.request('POST', `/student/tasks/${taskId}/complete`);
+      await apiClient.request('POST', `/student/tasks/${taskId}/complete`, completion);
       await get().loadDashboard();
     } catch (error) {
-      set({ plan: previousPlan, activeSession: null, error: readableError(error), syncStatus: navigator.onLine ? 'failed' : 'offline' });
+      saveFocusSession(session);
+      set({ plan: previousPlan, activeSession: session, error: readableError(error), syncStatus: navigator.onLine ? 'failed' : 'offline' });
       throw error;
     }
   },
@@ -686,7 +695,12 @@ function mapTask(task: BackendTask, index: number): StudentTask {
     end: endTime,
     testCount: Number(task.testCount || 0),
     note: task.note || task.description || undefined,
-    completion: task.completedAt ? { status: 'done', actualMinutes: Number(task.duration || 0), actualTests: Number(task.testCount || 0) } : null,
+    completion: task.completedAt ? {
+      status: task.status || 'done',
+      actualMinutes: Number(task.actualMinutes ?? task.duration ?? 0),
+      actualTests: Number(task.actualTests ?? task.testCount ?? 0),
+      note: [task.completionDifficulty ? `سختی: ${task.completionDifficulty}` : '', task.completionNote || ''].filter(Boolean).join(' | ') || undefined,
+    } : null,
   };
 }
 
@@ -706,7 +720,7 @@ function mapExam(exam: BackendExam): ExamSummary {
     durationMinutes: exam.duration,
     maxAttempts: exam.attemptLimit,
     subjects: exam.subjects ?? (exam.subject ? [exam.subject] : []),
-    mode: exam.mode ?? 'standard',
+    mode: !exam.mode || exam.mode === 'standard' ? 'mock' : exam.mode,
     instructions: exam.instructions ?? [],
     allowBackNavigation: exam.allowBackNavigation ?? true,
     scoring: exam.scoring,

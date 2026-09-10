@@ -37,7 +37,7 @@ export function ChatHeader({
         <span className="relative grid size-10 shrink-0 place-items-center rounded-xl bg-brand/10 font-bold text-brand">
           {(conversation.type === "group"
             ? conversation.title || "گروه"
-            : conversation.student?.name || "گفتگو"
+            : conversation.student?.name || conversation.peer?.name || "گفتگو"
           ).slice(0, 1)}
           {conversation.presence?.online ? (
             <i className="absolute bottom-0 left-0 size-3 rounded-full border-2 border-white bg-emerald-500 dark:border-slate-800" />
@@ -47,7 +47,7 @@ export function ChatHeader({
           <strong className="block truncate">
             {conversation.type === "group"
               ? conversation.title
-              : conversation.student?.name || "گفتگو"}
+              : conversation.student?.name || conversation.peer?.name || "گفتگو"}
           </strong>
           <span
             className={`text-xs ${conversation.presence?.online ? "text-emerald-600" : "text-slate-500"}`}

@@ -15,6 +15,12 @@ export class CompleteTaskDto {
   @IsInt()
   @Min(0)
   @Max(1000000)
+  actualMinutes?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(1000000)
   actualTests?: number;
 
   @IsOptional()

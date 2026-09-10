@@ -12,6 +12,7 @@ import { User } from "../../database/entities/user.entity";
 import { DataSource, In } from "typeorm";
 import { Organization } from "../../database/entities/organization.entity";
 import { Mistake } from "../../database/entities/mistake.entity";
+import { ExamScoringService } from "./exam-scoring.service";
 
 type QuestionInput = CreateQuestionDto & { question?: string; correctOption?: string };
 type AttemptAnswer = ExamAttempt["answers"][number];
@@ -27,6 +28,7 @@ export class ExamsService {
     @Optional() @InjectRepository(User) private readonly users?: Repository<User>,
     @Optional() private readonly dataSource?: DataSource,
     @Optional() @InjectRepository(Mistake) private readonly mistakes?: Repository<Mistake>,
+    @Optional() private readonly scoringEngine?: ExamScoringService,
   ) {}
 
   async list(includeAnswers = true) {
@@ -91,9 +93,11 @@ export class ExamsService {
     const student = await this.studentForUser(userId);
     const attempt = await this.attempts.findOne({ where: { id: attemptId, student: { id: student.id } }, relations: { exam: { questions: true } } });
     if (!attempt) throw new ApiException(404, "ATTEMPT_NOT_FOUND", "تلاش آزمون پیدا نشد.");
-    if (attempt.finishedAt || this.isExpired(attempt)) throw new ApiException(409, "ATTEMPT_CLOSED", "زمان آزمون به پایان رسیده است.");
+    if (attempt.finishedAt) throw new ApiException(409, "EXAM_ALREADY_SUBMITTED", "این آزمون قبلاً ثبت نهایی شده است.");
+    if (this.isExpired(attempt)) throw new ApiException(409, "EXAM_ATTEMPT_EXPIRED", "زمان آزمون به پایان رسیده است.");
     const questionIds = new Set(attempt.exam.questions.map((question) => question.id));
-    const incoming = answers.filter((answer) => questionIds.has(answer.questionId));
+    if (answers.some((answer) => !questionIds.has(answer.questionId))) throw new ApiException(400, "QUESTION_NOT_IN_EXAM", "یکی از سؤال‌ها متعلق به این آزمون نیست.");
+    const incoming = answers;
     this.enforceNavigationPolicy(attempt, incoming);
     const merged = this.mergeAnswers(attempt.answers || [], incoming);
     await this.attempts.update(attemptId, { answers: merged });
@@ -112,12 +116,26 @@ export class ExamsService {
       duration: dto.duration || dto.durationMinutes || 1,
       attemptLimit: dto.attemptLimit || dto.maxAttempts || 1,
       published: dto.published ?? false,
-      mode: dto.mode || "standard",
+      mode: dto.mode || "mock",
+      description: dto.description || "",
+      lifecycleStatus: dto.lifecycleStatus || (dto.published ? "scheduled" : "draft"),
+      navigationMode: dto.navigationMode || (dto.allowBackNavigation === false ? "sequential" : "free"),
+      timerMode: dto.timerMode || "whole_exam",
+      allowResume: dto.allowResume ?? true,
+      allowLateStart: dto.allowLateStart ?? false,
+      allowPracticeAfterDeadline: dto.allowPracticeAfterDeadline ?? false,
+      autoSubmitOnTimeout: dto.autoSubmitOnTimeout ?? true,
+      sessionPolicy: dto.sessionPolicy || "allow_resume",
+      integrityMonitoring: dto.integrityMonitoring ?? false,
       instructions: dto.instructions || [],
       allowBackNavigation: dto.allowBackNavigation ?? true,
       scoring: this.normalizeScoring(dto.scoring),
       resultPolicy: dto.resultPolicy || "immediate",
       resultReleaseAt: nullableDate(dto.resultReleaseAt),
+      answerKeyReleaseAt: nullableDate(dto.answerKeyReleaseAt),
+      explanationReleaseAt: nullableDate(dto.explanationReleaseAt),
+      rankingReleaseAt: nullableDate(dto.rankingReleaseAt),
+      latestStartAt: nullableDate(dto.latestStartAt),
       resultsReleased:
         dto.resultPolicy === "manual" ? Boolean(dto.resultsReleased) : true,
       sections: dto.sections || [],
@@ -140,7 +158,7 @@ export class ExamsService {
     const attempts = body.maxAttempts ?? body.attemptLimit;
     if (attempts !== undefined) exam.attemptLimit = Math.max(1, Number(attempts));
     if (typeof body.published === "boolean") exam.published = body.published;
-    if (body.mode === "standard" || body.mode === "konkur") exam.mode = body.mode;
+    if (["konkur", "mock", "practice", "quiz", "diagnostic"].includes(String(body.mode))) exam.mode = body.mode as Exam["mode"];
     if (Array.isArray(body.instructions))
       exam.instructions = body.instructions.map(String);
     if (typeof body.allowBackNavigation === "boolean")
@@ -151,6 +169,13 @@ export class ExamsService {
       exam.resultPolicy = body.resultPolicy as Exam["resultPolicy"];
     if (body.resultReleaseAt !== undefined)
       exam.resultReleaseAt = nullableDate(body.resultReleaseAt);
+    if (body.answerKeyReleaseAt !== undefined) exam.answerKeyReleaseAt = nullableDate(body.answerKeyReleaseAt);
+    if (body.explanationReleaseAt !== undefined) exam.explanationReleaseAt = nullableDate(body.explanationReleaseAt);
+    if (body.rankingReleaseAt !== undefined) exam.rankingReleaseAt = nullableDate(body.rankingReleaseAt);
+    if (body.latestStartAt !== undefined) exam.latestStartAt = nullableDate(body.latestStartAt);
+    if (["free", "section_only", "sequential"].includes(String(body.navigationMode))) exam.navigationMode = body.navigationMode as Exam["navigationMode"];
+    if (["whole_exam", "per_section"].includes(String(body.timerMode))) exam.timerMode = body.timerMode as Exam["timerMode"];
+    for (const key of ["allowResume", "allowLateStart", "allowPracticeAfterDeadline", "autoSubmitOnTimeout", "integrityMonitoring"] as const) if (typeof body[key] === "boolean") exam[key] = body[key] as never;
     if (typeof body.resultsReleased === "boolean")
       exam.resultsReleased = body.resultsReleased;
     if (Array.isArray(body.sections)) exam.sections = body.sections as Exam["sections"];
@@ -179,11 +204,15 @@ export class ExamsService {
       throw new ApiException(409, "EXAM_NOT_OPEN", "زمان شروع آزمون هنوز نرسیده است.");
     if (exam.endTime && now >= exam.endTime)
       throw new ApiException(409, "EXAM_CLOSED", "مهلت شرکت در آزمون به پایان رسیده است.");
+    if (exam.latestStartAt && now >= exam.latestStartAt && !exam.allowLateStart)
+      throw new ApiException(409, "EXAM_LATEST_START_PASSED", "مهلت شروع این آزمون به پایان رسیده است.");
     if (!exam.questions.length)
       throw new ApiException(409, "EXAM_HAS_NO_QUESTIONS", "این آزمون هنوز سؤال قابل پاسخ ندارد.");
     const used = await this.attempts.count({ where: { exam: { id: examId }, student: { id: student.id } } });
     if (used >= exam.attemptLimit) throw new ApiException(409, "ATTEMPT_LIMIT_REACHED", "تعداد دفعات مجاز آزمون تکمیل شده است.");
-    const attempt = await this.attempts.save(this.attempts.create({ exam, student, startedAt: new Date() }));
+    const durationEnd = new Date(now.getTime() + exam.duration * 60_000);
+    const expiresAt = exam.endTime && exam.endTime < durationEnd ? exam.endTime : durationEnd;
+    const attempt = await this.attempts.save(this.attempts.create({ exam, student, status: "active", startedAt: now, expiresAt, lastHeartbeatAt: now, currentSectionId: exam.sections?.[0]?.id || "" }));
     return this.attemptProgress({ ...attempt, exam, answers: [] } as ExamAttempt);
   }
 
@@ -195,28 +224,19 @@ export class ExamsService {
     const finalAnswers = this.isExpired(attempt)
       ? attempt.answers || []
       : this.mergeAnswers(attempt.answers || [], answers);
+    const evaluation = (this.scoringEngine || new ExamScoringService()).evaluate(attempt.exam, finalAnswers);
+    const score = Math.round(evaluation.percentage);
+    const finishedAt = new Date();
+    await this.attempts.update(attemptId, { answers: finalAnswers, score, status: this.isExpired(attempt) ? "expired" : "submitted", finishedAt, submittedAt: finishedAt, rawScore: evaluation.rawScore, percentage: evaluation.percentage, correctCount: evaluation.correct, incorrectCount: evaluation.wrong, unansweredCount: evaluation.unanswered });
     const answerMap = new Map(finalAnswers.map((answer) => [answer.questionId, answer.selectedOption || ""]));
     const questions = attempt.exam.questions || [];
-    const correct = questions.filter((question) => answerMap.get(question.id) === question.correctAnswer).length;
-    const wrong = questions.filter(
-      (question) =>
-        answerMap.get(question.id) && answerMap.get(question.id) !== question.correctAnswer,
-    ).length;
-    const unanswered = Math.max(0, questions.length - correct - wrong);
-    const scoring = this.normalizeScoring(attempt.exam.scoring);
-    const earned =
-      correct * scoring.correct + wrong * scoring.wrong + unanswered * scoring.unanswered;
-    const maximum = questions.length * Math.max(1, scoring.correct);
-    const score = maximum ? Math.round((earned / maximum) * 100) : 0;
-    const finishedAt = new Date();
-    await this.attempts.update(attemptId, { answers: finalAnswers, score, finishedAt });
     if (this.mistakes) {
       for (const question of questions.filter((item) => answerMap.get(item.id) && answerMap.get(item.id) !== item.correctAnswer)) {
         const existing = await this.mistakes.findOne({ where: { studentId: student.id, questionId: question.id } });
         if (!existing) await this.mistakes.save(this.mistakes.create({ studentId: student.id, questionId: question.id, reason: "", resolved: false }));
       }
     }
-    return this.result({ ...attempt, answers: finalAnswers, score, finishedAt } as ExamAttempt, finalAnswers);
+    return this.result({ ...attempt, answers: finalAnswers, score, percentage: evaluation.percentage, rawScore: evaluation.rawScore, correctCount: evaluation.correct, incorrectCount: evaluation.wrong, unansweredCount: evaluation.unanswered, finishedAt, submittedAt: finishedAt } as ExamAttempt, finalAnswers);
   }
 
   async submitExam(examId: string, answers: AttemptAnswer[] = [], userId: string) {
@@ -227,45 +247,50 @@ export class ExamsService {
     return this.submit(attempt.id, answers, userId);
   }
 
+  async heartbeat(examId: string, attemptId: string, userId: string, currentSectionId?: string) {
+    const student = await this.studentForUser(userId);
+    const attempt = await this.attempts.findOne({ where: { id: attemptId, exam: { id: examId }, student: { id: student.id } }, relations: { exam: true } });
+    if (!attempt) throw new ApiException(404, "EXAM_ATTEMPT_NOT_FOUND", "تلاش آزمون پیدا نشد.");
+    if (attempt.finishedAt) throw new ApiException(409, "EXAM_ALREADY_SUBMITTED", "این آزمون قبلاً ثبت نهایی شده است.");
+    if (this.isExpired(attempt)) throw new ApiException(409, "EXAM_ATTEMPT_EXPIRED", "زمان آزمون به پایان رسیده است.");
+    if (currentSectionId && !attempt.exam.sections.some((section) => section.id === currentSectionId)) throw new ApiException(400, "SECTION_NOT_IN_EXAM", "دفترچه انتخاب‌شده متعلق به این آزمون نیست.");
+    const lastHeartbeatAt = new Date();
+    await this.attempts.update(attempt.id, { lastHeartbeatAt, ...(currentSectionId ? { currentSectionId } : {}) });
+    return { attemptId: attempt.id, status: "active", serverTime: lastHeartbeatAt.toISOString(), expiresAt: this.deadline(attempt).toISOString() };
+  }
+
   private result(attempt: ExamAttempt, answers: AttemptAnswer[], privileged = false) {
     const answerMap = new Map(answers.map((answer) => [answer.questionId, answer.selectedOption || ""]));
     const questions = attempt.exam.questions || [];
-    const correct = questions.filter((question) => answerMap.get(question.id) === question.correctAnswer).length;
-    const wrong = questions.filter(
-      (question) =>
-        answerMap.get(question.id) && answerMap.get(question.id) !== question.correctAnswer,
-    ).length;
-    const unanswered = Math.max(0, questions.length - correct - wrong);
+    const evaluation = (this.scoringEngine || new ExamScoringService()).evaluate(attempt.exam, answers);
     const status = this.resultStatus(attempt.exam);
     const released = privileged || status === "released";
-    const subjectRows = new Map<string, { correct: number; wrong: number; unanswered: number; total: number }>();
-    for (const question of questions) {
-      const subject = question.subject || attempt.exam.subject || "عمومی";
-      const row = subjectRows.get(subject) || { correct: 0, wrong: 0, unanswered: 0, total: 0 };
-      const selected = answerMap.get(question.id);
-      row.total += 1;
-      if (!selected) row.unanswered += 1;
-      else if (selected === question.correctAnswer) row.correct += 1;
-      else row.wrong += 1;
-      subjectRows.set(subject, row);
-    }
+    const now = new Date();
+    const answerKeyReleased = privileged || Boolean(attempt.exam.answerKeyReleaseAt ? now >= attempt.exam.answerKeyReleaseAt : released);
+    const explanationsReleased = privileged || Boolean(attempt.exam.explanationReleaseAt ? now >= attempt.exam.explanationReleaseAt : answerKeyReleased);
     return {
       id: attempt.id,
       status,
-      score: released ? attempt.score : null,
-      correct: released ? correct : undefined,
-      wrong: released ? wrong : undefined,
-      unanswered: released ? unanswered : undefined,
+      score: released ? (attempt.percentage ?? evaluation.percentage) : null,
+      taraz: null,
+      rank: null,
+      percentile: null,
+      correct: released ? evaluation.correct : undefined,
+      wrong: released ? evaluation.wrong : undefined,
+      unanswered: released ? evaluation.unanswered : undefined,
       total: questions.length,
-      subjects: released ? [...subjectRows.entries()].map(([subject, row]) => ({ subject, ...row, percentage: row.total ? Math.round(row.correct / row.total * 100) : 0 })) : undefined,
+      subjects: released ? evaluation.subjects : undefined,
+      topics: released ? evaluation.topics : undefined,
       finishedAt: attempt.finishedAt,
-      review: released
+      answerKeyReleased,
+      explanationsReleased,
+      review: answerKeyReleased
         ? questions.map((question) => ({
             questionId: question.id,
             question: question.text,
             selectedOption: answerMap.get(question.id) || null,
             correctOption: question.correctAnswer,
-            explanation: question.explanation,
+            explanation: explanationsReleased ? question.explanation : undefined,
             isCorrect: answerMap.get(question.id) === question.correctAnswer,
             subject: question.subject,
             topic: question.topic,
@@ -281,18 +306,17 @@ export class ExamsService {
   }
 
   private isExpired(attempt: ExamAttempt) {
-    const durationEnd = new Date(attempt.startedAt.getTime() + attempt.exam.duration * 60_000);
-    const deadline = attempt.exam.endTime && attempt.exam.endTime < durationEnd ? attempt.exam.endTime : durationEnd;
-    return new Date() >= deadline;
+    return new Date() >= this.deadline(attempt);
   }
 
+  private deadline(attempt: ExamAttempt) { const durationEnd = attempt.expiresAt || new Date(attempt.startedAt.getTime() + attempt.exam.duration * 60_000); return attempt.exam.endTime && attempt.exam.endTime < durationEnd ? attempt.exam.endTime : durationEnd; }
+
   private attemptProgress(attempt: ExamAttempt) {
-    const durationEnd = new Date(attempt.startedAt.getTime() + attempt.exam.duration * 60_000);
-    const deadline = attempt.exam.endTime && attempt.exam.endTime < durationEnd ? attempt.exam.endTime : durationEnd;
+    const deadline = this.deadline(attempt);
     return {
       runId: attempt.id, startedAt: attempt.startedAt, examCloseAt: attempt.exam.endTime || null, deadlineAt: deadline.toISOString(), serverTime: new Date().toISOString(), finishedAt: attempt.finishedAt || null,
       savedAnswers: (attempt.answers || []).map((answer, index) => ({ ...answer, clientUpdatedAt: answer.clientUpdatedAt || attempt.startedAt.toISOString(), revision: answer.revision ?? index + 1 })), remainingSeconds: Math.max(0, Math.ceil((deadline.getTime() - Date.now()) / 1000)),
-      allowBackNavigation: attempt.exam.allowBackNavigation,
+      allowBackNavigation: attempt.exam.allowBackNavigation, navigationMode: attempt.exam.navigationMode || (attempt.exam.allowBackNavigation ? "free" : "sequential"), timerMode: attempt.exam.timerMode || "whole_exam", currentSectionId: attempt.currentSectionId || attempt.exam.sections?.[0]?.id || "",
       sections: attempt.exam.sections || [],
       quiz: { id: attempt.exam.id, examId: attempt.exam.id, title: attempt.exam.title, durationMinutes: attempt.exam.duration,
         questions: (attempt.exam.questions || []).map((question) => ({ id: question.id, question: question.text, options: this.fourOptions(question.options), subject: question.subject, topic: question.topic, sectionId: question.sectionId, mediaUrl: question.mediaUrl })) },
@@ -367,8 +391,10 @@ export class ExamsService {
             ? "تعداد تلاش‌های مجاز تکمیل شده است."
             : undefined;
     const state = activeAttempt ? "active" : latestFinished ? this.resultStatus(exam) : beforeWindow ? "upcoming" : afterWindow ? "closed" : canStart ? "available" : "closed";
+    const status = exam.lifecycleStatus === "cancelled" ? "cancelled" : !exam.published || exam.lifecycleStatus === "draft" ? "draft" : activeAttempt ? "live" : latestFinished ? (this.resultStatus(exam) === "released" ? "result_available" : "result_pending") : beforeWindow ? "scheduled" : afterWindow ? "expired" : "available";
     return {
-      id: exam.id, title: exam.title, subject: exam.subject, subjects: [...new Set([exam.subject, ...(exam.questions || []).map((question) => question.subject)].filter(Boolean))], mode: exam.mode || "standard", instructions: exam.instructions || [], allowBackNavigation: exam.allowBackNavigation ?? true, scoring: this.normalizeScoring(exam.scoring), resultPolicy: exam.resultPolicy || "immediate", resultReleaseAt: exam.resultReleaseAt?.toISOString() || null, resultsReleased: exam.resultsReleased, sections: exam.sections || [], duration: exam.duration, durationMinutes: exam.duration, attemptLimit: exam.attemptLimit, maxAttempts: exam.attemptLimit, startTime: exam.startTime, endTime: exam.endTime, openAt: exam.startTime?.toISOString(), closeAt: exam.endTime?.toISOString(), isoDate: exam.startTime?.toISOString().slice(0, 10) || new Date().toISOString().slice(0, 10), published: exam.published,
+      serverTime: now.toISOString(),
+      id: exam.id, title: exam.title, description: exam.description || "", subject: exam.subject, subjects: [...new Set([exam.subject, ...(exam.questions || []).map((question) => question.subject)].filter(Boolean))], mode: exam.mode === "standard" ? "mock" : exam.mode, status, instructions: exam.instructions || [], allowBackNavigation: exam.allowBackNavigation ?? true, navigationMode: exam.navigationMode || (exam.allowBackNavigation ? "free" : "sequential"), timerMode: exam.timerMode || "whole_exam", allowResume: exam.allowResume ?? true, allowLateStart: exam.allowLateStart ?? false, allowPracticeAfterDeadline: exam.allowPracticeAfterDeadline ?? false, autoSubmitOnTimeout: exam.autoSubmitOnTimeout ?? true, sessionPolicy: exam.sessionPolicy || "allow_resume", integrityMonitoring: exam.integrityMonitoring ?? false, scoring: this.normalizeScoring(exam.scoring), resultPolicy: exam.resultPolicy || "immediate", resultReleaseAt: exam.resultReleaseAt?.toISOString() || null, answerKeyReleaseAt: exam.answerKeyReleaseAt?.toISOString() || null, explanationReleaseAt: exam.explanationReleaseAt?.toISOString() || null, rankingReleaseAt: exam.rankingReleaseAt?.toISOString() || null, resultsReleased: exam.resultsReleased, sections: exam.sections || [], duration: exam.duration, durationMinutes: exam.duration, attemptLimit: exam.attemptLimit, maxAttempts: exam.attemptLimit, startTime: exam.startTime, endTime: exam.endTime, availableFrom: exam.startTime?.toISOString(), availableUntil: exam.endTime?.toISOString(), latestStartAt: exam.latestStartAt?.toISOString() || null, openAt: exam.startTime?.toISOString(), closeAt: exam.endTime?.toISOString(), isoDate: exam.startTime?.toISOString().slice(0, 10) || new Date().toISOString().slice(0, 10), published: exam.published,
       questions: includeAnswers ? exam.questions?.map((question) => this.publicQuestion(question)) || [] : undefined,
       delivery: { questionCount: exam.questions?.length || 0, allowedAttempts: exam.attemptLimit, attemptsUsed: studentId ? attemptsUsed : 0, activeAttemptId: activeAttempt?.id || null, canStart, reason, state, lastAttempt: studentAttempts[0] ? this.publicAttempt(studentAttempts[0], exam) : null },
     };

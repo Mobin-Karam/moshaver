@@ -23,6 +23,7 @@ import { AppVersionManager } from "../components/AppVersionManager";
 import { DatabaseBackupPanel } from "../components/DatabaseBackupPanel";
 import { ReleasePanel } from "../components/ReleasePanel";
 import { SystemHistory } from "../components/SystemHistory";
+import { RelaxationMusicManager } from "../components/RelaxationMusicManager";
 
 export type SystemView = "overview" | "releases" | "database" | "audit";
 function QueryError({ retry }: { retry: () => void }) {
@@ -219,6 +220,7 @@ export function SystemPage({ view = "overview" }: { view?: SystemView }) {
             ))}
           </div>
         </section>
+        {auth.hasRole("PLATFORM_ADMIN") ? <RelaxationMusicManager /> : null}
       </div>
     );
   }

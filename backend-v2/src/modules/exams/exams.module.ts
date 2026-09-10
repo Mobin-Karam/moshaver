@@ -6,12 +6,13 @@ import { Question } from "../../database/entities/question.entity";
 import { Student } from "../../database/entities/student.entity";
 import { ExamsController } from "./exams.controller";
 import { ExamsService } from "./exams.service";
+import { ExamScoringService } from "./exam-scoring.service";
 import { ExamAssignment, Mistake, Organization, User } from "../../database/entities";
 
 @Module({
   imports: [TypeOrmModule.forFeature([Exam, Question, ExamAttempt, ExamAssignment, Student, User, Organization, Mistake])],
   controllers: [ExamsController],
-  providers: [ExamsService],
+  providers: [ExamsService, ExamScoringService],
   exports: [ExamsService],
 })
 export class ExamsModule {}

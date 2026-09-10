@@ -54,6 +54,19 @@ export class Task {
 
   @Column({ type: "datetime", nullable: true })
   completedAt?: Date | null;
+
+  @Column({ default: 0 })
+  actualMinutes!: number;
+
+  @Column({ default: 0 })
+  actualTests!: number;
+
+  @Column({ default: "" })
+  completionDifficulty!: string;
+
+  @Column({ default: "" })
+  completionNote!: string;
+
   @CreateDateColumn() createdAt!: Date;
   @UpdateDateColumn() updatedAt!: Date;
   @Column({ type: "datetime", nullable: true }) deletedAt?: Date | null;

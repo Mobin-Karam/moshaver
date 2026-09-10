@@ -6,6 +6,7 @@ import {
   getBackendTargetUrl,
   getSelectedApiVersion,
   setSelectedBackend,
+  setCsrf,
 } from "./api";
 
 const originalFetch = globalThis.fetch;
@@ -69,5 +70,21 @@ describe("api client", () => {
     await api.get("/auth/me");
 
     expect(globalThis.fetch).toHaveBeenCalledWith("/api/v2/auth/me", expect.any(Object));
+  });
+
+  it("refreshes an expired access session and retries the request once", async () => {
+    setCsrf("old-csrf");
+    globalThis.fetch = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: false, error: { code: "UNAUTHORIZED" } }), { status: 401 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true, data: { csrfToken: "new-csrf" } }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true, data: { id: "1" } }), { status: 200 })) as typeof fetch;
+
+    await expect(api.get<{ id: string }>("/auth/me")).resolves.toEqual({ id: "1" });
+    expect(globalThis.fetch).toHaveBeenCalledTimes(3);
+    expect(globalThis.fetch).toHaveBeenNthCalledWith(2, expect.stringMatching(/\/api\/v2\/auth\/refresh$/), expect.objectContaining({
+      method: "POST",
+      credentials: "include",
+    }));
+    expect(sessionStorage.getItem("moshaver_admin_csrf")).toBe("new-csrf");
   });
 });

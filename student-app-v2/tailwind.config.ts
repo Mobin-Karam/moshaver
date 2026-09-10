@@ -6,11 +6,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#203040',
-        paper: '#f7f9f6',
-        mint: '#4f8f7a',
-        saffron: '#d99a3d',
-        berry: '#8b4d63',
+        ink: 'rgb(var(--text-primary) / <alpha-value>)',
+        paper: 'rgb(var(--background) / <alpha-value>)',
+        mint: 'rgb(var(--success) / <alpha-value>)',
+        saffron: 'rgb(var(--warning) / <alpha-value>)',
+        berry: 'rgb(var(--danger) / <alpha-value>)',
+        primary: 'rgb(var(--primary) / <alpha-value>)',
+        surface: 'rgb(var(--surface) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['Vazirmatn', 'Tahoma', 'Arial', 'sans-serif'],

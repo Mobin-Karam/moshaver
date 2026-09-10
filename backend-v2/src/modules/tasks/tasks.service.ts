@@ -33,9 +33,12 @@ export class TasksService {
     const completedAt = new Date();
     task.completedAt = completedAt;
     task.status = dto.status || TaskCompletionStatus.DONE;
-    if (dto.note !== undefined) task.note = dto.note;
+    task.actualMinutes = dto.actualMinutes ?? task.actualMinutes ?? 0;
+    task.actualTests = dto.actualTests ?? task.actualTests ?? 0;
+    task.completionDifficulty = dto.difficulty ?? task.completionDifficulty ?? "";
+    task.completionNote = dto.note ?? task.completionNote ?? "";
     await this.tasks.save(task);
-    return { id: task.id, status: task.status, completedAt, actualTests: dto.actualTests ?? null, difficulty: dto.difficulty ?? "", note: task.note };
+    return { id: task.id, status: task.status, completedAt, actualMinutes: task.actualMinutes, actualTests: task.actualTests, difficulty: task.completionDifficulty, note: task.completionNote };
   }
 
   async addComment(userId: string, taskId: string, dto: CreateTaskCommentDto) {

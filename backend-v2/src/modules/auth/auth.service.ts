@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { Injectable, Optional } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
-import { LessThan, Not, Repository } from "typeorm";
+import { IsNull, LessThan, Not, Repository } from "typeorm";
 import { ApiException } from "../../common/exceptions/api.exception";
 import { Session } from "../../database/entities/session.entity";
 import { User } from "../../database/entities/user.entity";
@@ -51,13 +51,43 @@ export class AuthService {
         throw new ApiException(403, "ACCOUNT_INACTIVE", "حساب دانش‌آموز غیرفعال یا بایگانی شده است.");
     }
 
-    const token = crypto.randomBytes(32).toString("base64url");
-    const csrfToken = crypto.randomBytes(24).toString("base64url");
-    const expiresAt = new Date(Date.now() + this.config.get<number>("sessionTtlHours", 168) * 60 * 60 * 1000);
-    const session = await this.sessions.save(this.sessions.create({ user, tokenHash: this.hash(token), csrfToken, expiresAt }));
+    const credentials = this.newCredentials();
+    const session = await this.sessions.save(this.sessions.create({
+      user,
+      tokenHash: this.hash(credentials.accessToken),
+      refreshTokenHash: this.hash(credentials.refreshToken),
+      csrfToken: credentials.csrfToken,
+      expiresAt: credentials.expiresAt,
+      refreshExpiresAt: credentials.refreshExpiresAt,
+    }));
     await this.throttle?.success(ip, normalizedUsername);
-    await this.sessions.delete({ expiresAt: LessThan(new Date()) });
-    return { token, csrfToken, expiresAt, session, user };
+    const now = new Date();
+    await this.sessions.delete([
+      { refreshExpiresAt: LessThan(now) },
+      { refreshExpiresAt: IsNull(), expiresAt: LessThan(now) },
+    ]);
+    return { ...credentials, session, user };
+  }
+
+  async refresh(refreshToken?: string, csrfToken?: string) {
+    if (!refreshToken || !csrfToken) throw new ApiException(401, "REFRESH_REQUIRED", "نشست شما منقضی شده است. دوباره وارد شوید.");
+    const session = await this.sessions.findOne({ where: { refreshTokenHash: this.hash(refreshToken) }, relations: { user: true } });
+    if (!session || !session.refreshExpiresAt || session.refreshExpiresAt.getTime() <= Date.now()) {
+      throw new ApiException(401, "REFRESH_EXPIRED", "نشست شما منقضی شده است. دوباره وارد شوید.");
+    }
+    if (!this.safeEqual(session.csrfToken, csrfToken)) throw new ApiException(403, "CSRF", "نشست امنیتی نامعتبر است.");
+    if (session.user.status && session.user.status !== UserStatus.ACTIVE) {
+      await this.sessions.delete({ id: session.id });
+      throw new ApiException(403, "ACCOUNT_INACTIVE", "حساب کاربری غیرفعال یا بایگانی شده است.");
+    }
+    const credentials = this.newCredentials();
+    session.tokenHash = this.hash(credentials.accessToken);
+    session.refreshTokenHash = this.hash(credentials.refreshToken);
+    session.csrfToken = credentials.csrfToken;
+    session.expiresAt = credentials.expiresAt;
+    session.refreshExpiresAt = credentials.refreshExpiresAt;
+    await this.sessions.save(session);
+    return { ...credentials, session, user: session.user };
   }
 
   async userFromToken(token?: string, requestedRole?: string, requestedOrganizationId?: string): Promise<AuthenticatedUser | null> {
@@ -69,8 +99,12 @@ export class AuthService {
     return this.authorization ? this.authorization.enrich(base, requestedRole, requestedOrganizationId) : { ...base, roles: [session.user.role], capabilities: [], membershipIds: [], organizationIds: [] };
   }
 
-  async logout(token?: string) {
-    if (token) await this.sessions.delete({ tokenHash: this.hash(token) });
+  async logout(token?: string, refreshToken?: string) {
+    const where = [
+      ...(token ? [{ tokenHash: this.hash(token) }] : []),
+      ...(refreshToken ? [{ refreshTokenHash: this.hash(refreshToken) }] : []),
+    ];
+    if (where.length) await this.sessions.delete(where);
   }
 
   async me(user: AuthenticatedUser) {
@@ -116,7 +150,7 @@ export class AuthService {
 
   async listSessions(user: AuthenticatedUser) {
     const sessions = await this.sessions.find({ where: { user: { id: user.id } }, order: { createdAt: "DESC" } });
-    return sessions.map((session) => ({ id: session.id, createdAt: session.createdAt, expiresAt: session.expiresAt, current: session.id === user.sessionId }));
+    return sessions.map((session) => ({ id: session.id, createdAt: session.createdAt, expiresAt: session.refreshExpiresAt ?? session.expiresAt, current: session.id === user.sessionId }));
   }
 
   async revokeSession(user: AuthenticatedUser, id: string) {
@@ -130,8 +164,23 @@ export class AuthService {
   async verifyCsrf(sessionId: string, csrfToken: string) {
     const session = await this.sessions.findOne({ where: { id: sessionId } });
     if (!session) return false;
-    const expected = Buffer.from(session.csrfToken);
-    const received = Buffer.from(csrfToken);
+    return this.safeEqual(session.csrfToken, csrfToken);
+  }
+
+  private newCredentials() {
+    const now = Date.now();
+    return {
+      accessToken: crypto.randomBytes(32).toString("base64url"),
+      refreshToken: crypto.randomBytes(48).toString("base64url"),
+      csrfToken: crypto.randomBytes(24).toString("base64url"),
+      expiresAt: new Date(now + this.config.get<number>("accessTokenTtlMinutes", 15) * 60 * 1000),
+      refreshExpiresAt: new Date(now + this.config.get<number>("refreshTokenTtlDays", 30) * 24 * 60 * 60 * 1000),
+    };
+  }
+
+  private safeEqual(expectedValue: string, receivedValue: string) {
+    const expected = Buffer.from(expectedValue);
+    const received = Buffer.from(receivedValue);
     return expected.length === received.length && crypto.timingSafeEqual(expected, received);
   }
 

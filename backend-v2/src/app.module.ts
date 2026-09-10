@@ -37,6 +37,9 @@ import { DashboardModule } from "./modules/dashboard/dashboard.module";
 import { ActivityModule } from "./modules/activity/activity.module";
 import { ImportExportModule } from "./modules/import-export/import-export.module";
 import { SystemModule } from "./modules/system/system.module";
+import { LearningResourcesModule } from "./modules/learning-resources/learning-resources.module";
+import { OnboardingModule } from "./modules/onboarding/onboarding.module";
+import { RelaxationModule } from "./modules/relaxation/relaxation.module";
 
 @Module({
   imports: [
@@ -54,6 +57,9 @@ import { SystemModule } from "./modules/system/system.module";
     ActivityModule,
     ImportExportModule,
     SystemModule,
+    LearningResourcesModule,
+    OnboardingModule,
+    RelaxationModule,
     AuthModule,
     StudentsModule,
     PlansModule,

@@ -1,24 +1,30 @@
 import { ArrowRight, Check, CircleAlert, Cloud, Database, LockKeyhole, Timer } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ExamSummary } from '@moshaver/student-core';
 
-export function ExamPreflight({ exam, busy, error, onBack, onStart }: { exam: ExamSummary; busy: boolean; error: string; onBack: () => void; onStart: () => void }) {
+export function ExamPreflight({ exam, busy, error, onBack, onStart, onRefresh }: { exam: ExamSummary; busy: boolean; error: string; onBack: () => void; onStart: () => void; onRefresh?: () => void }) {
   const [accepted, setAccepted] = useState(false);
   const storageAvailable = useMemo(() => testStorage(), []);
   const online = navigator.onLine;
   const canStart = Boolean(exam.delivery?.canStart && storageAvailable && accepted);
+  const [now, setNow] = useState(Date.now());
+  const receivedAt = useMemo(() => Date.now(), [exam.serverTime]);
+  const serverNow = Date.parse(exam.serverTime || new Date().toISOString()) + Math.max(0, now - receivedAt);
+  const opensIn = exam.openAt ? Math.max(0, Math.ceil((Date.parse(exam.openAt) - serverNow) / 1000)) : 0;
+  useEffect(() => { const tick = window.setInterval(() => setNow(Date.now()), 1000); const refresh = window.setInterval(() => onRefresh?.(), 20_000); return () => { window.clearInterval(tick); window.clearInterval(refresh); }; }, [onRefresh]);
 
   return (
     <section className="mx-auto max-w-xl space-y-4 pb-4" aria-labelledby="preflight-title">
       <button className="back-action" onClick={onBack}><ArrowRight size={18} />بازگشت به آزمون‌ها</button>
-      <header className="rounded-[1.75rem] bg-ink p-5 text-white">
-        <span className="text-xs text-white/65">پیش از شروع، با آرامش بررسی کن</span>
-        <h1 id="preflight-title" className="mt-2 text-2xl font-black">{exam.title}</h1>
+      <header className="rounded-[1.75rem] bg-mint p-5 text-white shadow-lg shadow-mint/15">
+        <h1 id="preflight-title" className="text-2xl font-black">{exam.title}</h1>
         <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
           <Info icon={<Timer />} text={`${exam.durationMinutes || 0} دقیقه`} />
           <Info icon={<CircleAlert />} text={`${exam.delivery?.questionCount || 0} سؤال`} />
         </div>
       </header>
+
+      {opensIn > 0 ? <div className="exam-waiting" role="status"><span>آزمون در</span><strong dir="ltr">{formatCountdown(opensIn)}</strong><small>آغاز می‌شود</small></div> : null}
 
       <article className="surface rounded-3xl p-4">
         <h2 className="font-black">قوانین و شیوه نمره‌دهی</h2>
@@ -53,3 +59,4 @@ export function ExamPreflight({ exam, busy, error, onBack, onStart }: { exam: Ex
 function Info({ icon, text }: { icon: React.ReactNode; text: string }) { return <span className="flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-2 [&>svg]:size-4">{icon}{text}</span>; }
 function CheckRow({ ok, warning = false, label, icon }: { ok: boolean; warning?: boolean; label: string; icon: React.ReactNode }) { return <div className={`flex items-center gap-3 rounded-2xl px-3 py-2.5 ${ok ? 'bg-emerald-50 text-emerald-900' : warning ? 'bg-amber-50 text-amber-900' : 'bg-rose-50 text-rose-900'}`}><span className="[&>svg]:size-5">{icon}</span><span>{label}</span><strong className="mr-auto text-xs">{ok ? 'آماده' : warning ? 'محدود' : 'ناموفق'}</strong></div>; }
 function testStorage() { try { const key = '__exam_preflight__'; localStorage.setItem(key, '1'); localStorage.removeItem(key); return true; } catch { return false; } }
+function formatCountdown(seconds: number) { const hours = Math.floor(seconds / 3600); const minutes = Math.floor((seconds % 3600) / 60); const rest = seconds % 60; return [hours, minutes, rest].map((part) => String(part).padStart(2, '0')).join(' : '); }

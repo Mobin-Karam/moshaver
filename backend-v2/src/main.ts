@@ -24,7 +24,7 @@ async function bootstrap() {
 
   const openApi = new DocumentBuilder()
     .setTitle("Moshaver API v2")
-    .setDescription("User-scoped Moshaver v2 API. Protected operations use the secure session cookie and CSRF header for mutations. Capability requirements are enforced server-side.")
+    .setDescription("User-scoped Moshaver v2 API. Protected operations use short-lived HttpOnly access cookies, rotating HttpOnly refresh cookies, and a CSRF header for mutations. Capability requirements are enforced server-side.")
     .setVersion("2.0.0")
     .addCookieAuth(config.get<string>("cookieName", "moshaver_v2_session"))
     .addApiKey({ type: "apiKey", in: "header", name: "X-CSRF-Token", description: "Required for authenticated state-changing requests." }, "csrf")
