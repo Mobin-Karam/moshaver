@@ -95,6 +95,7 @@ export class SyncWorker {
   private flushing: Promise<{ pushed: number; failed: number }> | null = null;
   private status: SyncStatus = "offline";
   private readonly listeners = new Set<SyncStatusListener>();
+  private readonly resultListeners = new Set<(result: { pushed: number; failed: number }) => void>();
 
   constructor(
     private readonly sync: SyncProvider,
@@ -111,6 +112,11 @@ export class SyncWorker {
     this.listeners.add(listener);
     listener(this.status);
     return () => this.listeners.delete(listener);
+  }
+
+  subscribeResult(listener: (result: { pushed: number; failed: number }) => void): () => void {
+    this.resultListeners.add(listener);
+    return () => this.resultListeners.delete(listener);
   }
 
   start(): void {
@@ -135,6 +141,7 @@ export class SyncWorker {
       .then(async (result) => {
         if (!result.failed && this.pullUpdates) await this.pullUpdates();
         this.setStatus(result.failed ? "failed" : "online");
+        for (const listener of this.resultListeners) listener(result);
         return result;
       })
       .catch((error) => {

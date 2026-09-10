@@ -14,6 +14,8 @@ import {
   Building2,
   PackageOpen,
   ShieldCheck,
+  UserRoundCheck,
+  LibraryBig,
 } from "lucide-react";
 
 export const adminNavigation = [
@@ -74,6 +76,13 @@ export const adminNavigation = [
         icon: BookOpen,
         capability: "subjects.read",
       },
+      {
+        path: "resources",
+        title: "منابع آموزشی",
+        description: "انتشار پیوند و ویدئو برای یک یا چند دانش‌آموز",
+        icon: LibraryBig,
+        capability: "learning_resources.manage",
+      },
     ],
   },
   {
@@ -110,6 +119,13 @@ export const adminNavigation = [
         description: "مدیریت حساب، وضعیت و دسترسی دانش‌آموزان",
         icon: UsersRound,
         capability: "students.read",
+      },
+      {
+        path: "onboarding",
+        title: "ورودی دانش‌آموزان",
+        description: "اتصال ثبت‌نام‌های جدید به سازمان و مشاور",
+        icon: UserRoundCheck,
+        capability: "student_onboarding.manage",
       },
       {
         path: "users",
@@ -268,6 +284,7 @@ const roleTitles: Record<string, Record<string, string>> = {
     exams: "آزمون و درخواست‌ها",
     "communication/chat": "گفت‌وگوها",
     reports: "گزارش پیشرفت",
+    resources: "منابع پیشنهادی",
   },
   TEACHER: {
     "": "میز کار دبیر",
@@ -277,6 +294,7 @@ const roleTitles: Record<string, Record<string, string>> = {
     quizzes: "آزمونک‌ها",
     subjects: "درس‌های من",
     "communication/chat": "پیام‌ها",
+    resources: "منابع کلاس",
   },
   MENTOR: {
     "": "میز کار منتور",
@@ -284,6 +302,7 @@ const roleTitles: Record<string, Record<string, string>> = {
     planner: "برنامه و هدف‌ها",
     reports: "روند پیشرفت",
     "communication/chat": "گفت‌وگوها",
+    resources: "منابع پیشنهادی",
   },
   CONTENT_MANAGER: {
     "": "استودیوی محتوا",
@@ -291,6 +310,7 @@ const roleTitles: Record<string, Record<string, string>> = {
     questions: "بانک سؤال",
     quizzes: "آزمونک‌ها",
     exams: "آزمون‌ها",
+    resources: "کتابخانه منابع",
   },
   ORGANIZATION_ADMIN: {
     "": "داشبورد سازمان",
@@ -298,8 +318,16 @@ const roleTitles: Record<string, Record<string, string>> = {
     users: "کارکنان",
     organizations: "عضویت و دسترسی",
     reports: "گزارش سازمان",
+    resources: "منابع سازمان",
   },
-  PLATFORM_ADMIN: { "": "داشبورد پلتفرم" },
+  PLATFORM_ADMIN: {
+    "": "داشبورد پلتفرم",
+    onboarding: "تعیین تکلیف ورودی‌ها",
+    users: "همه کاربران",
+    organizations: "سازمان‌ها",
+    system: "مرکز عملیات",
+    audit: "ممیزی امنیتی",
+  },
 };
 
 export function navigationForCapabilities(capabilities: readonly string[], role?: string | null) {

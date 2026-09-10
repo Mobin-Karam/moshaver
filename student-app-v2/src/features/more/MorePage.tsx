@@ -1,10 +1,12 @@
-import { BarChart3, KeyRound, LogOut, Monitor, MoonStar, RotateCcw, ShieldCheck } from 'lucide-react';
+import { BarChart3, ChevronLeft, Headphones, KeyRound, ListMusic, LoaderCircle, LogOut, MessageCircle, Monitor, MoonStar, Pause, Play, RotateCcw, ShieldCheck, Sparkles } from 'lucide-react';
 import { useEffect, useState, type FormEvent, type InputHTMLAttributes } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useStudentStore } from '../../services/student-store';
 import { getNotificationPermission, requestNotificationPermission, type NotificationPermission } from '../../services/notification-service';
+import { useRelaxationPlayer } from '../../services/relaxation-player';
 
 export function MorePage() {
+  const location = useLocation();
   const student = useStudentStore((state) => state.student);
   const access = useStudentStore((state) => state.access);
   const user = useStudentStore((state) => state.user);
@@ -37,14 +39,16 @@ export function MorePage() {
   }, [access?.mode, loadAuthSessions, loadNotifications, loadProfileDomains]);
 
   useEffect(() => { void getNotificationPermission().then(setNotificationPermission); }, []);
+  useEffect(() => { if (location.hash) requestAnimationFrame(() => document.querySelector(location.hash)?.scrollIntoView({ block: 'center' })); }, [location.hash]);
 
   return (
-    <section className="space-y-4">
-      <h1 className="text-2xl font-semibold">بیشتر</h1>
-      {access?.mode === 'student' ? <article className="surface p-4">
-        <h2 className="font-semibold">{student?.name || user?.username || 'دانش‌آموز'}</h2>
-        <p className="mt-2 text-sm text-ink/65">{[student?.grade, student?.major].filter(Boolean).join(' | ') || 'پرونده دانش‌آموز'}</p>
+    <section className="more-page">
+      <header className="more-hero"><span><Sparkles /></span><div><h1>بیشتر</h1></div></header>
+      {access?.mode === 'student' ? <article className="surface more-profile p-4">
+        <div><small>پروفایل آموزشی</small><h2 className="font-semibold">{student?.name || user?.username || 'دانش‌آموز'}</h2><p>{[student?.grade, student?.major].filter(Boolean).join(' · ') || 'پرونده دانش‌آموز'}</p></div><ChevronLeft />
       </article> : <article className="surface p-4"><h2 className="font-semibold">نمای خانواده</h2><p className="mt-2 text-sm leading-6 text-ink/65">این بخش فقط خواندنی است. ثبت گزارش و درخواست جبران باید با حساب دانش‌آموز انجام شود.</p></article>}
+      {access?.mode === 'student' ? <RelaxationLibrary /> : null}
+      <div className="more-section-label"><span>یادگیری و ارتباط</span></div>
       {access?.mode === 'student' ? <article className="surface p-4">
         <h2 className="font-semibold">درس‌ها و ارتباطات پرونده</h2>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -53,6 +57,7 @@ export function MorePage() {
         </div>
         <div className="mt-2 rounded-md bg-paper p-3"><strong className="text-sm">اشتباه‌های نیازمند مرور</strong><p className="mt-1 text-sm text-ink/65">{mistakes.length ? `${mistakes.length.toLocaleString('fa-IR')} مورد در دفترچه اشتباهات` : 'موردی ثبت نشده است.'}</p></div>
       </article> : null}
+      {access?.canUseChat ? <Link to="/chat" className="surface flex min-h-16 items-center justify-between gap-3 p-4"><div><h2 className="font-semibold">گفتگو با مشاور</h2><p className="mt-1 text-sm text-ink/65">پیام‌ها و راهنمایی‌های آموزشی</p></div><MessageCircle className="shrink-0 text-primary" size={22} /></Link> : null}
             <Link to="/learning" className="surface flex items-center justify-between gap-3 p-4">
               <div>
                 <h2 className="font-semibold">پیشرفت و مرور</h2>
@@ -60,6 +65,7 @@ export function MorePage() {
               </div>
               <BarChart3 className="shrink-0 text-mint" size={22} />
             </Link>
+      <div className="more-section-label"><span>گزارش و برنامه‌ریزی</span></div>
       {access?.mode === 'student' ? <><article className="surface p-4">
         <div className="flex items-start gap-3">
           <MoonStar className="mt-0.5 shrink-0 text-mint" size={20} />
@@ -80,6 +86,7 @@ export function MorePage() {
           </div>
         </div>
       </article></> : null}
+      <div className="more-section-label"><span>امنیت و دستگاه</span></div>
       <article className="surface p-4">
         <div className="flex items-start gap-3">
           <KeyRound className="mt-0.5 shrink-0 text-ink/45" size={20} />
@@ -149,7 +156,7 @@ export function MorePage() {
           <p className="mt-3 rounded-md bg-paper px-3 py-3 text-sm text-ink/60">اعلانی برای نمایش وجود ندارد.</p>
         )}
       </article>
-      <article className="surface p-4">
+      <article className="surface p-4" id="sync-status">
         <h2 className="font-semibold">ذخیره‌سازی و همگام‌سازی</h2>
         <p className="mt-2 text-sm text-ink/65">وضعیت: {syncStatus}</p>
       </article>
@@ -160,6 +167,25 @@ export function MorePage() {
     </section>
   );
 }
+
+function RelaxationLibrary() {
+  const music = useRelaxationPlayer();
+  useEffect(() => { if (music.status === 'idle') void music.load(); }, [music]);
+  const remaining = Math.max(0, music.duration - music.currentTime);
+  return <article className="relaxation-card" aria-labelledby="relaxation-title">
+    <div className="relaxation-card__glow" />
+    <header><span><Headphones /></span><div><small>پیشنهاد آرامش امروز</small><h2 id="relaxation-title">{music.selected?.title || 'موسیقی امروز'}</h2><p>{music.selected ? `${music.selected.artist || 'منتخب سامانه'} · ${music.selectedBy === 'AUTO' ? 'انتخاب خودکار' : 'انتخاب شما'}` : 'هنوز موسیقی فعالی ثبت نشده است.'}</p></div></header>
+    {music.status === 'loading' ? <p className="relaxation-state"><LoaderCircle className="spin" /> در حال دریافت فهرست…</p> : null}
+    {music.error ? <div className="relaxation-error" role="alert"><p>{music.error}</p><button type="button" onClick={() => void music.load()}>تلاش دوباره</button></div> : null}
+    {music.selected ? <div className="relaxation-player">
+      <button type="button" className="relaxation-play" onClick={() => void music.toggle()} aria-label={music.playing ? 'مکث موسیقی آرامش' : 'پخش موسیقی آرامش'}>{music.buffering ? <LoaderCircle className="spin" /> : music.playing ? <Pause /> : <Play />}</button>
+      <div className="relaxation-timeline"><div><span dir="ltr">{formatAudioTime(music.currentTime)}</span><strong dir="ltr">-{formatAudioTime(remaining)}</strong></div><input type="range" min="0" max={music.duration || 0} step="1" value={music.currentTime} onChange={(event) => music.seek(Number(event.target.value))} aria-label="موقعیت پخش موسیقی" /><i style={{ inlineSize: `${music.bufferedPercent}%` }} /></div>
+    </div> : null}
+    {music.tracks.length ? <div className="music-library"><div className="music-library__title"><ListMusic /><strong>فهرست موسیقی‌ها</strong><span>{music.tracks.length.toLocaleString('fa-IR')} قطعه</span></div>{music.tracks.map((track, index) => <button type="button" key={track.id} className={music.selected?.id === track.id ? 'is-selected' : ''} onClick={() => void music.select(track.id)}><span>{(index + 1).toLocaleString('fa-IR')}</span><div><strong>{track.title}</strong><small>{track.artist || 'بدون نام هنرمند'}</small></div>{music.selected?.id === track.id ? <span className="playing-bars" aria-label="انتخاب‌شده"><i/><i/><i/></span> : <Play />}</button>)}</div> : music.status === 'ready' ? <p className="relaxation-state">مدیر سامانه هنوز موسیقی فعالی اضافه نکرده است.</p> : null}
+  </article>;
+}
+
+function formatAudioTime(seconds: number) { const value = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0; return `${String(Math.floor(value / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`; }
 
 type SaveState = 'idle' | 'saving' | 'success' | 'error';
 

@@ -13,12 +13,20 @@ export class Session {
   @Column()
   tokenHash!: string;
 
+  @Index({ unique: true })
+  @Column({ type: "varchar", nullable: true })
+  refreshTokenHash!: string | null;
+
   @Column()
   csrfToken!: string;
 
   @Index()
   @Column()
   expiresAt!: Date;
+
+  @Index()
+  @Column({ type: "datetime", nullable: true })
+  refreshExpiresAt!: Date | null;
 
   @CreateDateColumn()
   createdAt!: Date;

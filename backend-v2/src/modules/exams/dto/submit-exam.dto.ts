@@ -35,6 +35,11 @@ export class ExamAnswerDto {
   @IsInt()
   @Min(0)
   revision?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  approximateTimeSpentSeconds?: number;
 }
 
 export class SubmitExamDto {
@@ -42,4 +47,10 @@ export class SubmitExamDto {
   @ValidateNested({ each: true })
   @Type(() => ExamAnswerDto)
   answers: ExamAnswerDto[] = [];
+}
+
+export class ExamHeartbeatDto {
+  @IsOptional()
+  @IsString()
+  currentSectionId?: string;
 }

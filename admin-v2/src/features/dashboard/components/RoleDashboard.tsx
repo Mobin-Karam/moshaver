@@ -15,6 +15,7 @@ import { useAuth } from "../../auth";
 import { Badge, Button, Card, EmptyState, LoadingState } from "../../../shared/ui/ui";
 import { fa } from "../../../shared/lib/utils";
 import type { AttentionStudent, RoleDashboardData } from "../model/dashboard.types";
+import { quickActionsForRole } from "../model/role-experience";
 import { AttentionInbox } from "./AttentionInbox";
 
 type Metric = {
@@ -255,15 +256,7 @@ const metrics = roleDashboardMetrics;
 
 function QuickActions() {
   const auth = useAuth();
-  const actions = [
-    { to: "/admin/students", label: "دانش‌آموزان", cap: "students.read" },
-    { to: "/admin/planner", label: "برنامه‌ها", cap: "plans.read" },
-    { to: "/admin/exams", label: "آزمون‌ها", cap: "exams.read" },
-    { to: "/admin/quizzes", label: "آزمونک‌ها", cap: "quizzes.read" },
-    { to: "/admin/communication/chat", label: "گفت‌وگو", cap: "chat.read" },
-    { to: "/admin/organizations", label: "سازمان", cap: "organization.read" },
-    { to: "/admin/system", label: "سامانه", cap: "system.manage" },
-  ].filter((item) => auth.can(item.cap));
+  const actions = quickActionsForRole(auth.activeRole, auth.capabilities);
   return (
     <Card>
       <h2 className="font-black">دسترسی سریع</h2>

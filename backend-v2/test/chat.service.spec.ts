@@ -53,6 +53,65 @@ describe("ChatService membership isolation", () => {
     );
   });
 
+  it("projects the student peer into direct conversation rows", async () => {
+    const conversation = {
+      id: "direct-1",
+      type: "DIRECT",
+      title: "",
+      members: [
+        {
+          role: "MEMBER",
+          leftAt: null,
+          user: { id: "staff-1", username: "staff" },
+        },
+        {
+          role: "MEMBER",
+          leftAt: null,
+          user: {
+            id: "student-user-1",
+            username: "student",
+            student: {
+              id: "student-1",
+              name: "دانش‌آموز نمونه",
+              grade: "دوازدهم",
+              major: "ریاضی",
+              accountStatus: "active",
+            },
+          },
+        },
+      ],
+    };
+    const members = repo({
+      find: jest.fn(async () => [
+        { conversation, role: "MEMBER", muted: false },
+      ]),
+    });
+
+    await expect(
+      service(members).conversations({
+        id: "staff-1",
+        role: "ADVISOR",
+        roles: ["ADVISOR"],
+      } as any),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        id: "direct-1",
+        student: expect.objectContaining({
+          id: "student-1",
+          name: "دانش‌آموز نمونه",
+          grade: "دوازدهم",
+        }),
+      }),
+    ]);
+    expect(members.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        relations: {
+          conversation: { members: { user: { student: true } }, owner: true },
+        },
+      }),
+    );
+  });
+
   it("rejects message access without active conversation membership", async () => {
     await expect(
       service().messagesForConversation({ id: "u1" } as any, "private-chat"),

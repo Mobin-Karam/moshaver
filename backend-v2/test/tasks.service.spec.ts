@@ -38,12 +38,15 @@ describe("TasksService", () => {
 
     const result = await service.complete("user-1", task.id, {
       status: TaskCompletionStatus.PARTIAL,
+      actualMinutes: 48,
       actualTests: 12,
       difficulty: "hard",
       note: "review needed",
     });
 
-    expect(result).toMatchObject({ id: task.id, status: TaskCompletionStatus.PARTIAL, actualTests: 12, difficulty: "hard", note: "review needed" });
+    expect(result).toMatchObject({ id: task.id, status: TaskCompletionStatus.PARTIAL, actualMinutes: 48, actualTests: 12, difficulty: "hard", note: "review needed" });
+    expect(task.note).toBe("old");
+    expect(task.completionNote).toBe("review needed");
     expect(task.completedAt).toBeInstanceOf(Date);
     expect(tasks.save).toHaveBeenCalledWith(task);
   });

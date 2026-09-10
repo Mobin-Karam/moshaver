@@ -57,6 +57,8 @@ const QuizzesPage = lazy(() =>
 const SubjectsPage = lazy(() =>
   import("../features/subjects").then((module) => ({ default: module.SubjectsPage })),
 );
+const OnboardingPage = lazy(() => import("../features/onboarding").then((module) => ({ default: module.OnboardingPage })));
+const ResourcesPage = lazy(() => import("../features/resources").then((module) => ({ default: module.ResourcesPage })));
 
 function RouteScreen({ children }: { children: ReactNode }) {
   return <Suspense fallback={<RouteLoading />}>{children}</Suspense>;
@@ -168,6 +170,8 @@ export const router = createBrowserRouter([
               </CapabilityRoute>
             ),
           },
+          { path: "onboarding", element: <CapabilityRoute capability="student_onboarding.manage"><RouteScreen><OnboardingPage /></RouteScreen></CapabilityRoute> },
+          { path: "resources", element: <CapabilityRoute capability="learning_resources.manage"><RouteScreen><ResourcesPage /></RouteScreen></CapabilityRoute> },
           {
             path: "users",
             element: (

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   reconcileAttemptAnswers,
   type AnswerSaveState,
@@ -30,6 +31,7 @@ export function ExamPage() {
 }
 
 function StudentExamPage() {
+  const [searchParams] = useSearchParams();
   const exams = useStudentStore((state) => state.exams);
   const user = useStudentStore((state) => state.user);
   const loadExams = useStudentStore((state) => state.loadExams);
@@ -73,6 +75,12 @@ function StudentExamPage() {
       setBusy(false);
     }
   }, []);
+
+  useEffect(() => {
+    const examId = searchParams.get('exam');
+    const selected = exams.find((item) => item.id === examId);
+    if (selected && screen === 'center') void openPreflight(selected);
+  }, [exams, openPreflight, screen, searchParams]);
 
   const attachRun = useCallback(
     (nextRun: QuizRun) => {
@@ -177,6 +185,17 @@ function StudentExamPage() {
 
   useEffect(() => () => autosave.current?.dispose(), []);
 
+  useEffect(() => {
+    if (!run?.quiz.examId || !navigator.onLine) return;
+    const send = () => void apiClient.request<{ serverTime: string; expiresAt: string }>('POST', `/student/exams/${run.quiz.examId}/attempts/${run.runId}/heartbeat`, { currentSectionId: run.quiz.questions[index]?.sectionId || undefined }).then((timing) => {
+      setRun((current) => current ? { ...current, serverTime: timing.serverTime, deadlineAt: timing.expiresAt } : current);
+      setReceivedAt(Date.now());
+    }).catch(() => setSaveState('failed'));
+    send();
+    const interval = window.setInterval(send, 25_000);
+    return () => window.clearInterval(interval);
+  }, [index, run?.quiz.examId, run?.runId]);
+
   const updateAnswer = useCallback(
     (questionId: string, selectedOption: AttemptAnswer['selectedOption']) => {
       const answer = createAnswer(answerMap[questionId], { questionId, selectedOption });
@@ -272,6 +291,7 @@ function StudentExamPage() {
         error={error}
         onBack={() => setScreen('center')}
         onStart={() => void begin()}
+        onRefresh={() => void apiClient.request<ExamSummary>('GET', `/student/exams/${exam.id}`).then((detail) => setExam((current) => current ? { ...current, ...detail } : detail)).catch(() => undefined)}
       />
     );
   }

@@ -1,7 +1,7 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { NavLink, Route, Routes, BrowserRouter } from 'react-router-dom';
-import { CalendarDays, GraduationCap, Home, Laptop, LogIn, MessageCircle, Moon, MoreHorizontal, Sun } from 'lucide-react';
+import { Route, Routes, BrowserRouter } from 'react-router-dom';
+import { LogIn } from 'lucide-react';
 import { useStudentStore } from './services/student-store';
 import { apiClient } from './services/api-client';
 import { TauriSQLiteProvider } from './native/tauri-sqlite-provider';
@@ -10,6 +10,8 @@ import { WebSyncProvider } from './sync/sync-status';
 import { pullChanges, SyncWorker } from '@moshaver/student-core';
 import { registerWebUpdateAdapter } from './pwa/web-update-adapter';
 import { registerNotificationClickHandler } from './services/notification-service';
+import { StudentAppShell } from './components/layout/StudentAppShell';
+import { LoadingState } from './components/ui';
 import './styles.css';
 
 const HomePage = lazy(() => import('./features/home/HomePage').then((module) => ({ default: module.HomePage })));
@@ -18,6 +20,7 @@ const ExamPage = lazy(() => import('./features/exam/ExamPage').then((module) => 
 const ChatPage = lazy(() => import('./features/chat/ChatPage').then((module) => ({ default: module.ChatPage })));
 const MorePage = lazy(() => import('./features/more/MorePage').then((module) => ({ default: module.MorePage })));
 const LazyLearningPage = lazy(() => import('./features/learning/LearningPage').then((module) => ({ default: module.LearningPage })));
+const NotificationsPage = lazy(() => import('./features/notifications/NotificationsPage').then((module) => ({ default: module.NotificationsPage })));
 
 const syncController = initializeSync();
 
@@ -114,40 +117,20 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-paper text-ink">
+      <div className="min-h-screen bg-paper text-ink" dir="rtl">
         {!online ? <div className="bg-red-700 px-4 py-2 text-center text-sm text-white" role="status">اتصال اینترنت قطع است؛ تغییرات روی دستگاه ذخیره می‌شوند.</div> : null}
         {online && reconnected ? <div className="bg-mint px-4 py-2 text-center text-sm text-white" role="status">اتصال اینترنت برقرار شد.</div> : null}
-        <header className="sticky top-0 z-20 border-b border-black/10 bg-paper/95 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-slate-950/95">
-          <div className="mx-auto flex max-w-3xl items-center justify-between">
-            <div>
-              <strong className="block text-base">Moshaver | مشاور</strong>
-              <span className="text-xs text-ink/65 dark:text-white/60">{access?.mode === 'guardian' ? 'پرتال خانواده · فقط خواندنی' : 'همراه مطالعه و آزمون'}</span>
-            </div>
-            <div className="flex items-center gap-2"><span className="rounded-full bg-mint/15 px-3 py-1 text-xs text-mint">{syncStatusLabel(syncStatus)}</span><button className="grid size-10 place-items-center rounded-xl bg-white text-ink shadow-sm dark:bg-slate-800 dark:text-white" aria-label={`پوسته ${themeLabel(theme)}؛ تغییر پوسته`} title={`پوسته ${themeLabel(theme)}`} onClick={() => setTheme((value) => value === 'light' ? 'dark' : value === 'dark' ? 'system' : 'light')}>{theme === 'light' ? <Sun size={18} /> : theme === 'dark' ? <Moon size={18} /> : <Laptop size={18} />}</button></div>
-          </div>
-          {access?.mode === 'guardian' && guardianStudents.length ? <label className="mx-auto mt-3 flex max-w-3xl items-center gap-2 text-xs font-bold"><span>فرزند:</span><select className="min-h-10 flex-1 rounded-xl border border-black/10 bg-white px-3 dark:border-white/10 dark:bg-slate-900" value={selectedGuardianStudentId || ''} onChange={(event) => void selectGuardianStudent(event.target.value)}>{guardianStudents.map((child) => <option key={child.id} value={child.id}>{child.name}</option>)}</select></label> : null}
-        </header>
-
-        <main className="mx-auto max-w-3xl px-4 pb-28 pt-4">
-          <Suspense fallback={<p className="surface p-4 text-sm text-ink/60">در حال آماده‌سازی صفحه…</p>}><Routes>
+        <StudentAppShell access={access} unread={unread} syncLabel={syncStatusLabel(syncStatus)} theme={theme} onThemeChange={() => setTheme((value) => value === 'light' ? 'dark' : value === 'dark' ? 'system' : 'light')} guardianSelector={access?.mode === 'guardian' && guardianStudents.length ? <label className="guardian-picker"><span>فرزند:</span><select value={selectedGuardianStudentId || ''} onChange={(event) => void selectGuardianStudent(event.target.value)}>{guardianStudents.map((child) => <option key={child.id} value={child.id}>{child.name}</option>)}</select></label> : undefined}>
+          <Suspense fallback={<LoadingState label="در حال آماده‌سازی صفحه" />}><Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/plan" element={<PlanPage />} />
             <Route path="/exam" element={<ExamPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/more" element={<MorePage />} />
             <Route path="/learning" element={<LazyLearningPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
           </Routes></Suspense>
-        </main>
-
-        <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-black/10 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur">
-          <div className={`mx-auto grid max-w-3xl gap-1 ${access?.canUseChat ? 'grid-cols-5' : 'grid-cols-4'}`}>
-            <Tab to="/" icon={<Home />} label="امروز" />
-            <Tab to="/plan" icon={<CalendarDays />} label="برنامه" />
-            <Tab to="/exam" icon={<GraduationCap />} label="آزمون‌ها" />
-            {access?.canUseChat ? <Tab to="/chat" icon={<MessageCircle />} label="گفتگو" /> : null}
-            <Tab to="/more" icon={<MoreHorizontal />} label="بیشتر" badge={unread} />
-          </div>
-        </nav>
+        </StudentAppShell>
       </div>
     </BrowserRouter>
   );
@@ -238,33 +221,11 @@ function LoginPage() {
   );
 }
 
-function Tab({ to, icon, label, badge = 0 }: { to: string; icon: React.ReactElement; label: string; badge?: number }) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        `flex min-h-14 flex-col items-center justify-center rounded-md text-xs ${
-          isActive ? 'bg-ink text-white' : 'text-ink/65'
-        }`
-      }
-    >
-      <span className="relative">{React.cloneElement(icon, { size: 20, strokeWidth: 2 })}{badge ? <span className="absolute -left-2 -top-2 grid min-w-4 place-items-center rounded-full bg-rose-600 px-1 text-[9px] text-white">{new Intl.NumberFormat('fa-IR').format(badge)}</span> : null}</span>
-      <span className="mt-1">{label}</span>
-    </NavLink>
-  );
-}
-
 function syncStatusLabel(status: string) {
   if (status === 'offline') return 'آفلاین';
   if (status === 'syncing') return 'در حال همگام‌سازی';
   if (status === 'failed') return 'خطای همگام‌سازی';
   return 'آنلاین';
-}
-
-function themeLabel(theme: 'light' | 'dark' | 'system') {
-  if (theme === 'light') return 'روشن';
-  if (theme === 'dark') return 'تاریک';
-  return 'سیستم';
 }
 
 void syncController.then(() => {

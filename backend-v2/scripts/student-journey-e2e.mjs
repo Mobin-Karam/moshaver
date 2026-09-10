@@ -132,6 +132,8 @@ await request("GET", "/sync");
 await request("GET", "/relationships");
 const today = new Date().toISOString().slice(0, 10);
 await request("POST", "/reports", { planDate: today, focus: 7, fatigue: 3, motivation: 8, problem: "e2e", tomorrow: "continue" });
+await requestAs(guardian, "GET", `/guardian/students/${student.id}/reports`, undefined, "GUARDIAN");
+await requestAs(guardian, "POST", `/guardian/students/${student.id}/encouragement`, { message: "آفرین، ادامه بده", kind: "KEEP_GOING" }, "GUARDIAN");
 await request("POST", "/recovery-requests", { planDate: today, reason: "E2E verification", note: "Disposable database journey verification" });
 const mutationId = `e2e-${Date.now()}`;
 const upload = await request("POST", "/sync/upload", { changes: [{ id: mutationId, clientMutationId: mutationId, type: "daily_report", method: "POST", path: "/reports", body: { planDate: today, focus: 6, fatigue: 4, motivation: 7 } }] });

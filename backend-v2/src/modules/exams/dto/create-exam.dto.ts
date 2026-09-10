@@ -112,8 +112,23 @@ export class CreateExamDto {
   published?: boolean;
 
   @IsOptional()
-  @IsIn(["standard", "konkur"])
-  mode?: "standard" | "konkur";
+  @IsIn(["konkur", "mock", "practice", "quiz", "diagnostic"])
+  mode?: "konkur" | "mock" | "practice" | "quiz" | "diagnostic";
+
+  @IsOptional() @IsString() description?: string;
+  @IsOptional() @IsIn(["draft", "scheduled", "cancelled"]) lifecycleStatus?: "draft" | "scheduled" | "cancelled";
+  @IsOptional() @IsIn(["free", "section_only", "sequential"]) navigationMode?: "free" | "section_only" | "sequential";
+  @IsOptional() @IsIn(["whole_exam", "per_section"]) timerMode?: "whole_exam" | "per_section";
+  @IsOptional() @IsBoolean() allowResume?: boolean;
+  @IsOptional() @IsBoolean() allowLateStart?: boolean;
+  @IsOptional() @IsBoolean() allowPracticeAfterDeadline?: boolean;
+  @IsOptional() @IsBoolean() autoSubmitOnTimeout?: boolean;
+  @IsOptional() @IsIn(["single_session", "allow_resume"]) sessionPolicy?: "single_session" | "allow_resume";
+  @IsOptional() @IsBoolean() integrityMonitoring?: boolean;
+  @IsOptional() @IsDateString() latestStartAt?: string;
+  @IsOptional() @IsDateString() answerKeyReleaseAt?: string;
+  @IsOptional() @IsDateString() explanationReleaseAt?: string;
+  @IsOptional() @IsDateString() rankingReleaseAt?: string;
 
   @IsOptional()
   @IsArray()

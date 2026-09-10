@@ -19,7 +19,8 @@
     "seed:demo": "npm run build && NODE_ENV=development ALLOW_DEMO_SEED=true node dist/database/seeds/product-demo.js",
     "seed:reset-demo": "npm run build && NODE_ENV=development ALLOW_DEMO_RESET=true node dist/database/seeds/reset-product-demo.js && NODE_ENV=development ALLOW_DEMO_SEED=true node dist/database/seeds/product-demo.js",
     "test:e2e:security": "node scripts/security-matrix-e2e.mjs",
-    "test:e2e:student": "node scripts/student-journey-e2e.mjs"
+    "test:e2e:student": "node scripts/student-journey-e2e.mjs",
+    "test:e2e:onboarding": "node scripts/onboarding-journey-e2e.mjs"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.2",

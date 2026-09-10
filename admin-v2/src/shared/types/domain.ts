@@ -62,6 +62,10 @@ export interface Student {
   average_percent?: number;
   due_learning_count?: number;
   today_study_minutes?: number;
+  organizations?: Array<{ id: string; name: string }>;
+  advisors?: Array<{ id: string; name: string; organizationId?: string | null }>;
+  organization?: { id: string; name: string } | null;
+  advisor?: { id: string; name: string; organizationId?: string | null } | null;
 }
 
 export interface PlanTask {
@@ -140,6 +144,13 @@ export interface Conversation {
   memberCount?: number;
   unread?: number;
   student?: Student;
+  peer?: {
+    id: string;
+    username?: string;
+    name: string;
+    accountRole?: Role;
+    studentId?: string;
+  };
   lastMessage?: {
     id?: string;
     text?: string;

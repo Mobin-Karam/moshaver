@@ -20,7 +20,7 @@ import {
   UpdateExamDto,
 } from "./dto/create-exam.dto";
 import { ExamsService } from "./exams.service";
-import { SubmitExamDto } from "./dto/submit-exam.dto";
+import { ExamHeartbeatDto, SubmitExamDto } from "./dto/submit-exam.dto";
 import { RequireCapabilities } from "../../common/decorators/capabilities.decorator";
 import {
   AuthorizationService,
@@ -323,6 +323,17 @@ export class ExamsController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.exams.submitExam(id, dto.answers, user.id).then(ok);
+  }
+
+  @Post("student/exams/:examId/attempts/:attemptId/heartbeat")
+  @Roles(UserRole.STUDENT)
+  heartbeat(
+    @Param("examId") examId: string,
+    @Param("attemptId") attemptId: string,
+    @Body() dto: ExamHeartbeatDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.exams.heartbeat(examId, attemptId, user.id, dto.currentSectionId).then(ok);
   }
 
   @Post("admin/exams")

@@ -50,6 +50,8 @@ export function ExamRunner(props: Props) {
         <div className="text-left"><span className={`timer-chip ${warning === 'one' ? 'timer-danger' : warning ? 'timer-warning' : ''}`} dir="ltr" aria-label={`${formatSeconds(remaining)} زمان باقی‌مانده`}>{formatSeconds(remaining)}</span><SaveStatus state={props.saveState} />{warning ? <span className="sr-only" role="status">{warning === 'one' ? 'یک دقیقه' : warning === 'five' ? 'پنج دقیقه' : 'پانزده دقیقه'} تا پایان آزمون باقی مانده است.</span> : null}</div>
       </header>
 
+      {run.sections?.length ? <SectionTabs run={run} currentQuestionId={question.id} onIndex={props.onIndex} /> : null}
+
       <div className="exam-question">
         {question.sectionId || question.subject ? <p className="mb-3 text-xs font-bold text-mint">{question.subject || run.sections?.find((section) => section.id === question.sectionId)?.name}</p> : null}
         <h1 id="question-title" className="text-base font-bold leading-8">{question.question}</h1>
@@ -67,6 +69,11 @@ export function ExamRunner(props: Props) {
       </footer>
     </section>
   );
+}
+
+function SectionTabs({ run, currentQuestionId, onIndex }: { run: QuizRun; currentQuestionId: string; onIndex: (index: number) => void }) {
+  const current = run.sections?.find((section) => section.questionIds.includes(currentQuestionId));
+  return <nav className="exam-sections" aria-label="دفترچه‌های آزمون">{run.sections?.map((section, sectionIndex) => { const active = section.id === current?.id; const firstIndex = run.quiz.questions.findIndex((question) => section.questionIds.includes(question.id)); const locked = run.navigationMode === 'sequential' && !active; return <button key={section.id} type="button" className={active ? 'is-active' : ''} disabled={locked || firstIndex < 0} aria-current={active ? 'step' : undefined} onClick={() => onIndex(firstIndex)}><span>دفترچه {toPersian(section.order || sectionIndex + 1)}</span><strong>{section.name}</strong>{section.allocatedMinutes ? <small>{toPersian(section.allocatedMinutes)} دقیقه</small> : null}</button>; })}</nav>;
 }
 
 function QuestionSheet({ run, answers, current, remaining, onIndex }: { run: QuizRun; answers: Record<string, AttemptAnswer | undefined>; current: number; remaining: number; onIndex: (index: number) => void }) {

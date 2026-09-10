@@ -25,6 +25,7 @@ type AuthFailureListener = (error: ApiError) => void;
 const authFailureListeners = new Set<AuthFailureListener>();
 let activeOrganizationId = "";
 let activeWorkRole = "";
+let refreshPromise: Promise<boolean> | null = null;
 export const API_WORK_CONTEXT_EVENT = "admin-api-work-context-change";
 
 export function setApiWorkContext(role?: string, organizationId?: string) {
@@ -127,6 +128,7 @@ export async function request<T>(
   options: {
     timeoutMs?: number;
     noCsrfRetry?: boolean;
+    noAuthRefresh?: boolean;
     suppressAuthFailure?: boolean;
   } = {},
 ): Promise<T> {
@@ -161,6 +163,15 @@ export async function request<T>(
       err?.details ?? null,
     );
     if (
+      response.status === 401 &&
+      path !== "/auth/login" &&
+      path !== "/auth/refresh" &&
+      !options.noAuthRefresh
+    ) {
+      const refreshed = await refreshSession();
+      if (refreshed) return request<T>(method, path, body, { ...options, noAuthRefresh: true });
+    }
+    if (
       response.status === 403 &&
       apiError.code === "CSRF" &&
       isMutating(method) &&
@@ -181,6 +192,34 @@ export async function request<T>(
   } finally {
     window.clearTimeout(timeout);
   }
+}
+
+async function refreshSession() {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      const token = csrf();
+      if (!token) return false;
+      try {
+        const response = await fetch(`${getBackendTargetUrl()}/auth/refresh`, {
+          method: "POST",
+          credentials: "include",
+          headers: { Accept: "application/json", "X-CSRF-Token": token },
+        });
+        const payload = (await response.json().catch(() => null)) as ApiEnvelope<{ csrfToken?: string }> | null;
+        if (!response.ok || !payload?.ok || !payload.data.csrfToken) {
+          setCsrf();
+          return false;
+        }
+        setCsrf(payload.data.csrfToken);
+        return true;
+      } catch {
+        return false;
+      }
+    })().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
 }
 
 export const api = {
