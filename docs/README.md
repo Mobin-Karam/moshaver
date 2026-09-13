@@ -2,22 +2,23 @@
 
 This directory is the navigation hub for the active Moshaver v2 monorepo. Documentation is grouped by intent so a person or an agent can distinguish current architecture from migration plans and historical evidence. The complete v1.4 tree is preserved on `archive/v1.4`.
 
-Last repository inspection: 2026-09-08.
+Last repository inspection: 2026-09-13.
 
 ## Read first
 
-1. [System map](./architecture/system-map.md) — applications, APIs, data stores, runtime relationships, and version boundaries.
-2. [Repository runbook](./operations/repository-runbook.md) — local commands, validation, deployment entry points, and known script caveats.
-3. Choose the relevant v2 runtime:
+1. [Repository architecture](./architecture/repository-architecture.md) — monorepo model, project classes, ownership and architecture rules.
+2. [System map](./architecture/system-map.md) — applications, APIs, data stores, runtime relationships, and version boundaries.
+3. [Repository runbook](./operations/repository-runbook.md) — local commands, validation, deployment entry points, and known script caveats.
+4. Choose the relevant v2 runtime:
    - [backend v2 design](./architecture/backend-v2-design.md)
    - [student v2/Tauri runtime](./architecture/student-v2-tauri-runtime.md)
-4. To change the project safely, read the [developer handbook](./operations/developer-handbook.md).
+5. To change the project safely, read the [developer handbook](./operations/developer-handbook.md).
 
 ## Directory contract
 
 ```text
 docs/
-├── architecture/  Current system shape and stable technical boundaries
+├── architecture/  Current system shape, target repository model, ADRs and stable boundaries
 ├── components/    One document per runnable app or public API
 ├── operations/    Run, validate, secure, recover, and deploy the system
 ├── migrations/    Compatibility gaps and staged v1-to-v2 work
@@ -30,10 +31,18 @@ Current behavior belongs in `architecture/`, `components/`, or `operations/`. Un
 
 ## Architecture
 
+- [Repository architecture](./architecture/repository-architecture.md)
+- [Target monorepo layout](./architecture/target-monorepo-layout.md)
+- [Dependency boundaries](./architecture/dependency-boundaries.md)
+- [Repository architecture migration](./architecture/repository-architecture-migration.md)
+- [ADR 0001 — grouped product monorepo](./architecture/adr/0001-grouped-product-monorepo.md)
+- [ADR 0002 — modular monolith with CMB](./architecture/adr/0002-modular-monolith-cmb.md)
 - [System map](./architecture/system-map.md)
 - [Backend v2 design](./architecture/backend-v2-design.md)
 - [Student core boundary](./architecture/student-core-boundary.md)
 - [Student v2 and Tauri runtime](./architecture/student-v2-tauri-runtime.md)
+- [AI repository operating system](./architecture/ai-repository-operating-system.md)
+- [Graphify](./architecture/graphify.md)
 
 ## Components and APIs
 

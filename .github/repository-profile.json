@@ -4,8 +4,13 @@
   "defaultBranch": "main",
   "integrationBranch": "develop",
   "architecture": {
+    "repositoryModel": "grouped-product-monorepo",
+    "backendStyle": "modular-monolith",
     "backend": "CMB - Composable Modular Backend Architecture",
-    "trackingIssue": 21
+    "trackingIssue": 21,
+    "entrypoint": "ARCHITECTURE.md",
+    "dependencyPolicy": "docs/architecture/dependency-boundaries.md",
+    "targetLayout": "docs/architecture/target-monorepo-layout.md"
   },
   "components": [
     "backend-v2",
@@ -13,6 +18,14 @@
     "student-app-v2",
     "student-core",
     "packages/api-contract"
+  ],
+  "targetProjectClasses": [
+    "apps",
+    "contracts",
+    "cmb-platform",
+    "product-domain",
+    "infrastructure-adapters",
+    "tooling"
   ],
   "aiEngineering": {
     "canonicalInstructions": "AGENTS.md",
