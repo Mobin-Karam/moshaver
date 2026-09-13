@@ -13,11 +13,41 @@
       "verifyTasks": []
     },
     {
+      "id": "cmb-kernel",
+      "packageName": "@moshaver/cmb-kernel",
+      "path": "packages/cmb/kernel",
+      "kind": "cmb-kernel",
+      "dependsOn": [],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
+      "id": "cmb-health",
+      "packageName": "@moshaver/cmb-health",
+      "path": "packages/cmb/health",
+      "kind": "cmb-foundation",
+      "dependsOn": ["cmb-kernel"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
+      "id": "cmb-realtime",
+      "packageName": "@moshaver/cmb-realtime",
+      "path": "packages/cmb/realtime",
+      "kind": "cmb-platform",
+      "dependsOn": ["cmb-kernel"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
       "id": "backend-v2",
       "packageName": "moshaver-backend-v2",
       "path": "backend-v2",
       "kind": "application",
-      "dependsOn": [],
+      "dependsOn": ["cmb-health", "cmb-realtime"],
       "install": true,
       "bootstrapBuild": false,
       "verifyTasks": ["lint", "test", "build"]

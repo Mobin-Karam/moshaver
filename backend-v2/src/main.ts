@@ -36,9 +36,9 @@ async function bootstrap() {
     ...document.components.schemas,
     ApiError: {
       type: "object",
-      required: ["success", "error"],
+      required: ["ok", "error"],
       properties: {
-        success: { type: "boolean", example: false },
+        ok: { type: "boolean", example: false },
         error: {
           type: "object",
           required: ["code", "message"],
