@@ -1,17 +1,20 @@
-# Repository-wide Copilot instructions
+# Moshaver repository-wide Copilot instructions
 
-- Discover the project before editing. Do not assume languages, frameworks, package managers, app folders, database engines, or deployment targets.
-- Read the nearest `AGENTS.md` and applicable `.github/instructions/*.instructions.md` files.
+- Read `AGENTS.md` first; it is the canonical repository contract.
+- **Graphify first:** when `graphify-out/graph.json` exists, use the graph to locate architecture, callers, consumers, and change impact before broad repository search. Verify the source files you will change.
+- If the graph is missing/stale and Graphify is available, refresh it before architecture-wide work. Do not block a small fix solely because Graphify is unavailable.
+- Read the nearest applicable `.github/instructions/*.instructions.md` files.
+- Moshaver is a monorepo: `backend-v2`, `admin-v2`, `student-app-v2`, `student-core`, and `packages/api-contract` can affect each other.
+- Backend architectural work must follow the CMB direction tracked by issue #21: reusable kernel/platform modules must not depend on education-domain modules.
 - Prefer existing repository conventions and dependencies. Avoid unnecessary rewrites or new packages.
-- Search for callers, consumers, tests, types, schemas, routes, and configuration before changing a shared contract.
-- Keep changes focused, reversible, and compatible unless the user explicitly asks for a breaking change.
-- Never expose, print, commit, or fabricate secrets. Treat `.env*`, credentials, private keys, tokens, and production data as sensitive.
-- Do not disable security controls to fix functionality.
-- Do not execute destructive Git, filesystem, database, or deployment operations unless explicitly required and safe.
-- For bugs: reproduce or trace the failure, identify the root cause, implement the smallest fix, and add a regression test when practical.
-- For database changes: inspect current schema, migrations, constraints, indexes, consumers, and rollout safety.
-- For UI changes: preserve the design system and consider loading, empty, error, disabled, accessibility, responsive, keyboard, theme, and localization states when applicable.
-- For API changes: verify the real request/response/error/authentication contract and identify affected consumers.
-- Use project-defined lint, test, typecheck, format, and build commands. Never report a check as passing unless it actually ran successfully.
-- Reference concrete file paths when explaining repository-specific findings.
-- Mark unresolved repository facts as `UNKNOWN` instead of inventing them.
+- Search/query callers, consumers, tests, types, schemas, routes, migrations, and configuration before changing a shared contract.
+- Keep changes focused, reversible, and compatible unless a breaking change is explicitly approved.
+- Never expose, print, commit, or fabricate secrets or production data.
+- Never disable authentication, authorization, CSRF, validation, tenant isolation, or security checks to fix functionality.
+- For bugs: trace the failure, identify root cause, implement the smallest fix, and add a regression test when practical.
+- For database changes: inspect schema, migrations, indexes, constraints, consumers, rollback and rollout safety.
+- For UI changes: preserve design tokens and handle loading, empty, error, disabled, accessibility, responsive, keyboard, theme, localization and RTL states where relevant.
+- For API changes: verify actual request/response/error/auth contracts and identify both admin and student consumers.
+- Use project-defined lint, test, typecheck, format, and build commands. Never report a check as passing unless it ran successfully.
+- Reference concrete file paths for repository-specific findings.
+- Mark unresolved facts as `UNKNOWN` rather than inventing them.
