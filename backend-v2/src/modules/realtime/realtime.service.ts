@@ -1,35 +1,40 @@
 import { Injectable } from "@nestjs/common";
-import { Observable, Subject } from "rxjs";
+import { Observable } from "rxjs";
+import {
+  InMemoryRealtimeHub,
+  type RealtimeEvent as CmbRealtimeEvent,
+} from "@moshaver/cmb-realtime";
 
-export type RealtimeEvent = {
-  type:
-    | "message"
-    | "notification.created"
-    | "plan.updated"
-    | "exam.created"
-    | "system.update"
-    | "chat.message.created";
-  data: unknown;
-};
+export type RealtimeEventType =
+  | "message"
+  | "notification.created"
+  | "plan.updated"
+  | "exam.created"
+  | "system.update"
+  | "chat.message.created";
+
+export type RealtimeEvent = CmbRealtimeEvent<RealtimeEventType>;
 
 @Injectable()
 export class RealtimeService {
-  private readonly connections = new Map<string, Set<Subject<RealtimeEvent>>>();
+  private readonly hub = new InMemoryRealtimeHub<RealtimeEventType>();
 
   stream(userId: string): Observable<RealtimeEvent> {
     return new Observable((subscriber) => {
-      const subject = new Subject<RealtimeEvent>();
-      const set = this.connections.get(userId) ?? new Set();
-      set.add(subject);
-      this.connections.set(userId, set);
-      const subscription = subject.subscribe(subscriber);
-      return () => { subscription.unsubscribe(); subject.complete(); set.delete(subject); if (!set.size) this.connections.delete(userId); };
+      const unsubscribe = this.hub.subscribe(userId, (event) => subscriber.next(event));
+      return unsubscribe;
     });
   }
 
-  emitToUser(userId: string, type: RealtimeEvent["type"], data: unknown) {
-    for (const connection of this.connections.get(userId) ?? []) connection.next({ type, data });
+  emitToUser(userId: string, type: RealtimeEventType, data: unknown) {
+    this.hub.emitToUser(userId, type, data);
   }
-  emitToUsers(userIds: Iterable<string>, type: RealtimeEvent["type"], data: unknown) { for (const userId of new Set(userIds)) this.emitToUser(userId, type, data); }
-  connectionCount(userId?: string) { return userId ? (this.connections.get(userId)?.size ?? 0) : [...this.connections.values()].reduce((sum, set) => sum + set.size, 0); }
+
+  emitToUsers(userIds: Iterable<string>, type: RealtimeEventType, data: unknown) {
+    this.hub.emitToUsers(userIds, type, data);
+  }
+
+  connectionCount(userId?: string) {
+    return this.hub.connectionCount(userId);
+  }
 }
