@@ -10,6 +10,8 @@
     "workspace:list": "node tooling/workspace/run.mjs list",
     "workspace:check": "node tooling/workspace/check.mjs",
     "workspace:plan": "node tooling/workspace/run.mjs plan",
+    "architecture:check": "node tooling/architecture/check-boundaries.mjs",
+    "graphify:check": "node tooling/graphify/fingerprint.mjs --check=graphify-out/code-fingerprint.json",
     "bootstrap": "node tooling/workspace/run.mjs bootstrap",
     "build": "node tooling/workspace/run.mjs run build",
     "test": "node tooling/workspace/run.mjs run test",
