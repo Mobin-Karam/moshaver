@@ -22,3 +22,5 @@ jobs:
         run: node tooling/workspace/check.mjs
       - name: Enforce architecture boundaries
         run: node tooling/architecture/check-boundaries.mjs
+      - name: Validate API contract authority
+        run: node tooling/contracts/check-api-contract.mjs
