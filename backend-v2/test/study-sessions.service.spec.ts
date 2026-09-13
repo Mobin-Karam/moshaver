@@ -14,6 +14,7 @@ function repository<T>(items: T[] = []) {
     }),
     create: jest.fn((item: T) => item),
     save: jest.fn(async (item: T) => ({ id: "session-1", ...item })),
+    find: jest.fn(async () => items),
   };
 }
 
@@ -39,5 +40,47 @@ describe("StudySessionsService", () => {
     expect(paused.elapsedSeconds).toBeGreaterThanOrEqual(12);
     const resumed = await service.resume("user-1", session.id);
     expect(resumed.status).toBe(StudySessionStatus.ACTIVE);
+  });
+
+  it("notifies the active adviser once the planned study limit is reached", async () => {
+    const now = new Date();
+    const session = {
+      id: "session-1",
+      student: { id: "student-1", name: "سارا" },
+      task: { id: "task-1", title: "ریاضی", duration: 60 },
+      status: StudySessionStatus.ACTIVE,
+      startedAt: new Date(now.getTime() - 61 * 60_000),
+      lastStartedAt: new Date(now.getTime() - 61 * 60_000),
+      elapsedSeconds: 0,
+    } as any;
+    const adviser = { fromUser: { id: "advisor-1" } } as any;
+    const notifications = { createForUsers: jest.fn(async () => []) };
+    const service = new StudySessionsService(
+      repository([session]) as any,
+      repository([{ id: "student-1" }]) as any,
+      repository() as any,
+      repository([adviser]) as any,
+      notifications as any,
+    );
+
+    await service.heartbeat("user-1", session.id);
+
+    expect(notifications.createForUsers).toHaveBeenCalledWith(["advisor-1"], expect.objectContaining({
+      type: "STUDY_OVERTIME",
+      title: "رسیدن به سقف زمان مطالعه",
+      dedupeKey: "study-overtime:session-1:limit",
+      data: expect.objectContaining({ studentId: "student-1", taskId: "task-1", level: "limit", limitSeconds: 3600 }),
+    }));
+  });
+
+  it("uses a high-priority escalation when study runs much longer than planned", async () => {
+    const now = new Date();
+    const session = { id: "session-2", student: { id: "student-1", name: "سارا" }, task: { id: "task-2", title: "فیزیک", duration: 40 }, status: StudySessionStatus.ACTIVE, startedAt: new Date(now.getTime() - 61 * 60_000), lastStartedAt: new Date(now.getTime() - 61 * 60_000), elapsedSeconds: 0 } as any;
+    const notifications = { createForUsers: jest.fn(async () => []) };
+    const service = new StudySessionsService(repository([session]) as any, repository([{ id: "student-1" }]) as any, repository() as any, repository([{ fromUser: { id: "advisor-1" } }]) as any, notifications as any);
+
+    await service.heartbeat("user-1", session.id);
+
+    expect(notifications.createForUsers).toHaveBeenCalledWith(["advisor-1"], expect.objectContaining({ title: "ادامه طولانی جلسه مطالعه", priority: "high", dedupeKey: "study-overtime:session-2:excessive" }));
   });
 });

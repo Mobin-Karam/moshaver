@@ -69,6 +69,11 @@ export async function fetchMessages(conversationId: string, beforeMessageId = ""
 }
 
 export const chatApi = {
+  configuration: () => api.get<{ allowedEmojis: string[] }>("/chat/configuration"),
+  updateConfiguration: (allowedEmojis: string[]) =>
+    api.patch<{ allowedEmojis: string[] }>("/chat/configuration", { allowedEmojis }),
+  profile: (userId: string) => api.get<{ id: string; username: string; displayName: string; bio: string; avatarUrl: string }>(`/chat/profiles/${userId}`),
+  allowUsernameChange: (userId: string) => api.post(`/chat/profiles/${userId}/allow-username-change`, {}),
   markRead: (conversationId: string) => api.post(`/chat/conversations/${conversationId}/read`, {}),
   send: async (conversationId: string, text: string, replyToId?: string) =>
     normalizeChatMessage(

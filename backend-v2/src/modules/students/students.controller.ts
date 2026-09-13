@@ -51,6 +51,16 @@ export class StudentController {
   learningItems(@CurrentUser() user: AuthenticatedUser) {
     return this.students.learning(user?.id).then((data) => ok(data.items));
   }
+
+  @Get("chat-privacy")
+  chatPrivacy(@CurrentUser() user: AuthenticatedUser) {
+    return this.students.chatPrivacy(user.id).then(ok);
+  }
+
+  @Patch("chat-privacy")
+  updateChatPrivacy(@CurrentUser() user: AuthenticatedUser, @Body("guardianReadOnly") enabled: unknown) {
+    return this.students.updateChatPrivacy(user.id, enabled).then(ok);
+  }
 }
 
 @Controller()

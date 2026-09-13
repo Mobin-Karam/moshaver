@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 import { Conversation } from "./conversation.entity";
+import { Task } from "./task.entity";
 
 export enum ChatMessageType {
   TEXT = "TEXT",
@@ -39,6 +40,9 @@ export class ChatMessage {
 
   @ManyToOne(() => ChatMessage, { nullable: true, onDelete: "SET NULL" })
   replyTo?: ChatMessage | null;
+
+  @ManyToOne(() => Task, { nullable: true, onDelete: "SET NULL" })
+  linkedTask?: Task | null;
 
   @Column({ type: "datetime", nullable: true }) editedAt?: Date | null;
   @Column({ type: "datetime", nullable: true }) deletedAt?: Date | null;

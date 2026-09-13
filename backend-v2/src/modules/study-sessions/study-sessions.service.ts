@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Optional } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ApiException } from "../../common/exceptions/api.exception";
@@ -6,6 +6,8 @@ import { Student } from "../../database/entities/student.entity";
 import { StudySession, StudySessionStatus } from "../../database/entities/study-session.entity";
 import { Task } from "../../database/entities/task.entity";
 import { FinishStudySessionDto } from "./dto/finish-study-session.dto";
+import { RelationshipStatus, RelationshipType, UserRelationship } from "../../database/entities/user-relationship.entity";
+import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
 export class StudySessionsService {
@@ -13,6 +15,8 @@ export class StudySessionsService {
     @InjectRepository(StudySession) private readonly sessions: Repository<StudySession>,
     @InjectRepository(Student) private readonly students: Repository<Student>,
     @InjectRepository(Task) private readonly tasks: Repository<Task>,
+    @Optional() @InjectRepository(UserRelationship) private readonly relationships?: Repository<UserRelationship>,
+    @Optional() private readonly notifications?: NotificationsService,
   ) {}
 
   async start(userId: string, taskId: string) {
@@ -49,7 +53,9 @@ export class StudySessionsService {
     session.elapsedSeconds += this.secondsSince(session.lastStartedAt || session.startedAt, now);
     session.lastStartedAt = now;
     session.lastHeartbeatAt = now;
-    return this.publicSession(await this.sessions.save(session));
+    const saved = await this.sessions.save(session);
+    await this.notifyOvertime(saved);
+    return this.publicSession(saved);
   }
 
   async pause(userId: string, sessionId: string) {
@@ -98,7 +104,7 @@ export class StudySessionsService {
   }
 
   private async sessionForUser(userId: string, sessionId: string) {
-    const session = await this.sessions.findOne({ where: { id: sessionId, student: { user: { id: userId } } }, relations: { task: true } });
+    const session = await this.sessions.findOne({ where: { id: sessionId, student: { user: { id: userId } } }, relations: { task: true, student: true } });
     if (!session) throw this.notFound();
     return session;
   }
@@ -121,6 +127,33 @@ export class StudySessionsService {
 
   private secondsSince(start: Date, end: Date) {
     return Math.max(0, Math.floor((end.getTime() - start.getTime()) / 1000));
+  }
+
+  private async notifyOvertime(session: StudySession) {
+    const limitSeconds = Math.max(0, Number(session.task?.duration || 0) * 60);
+    if (!limitSeconds || session.elapsedSeconds < limitSeconds || !this.relationships || !this.notifications || !session.student?.id) return;
+    const advisers = await this.relationships.find({
+      where: { toStudent: { id: session.student.id }, type: RelationshipType.ADVISOR_OF, status: RelationshipStatus.ACTIVE },
+      relations: { fromUser: true },
+    });
+    if (!advisers.length) return;
+    const excessiveAt = Math.max(Math.ceil(limitSeconds * 1.5), limitSeconds + 15 * 60);
+    const overtimeMinutes = Math.max(0, Math.floor((session.elapsedSeconds - limitSeconds) / 60));
+    const studentName = session.student.name || "دانش‌آموز";
+    const taskTitle = session.task.title || session.task.subject || "تکلیف مطالعه";
+    const recipients = advisers.map((item) => item.fromUser.id);
+    const notify = (level: "limit" | "excessive") => this.notifications!.createForUsers(recipients, {
+        type: "STUDY_OVERTIME", category: "study", priority: level === "excessive" ? "high" : "normal",
+        title: level === "excessive" ? "ادامه طولانی جلسه مطالعه" : "رسیدن به سقف زمان مطالعه",
+        body: level === "excessive"
+          ? `${studentName} مطالعه «${taskTitle}» را ${overtimeMinutes.toLocaleString("fa-IR")} دقیقه بیشتر از زمان تعیین‌شده ادامه داده است.`
+          : `${studentName} به سقف ${Math.round(limitSeconds / 60).toLocaleString("fa-IR")} دقیقه‌ای مطالعه «${taskTitle}» رسیده و همچنان ادامه می‌دهد.`,
+        url: `/admin/planner?studentId=${encodeURIComponent(session.student.id)}`,
+        data: { studentId: session.student.id, taskId: session.task.id, sessionId: session.id, level, elapsedSeconds: session.elapsedSeconds, limitSeconds },
+        dedupeKey: `study-overtime:${session.id}:${level}`,
+      });
+    await notify("limit");
+    if (session.elapsedSeconds >= excessiveAt) await notify("excessive");
   }
 
   private notFound() {

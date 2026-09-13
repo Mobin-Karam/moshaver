@@ -24,6 +24,7 @@ import { DatabaseBackupPanel } from "../components/DatabaseBackupPanel";
 import { ReleasePanel } from "../components/ReleasePanel";
 import { SystemHistory } from "../components/SystemHistory";
 import { RelaxationMusicManager } from "../components/RelaxationMusicManager";
+import { ChatEmojiManager } from "../components/ChatEmojiManager";
 
 export type SystemView = "overview" | "releases" | "database" | "audit";
 function QueryError({ retry }: { retry: () => void }) {
@@ -220,7 +221,7 @@ export function SystemPage({ view = "overview" }: { view?: SystemView }) {
             ))}
           </div>
         </section>
-        {auth.hasRole("PLATFORM_ADMIN") ? <RelaxationMusicManager /> : null}
+        {auth.hasRole("PLATFORM_ADMIN") ? <><ChatEmojiManager /><RelaxationMusicManager /></> : null}
       </div>
     );
   }

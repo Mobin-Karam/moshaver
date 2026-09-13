@@ -18,7 +18,7 @@ const HomePage = lazy(() => import('./features/home/HomePage').then((module) => 
 const PlanPage = lazy(() => import('./features/plan/PlanPage').then((module) => ({ default: module.PlanPage })));
 const ExamPage = lazy(() => import('./features/exam/ExamPage').then((module) => ({ default: module.ExamPage })));
 const ChatPage = lazy(() => import('./features/chat/ChatPage').then((module) => ({ default: module.ChatPage })));
-const MorePage = lazy(() => import('./features/more/MorePage').then((module) => ({ default: module.MorePage })));
+const MoreRouterPage = lazy(() => import('./features/more/MoreRouterPage').then((module) => ({ default: module.MoreRouterPage })));
 const LazyLearningPage = lazy(() => import('./features/learning/LearningPage').then((module) => ({ default: module.LearningPage })));
 const NotificationsPage = lazy(() => import('./features/notifications/NotificationsPage').then((module) => ({ default: module.NotificationsPage })));
 
@@ -126,7 +126,7 @@ function App() {
             <Route path="/plan" element={<PlanPage />} />
             <Route path="/exam" element={<ExamPage />} />
             <Route path="/chat" element={<ChatPage />} />
-            <Route path="/more" element={<MorePage />} />
+            <Route path="/more/:section?" element={<MoreRouterPage theme={theme} onThemeChange={setTheme} />} />
             <Route path="/learning" element={<LazyLearningPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
           </Routes></Suspense>

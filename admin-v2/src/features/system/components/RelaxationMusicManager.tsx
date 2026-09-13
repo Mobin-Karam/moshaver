@@ -18,7 +18,10 @@ export function RelaxationMusicManager() {
 
   function preview(id: string, url: string) {
     if (!audio.current) return;
-    if (playingId === id && !audio.current.paused) { audio.current.pause(); setPlayingId(null); return; }
+    if (playingId === id && !audio.current.paused) { audio.current.pause(); audio.current.removeAttribute("src"); audio.current.load(); setPlayingId(null); return; }
+    audio.current.pause();
+    audio.current.removeAttribute("src");
+    audio.current.load();
     audio.current.src = url;
     void audio.current.play().then(() => setPlayingId(id)).catch(() => notify("پخش این پیوند در مرورگر ممکن نیست.", "error"));
   }

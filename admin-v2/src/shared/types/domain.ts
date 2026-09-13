@@ -150,6 +150,9 @@ export interface Conversation {
     name: string;
     accountRole?: Role;
     studentId?: string;
+    displayName?: string;
+    bio?: string;
+    avatarUrl?: string;
   };
   lastMessage?: {
     id?: string;

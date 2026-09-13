@@ -43,5 +43,6 @@ describe("admin notification model", () => {
         readAt: "2026-09-07T08:00:00Z",
       }),
     ).toMatchObject({ type: "exam", body: "ساعت هشت", isRead: true });
+    expect(normalizeAdminNotification({ id: "n2", title: "زمان مطالعه", type: "STUDY_OVERTIME" })).toMatchObject({ type: "lesson" });
   });
 });

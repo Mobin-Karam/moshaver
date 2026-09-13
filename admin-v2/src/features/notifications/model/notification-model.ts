@@ -34,7 +34,7 @@ export function normalizeAdminNotification(
       ? "message"
       : type === "EXAM_REMINDER" || type === "EXAM"
         ? "exam"
-        : type === "PLAN_UPDATE" || type === "LESSON"
+        : type === "PLAN_UPDATE" || type === "LESSON" || type === "STUDY_OVERTIME"
           ? "lesson"
           : "announcement";
   return {

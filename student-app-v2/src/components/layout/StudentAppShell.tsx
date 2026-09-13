@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, CalendarDays, GraduationCap, Home, Menu } from 'lucide-react';
+import { Bell, CalendarDays, GraduationCap, Home, Menu, MessageCircleIcon } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import type { PortalAccess } from '../../app/portal-access';
 import { ActivityIsland } from './ActivityIsland';
@@ -14,7 +14,7 @@ export function StudentAppShell({ children, access, unread, syncLabel, theme, on
       <Tab to="/" icon={<Home />} label="خانه" />
       <Tab to="/plan" icon={<CalendarDays />} label="برنامه" />
       <Tab to="/exam" icon={<GraduationCap />} label="آزمون‌ها" />
-      <Tab to="/notifications" icon={<Bell />} label="اعلان‌ها" badge={unread} />
+      <Tab to="/chat" icon={<MessageCircleIcon />} label="گفتگو" badge={unread} />
       <Tab to="/more" icon={<Menu />} label="بیشتر" />
     </div></nav>
     {access?.mode === 'guardian' ? <span className="sr-only">پرتال خانواده، فقط خواندنی</span> : null}

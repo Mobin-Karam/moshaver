@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, Max, Min } from "class-validator";
+import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from "class-validator";
 
 export class FinishStudySessionDto {
   @IsOptional()
@@ -9,11 +9,11 @@ export class FinishStudySessionDto {
 
   @IsOptional()
   @IsString()
-  @Max(64)
+  @MaxLength(64)
   difficulty?: string;
 
   @IsOptional()
   @IsString()
-  @Max(2000)
+  @MaxLength(2000)
   note?: string;
 }

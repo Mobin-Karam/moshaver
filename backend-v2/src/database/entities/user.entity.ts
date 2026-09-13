@@ -40,6 +40,11 @@ export class User {
   @Column({ type: "varchar", length: 20, default: UserStatus.ACTIVE }) status!: UserStatus;
   @Column({ length: 12, default: "fa-IR" }) locale!: string;
   @Column({ length: 64, default: "Asia/Tehran" }) timezone!: string;
+  @Column({ length: 100, default: "" }) chatDisplayName!: string;
+  @Column({ length: 500, default: "" }) chatBio!: string;
+  @Column({ length: 1200, default: "" }) chatAvatarUrl!: string;
+  @Column({ default: 0 }) usernameChangeCount!: number;
+  @Column({ type: "datetime", nullable: true }) usernameChangedAt?: Date | null;
 
   @CreateDateColumn()
   createdAt!: Date;

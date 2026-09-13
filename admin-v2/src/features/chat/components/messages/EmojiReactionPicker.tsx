@@ -1,8 +1,8 @@
 import { SmilePlus } from "lucide-react";
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { chatApi } from "../../api/chat.api";
 
-const common = ["❤️", "👍", "😂", "👏", "😮", "😢"];
-const more = ["🔥", "🎉", "🙏", "✅", "💯", "🤝", "⭐", "💪"];
+const fallback = ["❤️", "👍", "😂", "👏", "😮", "😢", "🔥", "🎉", "🙏", "✅"];
 
 export function EmojiReactionPicker({
   reacted,
@@ -11,8 +11,8 @@ export function EmojiReactionPicker({
   reacted: (emoji: string) => boolean;
   onReact: (emoji: string, remove: boolean) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const emojis = expanded ? [...common, ...more] : common;
+  const configuration = useQuery({ queryKey: ["chat-configuration"], queryFn: chatApi.configuration, staleTime: 60_000 });
+  const emojis = configuration.data?.allowedEmojis?.length ? configuration.data.allowedEmojis : fallback;
   return (
     <div className="flex items-center gap-0.5">
       {emojis.map((emoji) => (
@@ -27,15 +27,7 @@ export function EmojiReactionPicker({
           {emoji}
         </button>
       ))}
-      <button
-        type="button"
-        title={expanded ? "واکنش‌های کمتر" : "واکنش‌های بیشتر"}
-        aria-label={expanded ? "واکنش‌های کمتر" : "واکنش‌های بیشتر"}
-        className="grid min-h-7 min-w-7 place-items-center rounded-md hover:bg-black/5 dark:hover:bg-white/10"
-        onClick={() => setExpanded((value) => !value)}
-      >
-        <SmilePlus size={14} />
-      </button>
+      {configuration.isLoading ? <SmilePlus size={14} aria-label="در حال دریافت واکنش‌ها" /> : null}
     </div>
   );
 }

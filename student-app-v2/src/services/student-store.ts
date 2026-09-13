@@ -118,6 +118,7 @@ interface BackendStudySession {
   taskId?: string;
   status: 'ACTIVE' | 'PAUSED' | 'FINISHED';
   startedAt: string;
+  lastHeartbeatAt?: string | null;
   elapsedSeconds?: number;
 }
 
@@ -218,6 +219,7 @@ interface StudentState {
   startTask(taskId: string): Promise<void>;
   pauseFocus(): Promise<void>;
   resumeFocus(): Promise<void>;
+  heartbeatFocus(): Promise<void>;
   finishTask(taskId: string, feedback?: { status?: TaskCompletionStatus; actualTests?: number; difficulty?: string; note?: string }): Promise<void>;
   completeTask(taskId: string): Promise<void>;
   cancelFocus(): void;
@@ -625,6 +627,18 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       throw error;
     }
   },
+  async heartbeatFocus() {
+    const current = get().activeSession;
+    if (!current || current.status !== 'running' || current.id.startsWith('local-') || !navigator.onLine) return;
+    try {
+      const session = await apiClient.request<BackendStudySession>('POST', `/student/study-sessions/${current.id}/heartbeat`);
+      const refreshed = mapStudySession(session);
+      saveFocusSession(refreshed);
+      set({ activeSession: refreshed });
+    } catch {
+      // The visible timer remains local; the next heartbeat or finish reconciles it.
+    }
+  },
   async finishTask(taskId, feedback) {
     requireStudentMutation(get().access);
     const previousPlan = get().plan;
@@ -635,8 +649,9 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     const completion = {
       ...payload,
       actualMinutes: session ? Math.max(1, Math.round(elapsedSeconds(session) / 60)) : payload.actualMinutes,
-      actualTests: Number(feedback?.actualTests ?? payload.actualTests),
-      note: [feedback?.difficulty ? `سختی: ${feedback.difficulty}` : '', feedback?.note || ''].filter(Boolean).join(' | '),
+      actualTests: feedback?.status === 'skipped' ? 0 : Number(feedback?.actualTests ?? payload.actualTests),
+      difficulty: feedback?.difficulty,
+      note: feedback?.note || '',
     };
     saveFocusSession(null);
     set((state) => ({
@@ -647,19 +662,31 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       },
     }));
     try {
-      if (session && !session.id.startsWith('local-')) {
-        await apiClient.request('POST', `/student/study-sessions/${session.id}/finish`, {
-          actualTests: completion.actualTests,
-          difficulty: feedback?.difficulty,
-          note: feedback?.note,
-        });
-      }
-      await apiClient.request('POST', `/student/tasks/${taskId}/complete`, completion);
-      await get().loadDashboard();
+      await apiClient.request('POST', `/student/tasks/${encodeURIComponent(taskId)}/complete`, completion);
     } catch (error) {
       saveFocusSession(session);
       set({ plan: previousPlan, activeSession: session, error: readableError(error), syncStatus: navigator.onLine ? 'failed' : 'offline' });
       throw error;
+    }
+
+    if (session && !session.id.startsWith('local-')) {
+      try {
+        await apiClient.request('POST', `/student/study-sessions/${encodeURIComponent(session.id)}/finish`, {
+          actualTests: completion.actualTests,
+          difficulty: feedback?.difficulty,
+          note: feedback?.note,
+        });
+      } catch (error) {
+        // Task completion is already durable. Keep it completed and let the
+        // normal sync/reconciliation path recover the ancillary timer update.
+        set({ error: readableError(error), syncStatus: navigator.onLine ? 'failed' : 'offline' });
+      }
+    }
+
+    try {
+      await get().loadDashboard();
+    } catch {
+      // loadDashboard owns its error state; completion must remain durable.
     }
   },
   async completeTask(taskId) {
@@ -739,7 +766,7 @@ function mapStudySession(session: BackendStudySession): FocusSession {
   return {
     id: session.id,
     taskId: session.taskId || '',
-    startedAt: session.startedAt,
+    startedAt: session.status === 'ACTIVE' ? session.lastHeartbeatAt || session.startedAt : session.startedAt,
     status: session.status === 'PAUSED' ? 'paused' : 'running',
     elapsedSeconds: Number(session.elapsedSeconds || 0),
   };

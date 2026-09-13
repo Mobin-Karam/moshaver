@@ -42,6 +42,7 @@ export { NotificationPreference } from "./notification-preference.entity";
 export { Conversation } from "./conversation.entity";
 export { ConversationMember } from "./conversation-member.entity";
 export { MessageReaction } from "./message-reaction.entity";
+export { ChatConfiguration } from "./chat-configuration.entity";
 export { Encouragement } from "./encouragement.entity";
 export { StudentPresence } from "./student-presence.entity";
 export { ActivityEvent } from "./activity-event.entity";

@@ -42,6 +42,11 @@ export class Student {
   @Column({ length: 32, default: "ASSIGNED" })
   onboardingStatus!: "PENDING_ASSIGNMENT" | "ASSIGNED";
 
+  @Column({ default: false })
+  guardianChatReadOnly!: boolean;
+  @Column({ type: "datetime", nullable: true })
+  guardianChangedAt?: Date | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 

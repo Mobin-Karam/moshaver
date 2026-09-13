@@ -482,6 +482,7 @@ export function ChatPage() {
                 onMarkRead={() => markRead.mutate(active.id)}
                 onToggleSearch={() => messageSearch.setOpen(!messageSearch.open)}
                 onGroupChanged={() => void conversations.refetch()}
+                canOverrideUsername={auth.hasRole("PLATFORM_ADMIN")}
               />
 
               {messageSearch.open ? (

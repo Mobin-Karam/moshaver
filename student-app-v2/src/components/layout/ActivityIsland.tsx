@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Check, ChevronLeft, ChevronUp, Cloud, GraduationCap, Headphones, LoaderCircle, Music2, Pause, Play } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Check, ChevronLeft, ChevronUp, Cloud, GraduationCap, Headphones, LoaderCircle, Music2, Pause, Play, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useStudentStore } from '../../services/student-store';
 import { useRelaxationPlayer } from '../../services/relaxation-player';
+
+type ActivityKind = 'exam' | 'study' | 'audio' | 'sync';
+interface CompactActivity { kind: ActivityKind; label: string; title: string; meta?: string; }
 
 export function ActivityIsland({ syncLabel }: { syncLabel: string }) {
   const session = useStudentStore((state) => state.activeSession);
@@ -10,51 +13,118 @@ export function ActivityIsland({ syncLabel }: { syncLabel: string }) {
   const exams = useStudentStore((state) => state.exams);
   const pause = useStudentStore((state) => state.pauseFocus);
   const resume = useStudentStore((state) => state.resumeFocus);
+  const heartbeat = useStudentStore((state) => state.heartbeatFocus);
   const selectedTrack = useRelaxationPlayer((state) => state.selected);
-  const musicPlaying = useRelaxationPlayer((state) => state.playing);
-  const musicBuffering = useRelaxationPlayer((state) => state.buffering);
-  const musicDuration = useRelaxationPlayer((state) => state.duration);
-  const musicCurrentTime = useRelaxationPlayer((state) => state.currentTime);
+  const playback = useRelaxationPlayer((state) => state.playback);
+  const audioPlaying = useRelaxationPlayer((state) => state.playing);
+  const audioBuffering = useRelaxationPlayer((state) => state.buffering);
+  const audioDuration = useRelaxationPlayer((state) => state.duration);
+  const audioCurrentTime = useRelaxationPlayer((state) => state.currentTime);
   const bufferedPercent = useRelaxationPlayer((state) => state.bufferedPercent);
-  const toggleMusic = useRelaxationPlayer((state) => state.toggle);
+  const toggleAudio = useRelaxationPlayer((state) => state.toggle);
   const navigate = useNavigate();
   const location = useLocation();
   const root = useRef<HTMLElement>(null);
+  const summaryButton = useRef<HTMLButtonElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [now, setNow] = useState(Date.now());
   const task = tasks.find((item) => item.id === session?.taskId);
   const activeExam = exams.find((item) => Boolean(item.delivery?.activeAttemptId) || item.delivery?.state === 'active');
   const elapsed = session ? session.elapsedSeconds + (session.status === 'running' ? Math.max(0, Math.floor((now - new Date(session.startedAt).getTime()) / 1000)) : 0) : 0;
-  const kinds = useMemo(() => [activeExam ? 'exam' : null, session ? 'study' : null, selectedTrack && (musicPlaying || musicBuffering) ? 'music' : null, syncLabel !== 'آنلاین' ? 'sync' : null].filter((value): value is 'exam' | 'study' | 'music' | 'sync' => Boolean(value)), [activeExam, musicBuffering, musicPlaying, selectedTrack, session, syncLabel]);
+  const taskLimitSeconds = task ? plannedSeconds(task.start, task.end) : 0;
+  const overtime = Boolean(taskLimitSeconds && elapsed >= taskLimitSeconds);
+  const audioActive = Boolean(selectedTrack && !['idle', 'ended', 'error'].includes(playback));
+  const showAudio = audioActive && location.pathname !== '/more/audio' && !(location.pathname === '/more' && location.hash === '#relaxation-title');
 
-  useEffect(() => { const id = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(id); }, []);
-  useEffect(() => { setExpanded(false); }, [location.pathname, location.search]);
+  const activities = useMemo<CompactActivity[]>(() => [
+    activeExam ? { kind: 'exam', label: 'آزمون در حال اجرا', title: activeExam.title, meta: 'ادامه آزمون' } : null,
+    session ? { kind: 'study', label: overtime ? 'بیشتر از زمان برنامه' : session.status === 'running' ? 'جلسه مطالعه' : 'مطالعه در مکث', title: [task?.subject, task?.title].filter(Boolean).join(' · ') || 'فعالیت جاری', meta: overtime ? `+${formatTime(elapsed - taskLimitSeconds)}` : formatTime(elapsed) } : null,
+    showAudio && selectedTrack ? { kind: 'audio', label: audioBuffering ? 'در حال آماده‌سازی صوت' : audioPlaying ? 'در حال پخش' : 'پخش در مکث', title: selectedTrack.title, meta: audioDuration > 0 ? `-${formatTime(audioDuration - audioCurrentTime)}` : undefined } : null,
+    syncLabel !== 'آنلاین' ? { kind: 'sync', label: 'وضعیت داده‌ها', title: syncLabel } : null,
+  ].filter((item): item is CompactActivity => Boolean(item)), [activeExam, audioBuffering, audioCurrentTime, audioDuration, audioPlaying, elapsed, overtime, selectedTrack, session, showAudio, syncLabel, task?.subject, task?.title, taskLimitSeconds]);
+
+  useEffect(() => {
+    if (session?.status !== 'running') return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [session?.status]);
+  useEffect(() => {
+    if (session?.status !== 'running' || session.id.startsWith('local-')) return;
+    const send = () => void heartbeat();
+    const id = window.setInterval(send, 30_000);
+    const onVisibility = () => { if (document.visibilityState === 'hidden') send(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { window.clearInterval(id); document.removeEventListener('visibilitychange', onVisibility); };
+  }, [heartbeat, session?.id, session?.status]);
+  useEffect(() => { setExpanded(false); }, [location.pathname, location.search, location.hash]);
   useEffect(() => {
     if (!expanded) return;
     const closeOutside = (event: PointerEvent) => { if (!root.current?.contains(event.target as Node)) setExpanded(false); };
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') { setExpanded(false); root.current?.querySelector<HTMLButtonElement>('.activity-island__summary')?.focus(); } };
-    document.addEventListener('pointerdown', closeOutside); document.addEventListener('keydown', closeOnEscape);
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') { setExpanded(false); summaryButton.current?.focus(); } };
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', closeOnEscape);
     return () => { document.removeEventListener('pointerdown', closeOutside); document.removeEventListener('keydown', closeOnEscape); };
   }, [expanded]);
 
   function go(path: string) { setExpanded(false); navigate(path); }
-  const primarySummary = activeExam ? activeExam.title : session ? `${task?.subject || task?.title || 'مطالعه'} · ${formatTime(elapsed)}` : selectedTrack ? selectedTrack.title : syncLabel;
-  const summary = !kinds.length ? 'فعالیتی در حال اجرا نیست' : kinds.length > 1 ? `${primarySummary} · ${kinds.length.toLocaleString('fa-IR')} فعالیت` : primarySummary;
+  const primary = activities[0];
+  const primaryHasControl = primary?.kind === 'study' || primary?.kind === 'audio';
 
-  return <aside ref={root} className={`activity-island ${expanded ? 'is-expanded' : ''}`} aria-label="فعالیت‌های در حال اجرا">
-    <button type="button" className="activity-island__summary" onClick={() => kinds.length && setExpanded((value) => !value)} aria-expanded={expanded} aria-controls="activity-island-sessions">
-      <span className="activity-island__dots">{kinds.length ? kinds.map((kind) => <i key={kind} className={`activity-dot activity-dot--${kind}`} aria-hidden="true">{kind === 'exam' ? <GraduationCap /> : kind === 'study' ? <Headphones /> : kind === 'music' ? <Music2 /> : <Cloud />}</i>) : <i className="activity-dot activity-dot--idle" aria-hidden="true" />}</span>
-      <span className="activity-island__summary-text">{summary}</span>
-      {kinds.length ? <ChevronUp className="activity-island__chevron" /> : null}
-    </button>
-    {musicBuffering ? <span className="activity-island__buffer" style={{ inlineSize: `${Math.max(8, bufferedPercent)}%` }} aria-hidden="true" /> : null}
-    {expanded ? <div className="activity-island__details" id="activity-island-sessions">
-      {activeExam ? <section className="island-session island-session--exam"><button type="button" className="island-session__link" onClick={() => go(`/exam?exam=${encodeURIComponent(activeExam.id)}`)}><span className="island-session__icon"><GraduationCap /></span><span><small>آزمون در حال اجرا</small><strong>{activeExam.title}</strong><b>ادامه آزمون</b></span><ChevronLeft /></button></section> : null}
-      {session ? <section className="island-session island-session--study"><button type="button" className="island-session__link" onClick={() => go(`/plan?task=${encodeURIComponent(session.taskId)}`)}><span className="island-session__icon"><Headphones /></span><span><small>جلسه مطالعه</small><strong>{[task?.subject, task?.title].filter(Boolean).join(' · ') || 'فعالیت جاری'}</strong><b dir="ltr">{formatTime(elapsed)}</b></span><ChevronLeft /></button><button type="button" className="island-session__control" onClick={() => void (session.status === 'running' ? pause() : resume())} aria-label={session.status === 'running' ? 'مکث مطالعه' : 'ادامه مطالعه'}>{session.status === 'running' ? <Pause /> : <Play />}</button></section> : null}
-      {selectedTrack && (musicPlaying || musicBuffering) ? <section className="island-session island-session--music"><button type="button" className="island-session__link" onClick={() => go('/more#relaxation-title')}><span className="island-session__icon">{musicBuffering ? <LoaderCircle /> : <Music2 />}</span><span><small>{musicBuffering ? 'در حال آماده‌سازی پخش' : 'آرامش امروز'}</small><strong>{selectedTrack.title}</strong><b dir="ltr">-{formatTime(Math.max(0, musicDuration - musicCurrentTime))}</b></span><ChevronLeft /></button><button type="button" className="island-session__control" onClick={() => void toggleMusic()} aria-label={musicPlaying ? 'مکث موسیقی' : 'ادامه موسیقی'}>{musicPlaying ? <Pause /> : <Play />}</button></section> : null}
-      {syncLabel !== 'آنلاین' ? <section className="island-session island-session--sync"><button type="button" className="island-session__link" onClick={() => go('/more#sync-status')}><span className="island-session__icon"><Cloud /></span><span><small>وضعیت داده‌ها</small><strong>{syncLabel}</strong></span><ChevronLeft /></button><span className="island-session__status">{syncLabel === 'همگام شد' ? <Check /> : <LoaderCircle />}</span></section> : null}
+  return <aside ref={root} className={`activity-island ${expanded ? 'is-expanded' : ''} ${activities.length ? 'has-activities' : 'is-idle'} ${overtime ? 'has-overtime' : ''}`} aria-label="فعالیت‌های در حال اجرا" aria-live="polite">
+    <div className="activity-island__compact">
+      <button ref={summaryButton} type="button" className="activity-island__summary" onClick={() => activities.length && setExpanded((value) => !value)} aria-expanded={expanded} aria-controls="activity-island-sessions" disabled={!activities.length}>
+        <span className={`activity-island__primary-icon activity-island__primary-icon--${primary?.kind || 'idle'}`} aria-hidden="true">{primary ? activityIcon(primary.kind, primary.kind === 'sync' && syncLabel !== 'همگام شد') : null}</span>
+        <span className="activity-island__summary-copy"><small>{primary?.label || 'فعالیت جاری'}</small><strong>{primary?.title || 'اکنون فعالیتی در حال اجرا نیست'}</strong></span>
+        {primary?.meta ? <b className="activity-island__time" dir="ltr">{primary.meta}</b> : null}
+        <span className="activity-island__markers" aria-label={`${activities.length.toLocaleString('fa-IR')} فعالیت جاری`}>
+          {activities.slice(0, 3).map((activity) => <i key={activity.kind} className={`activity-marker activity-marker--${activity.kind}`} title={activity.label} />)}
+          {activities.length > 3 ? <em>+{(activities.length - 3).toLocaleString('fa-IR')}</em> : null}
+        </span>
+        {activities.length ? <ChevronUp className="activity-island__chevron" aria-hidden="true" /> : null}
+      </button>
+      {primaryHasControl ? <button type="button" className={`activity-island__quick-control activity-island__quick-control--${primary.kind}`} onClick={() => void (primary.kind === 'study' ? (session?.status === 'running' ? pause() : resume()) : toggleAudio())} aria-label={primary.kind === 'study' ? (session?.status === 'running' ? 'مکث مطالعه' : 'ادامه مطالعه') : (audioPlaying || audioBuffering ? 'مکث صوت' : 'ادامه صوت')}>
+        {primary.kind === 'study' ? (session?.status === 'running' ? <Pause /> : <Play />) : audioBuffering ? <LoaderCircle /> : audioPlaying ? <Pause /> : <Play />}
+      </button> : null}
+    </div>
+    {showAudio && audioBuffering ? <span className="activity-island__buffer-track" aria-label={`آماده‌سازی صوت ${Math.round(bufferedPercent).toLocaleString('fa-IR')} درصد`}><i style={{ inlineSize: `${Math.max(4, bufferedPercent)}%` }} /></span> : null}
+    {expanded ? <div className="activity-island__board" id="activity-island-sessions">
+      <header><span><small>مرکز فعالیت</small><strong>{activities.length.toLocaleString('fa-IR')} فعالیت جاری</strong></span><button type="button" onClick={() => { setExpanded(false); summaryButton.current?.focus(); }} aria-label="بستن مرکز فعالیت"><X /></button></header>
+      <div className="activity-island__sessions">
+        {activeExam ? <Session kind="exam" icon={<GraduationCap />} label="آزمون در حال اجرا" title={activeExam.title} meta="ادامه آزمون" onOpen={() => go(`/exam?exam=${encodeURIComponent(activeExam.id)}`)} /> : null}
+        {session ? <Session kind="study" overdue={overtime} icon={<Headphones />} label={overtime ? 'بیشتر از زمان برنامه' : session.status === 'running' ? 'جلسه مطالعه' : 'مطالعه در مکث'} title={[task?.subject, task?.title].filter(Boolean).join(' · ') || 'فعالیت جاری'} meta={overtime ? `+${formatTime(elapsed - taskLimitSeconds)}` : formatTime(elapsed)} onOpen={() => go(`/plan?task=${encodeURIComponent(session.taskId)}`)} control={<button type="button" onClick={() => void (session.status === 'running' ? pause() : resume())} aria-label={session.status === 'running' ? 'مکث مطالعه' : 'ادامه مطالعه'}>{session.status === 'running' ? <Pause /> : <Play />}</button>} /> : null}
+        {showAudio && selectedTrack ? <Session kind="audio" icon={audioBuffering ? <LoaderCircle /> : <Music2 />} label={audioBuffering ? 'در حال آماده‌سازی صوت' : audioPlaying ? 'در حال پخش' : 'پخش در مکث'} title={selectedTrack.title} meta={audioDuration > 0 ? `-${formatTime(audioDuration - audioCurrentTime)}` : undefined} onOpen={() => go('/more/audio')} control={<button type="button" onClick={() => void toggleAudio()} aria-label={audioPlaying || audioBuffering ? 'مکث صوت' : 'ادامه صوت'}>{audioBuffering ? <LoaderCircle /> : audioPlaying ? <Pause /> : <Play />}</button>} /> : null}
+        {syncLabel !== 'آنلاین' ? <Session kind="sync" icon={<Cloud />} label="وضعیت داده‌ها" title={syncLabel} onOpen={() => go('/more#sync-status')} control={<span aria-label={syncLabel}>{syncLabel === 'همگام شد' ? <Check /> : <LoaderCircle />}</span>} /> : null}
+      </div>
     </div> : null}
   </aside>;
 }
 
-function formatTime(seconds: number) { const value = Math.max(0, Math.floor(seconds)); const hours = Math.floor(value / 3600); const minutes = Math.floor((value % 3600) / 60); const rest = value % 60; return [hours, minutes, rest].filter((_, index) => index > 0 || hours > 0).map((part) => String(part).padStart(2, '0')).join(':'); }
+function Session({ kind, icon, label, title, meta, onOpen, control, overdue = false }: { kind: ActivityKind; icon: ReactNode; label: string; title: string; meta?: string; onOpen(): void; control?: ReactNode; overdue?: boolean }) {
+  return <section className={`island-session island-session--${kind} ${overdue ? 'is-overdue' : ''}`}>
+    <button type="button" className="island-session__link" onClick={onOpen} aria-label={`${label}: ${title}`}>
+      <span className="island-session__icon" aria-hidden="true">{icon}</span><span className="island-session__copy"><small>{label}</small><strong>{title}</strong>{meta ? <b dir="ltr">{meta}</b> : null}</span><ChevronLeft aria-hidden="true" />
+    </button>
+    {control ? <span className="island-session__control">{control}</span> : null}
+  </section>;
+}
+
+function activityIcon(kind: ActivityKind, loading = false) {
+  if (kind === 'exam') return <GraduationCap />;
+  if (kind === 'study') return <Headphones />;
+  if (kind === 'audio') return <Music2 />;
+  return loading ? <LoaderCircle /> : <Cloud />;
+}
+
+function formatTime(seconds: number) {
+  const value = Math.max(0, Math.floor(seconds));
+  const hours = Math.floor(value / 3600);
+  const minutes = Math.floor((value % 3600) / 60);
+  const rest = value % 60;
+  return [hours, minutes, rest].filter((_, index) => index > 0 || hours > 0).map((part) => String(part).padStart(2, '0')).join(':');
+}
+
+function plannedSeconds(start: string, end: string) {
+  const parse = (value: string) => { const [hours, minutes] = value.split(':').map(Number); return Number.isFinite(hours) && Number.isFinite(minutes) ? hours * 60 + minutes : 0; };
+  const startMinutes = parse(start); const endMinutes = parse(end);
+  return Math.max(0, (endMinutes >= startMinutes ? endMinutes - startMinutes : 24 * 60 - startMinutes + endMinutes) * 60);
+}

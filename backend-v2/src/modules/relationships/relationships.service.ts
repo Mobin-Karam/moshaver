@@ -3,13 +3,20 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 import { ApiException } from "../../common/exceptions/api.exception";
 import { Organization } from "../../database/entities/organization.entity";
+import {
+  MembershipStatus,
+  OrganizationMembership,
+} from "../../database/entities/organization-membership.entity";
 import { Student } from "../../database/entities/student.entity";
 import {
   RelationshipStatus,
+  RelationshipType,
   UserRelationship,
 } from "../../database/entities/user-relationship.entity";
+import { UserRoleAssignment } from "../../database/entities/user-role-assignment.entity";
 import { User } from "../../database/entities/user.entity";
 import { AuthenticatedUser } from "../auth/auth.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import {
   CreateRelationshipDto,
   UpdateRelationshipDto,
@@ -24,6 +31,11 @@ export class RelationshipsService {
     @InjectRepository(Student) private students: Repository<Student>,
     @InjectRepository(Organization)
     private organizations: Repository<Organization>,
+    @InjectRepository(OrganizationMembership)
+    private memberships: Repository<OrganizationMembership>,
+    @InjectRepository(UserRoleAssignment)
+    private assignments: Repository<UserRoleAssignment>,
+    private notifications: NotificationsService,
   ) {}
   private platform(user: AuthenticatedUser) {
     return user.roles?.includes("PLATFORM_ADMIN");
@@ -125,7 +137,11 @@ export class RelationshipsService {
   ) {
     const item = await this.relationships.findOne({
       where: { id },
-      relations: { fromUser: true, organization: true },
+      relations: {
+        fromUser: true,
+        toStudent: { user: true },
+        organization: true,
+      },
     });
     if (!item) throw new ApiException(404, "NOT_FOUND", "رابطه یافت نشد.");
     const selfDecision =
@@ -135,11 +151,20 @@ export class RelationshipsService {
       );
     if (!selfDecision && !this.canManage(user, item.organization?.id))
       throw new ApiException(403, "FORBIDDEN", "تغییر این رابطه مجاز نیست.");
+    const previousStatus = item.status;
     item.status = dto.status;
     item.acceptedAt =
       dto.status === RelationshipStatus.ACTIVE ? new Date() : item.acceptedAt;
     item.revokedAt =
       dto.status === RelationshipStatus.REVOKED ? new Date() : null;
+    if (
+      item.type === RelationshipType.GUARDIAN_OF &&
+      previousStatus !== RelationshipStatus.ACTIVE &&
+      dto.status === RelationshipStatus.ACTIVE
+    ) {
+      item.toStudent.guardianChangedAt = new Date();
+      await this.students.save(item.toStudent);
+    }
     return this.relationships.save(item).then(this.project);
   }
   remove(user: AuthenticatedUser, id: string) {
@@ -196,6 +221,205 @@ export class RelationshipsService {
         },
       })),
     ];
+  }
+  async guardianSelection(user: AuthenticatedUser) {
+    const student = await this.selfStudent(user);
+    const rows = await this.relationships.find({
+      where: {
+        toStudent: { id: student.id },
+        type: RelationshipType.GUARDIAN_OF,
+      },
+      relations: { fromUser: true, toStudent: true, organization: true },
+      order: { createdAt: "DESC" },
+    });
+    const nextAllowedAt = student.guardianChangedAt
+      ? new Date(
+          student.guardianChangedAt.getTime() + 30 * 24 * 60 * 60 * 1000,
+        )
+      : null;
+    return {
+      relationships: rows
+        .filter((row) => row.status !== RelationshipStatus.REVOKED)
+        .map(this.project),
+      change: {
+        allowed: !nextAllowedAt || nextAllowedAt.getTime() <= Date.now(),
+        nextAllowedAt,
+      },
+    };
+  }
+  async guardianCandidates(user: AuthenticatedUser, search = "") {
+    const student = await this.selfStudent(user);
+    const memberships = await this.memberships.find({
+      where: {
+        user: { id: user.id },
+        status: MembershipStatus.ACTIVE,
+      },
+      relations: { organization: true },
+    });
+    const organizationIds = memberships.map((item) => item.organization.id);
+    if (!organizationIds.length) return [];
+    const rows = await this.assignments.find({
+      where: {
+        role: { code: "GUARDIAN" },
+        membership: {
+          organization: { id: In(organizationIds) },
+          status: MembershipStatus.ACTIVE,
+        },
+      },
+      relations: { user: true, membership: { organization: true } },
+    });
+    const query = search.trim().toLowerCase();
+    return [
+      ...new Map(
+        rows
+          .filter(
+            (row) =>
+              row.user.id !== student.user?.id &&
+              (!query ||
+                `${row.user.username} ${row.user.firstName} ${row.user.lastName}`
+                  .toLowerCase()
+                  .includes(query)),
+          )
+          .map((row) => [
+            row.user.id,
+            {
+              id: row.user.id,
+              username: row.user.username,
+              name:
+                [row.user.firstName, row.user.lastName]
+                  .filter(Boolean)
+                  .join(" ") || row.user.username,
+              organization: row.membership?.organization
+                ? {
+                    id: row.membership.organization.id,
+                    name: row.membership.organization.name,
+                  }
+                : null,
+            },
+          ]),
+      ).values(),
+    ].slice(0, 20);
+  }
+  async requestGuardian(user: AuthenticatedUser, guardianUserId: string) {
+    const student = await this.selfStudent(user);
+    const selection = await this.guardianSelection(user);
+    if (!selection.change.allowed)
+      throw new ApiException(
+        429,
+        "GUARDIAN_CHANGE_COOLDOWN",
+        "تغییر سرپرست تا ۳۰ روز پس از آخرین تأیید ممکن نیست.",
+      );
+    const candidates = await this.guardianCandidates(user, "");
+    const guardian = candidates.find((item) => item.id === guardianUserId);
+    if (!guardian)
+      throw new ApiException(
+        404,
+        "GUARDIAN_NOT_AVAILABLE",
+        "سرپرست قابل انتخاب نیست.",
+      );
+    const account = await this.users.findOneByOrFail({ id: guardianUserId });
+    const organization = guardian.organization ? await this.organizations.findOneByOrFail({ id: guardian.organization.id }) : null;
+    let item = await this.relationships.findOne({
+      where: {
+        fromUser: { id: guardianUserId },
+        toStudent: { id: student.id },
+        organization: organization ? { id: organization.id } : undefined,
+        type: RelationshipType.GUARDIAN_OF,
+      },
+    });
+    if (
+      item &&
+      ![RelationshipStatus.REJECTED, RelationshipStatus.REVOKED].includes(
+        item.status,
+      )
+    )
+      throw new ApiException(
+        409,
+        "RELATIONSHIP_EXISTS",
+        "درخواست این سرپرست از قبل ثبت شده است.",
+      );
+    item ??= this.relationships.create({
+      fromUser: account,
+      toStudent: student,
+      organization,
+      type: RelationshipType.GUARDIAN_OF,
+    });
+    item.status = RelationshipStatus.PENDING;
+    item.acceptedAt = null;
+    item.revokedAt = null;
+    const saved = await this.relationships.save(item);
+    const advisors = await this.relationships.find({
+      where: {
+        toStudent: { id: student.id },
+        type: RelationshipType.ADVISOR_OF,
+        status: RelationshipStatus.ACTIVE,
+      },
+      relations: { fromUser: true },
+    });
+    await this.notifications.createForUsers(
+      [guardianUserId, ...advisors.map((row) => row.fromUser.id)],
+      {
+        type: "GUARDIAN_SELECTION",
+        category: "relationships",
+        title: "درخواست انتخاب سرپرست",
+        body: `${student.name} درخواست انتخاب سرپرست ثبت کرد.`,
+        url: "/admin/access",
+        data: { studentId: student.id, relationshipId: saved.id },
+      },
+    );
+    return this.project(
+      Object.assign(saved, {
+        fromUser: account,
+        toStudent: student,
+        organization,
+      }),
+    );
+  }
+  async cancelGuardianRequest(user: AuthenticatedUser, id: string) {
+    const student = await this.selfStudent(user);
+    const item = await this.relationships.findOne({
+      where: {
+        id,
+        toStudent: { id: student.id },
+        type: RelationshipType.GUARDIAN_OF,
+        status: RelationshipStatus.PENDING,
+      },
+    });
+    if (!item)
+      throw new ApiException(404, "NOT_FOUND", "درخواست سرپرست پیدا نشد.");
+    item.status = RelationshipStatus.REVOKED;
+    item.revokedAt = new Date();
+    await this.relationships.save(item);
+    return { id, cancelled: true };
+  }
+  async allowGuardianChange(user: AuthenticatedUser, studentId: string) {
+    if (!this.platform(user))
+      throw new ApiException(
+        403,
+        "PLATFORM_ADMIN_REQUIRED",
+        "فقط مدیر پلتفرم می‌تواند محدودیت تغییر سرپرست را بردارد.",
+      );
+    const student = await this.students.findOneBy({ id: studentId });
+    if (!student)
+      throw new ApiException(404, "NOT_FOUND", "دانش‌آموز پیدا نشد.");
+    student.guardianChangedAt = null;
+    await this.students.save(student);
+    return { studentId, guardianChangeAllowed: true };
+  }
+  private async selfStudent(user: AuthenticatedUser) {
+    if (!(user.roles || [user.role]).includes("STUDENT"))
+      throw new ApiException(
+        403,
+        "STUDENT_REQUIRED",
+        "این عملیات ویژه دانش‌آموز است.",
+      );
+    const student = await this.students.findOne({
+      where: { user: { id: user.id } },
+      relations: { user: true },
+    });
+    if (!student)
+      throw new ApiException(404, "NOT_FOUND", "دانش‌آموز پیدا نشد.");
+    return student;
   }
   private project(item: UserRelationship) {
     return {

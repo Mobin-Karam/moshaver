@@ -7,13 +7,16 @@ import {
   ChatMessageType,
 } from "../../database/entities/chat-message.entity";
 import {
+  ChatConfiguration,
   Conversation,
   ConversationMember,
   MessageReaction,
   OrganizationMembership,
   Student,
+  Task,
   User,
   UserRelationship,
+  UserRoleAssignment,
 } from "../../database/entities";
 import { ConversationMemberRole } from "../../database/entities/conversation-member.entity";
 import { ConversationType } from "../../database/entities/conversation.entity";
@@ -38,25 +41,81 @@ export class ChatService {
     private members: Repository<ConversationMember>,
     @InjectRepository(MessageReaction)
     private reactions: Repository<MessageReaction>,
+    @InjectRepository(ChatConfiguration)
+    private configurationRepo: Repository<ChatConfiguration>,
     @InjectRepository(UserRelationship)
     private relationships: Repository<UserRelationship>,
     @InjectRepository(OrganizationMembership)
     private orgMembers: Repository<OrganizationMembership>,
+    @InjectRepository(UserRoleAssignment)
+    private roleAssignments: Repository<UserRoleAssignment>,
     private db: DataSource,
     @Optional() private notifications?: NotificationsService,
   ) {}
+  private readonly defaultEmojis = ["❤️", "👍", "😂", "👏", "😮", "😢", "🔥", "🎉", "🙏", "✅"];
+
+  async configuration() {
+    const saved = await this.configurationRepo.findOneBy({ id: "platform" });
+    return { allowedEmojis: saved?.allowedEmojis?.length ? saved.allowedEmojis : this.defaultEmojis };
+  }
+
+  async updateConfiguration(user: AuthenticatedUser, emojis: unknown) {
+    if (!(user.roles || [user.role]).includes("PLATFORM_ADMIN"))
+      throw new ApiException(403, "PLATFORM_ADMIN_REQUIRED", "فقط مدیر پلتفرم می‌تواند واکنش‌ها را تغییر دهد.");
+    const allowedEmojis = this.normalizeEmojis(emojis);
+    let configuration = await this.configurationRepo.findOneBy({ id: "platform" });
+    configuration = this.configurationRepo.create({ ...configuration, id: "platform", allowedEmojis });
+    await this.configurationRepo.save(configuration);
+    return { allowedEmojis };
+  }
+
+  async profile(actor: AuthenticatedUser, userId: string) {
+    if (actor.id !== userId && !(await this.directAllowed(actor.id, userId)) && !(await this.shareConversation(actor.id, userId)))
+      throw new ApiException(404, "PROFILE_NOT_FOUND", "پروفایل گفتگو پیدا نشد.");
+    const user = await this.users.findOne({ where: { id: userId }, relations: { student: true } });
+    if (!user) throw new ApiException(404, "PROFILE_NOT_FOUND", "پروفایل گفتگو پیدا نشد.");
+    return this.publicProfile(user, actor.id === userId);
+  }
+
+  async updateProfile(actor: AuthenticatedUser, input: { displayName?: unknown; bio?: unknown; avatarUrl?: unknown; username?: unknown }) {
+    const user = await this.users.findOne({ where: { id: actor.id }, relations: { student: true } });
+    if (!user) throw new ApiException(404, "PROFILE_NOT_FOUND", "پروفایل گفتگو پیدا نشد.");
+    if (input.displayName !== undefined) user.chatDisplayName = this.cleanText(input.displayName, 100);
+    if (input.bio !== undefined) user.chatBio = this.cleanText(input.bio, 500);
+    if (input.avatarUrl !== undefined) {
+      const avatarUrl = this.cleanText(input.avatarUrl, 1200);
+      if (avatarUrl && !/^https:\/\//i.test(avatarUrl)) throw new ApiException(400, "INVALID_AVATAR_URL", "نشانی تصویر باید امن و با https باشد.");
+      user.chatAvatarUrl = avatarUrl;
+    }
+    if (input.username !== undefined) await this.changeUsername(user, input.username);
+    await this.users.save(user);
+    return this.publicProfile(user, true);
+  }
+
+  async allowUsernameChange(actor: AuthenticatedUser, userId: string) {
+    if (!(actor.roles || [actor.role]).includes("PLATFORM_ADMIN"))
+      throw new ApiException(403, "PLATFORM_ADMIN_REQUIRED", "فقط مدیر پلتفرم می‌تواند محدودیت نام کاربری را بردارد.");
+    const user = await this.users.findOneBy({ id: userId });
+    if (!user) throw new ApiException(404, "PROFILE_NOT_FOUND", "پروفایل گفتگو پیدا نشد.");
+    user.usernameChangedAt = null;
+    await this.users.save(user);
+    return { userId, usernameChangeAllowed: true };
+  }
   async conversations(user: AuthenticatedUser) {
     await this.ensureAccessibleStudentConversations(user);
-    const memberships = await this.members.find({
+    const ownMemberships = await this.members.find({
       where: {
         user: { id: user.id },
         leftAt: IsNull(),
         conversation: { archivedAt: IsNull() },
       },
       relations: {
-        conversation: { members: { user: { student: true } }, owner: true },
+        conversation: { members: { user: { student: true } }, owner: true, organization: true },
       },
     });
+    const observedByConversation = new Map<string, { id: string; name: string }>();
+    const observedMemberships = await this.guardianObservedMemberships(user, observedByConversation);
+    const memberships = [...new Map([...ownMemberships, ...observedMemberships].map((item) => [item.conversation.id, item])).values()];
     const studentAccounts = [
       ...new Map(
         memberships
@@ -137,6 +196,8 @@ export class ChatService {
         unread,
         muted: member.muted,
         role: member.role.toLowerCase(),
+        readOnly: observedByConversation.has(member.conversation.id),
+        observedStudent: observedByConversation.get(member.conversation.id) || null,
       });
     }
     return out;
@@ -249,11 +310,11 @@ export class ChatService {
     });
   }
   async messagesForConversation(user: AuthenticatedUser, id: string, options: { limit?: number; before?: string } = {}) {
-    await this.requireMember(user.id, id);
+    await this.requireViewer(user, id);
     if (!options.limit && !options.before) {
       const rows = await this.messages.find({
         where: { conversation: { id } },
-        relations: { sender: true, replyTo: true },
+        relations: { sender: true, replyTo: true, linkedTask: true },
         order: { createdAt: "ASC" },
       });
       return rows.map((x) => this.publicMessage(x));
@@ -262,6 +323,7 @@ export class ChatService {
     const query = this.messages.createQueryBuilder("message")
       .leftJoinAndSelect("message.sender", "sender")
       .leftJoinAndSelect("message.replyTo", "replyTo")
+      .leftJoinAndSelect("message.linkedTask", "linkedTask")
       .where("message.conversationId=:id", { id });
     if (options.before) {
       const before = new Date(options.before);
@@ -272,7 +334,8 @@ export class ChatService {
     return rows.slice(0, limit).reverse().map((x) => this.publicMessage(x));
   }
   async detail(user: AuthenticatedUser, id: string) {
-    const member = await this.requireMember(user.id, id);
+    const viewer = await this.requireViewer(user, id);
+    const member = viewer.member;
     const conversation = member.conversation;
     const active = (conversation.members || []).filter((x) => !x.leftAt);
     return {
@@ -281,6 +344,8 @@ export class ChatService {
       memberCount: active.length,
       myRole: member.role.toLowerCase(),
       muted: member.muted,
+      readOnly: viewer.readOnly,
+      observedStudent: viewer.observedStudent,
       permissions: {
         ...this.defaultPermissions(),
         ...(conversation.permissions || {}),
@@ -419,6 +484,7 @@ export class ChatService {
       replyToId?: string;
       mentions?: string[];
       type?: ChatMessageType;
+      taskId?: string;
     } = {},
   ) {
     const membership = await this.requireMember(user.id, id);
@@ -442,15 +508,19 @@ export class ChatService {
       : null;
     if (input.replyToId && !replyTo)
       throw new ApiException(404, "REPLY_NOT_FOUND", "پیام مرجع پیدا نشد.");
+    const linkedTask = input.taskId
+      ? await this.findAccessibleLinkedTask(user.id, id, input.taskId)
+      : null;
     const saved = await this.messages.save(
       this.messages.create({
         conversation,
         sender,
         receiverId: "",
-        type: input.type || ChatMessageType.TEXT,
+        type: linkedTask ? ChatMessageType.TASK : input.type || ChatMessageType.TEXT,
         content,
         mentions,
         replyTo,
+        linkedTask,
       }),
     );
     const message = this.publicMessage({ ...saved, sender, replyTo });
@@ -475,7 +545,9 @@ export class ChatService {
     return message;
   }
   async markRead(user: AuthenticatedUser, id: string) {
-    const member = await this.requireMember(user.id, id);
+    const viewer = await this.requireViewer(user, id);
+    if (viewer.readOnly) return { conversationId: id, updated: 0, unread: 0, readOnly: true };
+    const member = viewer.member;
     const now = new Date();
     member.lastReadAt = now;
     await this.members.save(member);
@@ -548,6 +620,10 @@ export class ChatService {
     emoji: string,
   ) {
     await this.requireMember(user.id, id);
+    const normalizedEmoji = String(emoji || "").trim();
+    const { allowedEmojis } = await this.configuration();
+    if (!allowedEmojis.includes(normalizedEmoji))
+      throw new ApiException(400, "REACTION_NOT_ALLOWED", "این واکنش توسط مدیر پلتفرم فعال نشده است.");
     const message = await this.messages.findOne({
       where: { id: messageId, conversation: { id } },
     });
@@ -555,7 +631,7 @@ export class ChatService {
       throw new ApiException(404, "MESSAGE_NOT_FOUND", "پیام پیدا نشد.");
     const account = await this.users.findOneByOrFail({ id: user.id });
     const existing = await this.reactions.findOne({
-      where: { message: { id: messageId }, user: { id: user.id }, emoji },
+      where: { message: { id: messageId }, user: { id: user.id }, emoji: normalizedEmoji },
     });
     if (existing) {
       await this.reactions.delete(existing.id);
@@ -565,7 +641,7 @@ export class ChatService {
       this.reactions.create({
         message,
         user: account,
-        emoji: emoji.slice(0, 32),
+        emoji: normalizedEmoji,
       }),
     );
     return { active: true };
@@ -643,11 +719,51 @@ export class ChatService {
   private async requireMember(userId: string, id: string) {
     const member = await this.members.findOne({
       where: { conversation: { id }, user: { id: userId }, leftAt: IsNull() },
-      relations: { conversation: { members: { user: true } }, user: true },
+      relations: { conversation: { members: { user: true }, organization: true }, user: true },
     });
     if (!member)
       throw new ApiException(404, "CONVERSATION_NOT_FOUND", "گفتگو پیدا نشد.");
     return member;
+  }
+  private async requireViewer(user: AuthenticatedUser, id: string) {
+    const member = await this.members.findOne({
+      where: { conversation: { id }, user: { id: user.id }, leftAt: IsNull() },
+      relations: { conversation: { members: { user: { student: true } }, owner: true, organization: true }, user: true },
+    });
+    if (member) return { member, readOnly: false, observedStudent: null };
+    if (!(user.roles || [user.role]).includes("GUARDIAN"))
+      throw new ApiException(404, "CONVERSATION_NOT_FOUND", "گفتگو پیدا نشد.");
+    const conversation = await this.conversationsRepo.findOne({
+      where: { id, archivedAt: IsNull() },
+      relations: { members: { user: { student: true } }, owner: true, organization: true },
+    });
+    if (!conversation) throw new ApiException(404, "CONVERSATION_NOT_FOUND", "گفتگو پیدا نشد.");
+    for (const participant of conversation.members.filter((item) => !item.leftAt)) {
+      const student = participant.user.student;
+      if (!student?.guardianChatReadOnly) continue;
+      const allowed = await this.relationships.exist({ where: { fromUser: { id: user.id }, toStudent: { id: student.id }, type: RelationshipType.GUARDIAN_OF, status: RelationshipStatus.ACTIVE } });
+      if (allowed) return { member: participant, readOnly: true, observedStudent: { id: student.id, name: student.name } };
+    }
+    throw new ApiException(404, "CONVERSATION_NOT_FOUND", "گفتگو پیدا نشد.");
+  }
+
+  private async guardianObservedMemberships(user: AuthenticatedUser, observed: Map<string, { id: string; name: string }>) {
+    if (!(user.roles || [user.role]).includes("GUARDIAN")) return [];
+    const relations = await this.relationships.find({
+      where: { fromUser: { id: user.id }, type: RelationshipType.GUARDIAN_OF, status: RelationshipStatus.ACTIVE },
+      relations: { toStudent: { user: true } },
+    });
+    const visible = relations.map((item) => item.toStudent).filter((student) => student.guardianChatReadOnly && student.user);
+    if (!visible.length) return [];
+    const rows = await this.members.find({
+      where: { user: { id: In(visible.map((student) => student.user!.id)) }, leftAt: IsNull(), conversation: { archivedAt: IsNull() } },
+      relations: { conversation: { members: { user: { student: true } }, owner: true, organization: true }, user: { student: true } },
+    });
+    for (const row of rows) {
+      const student = visible.find((item) => item.user?.id === row.user.id);
+      if (student) observed.set(row.conversation.id, { id: student.id, name: student.name });
+    }
+    return rows;
   }
   private async requireManager(userId: string, id: string, ownerOnly = false) {
     const m = await this.requireMember(userId, id);
@@ -722,6 +838,7 @@ export class ChatService {
     if (ua.student || ub.student) {
       const student = ua.student || ub.student!;
       const staffId = ua.student ? b : a;
+      if (await this.roleAssignments.exist({ where: { user: { id: staffId }, role: { code: "GUARDIAN" } } })) return true;
       return this.relationships.exist({
         where: {
           fromUser: { id: staffId },
@@ -744,6 +861,13 @@ export class ChatService {
           },
         })
       : false;
+  }
+  private async shareConversation(a: string, b: string) {
+    const mine = await this.members.find({
+      where: { user: { id: a }, leftAt: IsNull() },
+      relations: { conversation: { members: { user: true } } },
+    });
+    return mine.some((membership) => membership.conversation.members.some((member) => !member.leftAt && member.user.id === b));
   }
   private publicConversation(
     c: Conversation,
@@ -781,6 +905,8 @@ export class ChatService {
           }
         : undefined,
       ownerId: c.owner?.id || null,
+      autoManaged: !!c.autoManaged,
+      organization: c.organization ? { id: c.organization.id, name: c.organization.name } : null,
     };
   }
   private publicMessage(m: ChatMessage) {
@@ -803,13 +929,61 @@ export class ChatService {
       mentions: m.mentions || [],
       mentionUserIds: m.mentions || [],
       replyToId: m.replyTo?.id || null,
+      linkedTask: m.linkedTask
+        ? {
+            id: m.linkedTask.id,
+            title: m.linkedTask.title,
+            subject: m.linkedTask.subject,
+            startTime: m.linkedTask.startTime,
+            endTime: m.linkedTask.endTime,
+          }
+        : null,
     };
+  }
+  private async findAccessibleLinkedTask(
+    userId: string,
+    conversationId: string,
+    taskId: string,
+  ) {
+    const task = await this.db.getRepository(Task).findOne({
+      where: { id: taskId },
+      relations: { plan: { student: { user: true } } },
+    });
+    if (!task)
+      throw new ApiException(404, "TASK_NOT_FOUND", "فعالیت پیدا نشد.");
+    const student = task.plan.student;
+    if (!student.user)
+      throw new ApiException(404, "TASK_NOT_FOUND", "فعالیت پیدا نشد.");
+    const canAccess =
+      student.user.id === userId ||
+      (await this.relationships.exist({
+        where: {
+          fromUser: { id: userId },
+          toStudent: { id: student.id },
+          status: RelationshipStatus.ACTIVE,
+        },
+      }));
+    const studentInConversation = await this.members.exist({
+      where: {
+        conversation: { id: conversationId },
+        user: { id: student.user.id },
+        leftAt: IsNull(),
+      },
+    });
+    if (!canAccess || !studentInConversation)
+      throw new ApiException(
+        404,
+        "TASK_NOT_FOUND",
+        "فعالیت در این گفتگو قابل اشتراک نیست.",
+      );
+    return task;
   }
   private publicUser(user: User) {
     return {
       id: user.id,
       username: user.username,
       name:
+        user.chatDisplayName ||
         user.student?.name ||
         [user.firstName, user.lastName].filter(Boolean).join(" ") ||
         user.username,
@@ -819,7 +993,40 @@ export class ChatService {
       studentGrade: user.student?.grade,
       studentMajor: user.student?.major,
       studentAccountStatus: user.student?.accountStatus,
+      displayName: user.chatDisplayName || undefined,
+      bio: user.chatBio || undefined,
+      avatarUrl: user.chatAvatarUrl || undefined,
     };
+  }
+  private publicProfile(user: User, self: boolean) {
+    const nextAllowedAt = user.usernameChangedAt && user.usernameChangeCount > 0
+      ? new Date(user.usernameChangedAt.getTime() + 30 * 24 * 60 * 60 * 1000)
+      : null;
+    return {
+      ...this.publicUser(user),
+      displayName: user.chatDisplayName || user.student?.name || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username,
+      bio: user.chatBio || "",
+      avatarUrl: user.chatAvatarUrl || "",
+      ...(self ? { usernameChange: { count: user.usernameChangeCount || 0, nextAllowedAt, allowed: !nextAllowedAt || nextAllowedAt.getTime() <= Date.now() } } : {}),
+    };
+  }
+  private async changeUsername(user: User, value: unknown) {
+    const username = String(value || "").trim().toLowerCase();
+    if (!/^[a-z0-9](?:[a-z0-9._]{1,30}[a-z0-9])$/.test(username))
+      throw new ApiException(400, "INVALID_USERNAME", "نام کاربری باید ۳ تا ۳۲ نویسه انگلیسی، عدد، نقطه یا زیرخط باشد.");
+    if (username === user.username) return;
+    if (user.usernameChangedAt && user.usernameChangeCount > 0) {
+      const next = user.usernameChangedAt.getTime() + 30 * 24 * 60 * 60 * 1000;
+      if (next > Date.now()) throw new ApiException(429, "USERNAME_CHANGE_COOLDOWN", "تغییر دوباره نام کاربری پس از ۳۰ روز ممکن است.", { nextAllowedAt: new Date(next).toISOString() });
+    }
+    const duplicate = await this.users.findOne({ where: { username } });
+    if (duplicate && duplicate.id !== user.id) throw new ApiException(409, "USERNAME_EXISTS", "این نام کاربری قبلاً استفاده شده است.");
+    user.username = username;
+    user.usernameChangeCount = (user.usernameChangeCount || 0) + 1;
+    user.usernameChangedAt = new Date();
+  }
+  private cleanText(value: unknown, max: number) {
+    return String(value || "").replace(/<[^>]*>/g, "").trim().slice(0, max);
   }
   private userSearch(user: User) {
     return `${user.username} ${user.firstName} ${user.lastName}`.toLowerCase();
@@ -838,6 +1045,14 @@ export class ChatService {
       members_can_delete_own_messages: true,
       admins_can_delete_messages: true,
     };
+  }
+
+  private normalizeEmojis(value: unknown) {
+    if (!Array.isArray(value)) throw new ApiException(400, "INVALID_EMOJIS", "فهرست واکنش‌ها نامعتبر است.");
+    const emojis = [...new Set(value.map((item) => String(item).trim()).filter(Boolean))];
+    if (emojis.length < 1 || emojis.length > 10 || emojis.some((emoji) => emoji.length > 16))
+      throw new ApiException(400, "INVALID_EMOJIS", "بین یک تا ده ایموجی کوتاه انتخاب کنید.");
+    return emojis;
   }
 }
 

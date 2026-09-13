@@ -1,13 +1,19 @@
 import { Body,Controller,Delete,Get,Param,Patch,Post,Put,Query } from "@nestjs/common";import { CurrentUser } from "../../common/decorators/current-user.decorator";import { RequireCapabilities } from "../../common/decorators/capabilities.decorator";import { ok } from "../../common/utils/envelope";import { ConversationMemberRole } from "../../database/entities/conversation-member.entity";import { AuthenticatedUser } from "../auth/auth.service";import { ChatService } from "./chat.service";
 @Controller("chat")
 export class ChatController{constructor(private chat:ChatService){}
+ @Get("configuration") @RequireCapabilities("chat.read") configuration(){return this.chat.configuration().then(ok);}
+ @Patch("configuration") @RequireCapabilities("system.manage") updateConfiguration(@CurrentUser()u:AuthenticatedUser,@Body("allowedEmojis")emojis:unknown){return this.chat.updateConfiguration(u,emojis).then(ok);}
+ @Get("profile") @RequireCapabilities("chat.read") myProfile(@CurrentUser()u:AuthenticatedUser){return this.chat.profile(u,u.id).then(ok);}
+ @Patch("profile") @RequireCapabilities("chat.read") updateProfile(@CurrentUser()u:AuthenticatedUser,@Body()body:{displayName?:unknown;bio?:unknown;avatarUrl?:unknown;username?:unknown}){return this.chat.updateProfile(u,body).then(ok);}
+ @Get("profiles/:userId") @RequireCapabilities("chat.read") profile(@CurrentUser()u:AuthenticatedUser,@Param("userId")id:string){return this.chat.profile(u,id).then(ok);}
+ @Post("profiles/:userId/allow-username-change") @RequireCapabilities("system.manage") allowUsernameChange(@CurrentUser()u:AuthenticatedUser,@Param("userId")id:string){return this.chat.allowUsernameChange(u,id).then(ok);}
  @Get("conversations") @RequireCapabilities("chat.read") list(@CurrentUser()u:AuthenticatedUser){return this.chat.conversations(u).then(ok);}
  @Post("conversations") @RequireCapabilities("chat.send") direct(@CurrentUser()u:AuthenticatedUser,@Body("peerUserId")peer:string){return this.chat.createDirect(u,peer).then(ok);}
  @Post("groups") @RequireCapabilities("chat.group.create") group(@CurrentUser()u:AuthenticatedUser,@Body()b:{title:string;description?:string;userIds?:string[];memberIds?:string[]}){return this.chat.createGroup(u,b.title,b.userIds||b.memberIds||[],b.description).then(ok);}
  @Get("users") @RequireCapabilities("chat.read") users(@CurrentUser()u:AuthenticatedUser,@Query("search")search?:string){return this.chat.availableUsers(u,search).then(ok);}
  @Get("conversations/:id") @RequireCapabilities("chat.read") detail(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string){return this.chat.detail(u,id).then(ok);}
  @Get("conversations/:id/messages") @RequireCapabilities("chat.read") messages(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string,@Query("limit")limit?:string,@Query("before")before?:string){return this.chat.messagesForConversation(u,id,{limit:Number(limit),before}).then(ok);}
- @Post("conversations/:id/messages") @RequireCapabilities("chat.send") send(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string,@Body()b:{text:string;replyToId?:string;mentions?:string[]}){return this.chat.send(u,id,b.text,b).then(ok);}
+ @Post("conversations/:id/messages") @RequireCapabilities("chat.send") send(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string,@Body()b:{text:string;replyToId?:string;mentions?:string[];taskId?:string}){return this.chat.send(u,id,b.text,b).then(ok);}
  @Post("conversations/:id/read") @RequireCapabilities("chat.read") read(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string){return this.chat.markRead(u,id).then(ok);}
  @Patch("conversations/:id/messages/:messageId") @RequireCapabilities("chat.send") edit(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string,@Param("messageId")messageId:string,@Body("text")text:string){return this.chat.edit(u,id,messageId,text).then(ok);}
  @Delete("conversations/:id/messages/:messageId") @RequireCapabilities("chat.send") remove(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string,@Param("messageId")messageId:string){return this.chat.removeMessage(u,id,messageId).then(ok);}

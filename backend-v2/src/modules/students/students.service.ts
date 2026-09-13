@@ -71,6 +71,21 @@ export class StudentsService {
     return (await this.findStudent(id)) || this.findByUserId(id);
   }
 
+  async chatPrivacy(userId: string) {
+    const student = await this.findByUserId(userId);
+    if (!student) throw new ApiException(404, "STUDENT_NOT_FOUND", "پرونده دانش‌آموز پیدا نشد.");
+    return { guardianReadOnly: !!student.guardianChatReadOnly };
+  }
+
+  async updateChatPrivacy(userId: string, enabled: unknown) {
+    if (typeof enabled !== "boolean") throw new ApiException(400, "INVALID_PRIVACY_VALUE", "مقدار دسترسی سرپرست نامعتبر است.");
+    const student = await this.findByUserId(userId);
+    if (!student) throw new ApiException(404, "STUDENT_NOT_FOUND", "پرونده دانش‌آموز پیدا نشد.");
+    student.guardianChatReadOnly = enabled;
+    await this.students.save(student);
+    return { guardianReadOnly: enabled };
+  }
+
   findStudent(id: string) {
     return this.students.findOne({ where: { id }, relations: { user: true, plans: { tasks: true } } });
   }

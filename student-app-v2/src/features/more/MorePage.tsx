@@ -1,12 +1,13 @@
-import { BarChart3, ChevronLeft, Headphones, KeyRound, ListMusic, LoaderCircle, LogOut, MessageCircle, Monitor, MoonStar, Pause, Play, RotateCcw, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, BarChart3, Bell, BookmarkPlus, ChevronDown, ChevronLeft, ChevronUp, Database, Heart, Headphones, KeyRound, ListMusic, LoaderCircle, LogOut, MessageCircle, Monitor, MoonStar, Pause, Play, Repeat, RotateCcw, ShieldCheck, Shuffle, SkipBack, SkipForward, Sparkles, Trash2, UserRound } from 'lucide-react';
 import { useEffect, useState, type FormEvent, type InputHTMLAttributes } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { useStudentStore } from '../../services/student-store';
 import { getNotificationPermission, requestNotificationPermission, type NotificationPermission } from '../../services/notification-service';
 import { useRelaxationPlayer } from '../../services/relaxation-player';
 
 export function MorePage() {
   const location = useLocation();
+  const { section } = useParams<{ section?: string }>();
   const student = useStudentStore((state) => state.student);
   const access = useStudentStore((state) => state.access);
   const user = useStudentStore((state) => state.user);
@@ -41,32 +42,21 @@ export function MorePage() {
   useEffect(() => { void getNotificationPermission().then(setNotificationPermission); }, []);
   useEffect(() => { if (location.hash) requestAnimationFrame(() => document.querySelector(location.hash)?.scrollIntoView({ block: 'center' })); }, [location.hash]);
 
-  return (
-    <section className="more-page">
-      <header className="more-hero"><span><Sparkles /></span><div><h1>بیشتر</h1></div></header>
-      {access?.mode === 'student' ? <article className="surface more-profile p-4">
-        <div><small>پروفایل آموزشی</small><h2 className="font-semibold">{student?.name || user?.username || 'دانش‌آموز'}</h2><p>{[student?.grade, student?.major].filter(Boolean).join(' · ') || 'پرونده دانش‌آموز'}</p></div><ChevronLeft />
-      </article> : <article className="surface p-4"><h2 className="font-semibold">نمای خانواده</h2><p className="mt-2 text-sm leading-6 text-ink/65">این بخش فقط خواندنی است. ثبت گزارش و درخواست جبران باید با حساب دانش‌آموز انجام شود.</p></article>}
-      {access?.mode === 'student' ? <RelaxationLibrary /> : null}
-      <div className="more-section-label"><span>یادگیری و ارتباط</span></div>
-      {access?.mode === 'student' ? <article className="surface p-4">
+  const studentOnly = access?.mode === 'student';
+  const details: Record<string, { title: string; eyebrow: string; content: React.ReactNode }> = {
+    profile: { title: 'پروفایل آموزشی', eyebrow: 'پرونده من', content: studentOnly ? <article className="surface p-4">
+      <div><small>پروفایل آموزشی</small><h2 className="mt-1 font-semibold">{student?.name || user?.username || 'دانش‌آموز'}</h2><p className="mt-1 text-sm text-ink/65">{[student?.grade, student?.major].filter(Boolean).join(' · ') || 'پرونده دانش‌آموز'}</p></div>
+      <div className="mt-4">
         <h2 className="font-semibold">درس‌ها و ارتباطات پرونده</h2>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           <div className="rounded-md bg-paper p-3"><strong className="text-sm">درس‌های فعال</strong><p className="mt-1 text-sm text-ink/65">{subjects.filter((item) => item.enabled).map((item) => item.displayName || item.subject.name).join('، ') || 'درسی ثبت نشده است.'}</p></div>
           <div className="rounded-md bg-paper p-3"><strong className="text-sm">ارتباط‌های فعال</strong><p className="mt-1 text-sm text-ink/65">{relationships.filter((item) => item.status === 'ACTIVE').map((item) => `${item.type}: ${[item.fromUser?.firstName, item.fromUser?.lastName].filter(Boolean).join(' ') || item.fromUser?.username || 'کاربر'}`).join('، ') || 'ارتباط فعالی ثبت نشده است.'}</p></div>
         </div>
         <div className="mt-2 rounded-md bg-paper p-3"><strong className="text-sm">اشتباه‌های نیازمند مرور</strong><p className="mt-1 text-sm text-ink/65">{mistakes.length ? `${mistakes.length.toLocaleString('fa-IR')} مورد در دفترچه اشتباهات` : 'موردی ثبت نشده است.'}</p></div>
-      </article> : null}
-      {access?.canUseChat ? <Link to="/chat" className="surface flex min-h-16 items-center justify-between gap-3 p-4"><div><h2 className="font-semibold">گفتگو با مشاور</h2><p className="mt-1 text-sm text-ink/65">پیام‌ها و راهنمایی‌های آموزشی</p></div><MessageCircle className="shrink-0 text-primary" size={22} /></Link> : null}
-            <Link to="/learning" className="surface flex items-center justify-between gap-3 p-4">
-              <div>
-                <h2 className="font-semibold">پیشرفت و مرور</h2>
-                <p className="mt-1 text-sm text-ink/65">گزارش پیشرفت مطالعه و مرورهای ثبت‌شده</p>
-              </div>
-              <BarChart3 className="shrink-0 text-mint" size={22} />
-            </Link>
-      <div className="more-section-label"><span>گزارش و برنامه‌ریزی</span></div>
-      {access?.mode === 'student' ? <><article className="surface p-4">
+      </div>
+    </article> : <article className="surface p-4"><h2 className="font-semibold">نمای خانواده</h2><p className="mt-2 text-sm leading-6 text-ink/65">این بخش فقط خواندنی است.</p></article> },
+    relaxation: { title: 'آرامش و تمرکز', eyebrow: 'کتابخانه صوتی', content: studentOnly ? <RelaxationLibrary /> : null },
+    report: { title: 'گزارش شبانه', eyebrow: 'گزارش و برنامه‌ریزی', content: studentOnly ? <article className="surface p-4">
         <div className="flex items-start gap-3">
           <MoonStar className="mt-0.5 shrink-0 text-mint" size={20} />
           <div className="min-w-0 flex-1">
@@ -75,8 +65,8 @@ export function MorePage() {
             <NightReportForm draft={nightReportDraft} onSave={saveNightReportDraft} onSubmit={submitNightReport} />
           </div>
         </div>
-      </article>
-      <article className="surface p-4">
+      </article> : null },
+    recovery: { title: 'درخواست جبران', eyebrow: 'گزارش و برنامه‌ریزی', content: studentOnly ? <article className="surface p-4">
         <div className="flex items-start gap-3">
           <RotateCcw className="mt-0.5 shrink-0 text-ink/45" size={20} />
           <div className="min-w-0 flex-1">
@@ -85,9 +75,8 @@ export function MorePage() {
             <RecoveryRequestForm draft={recoveryRequestDraft} onSave={saveRecoveryRequestDraft} onSubmit={submitRecoveryRequest} />
           </div>
         </div>
-      </article></> : null}
-      <div className="more-section-label"><span>امنیت و دستگاه</span></div>
-      <article className="surface p-4">
+      </article> : null },
+    security: { title: 'امنیت حساب', eyebrow: 'امنیت و دستگاه', content: <div className="more-detail-stack"><article className="surface p-4">
         <div className="flex items-start gap-3">
           <KeyRound className="mt-0.5 shrink-0 text-ink/45" size={20} />
           <div>
@@ -124,8 +113,8 @@ export function MorePage() {
             )}
           </div>
         </div>
-      </article>
-      <article className="surface p-4">
+      </article></div> },
+    notifications: { title: 'اعلان‌ها', eyebrow: 'امنیت و دستگاه', content: <div className="more-detail-stack"><article className="surface p-4">
         <div className="flex items-center justify-between gap-3">
           <div><h2 className="font-semibold">اعلان دستگاه</h2><p className="mt-1 text-sm text-ink/60">اعلان پایدار سرور با SSE، Push وب یا اعلان بومی دستگاه.</p></div>
           {notificationPermission === 'granted' ? <span className="rounded-full bg-mint/15 px-3 py-1 text-xs text-mint">فعال</span> : notificationPermission === 'unsupported' ? <span className="text-xs text-ink/50">پشتیبانی نمی‌شود</span> : <button type="button" className="rounded-md bg-ink px-3 py-2 text-sm text-white" onClick={() => void requestNotificationPermission().then(setNotificationPermission)}>فعال‌سازی</button>}
@@ -155,20 +144,45 @@ export function MorePage() {
         ) : (
           <p className="mt-3 rounded-md bg-paper px-3 py-3 text-sm text-ink/60">اعلانی برای نمایش وجود ندارد.</p>
         )}
-      </article>
-      <article className="surface p-4" id="sync-status">
+      </article></div> },
+    sync: { title: 'ذخیره‌سازی و همگام‌سازی', eyebrow: 'داده‌های برنامه', content: <article className="surface p-4" id="sync-status">
         <h2 className="font-semibold">ذخیره‌سازی و همگام‌سازی</h2>
         <p className="mt-2 text-sm text-ink/65">وضعیت: {syncStatus}</p>
-      </article>
-      <button className="flex w-full items-center justify-center gap-2 rounded-md bg-ink px-4 py-3 text-white" onClick={() => void logout()}>
-        <LogOut size={18} />
-        خروج
-      </button>
-    </section>
-  );
+      </article> },
+  };
+
+  if (section) {
+    const detail = details[section];
+    return <section className="more-page more-detail-page">
+      <Link to="/more" className="more-back"><ArrowRight />بازگشت به بیشتر</Link>
+      {detail ? <><header className="more-detail-heading"><small>{detail.eyebrow}</small><h1>{detail.title}</h1></header>{detail.content}</> : <article className="surface p-4"><h1 className="font-semibold">این بخش پیدا نشد</h1><p className="mt-2 text-sm text-ink/65">از صفحه بیشتر یک گزینه دیگر را انتخاب کنید.</p></article>}
+    </section>;
+  }
+
+  const tiles = [
+    { to: '/more/profile', title: studentOnly ? 'پروفایل آموزشی' : 'نمای خانواده', description: 'درس‌ها، پایه و ارتباط‌های فعال', icon: UserRound, tone: 'primary' },
+    ...(studentOnly ? [
+      { to: '/more/relaxation', title: 'آرامش و تمرکز', description: 'موسیقی، صف پخش و نشانک‌ها', icon: Headphones, tone: 'violet' },
+      { to: '/more/report', title: 'گزارش شبانه', description: 'ثبت مطالعه، خواب و حال امروز', icon: MoonStar, tone: 'mint' },
+      { to: '/more/recovery', title: 'درخواست جبران', description: 'ثبت روز ازدست‌رفته و توضیحات', icon: RotateCcw, tone: 'saffron' },
+    ] : []),
+    { to: '/learning', title: 'پیشرفت و مرور', description: 'گزارش مطالعه و مرورهای ثبت‌شده', icon: BarChart3, tone: 'mint' },
+    { to: '/more/security', title: 'امنیت حساب', description: 'رمز عبور و نشست‌های فعال', icon: ShieldCheck, tone: 'ink' },
+    { to: '/more/notifications', title: 'اعلان‌ها', description: `${notifications.filter((item) => !item.readAt).length.toLocaleString('fa-IR')} اعلان خوانده‌نشده`, icon: Bell, tone: 'saffron' },
+    { to: '/more/sync', title: 'ذخیره و همگام‌سازی', description: `وضعیت: ${syncStatus}`, icon: Database, tone: 'primary' },
+  ];
+
+  return <section className="more-page">
+    <header className="more-hero"><span><Sparkles /></span><div><small>همه امکانات در یک‌جا</small><h1>بیشتر</h1><p>برای ورود به هر بخش، کارت آن را انتخاب کنید.</p></div></header>
+    {access?.canUseChat ? <Link to="/chat" className="more-chat-card"><span><MessageCircle /></span><div><small>ارتباط مستقیم</small><h2>گفتگو با مشاور</h2><p>پیام‌ها و راهنمایی‌های آموزشی</p></div><ChevronLeft /></Link> : null}
+    <nav className="more-feature-grid" aria-label="امکانات بیشتر">
+      {tiles.map(({ to, title, description, icon: Icon, tone }) => <Link key={to} to={to} className={`more-feature-card more-feature-card--${tone}`}><span><Icon /></span><div><h2>{title}</h2><p>{description}</p></div><ChevronLeft /></Link>)}
+    </nav>
+    <button className="more-logout" onClick={() => void logout()}><LogOut size={18} />خروج از حساب</button>
+  </section>;
 }
 
-function RelaxationLibrary() {
+export function RelaxationLibrary() {
   const music = useRelaxationPlayer();
   useEffect(() => { if (music.status === 'idle') void music.load(); }, [music]);
   const remaining = Math.max(0, music.duration - music.currentTime);
@@ -180,8 +194,16 @@ function RelaxationLibrary() {
     {music.selected ? <div className="relaxation-player">
       <button type="button" className="relaxation-play" onClick={() => void music.toggle()} aria-label={music.playing ? 'مکث موسیقی آرامش' : 'پخش موسیقی آرامش'}>{music.buffering ? <LoaderCircle className="spin" /> : music.playing ? <Pause /> : <Play />}</button>
       <div className="relaxation-timeline"><div><span dir="ltr">{formatAudioTime(music.currentTime)}</span><strong dir="ltr">-{formatAudioTime(remaining)}</strong></div><input type="range" min="0" max={music.duration || 0} step="1" value={music.currentTime} onChange={(event) => music.seek(Number(event.target.value))} aria-label="موقعیت پخش موسیقی" /><i style={{ inlineSize: `${music.bufferedPercent}%` }} /></div>
+      <div className="audio-quick-controls"><button type="button" onClick={() => music.seekBy(-15)} aria-label="پانزده ثانیه عقب"><SkipBack /></button><button type="button" onClick={() => music.seekBy(15)} aria-label="پانزده ثانیه جلو"><SkipForward /></button><button type="button" className={music.favorites.includes(music.selected.id) ? 'is-active' : ''} onClick={() => music.toggleFavorite()} aria-label="افزودن یا حذف از علاقه‌مندی"><Heart fill={music.favorites.includes(music.selected.id) ? 'currentColor' : 'none'} /></button><button type="button" onClick={() => music.addBookmark()} aria-label="نشان‌گذاری زمان فعلی"><BookmarkPlus /></button><select value={music.speed} onChange={(event) => music.setSpeed(Number(event.target.value))} aria-label="سرعت پخش"><option value="0.75">۰٫۷۵×</option><option value="1">۱×</option><option value="1.25">۱٫۲۵×</option><option value="1.5">۱٫۵×</option><option value="2">۲×</option></select></div>
     </div> : null}
-    {music.tracks.length ? <div className="music-library"><div className="music-library__title"><ListMusic /><strong>فهرست موسیقی‌ها</strong><span>{music.tracks.length.toLocaleString('fa-IR')} قطعه</span></div>{music.tracks.map((track, index) => <button type="button" key={track.id} className={music.selected?.id === track.id ? 'is-selected' : ''} onClick={() => void music.select(track.id)}><span>{(index + 1).toLocaleString('fa-IR')}</span><div><strong>{track.title}</strong><small>{track.artist || 'بدون نام هنرمند'}</small></div>{music.selected?.id === track.id ? <span className="playing-bars" aria-label="انتخاب‌شده"><i/><i/><i/></span> : <Play />}</button>)}</div> : music.status === 'ready' ? <p className="relaxation-state">مدیر سامانه هنوز موسیقی فعالی اضافه نکرده است.</p> : null}
+    <div className="audio-secondary-controls">
+      <button type="button" className={music.shuffle ? 'is-active' : ''} onClick={music.toggleShuffle}><Shuffle />پخش تصادفی</button>
+      <button type="button" className={music.repeat !== 'off' ? 'is-active' : ''} onClick={() => music.setRepeat(music.repeat === 'off' ? 'all' : music.repeat === 'all' ? 'one' : 'off')}><Repeat />{music.repeat === 'one' ? 'تکرار یک صوت' : music.repeat === 'all' ? 'تکرار فهرست' : 'بدون تکرار'}</button>
+      <select value={music.sleepEndsAt ? 'active' : ''} onChange={(event) => music.setSleepTimer(event.target.value ? Number(event.target.value) : null)} aria-label="زمان‌سنج خواب"><option value="">زمان‌سنج خواب</option>{music.sleepEndsAt ? <option value="active" disabled>زمان‌سنج فعال است</option> : null}<option value="10">۱۰ دقیقه</option><option value="20">۲۰ دقیقه</option><option value="30">۳۰ دقیقه</option><option value="45">۴۵ دقیقه</option><option value="60">۶۰ دقیقه</option></select>
+    </div>
+    {music.queue.length ? <section className="audio-queue" aria-labelledby="audio-queue-title"><header><span><small>بعدی‌ها</small><strong id="audio-queue-title">صف پخش</strong></span><button type="button" onClick={music.clearQueue}>پاک‌کردن صف</button></header>{music.queue.map((track, index) => <div key={track.id} className={music.selected?.id === track.id ? 'is-current' : ''}><button type="button" onClick={() => void music.playTrack(track.id)}><strong>{track.title}</strong><small>{track.artist || 'بدون نام گوینده'}</small></button><span><button type="button" onClick={() => music.moveQueue(track.id, -1)} disabled={index === 0} aria-label={`انتقال ${track.title} به بالا`}><ChevronUp /></button><button type="button" onClick={() => music.moveQueue(track.id, 1)} disabled={index === music.queue.length - 1} aria-label={`انتقال ${track.title} به پایین`}><ChevronDown /></button><button type="button" onClick={() => music.removeFromQueue(track.id)} disabled={music.selected?.id === track.id} aria-label={`حذف ${track.title} از صف`}><Trash2 /></button></span></div>)}</section> : null}
+    {music.bookmarks.length ? <section className="audio-bookmarks"><header><small>ادامه از لحظه مهم</small><strong>نشانک‌ها</strong></header>{music.bookmarks.filter((bookmark) => music.tracks.some((track) => track.id === bookmark.trackId)).slice(-5).reverse().map((bookmark) => { const track = music.tracks.find((item) => item.id === bookmark.trackId)!; return <div key={bookmark.id}><button type="button" onClick={() => { void music.playTrack(track.id).then(() => music.seek(bookmark.position)); }}><strong>{track.title}</strong><small dir="ltr">{formatAudioTime(bookmark.position)}</small></button><button type="button" onClick={() => music.removeBookmark(bookmark.id)} aria-label={`حذف نشانک ${track.title}`}><Trash2 /></button></div>; })}</section> : null}
+    {music.tracks.length ? <div className="music-library"><div className="music-library__title"><ListMusic /><strong>فهرست صوتی</strong><span>{music.tracks.length.toLocaleString('fa-IR')} صوت</span></div>{music.tracks.map((track, index) => <button type="button" key={track.id} className={music.selected?.id === track.id ? 'is-selected' : ''} onClick={() => void music.playTrack(track.id)}><span>{(index + 1).toLocaleString('fa-IR')}</span><div><strong>{track.title}</strong><small>{track.artist || 'بدون نام گوینده'}</small></div>{music.selected?.id === track.id && music.playing ? <span aria-label="در حال پخش">●</span> : <Play />}</button>)}</div> : music.status === 'ready' ? <p className="relaxation-state">مدیر سامانه هنوز صوت فعالی اضافه نکرده است.</p> : null}
   </article>;
 }
 
@@ -189,7 +211,7 @@ function formatAudioTime(seconds: number) { const value = Number.isFinite(second
 
 type SaveState = 'idle' | 'saving' | 'success' | 'error';
 
-function NightReportForm({ draft, onSave, onSubmit }: { draft: ReturnType<typeof useStudentStore.getState>['nightReportDraft']; onSave: ReturnType<typeof useStudentStore.getState>['saveNightReportDraft']; onSubmit: ReturnType<typeof useStudentStore.getState>['submitNightReport'] }) {
+export function NightReportForm({ draft, onSave, onSubmit }: { draft: ReturnType<typeof useStudentStore.getState>['nightReportDraft']; onSave: ReturnType<typeof useStudentStore.getState>['saveNightReportDraft']; onSubmit: ReturnType<typeof useStudentStore.getState>['submitNightReport'] }) {
   const [sleepHours, setSleepHours] = useState(draft?.sleepHours ?? '');
   const [studyMinutes, setStudyMinutes] = useState(draft?.studyMinutes ?? '');
   const [mood, setMood] = useState(draft?.mood ?? '');
@@ -232,7 +254,7 @@ function NightReportForm({ draft, onSave, onSubmit }: { draft: ReturnType<typeof
   </form>;
 }
 
-function RecoveryRequestForm({ draft, onSave, onSubmit }: { draft: ReturnType<typeof useStudentStore.getState>['recoveryRequestDraft']; onSave: ReturnType<typeof useStudentStore.getState>['saveRecoveryRequestDraft']; onSubmit: ReturnType<typeof useStudentStore.getState>['submitRecoveryRequest'] }) {
+export function RecoveryRequestForm({ draft, onSave, onSubmit }: { draft: ReturnType<typeof useStudentStore.getState>['recoveryRequestDraft']; onSave: ReturnType<typeof useStudentStore.getState>['saveRecoveryRequestDraft']; onSubmit: ReturnType<typeof useStudentStore.getState>['submitRecoveryRequest'] }) {
   const [date, setDate] = useState(draft?.date ?? new Date().toISOString().slice(0, 10));
   const [reason, setReason] = useState(draft?.reason ?? '');
   const [details, setDetails] = useState(draft?.details ?? '');
