@@ -1,6 +1,7 @@
 # Graphify generation metadata
 
 - Graphify: graphify 0.9.58
-- Source commit: 3aa6a04f315f420568790c1122ec9f594346a1fc
+- Source commit: d0c9eff8ec8220ce78846372985f39fbf00971b8
 - Mode: code-only clean rebuild + deterministic clustering/report; no visualization
 - Purpose: Phase 1 source dependency validation
+- Freshness: enforced by graphify-out/code-fingerprint.json

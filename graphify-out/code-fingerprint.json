@@ -1,0 +1,3301 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "sha256",
+  "scope": "tracked code/config excluding docs and generated/build output",
+  "fileCount": 823,
+  "digest": "d2a4e26d6986d62e26685f5ed311b3a924847320514572f1a604a68a2bf887dd",
+  "files": [
+    {
+      "path": ".gitbr/project.json",
+      "sha256": "8ebe4e31be574653f356945a92f316c0f9b8d7a91b4f3d05af03a1e851494f82"
+    },
+    {
+      "path": ".github/ai-toolkit/config.json",
+      "sha256": "a70dd1be77a2b9db86b3aa87eea4f68f37a43d48b759a713dacee5570a140af8"
+    },
+    {
+      "path": ".github/ai-toolkit/scripts/changed_file_check.py",
+      "sha256": "9435bcfa31b7291cc4ab77e6acc789233ed395ad3ffc27cc782745ad5f743ce0"
+    },
+    {
+      "path": ".github/ai-toolkit/scripts/detect-project.ps1",
+      "sha256": "a6e03505e1ce25feb8a1862803d2d5b8de07598c079f7a6e033768c3b94379b3"
+    },
+    {
+      "path": ".github/ai-toolkit/scripts/detect-project.sh",
+      "sha256": "217523ac333e11bc4731a430402666780c19421d04ad0979aa5387d7300c237a"
+    },
+    {
+      "path": ".github/ai-toolkit/scripts/detect_project.py",
+      "sha256": "c70a8eafa305c265e76072a8e45a4f25f15f8802b894f0c66b74a21e6b2b2957"
+    },
+    {
+      "path": ".github/ai-toolkit/scripts/safety_guard.py",
+      "sha256": "79b104a19eee04fa28236779366bb6905bd4b904b01b3cbb16f1189aa6fb55e3"
+    },
+    {
+      "path": ".github/ai-toolkit/scripts/session-start.ps1",
+      "sha256": "8e6d982eacbf9f7b0c531d716c9575e61b4ab2689c3d0de12d7e38b1edfe540f"
+    },
+    {
+      "path": ".github/ai-toolkit/scripts/session-start.sh",
+      "sha256": "ff20810dea189d6de52d9cf322c29486e470e8ac7617943708403208d228b4b9"
+    },
+    {
+      "path": ".github/ai-toolkit/scripts/session_start.py",
+      "sha256": "08dc4bfe73e06e60f0a38b831578394aff912790d4a4a1a236919f92e6868186"
+    },
+    {
+      "path": ".github/ai-toolkit/scripts/session_summary.py",
+      "sha256": "0dc91e4698c23e09d35587c6e8cf993c8ef8351227c6d4af700cfa8f08b97323"
+    },
+    {
+      "path": ".github/ai-toolkit/scripts/validate-project.ps1",
+      "sha256": "c2bf712117f2b0790581627e63c8aac4e77f9519fc08d9c8c68d16890f971add"
+    },
+    {
+      "path": ".github/ai-toolkit/scripts/validate-project.sh",
+      "sha256": "8374ab532ff6425ae6264fba72099dd31c52289c15076d3a7e475955d3788c69"
+    },
+    {
+      "path": ".github/ai-toolkit/scripts/validate_project.py",
+      "sha256": "490895697fe040175c12d69ca48f633b7eda4646212430bf46c68ae5b051a9c4"
+    },
+    {
+      "path": ".github/hooks/safety.json",
+      "sha256": "7099b848eea93215608aae55cdbbb63d3a94ff6156f13511fc509d466779a741"
+    },
+    {
+      "path": ".github/hooks/session.json",
+      "sha256": "31dd82751e41b526ab8fb19322782bdabdad87dd8d6c036c5487007419de1859"
+    },
+    {
+      "path": ".github/hooks/validation.json",
+      "sha256": "52fbc20590c47cdd98466925be169eab2f4c24ab05bfa2fc4fb8485254855c09"
+    },
+    {
+      "path": ".github/repository-profile.json",
+      "sha256": "57fb7dacd31a04e064f26f95369d823d8af1244c71f122b7a2561f42f8289093"
+    },
+    {
+      "path": ".mcp.json",
+      "sha256": "25335188560aaaa6bc08fa356e9609fe1f2d222abdd2ef741356a4eabfa6e0c6"
+    },
+    {
+      "path": "admin-v2/.prettierrc.json",
+      "sha256": "1ed88d3b99eced8dc3b6f58f26645466dd1ceaca6c5a9b818531c941ac28e55b"
+    },
+    {
+      "path": "admin-v2/e2e/role-login.smoke.spec.ts",
+      "sha256": "19007f3156e79b90a6949fd50f0eacc8ba2fd1ad5258de3ce66eea843f1ba94b"
+    },
+    {
+      "path": "admin-v2/eslint.config.js",
+      "sha256": "21c38dc617d191fdd73d159298fdaeb96c8ba12c401412cde1de0d8834d050b7"
+    },
+    {
+      "path": "admin-v2/gitbr.sh",
+      "sha256": "4a78e9669dd1e12bbc1a7f27541ac3b019ba83f559055f366fa0832bbf577e89"
+    },
+    {
+      "path": "admin-v2/package-lock.json",
+      "sha256": "dbadba9872514db70371ae30e755f46db543cc6349e839f573a61af98c8f8e6f"
+    },
+    {
+      "path": "admin-v2/package.json",
+      "sha256": "d4b969a735997b0cf942e25a7715fb5aa99c1dc70db58c86b8773585a88cfe5f"
+    },
+    {
+      "path": "admin-v2/playwright.config.ts",
+      "sha256": "fbd0a257953d28779f62960cb157b717aaf15e1094f4d9b34d33a8f5d9834562"
+    },
+    {
+      "path": "admin-v2/postcss.config.js",
+      "sha256": "e32657baf631d7c5f4dc67b4b2ee0ec8e7d5b3c41860e09cddce7c0377cd80bc"
+    },
+    {
+      "path": "admin-v2/public/sw.js",
+      "sha256": "eb11bb89f4fe33c3b3251d1d04f77a3757d9f0a61a2c13f209e0907c85b5a06f"
+    },
+    {
+      "path": "admin-v2/scripts/audit-parity.mjs",
+      "sha256": "db2965c376e21b22dc7d1762af79d800199cee9a00e5557350b6235a1e38e49e"
+    },
+    {
+      "path": "admin-v2/scripts/audit-release.mjs",
+      "sha256": "332d1789c6476f199fb0b8d661e9b9d78872b48f72180147e1640bc79a37bc95"
+    },
+    {
+      "path": "admin-v2/src/a11y/admin-surfaces.a11y.test.tsx",
+      "sha256": "9038a67460dd51bb4a8b0f5a7eb4e99e279084f565e83203fe2ed8002c2a40ef"
+    },
+    {
+      "path": "admin-v2/src/app/dev/DevBackendSwitcher.tsx",
+      "sha256": "b6fe12bc99146c4797e3f2fcb8ece98cad5e038d00b3a60c4c96444b70154364"
+    },
+    {
+      "path": "admin-v2/src/app/layout/AdminAccountMenu.tsx",
+      "sha256": "ee940c7c27c7c42ab016306050587c8acc2224490de3fae1b38ac174ef78ed4b"
+    },
+    {
+      "path": "admin-v2/src/app/layout/AdminCommandPalette.tsx",
+      "sha256": "6e7e74a6be76a209b9e0e9f244a9d204cbaf1291849bd7e878c5831ef731f141"
+    },
+    {
+      "path": "admin-v2/src/app/layout/AdminContextSidebar.tsx",
+      "sha256": "98898681e75001b0e1bd9edd19d22e194dfbf543555845bc869e4200e111899a"
+    },
+    {
+      "path": "admin-v2/src/app/layout/AdminHeader.tsx",
+      "sha256": "4a45e9603e207397ad329937e298a22f2596922bfce6533b97bb5b571b4dd2ba"
+    },
+    {
+      "path": "admin-v2/src/app/layout/AdminLayout.tsx",
+      "sha256": "282e12dda2a98ef183a4166b0cf664bf13469d497487ea836a0ff90915bbd5e3"
+    },
+    {
+      "path": "admin-v2/src/app/layout/AdminMainSidebar.tsx",
+      "sha256": "be8f58d6d459bf9dc7e7f8156e40a407c23771db035368befdc35dc05912a342"
+    },
+    {
+      "path": "admin-v2/src/app/layout/AdminMobileNavigation.tsx",
+      "sha256": "18776a6ffd4de2314a9334c3933da641c4e004935d9595028c51e42b62d91e8f"
+    },
+    {
+      "path": "admin-v2/src/app/layout/admin-navigation.test.ts",
+      "sha256": "5ad5c18fefb0d698dced33007b66412be5bca1cae48de32361e738c9ce8ba8bd"
+    },
+    {
+      "path": "admin-v2/src/app/layout/admin-navigation.ts",
+      "sha256": "c9cc7fd0173e66e209068b6629c5c565e36780962172130839b96154cf305c8f"
+    },
+    {
+      "path": "admin-v2/src/app/layout/layout-geometry.test.ts",
+      "sha256": "85d9686a83d54c3b123231840eca2cbe99a91c8a2c8b40e7b7fa5a7e61a5c68b"
+    },
+    {
+      "path": "admin-v2/src/app/layout/layout-geometry.ts",
+      "sha256": "f36d657c5f4846fd94c41705f0d04ca9c67d2e2f540a8e72d84dfe73e0772c21"
+    },
+    {
+      "path": "admin-v2/src/app/layout/layout-storage.ts",
+      "sha256": "aba26179345881ee89e8cb9afa9297cf238abd5e8f2a7c0f630fd08f0f038923"
+    },
+    {
+      "path": "admin-v2/src/app/layout/layout-types.ts",
+      "sha256": "ad8b5cd34ecdd390877b8ae4f6f5df4be409a2c41d754b6db4294e34615e11d4"
+    },
+    {
+      "path": "admin-v2/src/app/providers.tsx",
+      "sha256": "38037f8fa9c8695b486ca8442685a4278ce9333b858b3d0f7c59835b628134a6"
+    },
+    {
+      "path": "admin-v2/src/app/query-client.ts",
+      "sha256": "42417fb03e7c070fe410ba81b1fddd949df007d0df752fb8934985836131a54d"
+    },
+    {
+      "path": "admin-v2/src/app/router-authorization.test.tsx",
+      "sha256": "7101c21abeb768ec7949c89033b3ef76d70db0c6536d98bf7b116403cb72c30e"
+    },
+    {
+      "path": "admin-v2/src/app/router.tsx",
+      "sha256": "e0c5c0430f8e3c97fbd28038716d944675416eee671868a923a47ed17d113786"
+    },
+    {
+      "path": "admin-v2/src/features/access/AccessPage.tsx",
+      "sha256": "c47ad0d570283148b29f1a92fed13900b5157c111c7898dfe0149fddf60a78a3"
+    },
+    {
+      "path": "admin-v2/src/features/access/OrganizationWorkspace.tsx",
+      "sha256": "884c1f074244a55bc2302023de8c33b9ce2fd284c94c9e78562ea175e94caa35"
+    },
+    {
+      "path": "admin-v2/src/features/access/api/access.api.ts",
+      "sha256": "904185f1662c42eda968bc9ef167566a7d40e36fcd960a5801e02967730644d0"
+    },
+    {
+      "path": "admin-v2/src/features/access/index.ts",
+      "sha256": "25f16d101678b623dbf34dafd7eed214e1e8840963fa0cf76a5ec9ee365ebc2d"
+    },
+    {
+      "path": "admin-v2/src/features/auth/AuthProvider.test.tsx",
+      "sha256": "9c41d132b59f78280a79b9d280d19db4fe78bcc6ec9595f9f5bd2a219af31919"
+    },
+    {
+      "path": "admin-v2/src/features/auth/AuthProvider.tsx",
+      "sha256": "23225a4ddd4b9ea8f28142fa2a9d785317ab7ef339164a940eac845ea26fedfa"
+    },
+    {
+      "path": "admin-v2/src/features/auth/LoginPage.test.tsx",
+      "sha256": "dfd3324bef9016935fc53102610f2000ca2ad75ac8c62aa5e93dd68597495dc7"
+    },
+    {
+      "path": "admin-v2/src/features/auth/LoginPage.tsx",
+      "sha256": "2f5ac1afdcfca17347f328c7bc830eca6fa5ec8e03670e0a66b4117dde99e8b5"
+    },
+    {
+      "path": "admin-v2/src/features/auth/api/auth.api.ts",
+      "sha256": "4525138612a31608089038b3cc9a30cf8bce1a05ed7dbb931a280b6acb4dfa66"
+    },
+    {
+      "path": "admin-v2/src/features/auth/components/AuthProvider.tsx",
+      "sha256": "ad90869fe66d4678e2f830204612a1c5962e63131c6a324b4d2881527a343a62"
+    },
+    {
+      "path": "admin-v2/src/features/auth/components/BackendHealthStatus.tsx",
+      "sha256": "a3fd754ddf1760e8da11fb72ae38eb98b76b909f632786eb0a0bc01b3cdf5a1d"
+    },
+    {
+      "path": "admin-v2/src/features/auth/components/DemoAccountPicker.tsx",
+      "sha256": "e94cbde1fcbe2b473f8043ba1874e769cd2edce845e3ac7bae6ba9c428f1c64f"
+    },
+    {
+      "path": "admin-v2/src/features/auth/components/LoginForm.tsx",
+      "sha256": "033c68b42d153c5e9a65adbf1b3c357154509a9bf4c241b610dd21b24e984762"
+    },
+    {
+      "path": "admin-v2/src/features/auth/hooks/useAuth.ts",
+      "sha256": "6cce6cdd284dc90e440e4d3150277bc2e16823448b17e1fdec7357d8b6ef2211"
+    },
+    {
+      "path": "admin-v2/src/features/auth/hooks/useBackendHealth.ts",
+      "sha256": "779b4f0e5619f4a5f8b81805030caf1fe6d2dc5a23e2f73d3e5c34e130390d22"
+    },
+    {
+      "path": "admin-v2/src/features/auth/index.ts",
+      "sha256": "03d69531d61a1506b8c7a608916b326cd5802d089408b9930ece1985c05dcb0f"
+    },
+    {
+      "path": "admin-v2/src/features/auth/lib/auth-session.ts",
+      "sha256": "0764c91049eb694d3fc3403daf1ee16628fbb83c75fe6c53a1885b12905149fb"
+    },
+    {
+      "path": "admin-v2/src/features/auth/model/auth.types.ts",
+      "sha256": "463a767a519c00d0aea309dc4090adfcba100daa66b0f30279390921812c6a31"
+    },
+    {
+      "path": "admin-v2/src/features/auth/model/login.schema.ts",
+      "sha256": "676f1ad98585096a70ded8afb5186a5731f54d09ca987a30b81a219ae5cbdfd0"
+    },
+    {
+      "path": "admin-v2/src/features/auth/pages/LoginPage.tsx",
+      "sha256": "e452be1ba3477c01c43894f94cc21c89fe1127f509b5a74d612e60f22ee75a78"
+    },
+    {
+      "path": "admin-v2/src/features/chat/ChatPage.test.ts",
+      "sha256": "fe1ff716594d00390433c5deef6849b937ab9c957bf9bbe71dbf8d024dc207b5"
+    },
+    {
+      "path": "admin-v2/src/features/chat/ChatPage.tsx",
+      "sha256": "e805225795e2502e3783734b92950bd4883fcceecaa4ee7c98fe0b9046bc73db"
+    },
+    {
+      "path": "admin-v2/src/features/chat/GroupChatControls.tsx",
+      "sha256": "1ff78be33529b34a709d69aaf3fadac07b532e013059fbc56f28c04f550304f5"
+    },
+    {
+      "path": "admin-v2/src/features/chat/api/chat.api.ts",
+      "sha256": "923bbdf7227258b3a330a2f6879530fc1f4b49b8e79b6008efdac12656bc8df8"
+    },
+    {
+      "path": "admin-v2/src/features/chat/api/chat.keys.ts",
+      "sha256": "2a42d63ca6046e50ab6dee0903202f7304fb20a6e3f2de138dc4187a609f1823"
+    },
+    {
+      "path": "admin-v2/src/features/chat/chat-model.test.ts",
+      "sha256": "e0360894ab32fef5d00d0161a5bca2514e59d94c629089712cb253fb110fefed"
+    },
+    {
+      "path": "admin-v2/src/features/chat/chat-model.ts",
+      "sha256": "3d40a7bb6d9c76620bc77cc199a4f3f1dfc92fe18b2cccab1a4f7c3147624312"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/composer/EditPreview.tsx",
+      "sha256": "793d27ee2525be03c6de51fc6434fa2469b3eea43d340126ebeca55402157b88"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/composer/MessageComposer.tsx",
+      "sha256": "ab4d813f865ca2c1fbaa2d1260c869a1773972322b233aef49c9469488a5d05a"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/composer/QuickReplies.tsx",
+      "sha256": "45f32006fd29e787e689774f4f78661d3be05414be8a841ab5b44faaa2729fb6"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/composer/ReplyPreview.tsx",
+      "sha256": "c36a5ed55b1c15cb213b613b1dacfbf05a99908f07e3d05d6b0f5652ee5de082"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/conversation/ConversationList.tsx",
+      "sha256": "174dcd95a2edab43ddacceacb7429416f75cf84ff2c2c9a4c8e270315be1f2c5"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/conversation/ConversationListItem.tsx",
+      "sha256": "35c5e5d869bc1b1cf0eebe9fb3cafc9c38818139ee31c3532ec1ae9425ac2b1f"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/conversation/ConversationSearch.tsx",
+      "sha256": "e6895bc751ec9ddd490e5f12bbdf00602428ec0cf52beb951430fa31b7fb1110"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/conversation/ConversationSidebar.tsx",
+      "sha256": "48df0d9cb1e01a0280e07995bd59abad9eca2d442d39ab1c563563bb7320e256"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/conversation/ConversationSkeleton.tsx",
+      "sha256": "7bc4d1c146f65775c2259d560ff681d91a1ed464f076b607734ad2f698857335"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/conversation/ConversationToolbar.tsx",
+      "sha256": "92426b3c2de9dd6c676aa730cc692806f2ca1264a15074b598bbb8ce95af98ac"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/group/CreateGroupButton.tsx",
+      "sha256": "8ba2c2d388e456c19169be8c3ca2e6fdf495ce023fc2f70d9713510fbda47b6c"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/group/CreateGroupDialog.tsx",
+      "sha256": "f735153887fd740f626c666b14c4e1e0552dcd5e0832016d0404f36d41d59a32"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/group/GroupChatControls.tsx",
+      "sha256": "d06d12ad8afb0e25e12f9cf6a9a90f4dfc813ec0e9566d645624f0e5cb102ac4"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/group/GroupInfoButton.tsx",
+      "sha256": "bc7a4c67d08cb93ec08db70e1c30baa91ffc87fc7c13dbd509587c0613d63a2c"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/group/GroupManager.tsx",
+      "sha256": "34e75cd8a3952db6f03daec1de8dfae1dcb7bc7fd794889fe7af4dfef0a8cfe8"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/group/GroupMemberList.tsx",
+      "sha256": "2821f3c4f41273c9a07590eb96d32c4d7e877a16190066743c5ec409ff4fe9f6"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/group/GroupMetaForm.tsx",
+      "sha256": "86f2e78df669bcfff21e8aed600d65a9f4189846a70f6eb6a7a40e817cd22304"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/group/GroupPermissionEditor.tsx",
+      "sha256": "97ae359d5b3a72816c50771154572298d233523973a451471d1ebea2645f8620"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/messages/ChatHeader.tsx",
+      "sha256": "e291eb1caaf50734d9749ff14c08d97e90ceca1d47be921d48a87fa04f6e7378"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/messages/DateSeparator.tsx",
+      "sha256": "8762457477459e0091ab7efc18fb852203a1d66bfd0f7c9a5ad914080dd3d6cf"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/messages/EmojiReactionPicker.tsx",
+      "sha256": "268c6260a50daa17532b224490a0935b0e1e26b13d8b7db41536e3c56f49d6d2"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/messages/MessageBody.tsx",
+      "sha256": "cde7b126da066a62a736757aa54289c8cd6b71aacb2cc664402042bc32ac7e58"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/messages/MessageBubble.tsx",
+      "sha256": "1d183b0acbeb4716ceba4ddac8dd70b8ecf7f6a6f73dccaf2f3441fb04067689"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/messages/MessageContextMenu.tsx",
+      "sha256": "46f05fd7327f704e3b2d5b389e95cc8a82d8c4ad54bd9badba572fea738ae7e8"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/messages/MessageList.tsx",
+      "sha256": "02b979cee06e0a0db10beca80bac7f545e92d837f1b6b00be6507644e24320ce"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/messages/MessageSearchBar.tsx",
+      "sha256": "3ac6fa5afcf94f767a144446787007b2675ea4260f101e7a41ccaf28b962527f"
+    },
+    {
+      "path": "admin-v2/src/features/chat/components/messages/StructuredMessage.tsx",
+      "sha256": "5b5125c1b88d90c0f6833f6ac2015b458ea268bf262a99e8f2a1ba12abc444b7"
+    },
+    {
+      "path": "admin-v2/src/features/chat/hooks/useChatRealtime.ts",
+      "sha256": "031b726e7011f62c371ea2c9524bf6d0c888c044274c53a25db0b2afa0bb518b"
+    },
+    {
+      "path": "admin-v2/src/features/chat/hooks/useChatSelection.ts",
+      "sha256": "f39ee2f41b5c6b470148fd0e7212e56b31de7020dab3bfd762b96d263f4f6536"
+    },
+    {
+      "path": "admin-v2/src/features/chat/hooks/useConversation.ts",
+      "sha256": "c0e83074091f36e95778e4e66b56084e4110715f793997b9cdf763c6bdb37fd7"
+    },
+    {
+      "path": "admin-v2/src/features/chat/hooks/useConversationFavorites.ts",
+      "sha256": "4f0262acff95c66515ff52045705e958a162e737428d2ec24eb1e19685be6d2c"
+    },
+    {
+      "path": "admin-v2/src/features/chat/hooks/useConversations.ts",
+      "sha256": "43636e92035bf140eb97b521a4d226d3b6853bdf078830e53ad2dfd9540b262a"
+    },
+    {
+      "path": "admin-v2/src/features/chat/hooks/useMessageActions.ts",
+      "sha256": "b44ba58a39f2b4b9b22c0ea50969b43522fc8a9e6b02f9c33c63133e50a37e01"
+    },
+    {
+      "path": "admin-v2/src/features/chat/hooks/useMessageSearch.ts",
+      "sha256": "f4d8363e8d2ed676d2bc7f601e8c28d6faf802ca1dfeab298d63fb1aa0490b82"
+    },
+    {
+      "path": "admin-v2/src/features/chat/hooks/useMessages.ts",
+      "sha256": "205ac1dd8655e5e248eaf97035f57ccb60afb73e1d9ad2ccb957ecb00dfc8773"
+    },
+    {
+      "path": "admin-v2/src/features/chat/hooks/useSendMessage.ts",
+      "sha256": "52d2b21ac27b7a42a8a28c97ddd190c9505c1b98a0fce1c4a5c3a161455b680d"
+    },
+    {
+      "path": "admin-v2/src/features/chat/index.ts",
+      "sha256": "fbe9fe6f6bdcc370a960d5274af0c190e8be1122d5774d72984216fc4d419a65"
+    },
+    {
+      "path": "admin-v2/src/features/chat/lib/chat-formatters.ts",
+      "sha256": "f93ece29847dd6f4dc6af9ce9e8835e8fe0572dfd79f3df33f1af5d90ec8535c"
+    },
+    {
+      "path": "admin-v2/src/features/chat/lib/chat-helpers.ts",
+      "sha256": "8b043f7248a7e0681fd195613f1a58a26e7bab96c44aa8a08a3ca6374b1b6055"
+    },
+    {
+      "path": "admin-v2/src/features/chat/lib/chat-ui-storage.ts",
+      "sha256": "70249efa2ab951371751d562415b62116ff41a510d2766b8471b318cbad537b3"
+    },
+    {
+      "path": "admin-v2/src/features/chat/message-content.test.tsx",
+      "sha256": "fa87df750863d7efdf67ac6d1855eb937dc7fe0d6eac7c94a6dd3062f2052184"
+    },
+    {
+      "path": "admin-v2/src/features/chat/model/chat.types.ts",
+      "sha256": "8f8482ed465c707cc3e375d949192df8c43758932bd24ad033b7282e303dea89"
+    },
+    {
+      "path": "admin-v2/src/features/chat/model/group.types.ts",
+      "sha256": "930dabdef0d576efac4684987b6560f67b9dcb0c06cac9f630a0d272b1276cad"
+    },
+    {
+      "path": "admin-v2/src/features/chat/model/permissions.ts",
+      "sha256": "be1504c5b2c0fc57ca52eb01b59e977b904951c42cf429e29f81825ab0a17712"
+    },
+    {
+      "path": "admin-v2/src/features/chat/pages/ChatPage.tsx",
+      "sha256": "a77d783e93da6d3805c0bea2fb9f7e5763f491894240516bf16a28bad2076273"
+    },
+    {
+      "path": "admin-v2/src/features/clock/components/AlarmPanel.tsx",
+      "sha256": "2502b37da45e113b8363a92b7cbc518c9e5a08c86fafad9d49d3d9a736d3ec93"
+    },
+    {
+      "path": "admin-v2/src/features/clock/components/HeaderClock.tsx",
+      "sha256": "dba624fb370e05569f498eb58f5a353f1e9000bed865070c2589d7f29a8453a4"
+    },
+    {
+      "path": "admin-v2/src/features/clock/components/SessionStats.tsx",
+      "sha256": "e6a55d5ee64769bc6cc1bbce9cb0ab7428a43e10cdb2cc5700cf845376d725ff"
+    },
+    {
+      "path": "admin-v2/src/features/clock/components/StopwatchPanel.tsx",
+      "sha256": "252a42064434971429cb411ce80685a2784eebd5989ecfab2640a38bd4b0baec"
+    },
+    {
+      "path": "admin-v2/src/features/clock/components/TimerPanel.tsx",
+      "sha256": "caee0dbd1d168dcb9340b52fd82af2dec191a970de80cd25eccde755dec3b67c"
+    },
+    {
+      "path": "admin-v2/src/features/clock/components/WorldClockPanel.tsx",
+      "sha256": "7930aa86907326ffb47999d23f6a27a6ed8b63a1b30707a51e59be660cdb4638"
+    },
+    {
+      "path": "admin-v2/src/features/clock/hooks/useAlarms.ts",
+      "sha256": "9be03d708b2045d915d956e01fdf0a01c163abadd4e9be54af098073aa670974"
+    },
+    {
+      "path": "admin-v2/src/features/clock/hooks/useClockRuntime.ts",
+      "sha256": "8f70a76e8e21ef5f37abacde1615a3b42b90a6a1c9ffc7c3a86414ad1273bed2"
+    },
+    {
+      "path": "admin-v2/src/features/clock/hooks/useClockStore.ts",
+      "sha256": "2ffd6717f328744c8c0ad793de84b139e3a56c6dc7e6d9660d6f7325410af6d2"
+    },
+    {
+      "path": "admin-v2/src/features/clock/hooks/useCountdownTimer.ts",
+      "sha256": "6cfbd79957ec7a45d37fe939fa1249e28642cad146fcf32cccb9ca7d22df876f"
+    },
+    {
+      "path": "admin-v2/src/features/clock/hooks/useDigitalClock.ts",
+      "sha256": "7a45934c9f1a82114c0e4eb828c255845a051de7a825abe12e513d66b82f5ea9"
+    },
+    {
+      "path": "admin-v2/src/features/clock/hooks/useLiveNow.ts",
+      "sha256": "70852b09ef2f457df9c5da27ac1ea2899c5a124ba8be15e3f4ff3f843f1e3c97"
+    },
+    {
+      "path": "admin-v2/src/features/clock/hooks/usePlatformSession.ts",
+      "sha256": "61e9a6a2ee38281022eddb9c8b14dd63b99cf60d4867cbb23db3ff36852cce1c"
+    },
+    {
+      "path": "admin-v2/src/features/clock/hooks/useStopwatch.ts",
+      "sha256": "c8d7160b69c3e15ce2799769a93b00c21fe8c38e7b981d37299bc05947b48c67"
+    },
+    {
+      "path": "admin-v2/src/features/clock/hooks/useWorldClocks.ts",
+      "sha256": "89d95749638807fe84cfd63c7f5977139b2e24382b6655a35a9a00b353394557"
+    },
+    {
+      "path": "admin-v2/src/features/clock/index.ts",
+      "sha256": "8251db9671a1c247789d1850e3a703cbeac805134e1698d5e116825f3fb8e43c"
+    },
+    {
+      "path": "admin-v2/src/features/clock/lib/clock-storage.ts",
+      "sha256": "2284c10a6d6c48ad7063176ef9a1f4069eb153cd602f7e7dbee39539ce7a3695"
+    },
+    {
+      "path": "admin-v2/src/features/clock/lib/clock-store.ts",
+      "sha256": "1499e5e5c32e8f283b29c991e18f094242153ef755016c507282bb138bdddedb"
+    },
+    {
+      "path": "admin-v2/src/features/clock/lib/notifications.ts",
+      "sha256": "9539a3f2c906ac6d99f4d84ada778f02d960e24154c58de906187159533f342c"
+    },
+    {
+      "path": "admin-v2/src/features/clock/lib/time.ts",
+      "sha256": "165b92634482cdb6d6f7eacc20dac58caee2834548fbe6d6abe674ae00583c45"
+    },
+    {
+      "path": "admin-v2/src/features/clock/model/clock.types.ts",
+      "sha256": "aded1284a870fd1d167ece97425c60c364a1e392f9bdd692bf4473e346a9c8a9"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/DashboardPage.tsx",
+      "sha256": "b500d08504f09b6121ffb4b3d9a11edc777abc2be4a6a2cd5d9e17672005337d"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/api/dashboard.api.test.ts",
+      "sha256": "2d4962e5f750f3279f0f09b405e8096e74595154f62f2b503fd313dc28276b72"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/api/dashboard.api.ts",
+      "sha256": "1fef79f5e5f5e27380c280592e3aab3af42a8f0648e3d686b8832fb214f42ffe"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/components/AttentionInbox.tsx",
+      "sha256": "b72e467d25bfd7411043d99bffb722ab07cfccdea8e035c689e121cdce23effc"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/components/DashboardContent.tsx",
+      "sha256": "801af931421d59538e4d4e596a1b71c8127032f2eedc8effe0caddaa88ab9e77"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/components/DashboardFollowUpCard.tsx",
+      "sha256": "9499f7744e51ee179f86dd2a1f4f2bd914340b9e6b6e06d1f5738a8a267204cb"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/components/DashboardMetricCards.tsx",
+      "sha256": "51def050f9f98558fc354d35021bac7cfb0c94f3dbdfd7a17a2be7772f9f1395"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/components/RecentReportsCard.tsx",
+      "sha256": "a653f501e679e175c9830b393d1373287ea67d8d46b9fff1f029ea14025996a0"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/components/RoleDashboard.tsx",
+      "sha256": "02b92796b53d247354209daa278d42445eacaa96e39e0b5e112be3153ff76ae1"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/hooks/useDashboardData.ts",
+      "sha256": "308e352a2b24d042cb3292101eb9bc69ec3dc3f11d33b01675aeffab8c4e7134"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/index.ts",
+      "sha256": "08f9060c79761abb4d047e64d9539b13062cc49090ec2f0dd996f4fe893251ce"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/model/dashboard.types.ts",
+      "sha256": "c984b3e9a70e9da8f9e2a0eae5908e021709b9717c95abd75ec0d9fc298fd4b7"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/model/role-experience.ts",
+      "sha256": "0a017df10bf9cc59b92fb7d3555310882194c9c724251ce02711644d81f7a746"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/pages/DashboardPage.tsx",
+      "sha256": "f96f9b5055196d413dd57b9d2ce50a7c880a66b94058897cb427ec884f882234"
+    },
+    {
+      "path": "admin-v2/src/features/dashboard/role-dashboard.test.ts",
+      "sha256": "6a1ed0cbc3953d4da1b53b07e287902f9107682c77e08bd2a13a7e32b55ebbf6"
+    },
+    {
+      "path": "admin-v2/src/features/exams/ExamAttempts.tsx",
+      "sha256": "542aee572f606a67ec517749cc4d8a4b10464a0fc29e2dbf5704e5cb7abb3c1a"
+    },
+    {
+      "path": "admin-v2/src/features/exams/ExamsPage.tsx",
+      "sha256": "39a6540d19529b33cf88f0e5095038534761c1bf059dceef11e77681178962f0"
+    },
+    {
+      "path": "admin-v2/src/features/exams/api/exams.api.ts",
+      "sha256": "bd476d6ffe0d47761f9853d83b8523dd81e441db3bf24f47cbbce26caa6f38e3"
+    },
+    {
+      "path": "admin-v2/src/features/exams/components/AttemptHistoryList.tsx",
+      "sha256": "32e20a56448bcd99215c1553ff58af6bc6e1d9f19559fe4140264348e313e2fa"
+    },
+    {
+      "path": "admin-v2/src/features/exams/components/AttemptReview.tsx",
+      "sha256": "c0102339c092c45fa3f0530a7e2e029f89a1dd6316146acf99728ca4bf964bb4"
+    },
+    {
+      "path": "admin-v2/src/features/exams/components/ExamAttempts.tsx",
+      "sha256": "31ef45cd5e6e478838d1020f7b79627d6823704ff7206067aac25d28fdd932d8"
+    },
+    {
+      "path": "admin-v2/src/features/exams/components/ExamCard.tsx",
+      "sha256": "631344718a797d8ccece6b6eed4c55360f3029360a7fe7525b23dede2263d91e"
+    },
+    {
+      "path": "admin-v2/src/features/exams/components/ExamFilters.tsx",
+      "sha256": "c1de59c36aafc9fb6b9805a64138b5b52397a3fa0a316e1169e24374936337d5"
+    },
+    {
+      "path": "admin-v2/src/features/exams/components/ExamForm.tsx",
+      "sha256": "884c2d7c363b6024d9f8d222abcba75741c7772304066b7f76db52156632b71b"
+    },
+    {
+      "path": "admin-v2/src/features/exams/components/ExamList.tsx",
+      "sha256": "a83c9d9a2b0c67b2c2a918ffc2cc839e46ad1737d04bab9310db8c7f65376a85"
+    },
+    {
+      "path": "admin-v2/src/features/exams/components/ExamsHeader.tsx",
+      "sha256": "87a374725674d2732ae365aba75ba06668101712c90863e204be970a997f055f"
+    },
+    {
+      "path": "admin-v2/src/features/exams/components/Metric.tsx",
+      "sha256": "44cc7b3723131d0b482a105076879e52440c9497ac56ec18a17dee3955199c4c"
+    },
+    {
+      "path": "admin-v2/src/features/exams/components/RetryRequestsPanel.tsx",
+      "sha256": "e81a8511b23b777e8fef57b011716f6e20cf93584c8fa76be35cc0e253ab8657"
+    },
+    {
+      "path": "admin-v2/src/features/exams/components/RetryReviewForm.tsx",
+      "sha256": "3ab61f90482a3404e63238257ee8487a75efed781db1212d968deee77f43d568"
+    },
+    {
+      "path": "admin-v2/src/features/exams/components/SyllabusForm.tsx",
+      "sha256": "d7ff3c1cc2af3b27c1b7b5f7278f31c08b5f6a5af701d7cad68710e16d0d0b21"
+    },
+    {
+      "path": "admin-v2/src/features/exams/exam-model.test.ts",
+      "sha256": "a06705680f96503d36374104d7b6ebac790d1cfe60002d27e67e261c9d016682"
+    },
+    {
+      "path": "admin-v2/src/features/exams/exam-model.ts",
+      "sha256": "03f0bcc4da2db7b17fc3da1828342069b856cf3ec61c4592994008783ff5f80f"
+    },
+    {
+      "path": "admin-v2/src/features/exams/hooks/useExamBulkActions.ts",
+      "sha256": "141fcb3339d46f79313683d10cf787a12768871721f5ce588eb94ae4e7fd7136"
+    },
+    {
+      "path": "admin-v2/src/features/exams/hooks/useExamBulkActions.types.ts",
+      "sha256": "1f8b4c1cb2fa419a5f666b00ce49e0468f0c55fb059ee425cab5f626858b5dc0"
+    },
+    {
+      "path": "admin-v2/src/features/exams/hooks/useExamFilters.ts",
+      "sha256": "b0ad2d2befcc6628d1e59ba40b6fc4c0579d3904e6c80a12bc35ac6c0b1f948c"
+    },
+    {
+      "path": "admin-v2/src/features/exams/hooks/useExamMutations.ts",
+      "sha256": "e1d98e8bd5acbc4cb5581a95cbaec869933fca8d0226a83994349d8fc97b2564"
+    },
+    {
+      "path": "admin-v2/src/features/exams/hooks/useExamsData.ts",
+      "sha256": "28464d1f5dd461189d656a859c19697091a3310d848249566bb36d976168f61d"
+    },
+    {
+      "path": "admin-v2/src/features/exams/index.ts",
+      "sha256": "d8e2e6f22e0350614c931627d9f86390ac834329a80b30c745e2493a431df137"
+    },
+    {
+      "path": "admin-v2/src/features/exams/lib/exam-formatters.ts",
+      "sha256": "9d2d3d1ab029f66224deeaf02a22ee8a113d85d3564f08898174126f5d0f3ea0"
+    },
+    {
+      "path": "admin-v2/src/features/exams/model/exam-model.ts",
+      "sha256": "f4213ff0845b4100475c6eb5f59d875498b8aa4b64035e0492c1a20786f78a76"
+    },
+    {
+      "path": "admin-v2/src/features/exams/model/exam.types.ts",
+      "sha256": "b6cb46410bea53e0b841c6320b00bc6f9df694e983548cca8de98f8ae6b11bb0"
+    },
+    {
+      "path": "admin-v2/src/features/exams/pages/ExamsPage.tsx",
+      "sha256": "f9f1434b5c567aff121eeea92a54e7b7f15f3a883b18d62bd126cff01cea3d1e"
+    },
+    {
+      "path": "admin-v2/src/features/followup/components/FollowUpCenter.tsx",
+      "sha256": "3590ad858f6407c2e88b32c3ed59facd22cf7443497914d514e2f2a58781bf84"
+    },
+    {
+      "path": "admin-v2/src/features/followup/components/FollowUpPage.tsx",
+      "sha256": "16164dc4b97781ca78ab6838424a46fe00bfd3980551f5cb7d09131886d8feee"
+    },
+    {
+      "path": "admin-v2/src/features/followup/index.ts",
+      "sha256": "0c514174e3e5ac724c21e43c804a51df45bd7562a8a9f29d539069bb52aef51f"
+    },
+    {
+      "path": "admin-v2/src/features/learning/LearningPage.tsx",
+      "sha256": "9bd64d2efbb2e9720194c4d101776e7516001758564dcd0af14b29dac272c410"
+    },
+    {
+      "path": "admin-v2/src/features/learning/api/learning.api.ts",
+      "sha256": "d31f1d5543dcf64b739a92200f98e25088ff8d6bee577d0df2ac0ef31f1d6d1f"
+    },
+    {
+      "path": "admin-v2/src/features/learning/components/LearningFilters.tsx",
+      "sha256": "0ccd4a8263947c6e015c9e72eacc7a82cab55a23c6a103dc78f1ad7a006ccd0b"
+    },
+    {
+      "path": "admin-v2/src/features/learning/components/LearningForm.tsx",
+      "sha256": "e7fcf0ad83a0164a866d09e88525f2bde50dd376930bd24bbbbec52f0ecad428"
+    },
+    {
+      "path": "admin-v2/src/features/learning/components/LearningHeader.tsx",
+      "sha256": "876bb3fcabd3b33f7703b20c8f34095e4c0a5bd81d133dc62a401087f0549f76"
+    },
+    {
+      "path": "admin-v2/src/features/learning/components/LearningList.tsx",
+      "sha256": "8c4aeb8ed3aa88f273d18f45c755352a7fcc236f080fc8cae53107c3ffa8868f"
+    },
+    {
+      "path": "admin-v2/src/features/learning/components/LearningMetric.tsx",
+      "sha256": "b0014581eeed2c1cb422edef4020539d82a16e9c15ac63ae3eb7d35c3b2effe1"
+    },
+    {
+      "path": "admin-v2/src/features/learning/components/LearningRow.tsx",
+      "sha256": "95e1f33f2737572b2faadfa4663019bebcc3fdcf533878b77e943e56670232f7"
+    },
+    {
+      "path": "admin-v2/src/features/learning/components/LearningSidebar.tsx",
+      "sha256": "4456e9c9c06fc6f1f017f16c09d99ccf7f974aba027a6770ac0c1a3320ed3aaa"
+    },
+    {
+      "path": "admin-v2/src/features/learning/components/LearningSkeleton.tsx",
+      "sha256": "dc0a0725e9341c54fb2882d510e72bba70452814d5aefcdca3426dd5f6762f07"
+    },
+    {
+      "path": "admin-v2/src/features/learning/components/LearningSummaryMetrics.tsx",
+      "sha256": "6e9384fc9939d882ace8f6c960bd75e2e08fce94002c9c672b4512c1a49e0d50"
+    },
+    {
+      "path": "admin-v2/src/features/learning/components/ReviewHistory.tsx",
+      "sha256": "7fba72dab45ccc5ceaabf6ec8c519ef8c2193a1b07fb1c0d385d5695075044e2"
+    },
+    {
+      "path": "admin-v2/src/features/learning/hooks/useLearningData.ts",
+      "sha256": "df488d8c7f0191a08033d1a390214828d54a3fa85f8c236685a13ebd0fb06cac"
+    },
+    {
+      "path": "admin-v2/src/features/learning/hooks/useLearningMutations.ts",
+      "sha256": "1ad9b7eed3b76f816d543c7b1dc24b5f225f90e634acdeb89bdcfef0a29a7153"
+    },
+    {
+      "path": "admin-v2/src/features/learning/hooks/useLearningPageState.ts",
+      "sha256": "e1473a3834fe233d6ce1d34eec1b14d50b06538853db3311c8eef4874c6664a1"
+    },
+    {
+      "path": "admin-v2/src/features/learning/index.ts",
+      "sha256": "eeb1714474ff783f3553a0651312414521cd082d876008e23092aa2681f9e08c"
+    },
+    {
+      "path": "admin-v2/src/features/learning/learning-model.test.ts",
+      "sha256": "bc2d90cef7a46f6e9ef915bca1be7d12b4afe097ac2eca334a59ea11e9203e82"
+    },
+    {
+      "path": "admin-v2/src/features/learning/learning-model.ts",
+      "sha256": "d01bf08286b8eedd6dbc44e214c598e674e20b8d3561bd73cf846f92635c3b1a"
+    },
+    {
+      "path": "admin-v2/src/features/learning/lib/learning-filters.ts",
+      "sha256": "64dabf6fd7fdfd6dd6806321723a21528a11a013fd3457c528f5471532e49051"
+    },
+    {
+      "path": "admin-v2/src/features/learning/model/learning-form.schema.ts",
+      "sha256": "01efab3ed4703c49d4ffed64366369c3439c2dbcb204003172694f700335a63e"
+    },
+    {
+      "path": "admin-v2/src/features/learning/model/learning-model.ts",
+      "sha256": "24db138e0d451f43565371469e539d14a737c7e779cb920aa3d07834c118a48b"
+    },
+    {
+      "path": "admin-v2/src/features/learning/model/learning.types.ts",
+      "sha256": "ff85b721691420fae58b8e84aa369a9b4f8f2a853670b08d2c3c5a714afc5709"
+    },
+    {
+      "path": "admin-v2/src/features/learning/pages/LearningPage.tsx",
+      "sha256": "41d17209f2aa367eb80ad56b0dc9eb7a42f3c07b5025a033dfa8cc7057c0b778"
+    },
+    {
+      "path": "admin-v2/src/features/live/LivePage.test.ts",
+      "sha256": "a8bce8521a6254dbdb0b83be915dd8cb4fba57519e9da772e3835c861f9e9cb6"
+    },
+    {
+      "path": "admin-v2/src/features/live/LivePage.tsx",
+      "sha256": "56e29923d8509ecee4aea4d067c1f10cbd915e938793fece08cda5a6ed9b837f"
+    },
+    {
+      "path": "admin-v2/src/features/live/api/activity.api.ts",
+      "sha256": "c6df04c4ecd5e8c79f84a78c91ee718ed85d4595ec03f2c5aeb6a4f3204089ca"
+    },
+    {
+      "path": "admin-v2/src/features/live/api/live.api.ts",
+      "sha256": "8289cad25d171c701595308e1150a27e5fff87fb671fa05efc82676382596e25"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/CompactSkeleton.tsx",
+      "sha256": "ad28a6a7092632c885374f6fcbdbe7c4e8f2ad3733913a51a76002e4dc28ca8c"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/LiveActivityTimeline.tsx",
+      "sha256": "5672722c0c4ce6061c14a0d0bb678253d8ef1f17a63bbd26730fd53f0ecd086d"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/LiveControls.tsx",
+      "sha256": "f343798c7081ad59071da061aa29f904e5c09fb57baab2cc0290dc00f4a53038"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/LiveHeader.tsx",
+      "sha256": "28c2256051b35043bb61e9913b4260d6c9c349088d6f2d4391545a4ac1a23253"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/LiveSkeleton.tsx",
+      "sha256": "448768383d6c67cd050884db07186e6d97949bb472a3a240935afedd0c6f0ddd"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/LiveSummaryGrid.tsx",
+      "sha256": "6c0a206dfd4728e20177d3b667ffa017a2c22bed7900e48917af38d15fe8cd4b"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/MiniMetric.tsx",
+      "sha256": "7ea506e6dcd75e0ec8f552e2c3538df9996a5261b27510ce7f32111fe3a1138d"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/StudentCard.tsx",
+      "sha256": "a2bcc0b64f2a5c0a039796827231621e8fdcfc53cb1bdbf9f663304ff3f77e04"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/StudentDetail.tsx",
+      "sha256": "6049b0091b5a4adecf800606e630d179c18cafdea6efcb676a372f351b59c623"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/StudentDetailPanel.tsx",
+      "sha256": "2dc87f216499c96855c62e67b54ba3b4ee56c4f001ec4ebb93e3d30a2bcb9ff6"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/StudentQueue.tsx",
+      "sha256": "ef12c1408fcdadbacbb209bfbd93d6089d31aeede7ff2e1998c6779b1317db20"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/StudentRow.tsx",
+      "sha256": "83019bbb371b0b0d8cb54640e6d30a175da53dde4071ff74fd71e3723693119e"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/SummaryCard.tsx",
+      "sha256": "af3dcb2ae9f16f2d4d5a0fd8fda10755f5e281debecdebd50b96302832908a00"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/TimelineItem.tsx",
+      "sha256": "4ce7fc578ad09201aefac2b7ea5233d2f7fdd9ebed7c4c93c36d473022cd7ecd"
+    },
+    {
+      "path": "admin-v2/src/features/live/components/TimelinePanel.tsx",
+      "sha256": "0742f38b5d2d83e34f638a5218553e959abcbd5583b29d6d07e305c7b35627cb"
+    },
+    {
+      "path": "admin-v2/src/features/live/hooks/useLiveClock.ts",
+      "sha256": "bf898b22cd15958eff7ad19260e7397762b7e5b4e3680f251c0982c6794e357d"
+    },
+    {
+      "path": "admin-v2/src/features/live/hooks/useLiveData.ts",
+      "sha256": "4ebf26f9e86c86f3c1520e0293ae4ea421fd4bea925ad504479c337147c8aeed"
+    },
+    {
+      "path": "admin-v2/src/features/live/hooks/useLiveStudents.ts",
+      "sha256": "b5a61e2b6dc202c64d3266f013ed1ef7ac54bbe60d645a176e874998c64a4757"
+    },
+    {
+      "path": "admin-v2/src/features/live/index.ts",
+      "sha256": "3893364af9b5cb09476a4b4973e96e6753f1ea6191baf096673239e3e6ef4c40"
+    },
+    {
+      "path": "admin-v2/src/features/live/lib/live-helpers.ts",
+      "sha256": "90bd82a730b17d5ad3b00e31e9e250685fb319433146fe31dc8c88f017cb4a2f"
+    },
+    {
+      "path": "admin-v2/src/features/live/model/live.types.ts",
+      "sha256": "3ec3ff64851916539122e20d2fe97a68a02c4f08f966973393e25f0b0b8edc8f"
+    },
+    {
+      "path": "admin-v2/src/features/live/pages/LivePage.tsx",
+      "sha256": "883db010b7ae033d254a336247efbf57ccde27f7be5a9ca0b76249c81bc88f92"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/HeaderNotifications.tsx",
+      "sha256": "73f618e51871d51491cfa60ab8f3386b225e212ee13705fe3cb1baa19285bcc3"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/NotificationProvider.tsx",
+      "sha256": "e1ee4c7d4b69da38ec2ac35d9df7fe6ca3b17089d2043c2cadbbf8c11003b3c4"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/NotificationsPage.tsx",
+      "sha256": "ecac9226e94c66ecdce17405a7ebe9b3f770dc959ea76100f75467bae2744234"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/api-error.test.ts",
+      "sha256": "9dec6cdb62feb8efd0fd664962a224c99503c10f7458e6e1582aa02c347b4988"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/api/notifications.api.ts",
+      "sha256": "724350cbf9ee7aece5d9b1556395074b31c8906a17e5a3dc4b1ec888d0acb9ee"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/components/AdvisorInboxItem.tsx",
+      "sha256": "8c7f4d688fc5e3224c683342bfa45e65a63f3e15b74cd2a71d59d44984230181"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/components/AdvisorInboxPanel.tsx",
+      "sha256": "295ef89e9f8bb134f9250549c5e7881fcd55d291374378213c3b42aa4a2d6f4a"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/components/HeaderNotifications.tsx",
+      "sha256": "ab60613b46d0c27961c8ff26f1157ce95aa7b772fc81d6dc45050017fcafc494"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/components/MobileNotificationTabs.tsx",
+      "sha256": "59c18d73f17d425a5bca5a7d1969153a1f2a8ea09c123c5071b4c23cb2d25ca8"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/components/NotificationCenterPanel.tsx",
+      "sha256": "5d430be6d66f2befe8efb7e5bcfd0cbbef92c3e4e9b900a574d52db22ac16bb4"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/components/NotificationPreference.tsx",
+      "sha256": "279303b25ff710656928c3f180675d499577a2df597004619a2c0f75730cdb8a"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/components/NotificationProvider.tsx",
+      "sha256": "b17b00e843a6d7944c28f9a9f2308b4a9fcd0bfc05611aab75cc9532a578f940"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/components/NotificationSettings.tsx",
+      "sha256": "1e5d06fcf2954bdb039d2b70449077bcf08a09868da4f6e6c0b1c617f5efe2e6"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/components/NotificationSkeletons.tsx",
+      "sha256": "2f93c49f6941fcb07fef8f8bb58c45690f9fe99463ddc3e793152e9c3479b262"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/components/NotificationsToolbar.tsx",
+      "sha256": "f0ea45a88908b01fdcd22bf8ed7a8caacc647caccf2b3e2af372be9f5185a7d5"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/components/ToggleButton.tsx",
+      "sha256": "590b3a87669d7015c2e20ba4fddcb43fac82ca61c8b90521294a4939f216b17e"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/hooks/useAdminNotifications.ts",
+      "sha256": "26d47977859152401ef1f42ef1d7416daf48f45af860ad8e9fc1e0e9e60907bb"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/hooks/useAdvisorInbox.ts",
+      "sha256": "5b6ecf7ba80ef852c8fa1b433cf6dbf5e57d9851fe77c60608b79c6f3fe2d71c"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/hooks/useFilteredNotifications.ts",
+      "sha256": "0e987b2d814863e14427942cc634b3372e0ab7e9ea44a1c0e75b45efee379983"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/hooks/useNotificationInbox.ts",
+      "sha256": "f39066d23821f67dc33330cc8e8610bf44ecccc5a9aeb49a72787e7bce83fe3c"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/hooks/useNotificationRealtime.ts",
+      "sha256": "bf487a2164956d3ab87fffe15ce639240cbb5fc522d3d1f4f1c624deb96dedfe"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/hooks/useNotificationSound.ts",
+      "sha256": "a88fb43f2d11bc2a55c6aa6ac0fd166779ca8c1e0911e9bebaf89394b7bfb136"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/hooks/usePushNotifications.ts",
+      "sha256": "cb3f1a469d8146f811f35597ba506da6a5c0c56e458da4e075b0796bb7024c23"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/hooks/useStoredBoolean.ts",
+      "sha256": "ea14710aab9cbfbd5dbe3b337722120bdd718b6d3c282b30eb09db4f06ac2a01"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/index.ts",
+      "sha256": "db7dfcd17f78c11c82ac4bf6c698ea50453fac9da12936dc530b8192f74389cf"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/lib/api-error.ts",
+      "sha256": "c73c0f9200a3b0d8eab5d9d5790d3237dabc00bffee3d8e061a0c0bcad21121d"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/lib/notification-utils.ts",
+      "sha256": "8363c7d11e5e769348700658aadf57b2f20c43399505e2cd95f5c56a73a6b377"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/lib/push.ts",
+      "sha256": "3cdbd67ab8d28022a92a3a7ad013952059f0ce88195bfdc4c0d4e3211363e4f9"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/model/notification-model.ts",
+      "sha256": "5b85fe57c3087f0c6c23491efc7a41fa73930b46db176d142ba124384bc13de9"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/model/notification.types.ts",
+      "sha256": "c4bd61170bec0c444966d3cf3457e5c89279595a0bb898f89c7c0116300d5599"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/notification-model.test.ts",
+      "sha256": "9de9ccef054bea99f72d293bfc89c0555dc93086449a2eddbb700358e135b9fa"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/notification-model.ts",
+      "sha256": "b8e9cc4807c789a9f8f243124cb6fa43012e9600ad26d61a5dae06ddbb46b66e"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/notification-role-access.test.tsx",
+      "sha256": "8c66e66304b0a6c150521a8c633036db7863bedc8dd73ff5850057a2be2c880a"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/notification-utils.test.ts",
+      "sha256": "434e9dbae7d779f1b3fe427daf9d38d8057e61675c84081228d06a871c4a6ac6"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/pages/NotificationsPage.tsx",
+      "sha256": "0477516c5f12800ea0462ae6a6b8e9e24481508c4b2c77fa78e74f51f0d36514"
+    },
+    {
+      "path": "admin-v2/src/features/notifications/push-settings.test.tsx",
+      "sha256": "79eada2d8679637199628e1b11c923d93ead32f5ef99ec3963b0d2a955453d5b"
+    },
+    {
+      "path": "admin-v2/src/features/onboarding/api/onboarding.api.ts",
+      "sha256": "ec6315e55d81c2cebf130ab1438de2db20bfd57a7eedca5db2ee1d51cfc6cc9b"
+    },
+    {
+      "path": "admin-v2/src/features/onboarding/index.ts",
+      "sha256": "7db0b4c178b524edfebed928c1685ad2ec9b8d15928f1f63ae1c02bb263c1b1a"
+    },
+    {
+      "path": "admin-v2/src/features/onboarding/pages/OnboardingPage.tsx",
+      "sha256": "6aa954d7b516b34397164b02dac2f4362eb0dfd3e74a93c8886c2af6ce10da15"
+    },
+    {
+      "path": "admin-v2/src/features/planner/PlannerPage.test.ts",
+      "sha256": "a65302828b8207e23577d02fbd7fdf4427429a390c9826a8afec34d057fad325"
+    },
+    {
+      "path": "admin-v2/src/features/planner/PlannerPage.tsx",
+      "sha256": "7bf3366618bb0d00f6876e8b12e605d7f8bb37f14512f4d74e45eb1526b4043d"
+    },
+    {
+      "path": "admin-v2/src/features/planner/api/planner.api.ts",
+      "sha256": "6ecf3b5f93e6c1d80fb4767ba721c8c718150ec4271dedaa0f9fb790a977d43f"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerBatchToolbar.tsx",
+      "sha256": "69ea98e1dd197f0e7c3c235d61589f4941dc568d01ab76f530fb455cf738d9b8"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerCanvas.tsx",
+      "sha256": "0ea75c4fefa85d35a4b2f0d585d19332fa6b830a27e866b091f2ea7cf28b009c"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerContent.tsx",
+      "sha256": "d091cd3753b932bbacfb44f297975e63d2dccc44e8ce8030cac4028f96a8c6f4"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerDialogs.tsx",
+      "sha256": "f635e4cfc90975aae0a215c40da7f8685b88dd5c5eb1580b0899b08d3da19f2d"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerFilterPopover.tsx",
+      "sha256": "12fea16a82f6c758dbe708e67109bf3b859c2a00ad4ae4c33704a86edc887c94"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerForms.tsx",
+      "sha256": "47cb7c8e5418751ea2cb59d7ca4a099cb8ed1a5bed1baa8f94e4cf67306bc281"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerHeader.tsx",
+      "sha256": "3ef00006d0332afddfe4c8522535e9db31e6407accaa9265f8aeaa6ef567eae5"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerMenus.tsx",
+      "sha256": "fc56e3112008e47587b1afd917c36b4c7de4010c4ea9e14f799424fd02b2247a"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerMoreMenu.tsx",
+      "sha256": "3f9deb29a608927290dd73793031e608b5490d53db92573a4f14f8e8016f4f92"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerOverlays.tsx",
+      "sha256": "4ff3f08d2d15c0ed19a387214fba60a7bbbff68651e920a3df6c356214ddc2ff"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerOverview.tsx",
+      "sha256": "8b5678cdfb120a297947118e87451a6d2a0d1ec7e1fe4d09f7776ce75ea7af31"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerPageLayout.tsx",
+      "sha256": "6bc48c95c49cbc4f7e999341d1b205d122f738b89d978f00b14ad96fca116aeb"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerPageShell.tsx",
+      "sha256": "7c73ba2e2886230578034d099ad7161e32792dcba48b084ea3bdbe0ad8212f6e"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/PlannerToolbar.tsx",
+      "sha256": "a49683565e88965b33cdde0d369af3de42bbb91551686ef48f22a9d39348a820"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/dialogs/PlannerDialogHost.tsx",
+      "sha256": "39d6eaba1736c61f5c329daa8fc5981b90996458c5335e25c3e2ac8a23880ee4"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/index.ts",
+      "sha256": "26cb9d29b8a9e9a33122698f605988ffcb693a8455a5735d91b66bfa2c40e606"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/layout/PlannerLayout.tsx",
+      "sha256": "ef7d12e3a5b589fd3f41d131e1f629922daf5600d0ff25e8b41ca233619eca02"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/summary/PlannerSummaryCard.tsx",
+      "sha256": "c7e027d1125a4a4a49063fd2aa14baa1ee8e90de70c1eeb4dca69ecd5e4f8fa3"
+    },
+    {
+      "path": "admin-v2/src/features/planner/components/toolbar/PlannerToolbarLayout.tsx",
+      "sha256": "27d85bb13f5259e480fce1027b21c87adde99e69b065c8634d88d6fbe5a3805a"
+    },
+    {
+      "path": "admin-v2/src/features/planner/hooks/useDebouncedValue.ts",
+      "sha256": "05e9a05b1bc698516c9c6fe0558eb48f2c2692ec966596324a7bc27139e70719"
+    },
+    {
+      "path": "admin-v2/src/features/planner/hooks/usePlannerNavigation.ts",
+      "sha256": "2a5b835cf73098a5bf69ec954f6b17b1f6ead3ddf0eb4ad8ded6c62ef5224b3e"
+    },
+    {
+      "path": "admin-v2/src/features/planner/hooks/usePlannerSelection.ts",
+      "sha256": "333bd3501d64794d3a090b928ed9b5619d3ba5fbd951c3c4b7a5e9961af6ed9f"
+    },
+    {
+      "path": "admin-v2/src/features/planner/hooks/usePlannerState.ts",
+      "sha256": "3af5c0cfa943efcb30448395ec8dd33c51f6e688c5f616983a8e3c670de82846"
+    },
+    {
+      "path": "admin-v2/src/features/planner/hooks/usePlannerUI.ts",
+      "sha256": "28de4c3862670b453daa72b80f6d5778524da799f7fdd00debc7175575f29168"
+    },
+    {
+      "path": "admin-v2/src/features/planner/index.ts",
+      "sha256": "fd6f768ef1c8383bab7141b6b7d02ed0769f38b3479c523d029838d2897abb15"
+    },
+    {
+      "path": "admin-v2/src/features/planner/lib/planner-model.ts",
+      "sha256": "d4d5a6fd36fd10f5e9557dab12c8ddd3aaa2213262b24637c9ad8592ccd3b416"
+    },
+    {
+      "path": "admin-v2/src/features/planner/lib/safe-date.ts",
+      "sha256": "4c828c746ffbbcc3bf824eb330b4990505fe880b68c4c6c112c629ea8a3cce37"
+    },
+    {
+      "path": "admin-v2/src/features/planner/model/planner.types.ts",
+      "sha256": "78f09003b44af50b1d66db8d3371e11e1a23a4f0764fa43e5f33652b6c257181"
+    },
+    {
+      "path": "admin-v2/src/features/planner/pages/PlannerPage.tsx",
+      "sha256": "8ceaf4241a3dcff0be1bf225ec71d2171fc4e62ff7ec613969f49fa655411525"
+    },
+    {
+      "path": "admin-v2/src/features/questions/QuestionsPage.tsx",
+      "sha256": "c05e8bc6139a4b8dd9a03b2d695433a1095d269149224897fac3c05a03404389"
+    },
+    {
+      "path": "admin-v2/src/features/questions/api/questions.api.ts",
+      "sha256": "939971b188b291a401af8ec39dc0d0bd0b2c6000e9767db8717b3f1e777d2ac8"
+    },
+    {
+      "path": "admin-v2/src/features/questions/components/QuestionEditor.tsx",
+      "sha256": "1733ba83675bd8a1d42661a57f1605183bd0dc82abcb90c365bcca259c643e51"
+    },
+    {
+      "path": "admin-v2/src/features/questions/components/QuestionsList.tsx",
+      "sha256": "685f808dade81067092ca80bb4cc26a920a0a49f72c11bd576b7f50d87037f79"
+    },
+    {
+      "path": "admin-v2/src/features/questions/components/QuestionsSelector.tsx",
+      "sha256": "a8a90f4b3a9c6bb6209425949423df92bdfceb49b4edfa90c50a704679895959"
+    },
+    {
+      "path": "admin-v2/src/features/questions/index.ts",
+      "sha256": "aeda8fdf9cc4c443864468d76d6b411579bdbdf9e3448211d7ea4183c26e5987"
+    },
+    {
+      "path": "admin-v2/src/features/questions/model/question-model.ts",
+      "sha256": "f2e6ba37b851eb409ab3e4123356a71e0239a3c575bd0df0dd75e83afcb48f0b"
+    },
+    {
+      "path": "admin-v2/src/features/questions/pages/QuestionsPage.tsx",
+      "sha256": "557919bb0aebea6e9fe75d952abecf52e06d7a46801d608a89ffa1dbdf1c6677"
+    },
+    {
+      "path": "admin-v2/src/features/questions/question-model.test.ts",
+      "sha256": "081c8513141b83a8e853e705b15634eecfe12236ac7511ea9e3794f594fb5104"
+    },
+    {
+      "path": "admin-v2/src/features/questions/question-model.ts",
+      "sha256": "1f728205ccb27e7abba579c1f8ebd9a164c368e80ea60c5a5b31a62aa43b5aff"
+    },
+    {
+      "path": "admin-v2/src/features/quizzes/QuizzesPage.tsx",
+      "sha256": "d35a7c59306d68158c11c26c70215161e766867842f3b30ad2d97a26b5da4533"
+    },
+    {
+      "path": "admin-v2/src/features/quizzes/api/quizzes.api.ts",
+      "sha256": "b8049ec103f507e871e515eca6864787a3fcd43dce6ddaec05a3fb36618aabe5"
+    },
+    {
+      "path": "admin-v2/src/features/quizzes/components/QuizEditor.tsx",
+      "sha256": "04a007e283ad6f54329ea35daaa6e6a424a317ebe4232b856b974f63bea4ef86"
+    },
+    {
+      "path": "admin-v2/src/features/quizzes/components/QuizQuestionEditor.tsx",
+      "sha256": "a2f47e63ed72f359c8f04d5bb53940747ee80ac13e30fe5d98f26c39d321ebd3"
+    },
+    {
+      "path": "admin-v2/src/features/quizzes/components/QuizQuestionsList.tsx",
+      "sha256": "852e234f2a6b4b18b389966fa62a490fb1d6fb5960ab70985f6fad717957d10c"
+    },
+    {
+      "path": "admin-v2/src/features/quizzes/components/QuizSidebar.tsx",
+      "sha256": "8f5ba6feebf64e6355b1305b731f641517ae9dd662d388c393751cde182adbea"
+    },
+    {
+      "path": "admin-v2/src/features/quizzes/index.ts",
+      "sha256": "e3bac6c5223a9d49825e085dcf814eea2a0713df766f26550c8fd78a1a0cea50"
+    },
+    {
+      "path": "admin-v2/src/features/quizzes/model/quiz.types.ts",
+      "sha256": "60648b682153c1b623d6758aafbb4c5adecd6da55a790df2a91aaad41f2fcfd0"
+    },
+    {
+      "path": "admin-v2/src/features/quizzes/pages/QuizzesPage.tsx",
+      "sha256": "f79d1728568883fe181700b19fb903d0b888da35622fc7180ded357ec1fcd6c6"
+    },
+    {
+      "path": "admin-v2/src/features/reports/ReportsPage.tsx",
+      "sha256": "c607a93b3fed8c6cf482a2e027b29deadae32454f3a989a112290787d3770deb"
+    },
+    {
+      "path": "admin-v2/src/features/reports/api/reports.api.ts",
+      "sha256": "ee1139e06ea0fdb5ec0f6e1938e1933adf1cf6ddfbd0356c902df30c70465669"
+    },
+    {
+      "path": "admin-v2/src/features/reports/components/ReportCard.tsx",
+      "sha256": "1965cd785a61ef8a8023a0d4fbbe8105c9770352d01d41dc5a8afb98448a139c"
+    },
+    {
+      "path": "admin-v2/src/features/reports/components/ReportCompactList.tsx",
+      "sha256": "e7bbed1557dc6cfb9409795ab578b998f1a224fb317084a52c554593e37aac85"
+    },
+    {
+      "path": "admin-v2/src/features/reports/components/ReportMetrics.tsx",
+      "sha256": "123a0c92dad04e538460ddacfecc11fc3ef7ada3f8b4dc6d5240ce85bae6ff6d"
+    },
+    {
+      "path": "admin-v2/src/features/reports/components/ReportSummary.tsx",
+      "sha256": "34f93d028c902fe26a0f67ca3a38e6c27af6055ff82a60563ed7b923e4c80941"
+    },
+    {
+      "path": "admin-v2/src/features/reports/index.ts",
+      "sha256": "7bfe46d48f0abbf5720ca77bb1b3a3abb4d105ca72a13fcf0d595c6f2d59aa70"
+    },
+    {
+      "path": "admin-v2/src/features/reports/pages/ReportsPage.tsx",
+      "sha256": "ad3776cf977cd9c53d0af3ac4098b3a47f62d0ce6fcae38c9ef33453b9925cda"
+    },
+    {
+      "path": "admin-v2/src/features/reports/report-utils.ts",
+      "sha256": "ade6b435abd65567abbb7db1dbfac64125a2bc4f5aa0e1141678707d0f47fc90"
+    },
+    {
+      "path": "admin-v2/src/features/resources/ResourcesPage.tsx",
+      "sha256": "e1a3fd65efbb760f10602d0f0bb13d5583ae23e6772abcb9cad7d44a957ed5e3"
+    },
+    {
+      "path": "admin-v2/src/features/resources/api/resources.api.ts",
+      "sha256": "06a0597d3e6feac9dd023e79f561892805ec8fb752146c173cb159c90061f32d"
+    },
+    {
+      "path": "admin-v2/src/features/resources/index.ts",
+      "sha256": "9d3df37f045780fa790b74255d4a7cd5be4be03d9b46418a6f68aab6b4846d2a"
+    },
+    {
+      "path": "admin-v2/src/features/role-readonly-ui.test.tsx",
+      "sha256": "4cd2c2738e90f5abbd9a5be4a098b4e303f3764908df4de5d28aebedfeb22a97"
+    },
+    {
+      "path": "admin-v2/src/features/security/components/PermissionMatrix.tsx",
+      "sha256": "6d698010b84e118d210c8b3bc8d90e63e6c16078b41d6844cd6cafc5fe329248"
+    },
+    {
+      "path": "admin-v2/src/features/settings/SettingsPage.tsx",
+      "sha256": "3b242fa19cab9ba052014ba454ae5301031ef313fc2cd099599ac8edbb591c10"
+    },
+    {
+      "path": "admin-v2/src/features/settings/api/settings.api.ts",
+      "sha256": "54c1cfd6b7fddd22fd7fe418d331851189b96072d5ad7243049cdde6f8cb53a3"
+    },
+    {
+      "path": "admin-v2/src/features/settings/components/ApiConnectionCard.tsx",
+      "sha256": "1a3969a31b322fb7bfdd7635ba75f8a06604c13034b5147a74f83cf15da82119"
+    },
+    {
+      "path": "admin-v2/src/features/settings/components/LocationSettings.tsx",
+      "sha256": "9db59fdaec22e5c7efa7bea1849db40bdd6ff9c97b0eac7d8e64448a1fcd4be4"
+    },
+    {
+      "path": "admin-v2/src/features/settings/components/SessionsSettings.tsx",
+      "sha256": "c2b3c25f77d42243ecb54dc9435088b1bffd37f9fb88a95b00f86e58587dca5a"
+    },
+    {
+      "path": "admin-v2/src/features/settings/index.ts",
+      "sha256": "8c14c4d18211dafc515713c55e6e6d05078acde94100485b8fa26d8a069af505"
+    },
+    {
+      "path": "admin-v2/src/features/settings/model/settings.types.ts",
+      "sha256": "d5a760498122d2abe8826fe3d86ee8a776a84beb494ff9b54a06d85227f4c718"
+    },
+    {
+      "path": "admin-v2/src/features/settings/pages/SettingsPage.tsx",
+      "sha256": "b9fac69d1190c2cc7dd0e8a227491ae9698df9c4c511c386e8bdcb2a45c8335d"
+    },
+    {
+      "path": "admin-v2/src/features/students/StudentsPage.tsx",
+      "sha256": "99f98a5864bbabb7dca3af079a283c69665d64d63f3f9c9c46b03210abb4350e"
+    },
+    {
+      "path": "admin-v2/src/features/students/api/student-activity.api.ts",
+      "sha256": "def8cbb8a3460f6eb9e5da18edff2d37c1c445d24b3617d042c62e531d190aad"
+    },
+    {
+      "path": "admin-v2/src/features/students/api/students.api.ts",
+      "sha256": "1fb990395e60ad3abdbab49a2986d1548aad4ebd120a3bd3533e2ef4b652f8d0"
+    },
+    {
+      "path": "admin-v2/src/features/students/components/StudentActivityTimeline.tsx",
+      "sha256": "d9997b6312dc197b240cebc23f9b22e46dbb759a4a659e944bf88286ae7a0980"
+    },
+    {
+      "path": "admin-v2/src/features/students/components/StudentAdminAccess.tsx",
+      "sha256": "cb4629f2e2237a677179e40bc2e17c8fefbe72b8564097593c920fda9d3ee1c2"
+    },
+    {
+      "path": "admin-v2/src/features/students/components/StudentDetail.tsx",
+      "sha256": "2b1d2354c4d9a7229349fff4a88b2b3ea51259b7f580ff4c91170820df951278"
+    },
+    {
+      "path": "admin-v2/src/features/students/components/StudentEditor.tsx",
+      "sha256": "434137d5928c2d397e97e6667ecd9313ed66524310313c479b2d54e25fe2bc64"
+    },
+    {
+      "path": "admin-v2/src/features/students/components/StudentInsights.tsx",
+      "sha256": "41f1902a25ae8accb9dcb00b359348ecef9bf7bb21cb8cf83c9a12d1fdb23df6"
+    },
+    {
+      "path": "admin-v2/src/features/students/components/StudentList.tsx",
+      "sha256": "95f0c9fc71b504d425e1bef3e9d24b598edaba9305858871199e91a1981ca89f"
+    },
+    {
+      "path": "admin-v2/src/features/students/components/StudentOverview.tsx",
+      "sha256": "85c92420138db979248cf40454ee7545c430ccebd1d487765639f1e2fba0db35"
+    },
+    {
+      "path": "admin-v2/src/features/students/components/StudentOverviewStats.tsx",
+      "sha256": "dc55ba333ec69535c6c1d4b682467b17e5bbd9a361121c06ec8d47394afcfc45"
+    },
+    {
+      "path": "admin-v2/src/features/students/components/StudentSecurity.tsx",
+      "sha256": "331c43843fb3c29edda3804368115e4f9b67f32be06d459c825240d8ae2531c7"
+    },
+    {
+      "path": "admin-v2/src/features/students/components/StudentSupportWorkspace.tsx",
+      "sha256": "dc0662590578514f0d8b671e1aaa2bbf06c69269327fbc22d6836c5a30c7636d"
+    },
+    {
+      "path": "admin-v2/src/features/students/components/student-ui.test.ts",
+      "sha256": "dab596aaa74ff8c41e5f964e838633db00a5f04cbc4ce25ef4dc89d64ce1b680"
+    },
+    {
+      "path": "admin-v2/src/features/students/components/student-ui.ts",
+      "sha256": "35398b91de7db9f638392e9a9fc084d5864f003fc6abdb19e0fcf329a0f00dff"
+    },
+    {
+      "path": "admin-v2/src/features/students/index.ts",
+      "sha256": "139137a369f408815d3bf81763c6283d8a285bc719f489a9a9cc50720c9835d9"
+    },
+    {
+      "path": "admin-v2/src/features/students/model/student-form.ts",
+      "sha256": "a80cd30c6b5c96ea660fd0b9296239894cc90fb63f89c84d7e8eacc9a96157ec"
+    },
+    {
+      "path": "admin-v2/src/features/students/pages/StudentsPage.tsx",
+      "sha256": "31ff9add16bbb8e4ff225b441af0426d79cf761506d0cf2b8c1b00f00379df1f"
+    },
+    {
+      "path": "admin-v2/src/features/subjects/SubjectsPage.tsx",
+      "sha256": "c6ba35008bb351ab6833a9ad043ac058db21382cafc8fd069994742750ccf4cd"
+    },
+    {
+      "path": "admin-v2/src/features/subjects/api/subjects.api.ts",
+      "sha256": "c21d2573840947603420ab3f4dd443500ba8f4865b0eaccebeec7d121c5b69cf"
+    },
+    {
+      "path": "admin-v2/src/features/subjects/components/TeacherAssignments.tsx",
+      "sha256": "5be122076f4da45fe691f83f820a3d9338cd4a0e706658db950e453e9c1a3621"
+    },
+    {
+      "path": "admin-v2/src/features/subjects/index.ts",
+      "sha256": "d5aebdc71399246ddc55ba68c36a7066628f58b549e3567e22af3a8309f891dd"
+    },
+    {
+      "path": "admin-v2/src/features/subjects/model/subject.types.ts",
+      "sha256": "34ab1fea2d2f0d342d94259f138961997cca253b81b59792d3d294da92473d39"
+    },
+    {
+      "path": "admin-v2/src/features/subjects/pages/SubjectsPage.tsx",
+      "sha256": "701e43289f417fd0aef56acdcf4c0cb81513de991a879455d44cf1905c240088"
+    },
+    {
+      "path": "admin-v2/src/features/system/SystemPage.tsx",
+      "sha256": "4f5125bb6264b76880e28b64e25f8ecf06e9f51ee43a48e4a627f4dc425c0900"
+    },
+    {
+      "path": "admin-v2/src/features/system/api/system.api.ts",
+      "sha256": "88a8deb32ad3c20f2d054ebac9dee6eaf8f4e2db36be4fb49160cfe510eac64c"
+    },
+    {
+      "path": "admin-v2/src/features/system/components/AccountSecurityPanel.tsx",
+      "sha256": "ad3e02e42d7be4280bbfec544c3b4c25fa4a3dccd753434ef3483e97fa90bf5d"
+    },
+    {
+      "path": "admin-v2/src/features/system/components/AppVersionManager.tsx",
+      "sha256": "85fee7d05d0a358c3314348537bd44722a8ef75a842f2ea7e5809c2dec65f766"
+    },
+    {
+      "path": "admin-v2/src/features/system/components/ChatEmojiManager.tsx",
+      "sha256": "68fc8c57d54e2ab5887f6cab21d2aef0efd031f27a1d9e432e4b4a53e0f91223"
+    },
+    {
+      "path": "admin-v2/src/features/system/components/DatabaseBackupPanel.tsx",
+      "sha256": "c8d5bddf3d19ae9feb171ce15a6e667c4380667fcd0858a746475c6609dd3c12"
+    },
+    {
+      "path": "admin-v2/src/features/system/components/RelaxationMusicManager.tsx",
+      "sha256": "8d0b6da2819087b123598f607d4a341460effc0615f71456979d85b70bf817bb"
+    },
+    {
+      "path": "admin-v2/src/features/system/components/ReleasePanel.tsx",
+      "sha256": "d341818fa80638e3655a81f604cc35eeeca20baba44c91d00f3a4140a8762995"
+    },
+    {
+      "path": "admin-v2/src/features/system/components/SystemHealthCards.tsx",
+      "sha256": "f4ddf47fca08c4f91617fb9d80a85150fa1e3804a19a8c4b986a493bd7861e69"
+    },
+    {
+      "path": "admin-v2/src/features/system/components/SystemHistory.tsx",
+      "sha256": "55481da13204b708b4df6fac1ff3479cd4f0f845500faafb18e74245abe028e0"
+    },
+    {
+      "path": "admin-v2/src/features/system/components/SystemMetric.tsx",
+      "sha256": "ef51b143893b072ac02e85e60aa1f0dff840ecdf090760f900425a8c811fb1ec"
+    },
+    {
+      "path": "admin-v2/src/features/system/components/SystemSessionsPanel.tsx",
+      "sha256": "3b8b9f55d8337be16833fcae172e8437abf9a89a9c4b37ec571efc9775251c07"
+    },
+    {
+      "path": "admin-v2/src/features/system/index.ts",
+      "sha256": "c6d08812214183b0a657cda6236264c94ee55f9411e11a23fabb5766fd0ec344"
+    },
+    {
+      "path": "admin-v2/src/features/system/model/system.types.ts",
+      "sha256": "060cf176b1e169ec75dfa2fa4020ad9a02ca084949de8348e8ef90ee4fbc2783"
+    },
+    {
+      "path": "admin-v2/src/features/system/pages/SystemPage.tsx",
+      "sha256": "78577d04f464dada996c93efd1931374d0ae5dc5ec50043ed4c1695d8858feba"
+    },
+    {
+      "path": "admin-v2/src/features/system/system-settings.test.tsx",
+      "sha256": "5cd83b35c5cb224fec69d4b51b2aa09083305d5d12b380b72cd40b2fce627b48"
+    },
+    {
+      "path": "admin-v2/src/main.tsx",
+      "sha256": "4791ccad6d688a3a1e2e326898432a06e3a690f2bcb2e0b1ef7b5a4defd2b209"
+    },
+    {
+      "path": "admin-v2/src/shared/api/api.test.ts",
+      "sha256": "df1296c2cdc9a9a7fa8b55205e7ed19a368f0bb6cf2fd61973b7ca377a95fe21"
+    },
+    {
+      "path": "admin-v2/src/shared/api/api.ts",
+      "sha256": "f3d7063724ea00701b2ca534edcc2285d3e3078c0ae11921567f1cdba90113d7"
+    },
+    {
+      "path": "admin-v2/src/shared/errors/AppErrorBoundary.tsx",
+      "sha256": "bcaff1ceca3e3369aa4ed80137cd4dea2786449f3d1b7868453680471e08f353"
+    },
+    {
+      "path": "admin-v2/src/shared/errors/ErrorFallback.tsx",
+      "sha256": "18f61863358717fc9993073ecc925e3429c0fa6e152564115287e720b8ffc004"
+    },
+    {
+      "path": "admin-v2/src/shared/errors/RouteErrorBoundary.tsx",
+      "sha256": "21fefc9db791345106f094d536f44f0d832c7621afa8d24aa1719bcad468e2ad"
+    },
+    {
+      "path": "admin-v2/src/shared/errors/error-utils.ts",
+      "sha256": "18123c2c4036dde921978e7e67210af5b352b49d35973e15a720682fee259f9a"
+    },
+    {
+      "path": "admin-v2/src/shared/errors/errorReporter.ts",
+      "sha256": "f34962c393c753a2ce0fcac789057e71c7ef8777d0bd96183a2d6e959ab133fa"
+    },
+    {
+      "path": "admin-v2/src/shared/errors/errors.test.tsx",
+      "sha256": "129311a235d7519f34f591a0855aeceeace6f9be596910d4d22880447845b759"
+    },
+    {
+      "path": "admin-v2/src/shared/errors/index.ts",
+      "sha256": "c95e2765aae50402e86e5aa774dc23922268135c095874e2c5d099117b0ce52d"
+    },
+    {
+      "path": "admin-v2/src/shared/hooks/useStudentId.ts",
+      "sha256": "0de5e71a27fd78467a661e27cf49415d33641548560e2f52f5bb5e08aa8e6f6b"
+    },
+    {
+      "path": "admin-v2/src/shared/hooks/useStudentSelection.test.tsx",
+      "sha256": "1b3e09023d9806ff318fde3edcc8fa0ede57df9c2142f8e293718a6bafa5f206"
+    },
+    {
+      "path": "admin-v2/src/shared/hooks/useStudentSelection.ts",
+      "sha256": "d57b1e0c8ad04aa09f9c71b6568ea91b2c24a8a261e2772d4fe80d4f1a62ce6e"
+    },
+    {
+      "path": "admin-v2/src/shared/hooks/useStudents.test.tsx",
+      "sha256": "401d45377706de7efc96ee86f4821e4947828e135c258fe40c5bd9a8eca2ba37"
+    },
+    {
+      "path": "admin-v2/src/shared/hooks/useStudents.ts",
+      "sha256": "1d07c66d050e1d0b8cb8bdb9c42f6196677d429909742caaadfc855f17a93880"
+    },
+    {
+      "path": "admin-v2/src/shared/lib/role-ui.ts",
+      "sha256": "c23e368b8dd13f16ec1d312a7aaaa30042e6605d10778b2c82b1085d3e135da5"
+    },
+    {
+      "path": "admin-v2/src/shared/lib/utils.test.ts",
+      "sha256": "50de5cb21f7d19c302b86aea67718545da47b7729a0cc028771b24078220211d"
+    },
+    {
+      "path": "admin-v2/src/shared/lib/utils.ts",
+      "sha256": "6da79056f268d64a2180f69ade141665f70bd1ec91e80adf70d4f76abb815ccc"
+    },
+    {
+      "path": "admin-v2/src/shared/theme/theme.test.tsx",
+      "sha256": "c8e5dda6425c39850ade32e724fd53f7acaeded0bafbb7d5a6191db758222278"
+    },
+    {
+      "path": "admin-v2/src/shared/theme/theme.tsx",
+      "sha256": "62f8da40cf55c3b9c5e3f54f069185b1e1c655603312050eb3faefb25090ebd8"
+    },
+    {
+      "path": "admin-v2/src/shared/types/domain.ts",
+      "sha256": "672678ef2985bf6e2d25ac3927350a6fd8c6682134d10012783e879349db7525"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/StudentPicker.test.tsx",
+      "sha256": "b942526872d64903a8de78d56d848d116b6dc2756142be69fe8ad01d93eb61cc"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/StudentPicker.tsx",
+      "sha256": "843942d3ff67c576e3436555651473002b0fe6582eb5874a1dafeaebd1703f70"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/admin-data-table.test.tsx",
+      "sha256": "231d51022ac3eb8d44f26a8f9cd04cab3ede349372bcffff78fdf635d88165f3"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/admin-data-table.tsx",
+      "sha256": "a13ccc8c8935df68b38142f49a3205efa11771f6f163028b63b86f03bd9a0493"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/data-transfer.test.tsx",
+      "sha256": "d4b21f007d88d08fa11b807c6c123fcb09636c37641c6497d1198996156505cc"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/data-transfer.tsx",
+      "sha256": "e673e368bf9c6e3dc6531c37b0c14f85e11c67c9f2719322ffc10dd1b3a62363"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/date-picker.test.tsx",
+      "sha256": "d366aae8d82ec28f65b59228a50d5f823741dbbd1445dcd0c0a54bffad7b2bc1"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/date-picker.tsx",
+      "sha256": "be3799dd8430d01477038b312db52a73e62740b89c703f9630babbc110ba172f"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/locale.tsx",
+      "sha256": "f5c47afff19ea8fc453e227771692390256c0221139521928bfe2ba3ee3b9052"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/management-workspace.tsx",
+      "sha256": "66ea424795aeb0233e7edd32be6a9ff30a6396d79fe03ba3ba64e955d43602c4"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/modal.test.tsx",
+      "sha256": "96cfca41539680f8e1436a5ab8a92a852ce32ff939f195dc079b0011ec6778a8"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/modal.tsx",
+      "sha256": "2e2042d75747eabc8ae4570a7550a9e1247582a3ab05d30bf85fa1b7ffd7f8aa"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/notifications.test.tsx",
+      "sha256": "f1c05499cc451950e8ce277e5e4e230f15a964a13fffcbcbbe173d201868505d"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/notifications.tsx",
+      "sha256": "1e22d97595aeb4864fc65cf0c0733864f797871f01425f68747060fc7b96cf12"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/popover.test.tsx",
+      "sha256": "128d2b0f2fc3e551fb321e872791e3ca40365e9bd9b9b1fd6bc0cd9d63f614ef"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/popover.tsx",
+      "sha256": "f50457140a160d7a88b6a41c23da7a7a36abeea924b82efc41d2d3a4fc459933"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/soft-confirmation-button.tsx",
+      "sha256": "90f5e0f2795e5de9be0c4ae9082a253caf5827904339dd18dc7e04462fe22247"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/ui.tsx",
+      "sha256": "51f20bf27cc347df835672c121834fee057db238ab64e8ad311fbd6dead5e366"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/work-context-bar.test.tsx",
+      "sha256": "fca8268b8f9cbf0a352421c27b729c9261381c977d7aa7057d4dfcd695e5fa1a"
+    },
+    {
+      "path": "admin-v2/src/shared/ui/work-context-bar.tsx",
+      "sha256": "a3d58a0f0412d39d9ebe018aed1f20096da839c471680670d554ae4926895fd5"
+    },
+    {
+      "path": "admin-v2/src/test/setup.ts",
+      "sha256": "9b328c4843431fa76d8de00008fc159e95f99a840211085ff3b8f25e53d14409"
+    },
+    {
+      "path": "admin-v2/src/vite-env.d.ts",
+      "sha256": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5"
+    },
+    {
+      "path": "admin-v2/tailwind.config.ts",
+      "sha256": "6c15cffe36640e7c53f47083f040c38b8ef4166c7650c59b961eb8c79360c352"
+    },
+    {
+      "path": "admin-v2/tsconfig.app.json",
+      "sha256": "a7266d1c85fa6947c70073256d9a73e4c459e97b0b4ef24b5c48dcab498ef4c5"
+    },
+    {
+      "path": "admin-v2/tsconfig.json",
+      "sha256": "e8d6f7b50828db3953e21c7e92584f9206b3cd2551b4012507372afbb7fe9ce3"
+    },
+    {
+      "path": "admin-v2/tsconfig.node.json",
+      "sha256": "6b2534efc9cb3ae568ebcd1c48c9919061925d7fd2d07fe99e337ba9a3ef9afe"
+    },
+    {
+      "path": "admin-v2/vite.config.ts",
+      "sha256": "ed76ee86d0c9bb728994171b00a8573c0e54055e724453dd3c96cff3f53b58fa"
+    },
+    {
+      "path": "admin-v2/vitest.config.ts",
+      "sha256": "b39cc42ab97ec2d4b954afacd7b6ff4154cd56eb52535feba9541bd41002a217"
+    },
+    {
+      "path": "backend-v2/jest.config.js",
+      "sha256": "efb0259c0715dc00e68abcf1b671c2b0b4df22716afc154707f20a1e7733bc1d"
+    },
+    {
+      "path": "backend-v2/nest-cli.json",
+      "sha256": "1be6e8a1b825ffbf9686c4f03ba6513b2a3ef631d835f5fbec256ddbfb5a6705"
+    },
+    {
+      "path": "backend-v2/package-lock.json",
+      "sha256": "1053e72fe806c00516082e4a587aeea56430ee0b95fded94dcce0e172c31a560"
+    },
+    {
+      "path": "backend-v2/package.json",
+      "sha256": "1dfb5a33e2e19ee884769d8afb87c158e3d957884377e482be78750a5cf3a472"
+    },
+    {
+      "path": "backend-v2/scripts/migrate-v1-to-v2.mjs",
+      "sha256": "3539f394371ee1efbc694690cf6ac0c28e2c18933895fab1dd6de97354f5a5ae"
+    },
+    {
+      "path": "backend-v2/scripts/onboarding-journey-e2e.mjs",
+      "sha256": "b00ddda4b21f9b672d85da794a6f4eb1c9c0ce5c881f6262c63b7be2dd690b38"
+    },
+    {
+      "path": "backend-v2/scripts/security-matrix-e2e.mjs",
+      "sha256": "9060f10e8f64c9e8e196f65ea3eed2d6a1898ebca28d83c11e4534aa4c6d3703"
+    },
+    {
+      "path": "backend-v2/scripts/student-journey-e2e.mjs",
+      "sha256": "39b95a6fd3dce8e760dbff9a8d4b69b57a820a2cd6bd290b2d109fe378670bca"
+    },
+    {
+      "path": "backend-v2/src/app.module.ts",
+      "sha256": "58200169ff73ecb9bab19a8f5e3098260b9627b0de6b5569fc6fb65612eae001"
+    },
+    {
+      "path": "backend-v2/src/common/decorators/capabilities.decorator.ts",
+      "sha256": "cb056875cfdb3b9a6562cb1a97981c262e1b4acc46a9e4a0dedb6bf48c716006"
+    },
+    {
+      "path": "backend-v2/src/common/decorators/current-user.decorator.ts",
+      "sha256": "a161b857f69e4373fdefebb2253f5ea78152c2e837fa2eb28bf93d2b5fe7f97d"
+    },
+    {
+      "path": "backend-v2/src/common/decorators/roles.decorator.ts",
+      "sha256": "d56b8ab8f7cdc4494bd651c394c79010182d39a0314c441ed72120b61cef5611"
+    },
+    {
+      "path": "backend-v2/src/common/exceptions/api.exception.ts",
+      "sha256": "5f2e91f9cf1db3527a2651a8de7698ef40ab8cf4aeffa0aa3eff31f72bdd6008"
+    },
+    {
+      "path": "backend-v2/src/common/filters/http-exception.filter.ts",
+      "sha256": "9bacb3aab66033a350087fa1831013eb4cd7f8f135e5cc3e30ceb5556904ac8a"
+    },
+    {
+      "path": "backend-v2/src/common/guards/auth-session.guard.ts",
+      "sha256": "7c0676169f46c74656e2c1c1073bbee67ec539b437859c46ddc9c43cba6c0a51"
+    },
+    {
+      "path": "backend-v2/src/common/guards/capabilities.guard.ts",
+      "sha256": "13e7aa2a16c3e6d1e4f6452db1f8e19c02b18c0a204fe0ac493ef53297fce88f"
+    },
+    {
+      "path": "backend-v2/src/common/guards/csrf.guard.ts",
+      "sha256": "bb4433d9f2a3768d4ea33aebd34edb91498be213857945ae53d4901adbc09626"
+    },
+    {
+      "path": "backend-v2/src/common/guards/roles.guard.ts",
+      "sha256": "668322686af7fa6eb012134c72dfbd10cac3ab7fc7f855b3a5fda742bafa157c"
+    },
+    {
+      "path": "backend-v2/src/common/interceptors/logging.interceptor.ts",
+      "sha256": "bf6290d3c92b50e21b63f87d0c7c7b1c11a0027ad1e2206232f20af082144bf9"
+    },
+    {
+      "path": "backend-v2/src/common/utils/envelope.ts",
+      "sha256": "ca0f9fa3acaa83fcc4d668edbf603c2be94ad91b3d6ff3fc616b016e6bff6558"
+    },
+    {
+      "path": "backend-v2/src/config/app.config.ts",
+      "sha256": "330c6a0a755b0d9b0a457946d83f07c4eacc187075d25e43a1980663fea0eaae"
+    },
+    {
+      "path": "backend-v2/src/config/auth.config.ts",
+      "sha256": "9283a4a54cd202d0b8ecdc7950e7ed8eee75bab3d5e11c366053112aaf1321c2"
+    },
+    {
+      "path": "backend-v2/src/config/database.config.ts",
+      "sha256": "277dbe116475ea170ee4e3f2884e5ab940137864608bfb21f3c9ce647127d414"
+    },
+    {
+      "path": "backend-v2/src/database/data-source.ts",
+      "sha256": "f04103c843a6796f7fcda863a86c3291608bff574474ef60ee85fb88b5cf1db1"
+    },
+    {
+      "path": "backend-v2/src/database/entities/activity-event.entity.ts",
+      "sha256": "b79bd90d17471a9ebbe48b5302b5ddc8e15f5fdfd23567d54a2b8269cce19055"
+    },
+    {
+      "path": "backend-v2/src/database/entities/app-release.entity.ts",
+      "sha256": "45a915713d7b2a0d5fcaca4ce88576ace5e19640f351a2a31d9023911709003f"
+    },
+    {
+      "path": "backend-v2/src/database/entities/app-version.entity.ts",
+      "sha256": "1a2a76ce7c9f69f78b47c0212e40a663520025821eb71138fcab09dda05d2845"
+    },
+    {
+      "path": "backend-v2/src/database/entities/audit-log.entity.ts",
+      "sha256": "30ff0bc56557fecdd615a039fe59acf1a361c3eaa8d47cba1ebaa6e6b7103e59"
+    },
+    {
+      "path": "backend-v2/src/database/entities/chat-configuration.entity.ts",
+      "sha256": "d315af0db4ba198ca53ca8ca069a6f455cdb1114616107d89899fd5f2c2f4615"
+    },
+    {
+      "path": "backend-v2/src/database/entities/chat-message.entity.ts",
+      "sha256": "a696f08fbf648a7ebf08d4d6e3ecb8cbf74a76e11f4790d6338a6b63618c279c"
+    },
+    {
+      "path": "backend-v2/src/database/entities/conversation-member.entity.ts",
+      "sha256": "614797dad4decb7648466ce616b5fc83b5debb282ebe57ce7a2a40f6bb2adff5"
+    },
+    {
+      "path": "backend-v2/src/database/entities/conversation.entity.ts",
+      "sha256": "255dbffa040f7e8759054cb847a36bc23bd0ddc87dad946ac46504fd15f33049"
+    },
+    {
+      "path": "backend-v2/src/database/entities/daily-report.entity.ts",
+      "sha256": "0a353ca75cd6b6530d1b5d77cb8e9050cd2a39da556da876dcb85fbc81104143"
+    },
+    {
+      "path": "backend-v2/src/database/entities/encouragement.entity.ts",
+      "sha256": "9877a54d2306f36707eee5dec1a89603e3440b746c8e149289eab2210a596799"
+    },
+    {
+      "path": "backend-v2/src/database/entities/exam-assignment.entity.ts",
+      "sha256": "515a73907b0e0c4fbd3072f50e64727c36214b61c0f828196ecc66776204105e"
+    },
+    {
+      "path": "backend-v2/src/database/entities/exam-attempt.entity.ts",
+      "sha256": "4c244f17da123999c95021da49454f1c7219fb14b1c1907f10d752f5cb6f9f7d"
+    },
+    {
+      "path": "backend-v2/src/database/entities/exam-retry-request.entity.ts",
+      "sha256": "9ef1544e077c8c0de67467a2b3aa64423752fff10998401a87753d4595482e84"
+    },
+    {
+      "path": "backend-v2/src/database/entities/exam-syllabus.entity.ts",
+      "sha256": "b116e134d0787765de6ed362954ae527a152fe7f1b389b425f58df22260db836"
+    },
+    {
+      "path": "backend-v2/src/database/entities/exam.entity.ts",
+      "sha256": "e1a679653f66795d4a1a5608c2a16e71513b2737a0c8af0e7b5d8c461195426c"
+    },
+    {
+      "path": "backend-v2/src/database/entities/import-history.entity.ts",
+      "sha256": "56efd1ff24e5a0f384746816f4c8ddcdf4f0f75958401ad5ed43d7a8f9c5168e"
+    },
+    {
+      "path": "backend-v2/src/database/entities/index.ts",
+      "sha256": "c7bf938e9a5dfb937dc0eb8bd2c0a1454f448abcead6279988872f9ea3a294e4"
+    },
+    {
+      "path": "backend-v2/src/database/entities/learning-item.entity.ts",
+      "sha256": "ccab6d84b3e1b1ea9a37e70d4c3d8a4b86c46cc5451f801ebfe1e28d7eb1a0e0"
+    },
+    {
+      "path": "backend-v2/src/database/entities/learning-resource-assignment.entity.ts",
+      "sha256": "7dd48953dfdf17020cc336462f96777905a8ec88b54290ad8aaa033308f1aa3b"
+    },
+    {
+      "path": "backend-v2/src/database/entities/learning-resource.entity.ts",
+      "sha256": "646afae1dcf9050bc232dfa3764800fa45a07cc6d365e7fc9160cd3d53eaaeea"
+    },
+    {
+      "path": "backend-v2/src/database/entities/learning-review.entity.ts",
+      "sha256": "38629433a8987801638ef67cc6d21b39fcd24e22363032b96b0fa1359876d023"
+    },
+    {
+      "path": "backend-v2/src/database/entities/login-throttle.entity.ts",
+      "sha256": "942662a3f38f3c8c2eba5b5b936a7b373c9451eb26807b9a627c8fd309651e98"
+    },
+    {
+      "path": "backend-v2/src/database/entities/message-reaction.entity.ts",
+      "sha256": "0540d9df47c201ccf3abf695c9adcc6cca44fa25b516e93cb42e78861d8c7910"
+    },
+    {
+      "path": "backend-v2/src/database/entities/mistake.entity.ts",
+      "sha256": "c15b580d7c744bfbf66751aee038d168ebb5fbfd4aa81e04c8771566b5a96aa3"
+    },
+    {
+      "path": "backend-v2/src/database/entities/notification-preference.entity.ts",
+      "sha256": "f181137ae72f4b9c1ca8669e2454cd99a35c8e63591702a3ae3768f0bd19dc41"
+    },
+    {
+      "path": "backend-v2/src/database/entities/notification.entity.ts",
+      "sha256": "d2cc245c97fedeaa87cb3a1d9f36f54fe543f8ac511a3de6a64aeb6e2e6db3ac"
+    },
+    {
+      "path": "backend-v2/src/database/entities/organization-membership.entity.ts",
+      "sha256": "9046d61a34800a918271cd32ccec95af21043bca8dcf67bfefe204261442bd83"
+    },
+    {
+      "path": "backend-v2/src/database/entities/organization.entity.ts",
+      "sha256": "00014f871d4a7077bd2cb7eee679426809d67f79482a7055350e03f00c23c2f0"
+    },
+    {
+      "path": "backend-v2/src/database/entities/permission.entity.ts",
+      "sha256": "1fdd4953f3c0ac19c64b192237c5c7c262a2559f6548e071ada2466144210246"
+    },
+    {
+      "path": "backend-v2/src/database/entities/plan.entity.ts",
+      "sha256": "ffbbe283cfd0bb9efd445b77f51e7fc18a192056a72d55970e0fc90a0fb783e9"
+    },
+    {
+      "path": "backend-v2/src/database/entities/push-subscription.entity.ts",
+      "sha256": "83b77ac0d82e544d3c520f80f6af562e1417482d53ceeaa26abcedd7bd1e008a"
+    },
+    {
+      "path": "backend-v2/src/database/entities/question.entity.ts",
+      "sha256": "2074d73428645944d16089896cad9331e161ec590d8d22f101c33a611c539d04"
+    },
+    {
+      "path": "backend-v2/src/database/entities/quiz-attempt.entity.ts",
+      "sha256": "d0117c3ed6754ef2e995ba9e94578a8266aa76c8919aac054cf40a18dbacaeee"
+    },
+    {
+      "path": "backend-v2/src/database/entities/quiz-question.entity.ts",
+      "sha256": "69317356b7f94190ba36a56ab5fbc729a99ab9ad538c3ff61403cda86cf7fd2b"
+    },
+    {
+      "path": "backend-v2/src/database/entities/quiz.entity.ts",
+      "sha256": "608d4e7a7c2b9ffe2038cb311c71febfa57b77748930029581617a1bb12e775a"
+    },
+    {
+      "path": "backend-v2/src/database/entities/recommendation.entity.ts",
+      "sha256": "ceda09a343aabe0c63d0574afb8a6158b38f151683fb46966a60df2c4dda1b9a"
+    },
+    {
+      "path": "backend-v2/src/database/entities/recovery-request.entity.ts",
+      "sha256": "e22ba1f2c77defd723947fddef76c01be17eedd04a3d192c575e3d57b729df67"
+    },
+    {
+      "path": "backend-v2/src/database/entities/relaxation-track.entity.ts",
+      "sha256": "17be2bf4b562c9d0a0cb3a35f3fe5076833283544976d7f90a2d19647460199f"
+    },
+    {
+      "path": "backend-v2/src/database/entities/role-permission.entity.ts",
+      "sha256": "11f4f76ffb23bef46020af7b4f6d4f116a9f98fed2bfdacce5b83a79ea32f72a"
+    },
+    {
+      "path": "backend-v2/src/database/entities/role.entity.ts",
+      "sha256": "8f24312f074180d2b8b1f056507217a59d21bfb8a43ff78ae934bd643bc22030"
+    },
+    {
+      "path": "backend-v2/src/database/entities/session.entity.ts",
+      "sha256": "1163a9c2fb905cce19f0bf822f265bebb8306314a3249ae5eb48ae5adb34dd9e"
+    },
+    {
+      "path": "backend-v2/src/database/entities/signup-throttle.entity.ts",
+      "sha256": "f769f4563c73c0311860cb50ba853534be786adc9e76122ecba8f96b96c18055"
+    },
+    {
+      "path": "backend-v2/src/database/entities/student-daily-relaxation.entity.ts",
+      "sha256": "51bf319c5fb384d0c99f17baae6372be5cf2644361563edadbca3cd04c77a662"
+    },
+    {
+      "path": "backend-v2/src/database/entities/student-presence.entity.ts",
+      "sha256": "256e732eecc1921caf2d7816b17674bb15e4bf82d61cf4400909182b0b5e0cb9"
+    },
+    {
+      "path": "backend-v2/src/database/entities/student-subject.entity.ts",
+      "sha256": "9fed04c23b97fd543342672ef2eae15150bc700b02e4700570bb6b14696a6337"
+    },
+    {
+      "path": "backend-v2/src/database/entities/student.entity.ts",
+      "sha256": "19a1cdad5af5065ab93f3ffc5ccb76ec7f8af40f8b6559f6de4c9053e83b5fd6"
+    },
+    {
+      "path": "backend-v2/src/database/entities/study-session.entity.ts",
+      "sha256": "298affaff09d90032636bfa23bdb492f340278131c2bdf0e29b22a7bab0b7a3e"
+    },
+    {
+      "path": "backend-v2/src/database/entities/subject.entity.ts",
+      "sha256": "ad5e7a0f4fd886d25ef322625c91889cbeaae0d35180bd94bb1508702755be01"
+    },
+    {
+      "path": "backend-v2/src/database/entities/syllabus-progress.entity.ts",
+      "sha256": "3c649d0c496222df351e5cf4e16677ff417a486b852995bd745001bfd4960ec7"
+    },
+    {
+      "path": "backend-v2/src/database/entities/sync-mutation.entity.ts",
+      "sha256": "58105738b44cca81b864e53c6b0c576c018d0c21348c92360277d84c7e46f1c7"
+    },
+    {
+      "path": "backend-v2/src/database/entities/task-comment.entity.ts",
+      "sha256": "bdfa9349b356508e5778e9508c0c7eed7d30a4d540cacf07865ca1bd28edf68e"
+    },
+    {
+      "path": "backend-v2/src/database/entities/task-issue.entity.ts",
+      "sha256": "f5ef17a37a301e3e7dc7aab1405896cb8872d4cb2f8dce32e08c6774f2754bd2"
+    },
+    {
+      "path": "backend-v2/src/database/entities/task.entity.ts",
+      "sha256": "c25457fa3210a316271353614948bf01c6960550e6619de856938b4a5cf00a46"
+    },
+    {
+      "path": "backend-v2/src/database/entities/teacher-subject-assignment.entity.ts",
+      "sha256": "dc1b9871a0e9a54cf74a13b45b4136837ca072b3cc1603091ab5c2208df491d5"
+    },
+    {
+      "path": "backend-v2/src/database/entities/topic-mastery.entity.ts",
+      "sha256": "5397b2323be172c94d8a5683f3f2385dafe08b6ec11ea7d442963935d9416469"
+    },
+    {
+      "path": "backend-v2/src/database/entities/user-relationship.entity.ts",
+      "sha256": "0f7f678ea8e0bbe9a9c0e935aff1eacced361ff935ab19cc0c2e8c8b3f6bca88"
+    },
+    {
+      "path": "backend-v2/src/database/entities/user-role-assignment.entity.ts",
+      "sha256": "393fea3575af6c685ad2baf6a298475a5945f13cc0c8bb70462f706cc024756e"
+    },
+    {
+      "path": "backend-v2/src/database/entities/user.entity.ts",
+      "sha256": "7ea5cc0753ca1e878cd864df5382573f2142edcedd78bc6822ee943fc83fc646"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724140000000-InitialV2Schema.ts",
+      "sha256": "d0dd3400a05e90198987894c745bf707591c8210b1710e1a8adfe4ca010ee7f9"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724140100000-PlanningFields.ts",
+      "sha256": "4b883b482edbc31a467331aed0529d8afb1d96e3a086ad373a161c856203f20d"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724140200000-StudySessions.ts",
+      "sha256": "6d165a15461f729ae38cacdef49722bbeb9dae8e8cde2bf431d54f1fcdcdd9a0"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724140300000-ExamAttemptAnswers.ts",
+      "sha256": "004ec45da54a952a3ebaeffda4a05e472de052a2b03b77989a26ecd8d8cb8880"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724140300000-TaskFeedback.ts",
+      "sha256": "00442c758edf831495c4ec9eaa70f20dac4b285402aebf8288e9e57c2055450f"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724140400000-ChatMessageReadState.ts",
+      "sha256": "0f1a974da46d20a1d8add2914f6ff96ac353deb01664f8881f574b987f47700c"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724140400000-SyncMutations.ts",
+      "sha256": "51da72f3ee9f1b464c09a2a9633851b7931d5ba3f28f19cd0d1b0a6ad2420d37"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724140500000-NotificationCreatedAt.ts",
+      "sha256": "945876062d27096f4e9336eec49cbcf6701ebd2d6a88a06bab73d1622e8c5bb0"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724140600000-AdminStudentLearning.ts",
+      "sha256": "fb490190f4d07f7b587d22215b0a23ce8eb39424e3f1abcdd3af1e535c594d95"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724140700000-IdentityAuthorization.ts",
+      "sha256": "c6294a396f31c6f10baa7c3b076de13621844279e4beef0b20b34dbcc8aaf6c6"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724140800000-SecurityFoundation.ts",
+      "sha256": "6d499ae4ce4f0ffa4e9d68c25315f07ca1d915e832fa6feaccd07e2802aa582d"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724140900000-Subjects.ts",
+      "sha256": "0f0c7ec51b0acd938afb7191e83c431b0c22a37f7312e15b2ce0f92b129d46fa"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724141000000-ExamAssignments.ts",
+      "sha256": "9481a06c922951c4226237623536eee40dedfc1d57db328b09886f07c17987ec"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724141100000-AssessmentParity.ts",
+      "sha256": "79b7c04f1c309332060f2e706a91360f66364cf41c215e0f10308cfba76f629f"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724141200000-UserNotifications.ts",
+      "sha256": "a5e34f49d9a62fc4327af476e83b03643cad9eff63b5dd3242f34f368a1fb782"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724141300000-WebPush.ts",
+      "sha256": "2a4a21c2d4f3d9d763a42028bc8f97f69b81a856ced6648ae62fc49d3e9b865f"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724141400000-ConversationChat.ts",
+      "sha256": "e899c9201f592ff07fe9b02f5fe76d4261410d1623ff7e15d96341e12676d443"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724141500000-GuardianWorkflow.ts",
+      "sha256": "06e0fd6e353490cf3d7986e81e8ed86a6dca414dec220fa0158cfe1f0fd91b90"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724141600000-PresenceActivity.ts",
+      "sha256": "c15eb83c6a4a9b74ace29cd9a448010fb03720930d4470ac35b165fa4ec9ad48"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724141700000-ReportsAnalytics.ts",
+      "sha256": "23502ba517c6f9d275bf1ff2f18783e55a61620bf0006adf0461dbc3782d16f9"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724141800000-ImportExport.ts",
+      "sha256": "68938e11301aac56d2f42708934f4663fbc53ec74549b41f81d40f8156a50a08"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724141900000-SystemOperations.ts",
+      "sha256": "db5ad29aa981a4af70130f376703ac6ab6e28e8893046e65e17d87c77cde541e"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724142000000-SyncMetadata.ts",
+      "sha256": "84e7483beeb9bc874754ab60ea28d51ed0e0c3f84f107f4b16cbcfbdf0097a81"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724142100000-ReportsPersistence.ts",
+      "sha256": "e6d7451f0c61f4fc22232efdf2853efef164dfd4dbcab3257d9cd9a3648f6540"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724142200000-RoleContextHardening.ts",
+      "sha256": "0f00f2f068378a0527a8cdb5f1eb6dee1b19504e77c53b1884e979a6486d7d59"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724142300000-StaffPlannerCapabilities.ts",
+      "sha256": "39e639e2afb3bbe2d20fc5b45afad1e12dccae652d1f8383816bef9348c65d6a"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724142400000-ExamPublishing.ts",
+      "sha256": "826b214ae4b86ea167028baf38f7c648b7366b61fef01ee30447fe3ee403cd89"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724142500000-AssessmentRoleCapabilities.ts",
+      "sha256": "9583832629d9191e8788f40bea23e5ff8ab08904f3fbfb8e9a484c42e15ffe4d"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724142600000-ConversationManagement.ts",
+      "sha256": "053c282f744b7b31a3efa02f72a3e38ccd25150c023d0fb2ab2a6d0b9815eaf7"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724142700000-StaffLearningCapabilities.ts",
+      "sha256": "904d7cf1a4caeae547ea3b3c0993e97bfa2299bd1bd65177378cf1a76b482247"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724142800000-TaskIssueModeration.ts",
+      "sha256": "9ceed294957a3cb46b81fbb2ef9b3623f066ddb3adccc6e270c65909cb88547e"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724142900000-TeacherSubjectAssignments.ts",
+      "sha256": "d6c909c5bf54b1aa0c5f9d379c35da40ac7e5e1194c64291276f7a27d66a0f8a"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724143000000-SubjectReadCapabilities.ts",
+      "sha256": "c1631d24fb4b103ada382f4f14ebb74681e852528fbcf726cf2c95cdd7fcb601"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724143100000-StudentExamExperience.ts",
+      "sha256": "6565bdb27a456ce9bfc4bdfe5cdddc5f189584cc1c402d1c6ba8756c91dbc5ea"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724143200000-LearningResources.ts",
+      "sha256": "64b246f91beab3c5c3448b907351644dfc3b3039d16c51868064200cbf5a5f7f"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724143300000-StudentSelfSignup.ts",
+      "sha256": "9ebc9b899aca8bbd4af56219bf829dec26517e10cc9184a8b03b2530debd548c"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724143400000-SignupThrottle.ts",
+      "sha256": "4136b5a4e0be1c6a8723648fe648aa405919210c4d44899d7042f2d28fd6d377"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724143500000-PlatformAdminChat.ts",
+      "sha256": "3cdbd77c1c552ce275e5d67899cacd2040482331dbbd24fc9011074dd4bbcc5f"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724143600000-RotatingRefreshSessions.ts",
+      "sha256": "198328e63b8da916fbde61592c6782ef9f7883fdf18b6ff31cded244e3ab16f0"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724143700000-RelaxationMusic.ts",
+      "sha256": "593e69672d106719b1c72c1511fadebd2a65b828b8a5aefa004722bb08494aa4"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724143800000-TaskCompletionFeedback.ts",
+      "sha256": "293c4bba28d82649601043c72a80fb62f11761899379018e3cb829a302da0624"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724143900000-KonkurExamDomain.ts",
+      "sha256": "0a2e96602429041084692a0b7d98f24d19935746d0cacc75e7fbab89395917d2"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724144000000-ChatReactionConfiguration.ts",
+      "sha256": "8f33bdbc15298a063c0b18595843fa9d3d36953c16181f302e3af20be62036d4"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724144100000-GuardianChatPrivacy.ts",
+      "sha256": "bff109b854bf14f6d0ce1e9bfa1e98b6679d71821595225d333bbd4fbb118da0"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724144200000-ChatUserProfiles.ts",
+      "sha256": "03c92f93a7dc71c4426cb7389120a4d74eaad9b8703892135556944d41c19431"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724144300000-OrganizationManagedChat.ts",
+      "sha256": "0c936969fb943ffe14c2aa91ec85d53ea575f1afec99c99f984363f9d2492a5d"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724144400000-StudentGuardianSelection.ts",
+      "sha256": "c0861304559cc92afd5b4f734e6d2553962037b6a89da3c8305d7cbef4471829"
+    },
+    {
+      "path": "backend-v2/src/database/migrations/1724144500000-ChatTaskLinks.ts",
+      "sha256": "95c0103abdcc4e499766b1c9f1d2657d9643a50e6f8651820e73d167dbd0d220"
+    },
+    {
+      "path": "backend-v2/src/database/seeds/demo-guard.ts",
+      "sha256": "aca86e3dc7a140078eb572d94c28b169ac6e8a9aedb0bd6b603ec73e06a65fc3"
+    },
+    {
+      "path": "backend-v2/src/database/seeds/product-demo.ts",
+      "sha256": "ba9514891c5355c590099f01e5851c71deec587330adfdaacf5d9edd965318b3"
+    },
+    {
+      "path": "backend-v2/src/database/seeds/reset-product-demo.ts",
+      "sha256": "a5eb512d4e735a5d4b1e196ce1ab1751b490d17910a7fa72501b0352b4a14873"
+    },
+    {
+      "path": "backend-v2/src/database/seeds/security-matrix.ts",
+      "sha256": "1bed14c4f73ef78fca3a39f96f3db4d16b3a7bbb9622efc939ba217693533f6c"
+    },
+    {
+      "path": "backend-v2/src/database/seeds/seed.ts",
+      "sha256": "5864d6d71df40dcd7f3445b17d071826737920d9b6ea3063534cf1bd14a60b37"
+    },
+    {
+      "path": "backend-v2/src/main.ts",
+      "sha256": "2a2285b12211c194bdbf18eaa56e2184cfb7c5c4106c4a8e38026a33a42ab2d3"
+    },
+    {
+      "path": "backend-v2/src/modules/activity/activity.controller.ts",
+      "sha256": "550a4b895ed97ad3992139796450cb7f558509372024551a1c4c4f67804812d7"
+    },
+    {
+      "path": "backend-v2/src/modules/activity/activity.module.ts",
+      "sha256": "a59f53674f4136c4e4585b4064395b6d6860eab74ba899e242250d5f43ed3748"
+    },
+    {
+      "path": "backend-v2/src/modules/activity/activity.service.ts",
+      "sha256": "5aec8bec5d9548eade44545eb261f653be4e07d930fd1713e4f75b18a420567a"
+    },
+    {
+      "path": "backend-v2/src/modules/analytics/analytics.controller.ts",
+      "sha256": "0013094dc53e2b333a06472220ba62b4a372d98a7cf565d6f220315fb0a9bf6a"
+    },
+    {
+      "path": "backend-v2/src/modules/analytics/analytics.module.ts",
+      "sha256": "7b252d2d191120f5deb032c786bb3b873fd582a1c8c29f77bbe3c3a37aa65284"
+    },
+    {
+      "path": "backend-v2/src/modules/analytics/analytics.service.ts",
+      "sha256": "893150489dee0c94d2415475d21ce8e8cd1b5aeea04c26875b0afc1f9271750d"
+    },
+    {
+      "path": "backend-v2/src/modules/assessments/assessments.controller.ts",
+      "sha256": "70415d8ec63623f15fbd71c9918e1b80e7718d5ec0b7fd1a0b7fd6fdf769bf34"
+    },
+    {
+      "path": "backend-v2/src/modules/assessments/assessments.module.ts",
+      "sha256": "0764686259f21a33e9524b8f276b2e82997b923bfad52d2e268bf52f4ced548f"
+    },
+    {
+      "path": "backend-v2/src/modules/assessments/assessments.service.ts",
+      "sha256": "4d0b347c68244f620139ea493c019a6347f2c5321b096959fab6b56e49ecbb42"
+    },
+    {
+      "path": "backend-v2/src/modules/assessments/dto/assessment.dto.ts",
+      "sha256": "1fa654c693f676db27e384af824b9092ca70b64ed51cdd253de49eed3d7ffe07"
+    },
+    {
+      "path": "backend-v2/src/modules/auth/auth.controller.ts",
+      "sha256": "2520d8801397748d95100e19f03abc17db398d564f14a59ef0d972d9b26f410b"
+    },
+    {
+      "path": "backend-v2/src/modules/auth/auth.module.ts",
+      "sha256": "45413be606b797bcf994511c12cf90e63bbe914e404514be1363978a137ae04c"
+    },
+    {
+      "path": "backend-v2/src/modules/auth/auth.service.ts",
+      "sha256": "bf6d49ea5b26f0742887c32e666def11c35a5f82847972b64058c85296b4509c"
+    },
+    {
+      "path": "backend-v2/src/modules/auth/dto/change-password.dto.ts",
+      "sha256": "95900abef0384dea7fc9113a13df3ea99c54019f7e17445fa309e2359a15e6bc"
+    },
+    {
+      "path": "backend-v2/src/modules/auth/dto/login.dto.ts",
+      "sha256": "6ea997a585f1f9e804b5a07ccfecb609cbb90d93cf12ab29a851eb47fefbf87f"
+    },
+    {
+      "path": "backend-v2/src/modules/auth/login-throttle.service.ts",
+      "sha256": "8a9436828ebee0a34af04402add855689c14d0228bd5993d98316ac88c8f32d3"
+    },
+    {
+      "path": "backend-v2/src/modules/auth/me.controller.ts",
+      "sha256": "3de7cf00171c1555e19a0e8e07b3ba6bd4c2cf94f1a2d00f4de019610a4efb88"
+    },
+    {
+      "path": "backend-v2/src/modules/authorization/authorization.module.ts",
+      "sha256": "d5a71fdbaba90128a995f7bc8a1278e61b53c8df05ca839a3cac0a42f899e838"
+    },
+    {
+      "path": "backend-v2/src/modules/authorization/authorization.service.ts",
+      "sha256": "dbfb20fa5884c10135b11de2c6c2a72b94f157316e8aba9008de5f50fe624f7a"
+    },
+    {
+      "path": "backend-v2/src/modules/authorization/capabilities.ts",
+      "sha256": "c09d36257f86017638f80a5d9027aebad16ceff98e73372424a72244715d2424"
+    },
+    {
+      "path": "backend-v2/src/modules/chat/chat.controller.ts",
+      "sha256": "d2d0098b3f46fb128cc2a804cfe7aee5950ecdb6c902c0cee50b7dad760f0816"
+    },
+    {
+      "path": "backend-v2/src/modules/chat/chat.module.ts",
+      "sha256": "d1a69cf5b1c8326e8b102efb25b39a0787decce749a85ebf35e3503c56bff53d"
+    },
+    {
+      "path": "backend-v2/src/modules/chat/chat.service.ts",
+      "sha256": "a4f142ade5ff176853fcd84df64e69031195a17977c1ce631d4c060d03bf12c0"
+    },
+    {
+      "path": "backend-v2/src/modules/chat/organization-chat.ts",
+      "sha256": "b18260e91bcb8a0f31d61a7cd9ba0efcfcb89d46d8fe153c5305a70b0782b18d"
+    },
+    {
+      "path": "backend-v2/src/modules/dashboard/dashboard.controller.ts",
+      "sha256": "612a78229ccb16728ec136907d27338fef0fd886d85e775b5c21f58a51c6519e"
+    },
+    {
+      "path": "backend-v2/src/modules/dashboard/dashboard.module.ts",
+      "sha256": "e8a0ab0b66c320b443f2d4f89a9a0e5ffca20f0e626a0b6bb6cb2355c49b4680"
+    },
+    {
+      "path": "backend-v2/src/modules/dashboard/dashboard.service.ts",
+      "sha256": "f0521e29563e93f78993bff48321d492076a9446fe1766943085f44e443edfee"
+    },
+    {
+      "path": "backend-v2/src/modules/exams/dto/create-exam.dto.ts",
+      "sha256": "b0a6f679af5c1c6d1f326260cfe8ef5288e0323a17c989ef0041698a62dd5625"
+    },
+    {
+      "path": "backend-v2/src/modules/exams/dto/submit-exam.dto.ts",
+      "sha256": "a420f6ac99cd599a49568d43d08ec037d7197572983362abf9d82e5d959bd543"
+    },
+    {
+      "path": "backend-v2/src/modules/exams/exam-scoring.service.ts",
+      "sha256": "b8ebf4211783f86f52ddfc15eaae0ee0cd3d9a31e16c7fc1c8cbfb8cfd26a299"
+    },
+    {
+      "path": "backend-v2/src/modules/exams/exams.controller.ts",
+      "sha256": "762be9fbe4b0c560985cfea2fcc68da003a813a809c1b0fd6c3b090e5083ca5b"
+    },
+    {
+      "path": "backend-v2/src/modules/exams/exams.module.ts",
+      "sha256": "0a59da5ed938d1343bad7e3004b1ac60a678732f3fc4abe6b0b77b3ec4c03122"
+    },
+    {
+      "path": "backend-v2/src/modules/exams/exams.service.ts",
+      "sha256": "a9932035ddea0058634f7b748353d47eca1b6121de364642bff8427a59ef0d5f"
+    },
+    {
+      "path": "backend-v2/src/modules/guardian/guardian.controller.ts",
+      "sha256": "933c1d549d322cadbdacd6dd704f5089c21ebc99bb820709e5d13bdf7a117cb2"
+    },
+    {
+      "path": "backend-v2/src/modules/guardian/guardian.module.ts",
+      "sha256": "1a129a964fa1643128c8df3fdb876205604c2aa1875eda36fdbebf85f7541d74"
+    },
+    {
+      "path": "backend-v2/src/modules/guardian/guardian.service.ts",
+      "sha256": "9ccc6828de9937d61a5adc76d3b7762b9943b951dabfc1583ce77310e6549d83"
+    },
+    {
+      "path": "backend-v2/src/modules/health/health.controller.ts",
+      "sha256": "4440aa5f0911c071aa63c21d66d91c4502778319d5084bc33d897f9f3a7e59ba"
+    },
+    {
+      "path": "backend-v2/src/modules/health/health.module.ts",
+      "sha256": "0bf7e283e40856333ecad259e2560e938bce7a5ea04c6d539d55ed095de5f548"
+    },
+    {
+      "path": "backend-v2/src/modules/import-export/import-export.controller.ts",
+      "sha256": "00fd92ddd1256fd847d1c5f6328e43eb594a1011836f2b9d5a7ebc4e7205823c"
+    },
+    {
+      "path": "backend-v2/src/modules/import-export/import-export.module.ts",
+      "sha256": "0b943c35588b58c0900ab6db5df1778fbe4f9a5fe1e81a1e1b90faf056499473"
+    },
+    {
+      "path": "backend-v2/src/modules/import-export/import-export.service.ts",
+      "sha256": "1efee0ae2a72d4bae63913c71785bb4c079fa286ec0fe76b6834372d7860c03e"
+    },
+    {
+      "path": "backend-v2/src/modules/learning-resources/learning-resources.controller.ts",
+      "sha256": "a61d4042f0eea5e24a1817bf495141e5cac370b78d78009e36bded8384e61d7f"
+    },
+    {
+      "path": "backend-v2/src/modules/learning-resources/learning-resources.dto.ts",
+      "sha256": "5fd93baef954280f36af2ea933104b8d5a76bd7be078ce0003017a2ab33601ca"
+    },
+    {
+      "path": "backend-v2/src/modules/learning-resources/learning-resources.module.ts",
+      "sha256": "543af58995a25c53cd5059e026fa535d649c07c4a86c8f8753806d90928fd4fd"
+    },
+    {
+      "path": "backend-v2/src/modules/learning-resources/learning-resources.service.ts",
+      "sha256": "f182d43df29dd9a039b1371a380227bbf01f98a047663a1e78a6563f04892187"
+    },
+    {
+      "path": "backend-v2/src/modules/mistakes/mistakes.controller.ts",
+      "sha256": "7586865d438e41b9668b6c93e4b4e8d34b3111fd52bc4724842108d7bf6c561f"
+    },
+    {
+      "path": "backend-v2/src/modules/mistakes/mistakes.module.ts",
+      "sha256": "22891cd50a9365139202e93bcfe4435615a3ea5870801d4f8d09e6a480190443"
+    },
+    {
+      "path": "backend-v2/src/modules/mistakes/mistakes.service.ts",
+      "sha256": "e4f6cfe6665f131d6fe1e6dfad1297b8337f59f4f0b467bcafa7f8190d705d0b"
+    },
+    {
+      "path": "backend-v2/src/modules/notifications/notifications.controller.ts",
+      "sha256": "ab9a66182f877c0a0f56a2a39c238c09ac3a7e1df7cbce8ab76895dd9642d212"
+    },
+    {
+      "path": "backend-v2/src/modules/notifications/notifications.module.ts",
+      "sha256": "35cdb236135771ed594a9b3a9ea81bdc7f8e116bda0fd04453b3442d73726976"
+    },
+    {
+      "path": "backend-v2/src/modules/notifications/notifications.service.ts",
+      "sha256": "ffad1cba250feccccb92b43bc2d4ecf4e5a3a8cbc90abc73152fe561181c2a5e"
+    },
+    {
+      "path": "backend-v2/src/modules/notifications/push.controller.ts",
+      "sha256": "ecb098f1c0b724c23b968017f5e309aaaefd589de6feec215c3c5dcd6e23f892"
+    },
+    {
+      "path": "backend-v2/src/modules/notifications/push.service.ts",
+      "sha256": "270581ae96f2bf627d7e76a4dbcc3260dee7bc30e3d21aa9acf244263dfa249e"
+    },
+    {
+      "path": "backend-v2/src/modules/onboarding/onboarding.controller.ts",
+      "sha256": "c8fe43ea2936b96c345eb3f0755b4ca86dfe7585a890bd847c03d84af852b279"
+    },
+    {
+      "path": "backend-v2/src/modules/onboarding/onboarding.dto.ts",
+      "sha256": "6b5cb38f9d93e9038a316eba55d46a3e53dee9766e63b1d26c7fa64228401e27"
+    },
+    {
+      "path": "backend-v2/src/modules/onboarding/onboarding.module.ts",
+      "sha256": "60ee6a257a61b4a31598ce85b5fb1e3a0c12e14fc3ea837aed7c349cf02e4639"
+    },
+    {
+      "path": "backend-v2/src/modules/onboarding/onboarding.service.ts",
+      "sha256": "937c690db3b05a040c114648e8a38ca86c5b93ec0c557bcd4b20f7114a14681f"
+    },
+    {
+      "path": "backend-v2/src/modules/onboarding/signup-throttle.service.ts",
+      "sha256": "f7993f210b6771f01000aa0ff16ee95358e82ff8db9df2a6323f7c8eb0ecf324"
+    },
+    {
+      "path": "backend-v2/src/modules/organizations/dto/organization.dto.ts",
+      "sha256": "7a026ab53ba2c26fbf654030581702d328b9095574d52fb15b4a46425e7d237c"
+    },
+    {
+      "path": "backend-v2/src/modules/organizations/organizations.controller.ts",
+      "sha256": "362b7ea2f8037d1b316a3853a75901946b192686d13d9d3e12cd6330f7e794e3"
+    },
+    {
+      "path": "backend-v2/src/modules/organizations/organizations.module.ts",
+      "sha256": "8197d62a63c3406f4bba9278a4b7f0a146f988b3c9331c4ef46680fe33a0144f"
+    },
+    {
+      "path": "backend-v2/src/modules/organizations/organizations.service.ts",
+      "sha256": "1de196e008852f64b910caef5270ce4b9da61c55e327b9df2c84c1bfef738dde"
+    },
+    {
+      "path": "backend-v2/src/modules/plans/dto/import-plan.dto.ts",
+      "sha256": "009a8904464b4e54c16e61823f4989e3dc6beddc22f0c2869380baa850b72a2c"
+    },
+    {
+      "path": "backend-v2/src/modules/plans/plans.module.ts",
+      "sha256": "b6b2e573d85e3f2d2af0751824970d7d3d732834e5a085a191d66e29d553c4d9"
+    },
+    {
+      "path": "backend-v2/src/modules/plans/plans.service.ts",
+      "sha256": "9ed1547e2e38907c732964864a6c279e1aff53cfa4f400e20c89cfd0f1acf4ba"
+    },
+    {
+      "path": "backend-v2/src/modules/plans/staff-plans.controller.ts",
+      "sha256": "6f7c3faee25a2a4e8dee013c2c48fd3649734e1128907fbce9cc97aa37bc3947"
+    },
+    {
+      "path": "backend-v2/src/modules/questions/questions.module.ts",
+      "sha256": "f8d525dc50c9e605ef8dd209d5026a1d79f317883e1531a3851753e7c7d9cdf9"
+    },
+    {
+      "path": "backend-v2/src/modules/quiz/quiz.module.ts",
+      "sha256": "36482999913de2df3f191d10404d6fd4e0fdebc271c924ae86f41c8a65bf7a18"
+    },
+    {
+      "path": "backend-v2/src/modules/realtime/realtime.controller.ts",
+      "sha256": "892cdb896814cb2eefbfcaff852cec8a320a18012d0fb36041fdbf1cab5c1f16"
+    },
+    {
+      "path": "backend-v2/src/modules/realtime/realtime.module.ts",
+      "sha256": "64ff8f5dc594b2c38d93ba9fe3b4fce68f1f2991ba437afa7fcb98b8de4121bd"
+    },
+    {
+      "path": "backend-v2/src/modules/realtime/realtime.service.ts",
+      "sha256": "cc968db28ae39279af184d03018b12929a1299e18dc5948c46254ce475eebe69"
+    },
+    {
+      "path": "backend-v2/src/modules/recommendations/recommendations.module.ts",
+      "sha256": "63d9456fcba148b8903b29eb839e068e2c41f0047de5f8809abcf3bf0328bab7"
+    },
+    {
+      "path": "backend-v2/src/modules/relationships/dto/relationship.dto.ts",
+      "sha256": "f5c9e084fb0d1083b249a2befc024d62fe355727e06d0c253bf256712c07ba43"
+    },
+    {
+      "path": "backend-v2/src/modules/relationships/relationships.controller.ts",
+      "sha256": "7d0732b373959c1b045fe65b93e85e834bdd8f3d4b8697497f2a739d6ba86c64"
+    },
+    {
+      "path": "backend-v2/src/modules/relationships/relationships.module.ts",
+      "sha256": "ca439c7f93bcc78ea2cb848ffd4fc12ca109f5aae4f27ef82abe9c066317ca3c"
+    },
+    {
+      "path": "backend-v2/src/modules/relationships/relationships.service.ts",
+      "sha256": "dfc7bfb43e894b1e40201168e5fddcb1e9b33ed96fbbec2a2d954c8aa4f1ddf2"
+    },
+    {
+      "path": "backend-v2/src/modules/relaxation/relaxation.controller.ts",
+      "sha256": "86dd41dbc9ba04fe9e53bf0d13c9c2d796c4d31161372a63d17ae11b629c76ca"
+    },
+    {
+      "path": "backend-v2/src/modules/relaxation/relaxation.dto.ts",
+      "sha256": "bef62e3ccd6be21b42f181879fcf25da80a0ab8bd4182764329bda5310a26c5d"
+    },
+    {
+      "path": "backend-v2/src/modules/relaxation/relaxation.module.ts",
+      "sha256": "844847b5ed9001f1c06487449f373cb57a0e0e993aec30462dd7a18fe4e36bfe"
+    },
+    {
+      "path": "backend-v2/src/modules/relaxation/relaxation.service.ts",
+      "sha256": "73d4e8dbcc7c2ac140640a8b27f0fb69a3542324413e30a482604dd6030f66a5"
+    },
+    {
+      "path": "backend-v2/src/modules/reports/dto/create-daily-report.dto.ts",
+      "sha256": "16a745557ece1fcc6eb6395a63a21392af069a86c67a234bd277778af492ac60"
+    },
+    {
+      "path": "backend-v2/src/modules/reports/dto/create-recovery-request.dto.ts",
+      "sha256": "fb9c78c3a477f3faefc27319afeb4026c064c2181e2fc305a6859dc7248db9bc"
+    },
+    {
+      "path": "backend-v2/src/modules/reports/reports.controller.ts",
+      "sha256": "53ddb14a84e682068a438bc2f73b25d9c7a517d79c88c386f2c9a902c35cbf2b"
+    },
+    {
+      "path": "backend-v2/src/modules/reports/reports.module.ts",
+      "sha256": "c20b4e08045c5e35ecdd7e6b291b4104489e978085c8219bc960024dbc9fc2ec"
+    },
+    {
+      "path": "backend-v2/src/modules/reports/reports.service.ts",
+      "sha256": "25055c2510be2f9168eee617a7c10e679db7aa2ebeb8945a7eb498f61e5c073e"
+    },
+    {
+      "path": "backend-v2/src/modules/reviews/reviews.module.ts",
+      "sha256": "03b65390bae05e5d00b75e7d830c9a92e3d4cf41e4737235259cd263e7b8ed00"
+    },
+    {
+      "path": "backend-v2/src/modules/students/dto/learning.dto.ts",
+      "sha256": "c582072b97ed2bc9b7908448b7cf8ba0f8ae8db8fe02cf4433afaecd42d3a2b6"
+    },
+    {
+      "path": "backend-v2/src/modules/students/dto/student-admin.dto.ts",
+      "sha256": "0813bd5d6efa4ccade653fde8fde820ab9ca7ab7ce9006584f293e373d988b48"
+    },
+    {
+      "path": "backend-v2/src/modules/students/dto/task-issue.dto.ts",
+      "sha256": "0857a3ba9cd9e8bc6eb6a495aeaf5df507f05058c503d91c3639059e9ee8a981"
+    },
+    {
+      "path": "backend-v2/src/modules/students/student-administration.controller.ts",
+      "sha256": "04b342954aae99e3f4a356ba5313874a718a684deb642224a04f572194a7a154"
+    },
+    {
+      "path": "backend-v2/src/modules/students/student-administration.service.ts",
+      "sha256": "7ca69f88a51161009c5a10bb927e1b5c6bc7e3b066d8271f3984e8b86ce69390"
+    },
+    {
+      "path": "backend-v2/src/modules/students/students.controller.ts",
+      "sha256": "2793759d3dac6b972fb3f5c737758c0171e8b26a3e4a13ba54fbd5f2b465a1be"
+    },
+    {
+      "path": "backend-v2/src/modules/students/students.module.ts",
+      "sha256": "9d23ee9ab6f5c72d0fa7f93c3a0d79433fb15553112b1b7e343dd4bd4f4f0a0c"
+    },
+    {
+      "path": "backend-v2/src/modules/students/students.service.ts",
+      "sha256": "a09d1d22fb315e3457f54c20b747c93447ff35925e9d31076d9ae8183f89d5e1"
+    },
+    {
+      "path": "backend-v2/src/modules/study-sessions/dto/finish-study-session.dto.ts",
+      "sha256": "adcc3367d6888650cb96151b2094d9a5aae33e610d249a4ff21e0834685e398b"
+    },
+    {
+      "path": "backend-v2/src/modules/study-sessions/dto/start-study-session.dto.ts",
+      "sha256": "27a4418224f6f58aadf0f630968be43c132c0a3e15d316418a67acae6f5d1ef2"
+    },
+    {
+      "path": "backend-v2/src/modules/study-sessions/study-sessions.controller.ts",
+      "sha256": "fb24435c162140a52ae3934d23c105bb5d942fb8b061aca58b794793f94e2d0f"
+    },
+    {
+      "path": "backend-v2/src/modules/study-sessions/study-sessions.module.ts",
+      "sha256": "1cdad650329605a4475ad6ae244ed654f152c801f5e931d1e8eaa6a69df931ce"
+    },
+    {
+      "path": "backend-v2/src/modules/study-sessions/study-sessions.service.ts",
+      "sha256": "3b3dc0254fd33d2de266030eb2765df9d8a1be08407648ce66ae8a2664fa8221"
+    },
+    {
+      "path": "backend-v2/src/modules/subjects/subject.dto.ts",
+      "sha256": "5286e34a843b349e9d2b3afc60f070b819c4fbaa59c67f2fd6ac4820d21aeda8"
+    },
+    {
+      "path": "backend-v2/src/modules/subjects/subjects.controller.ts",
+      "sha256": "fd77473dc7a6c3595a9b40e20ebf41eb431f8d3ab52410f7e9393c26b3749f26"
+    },
+    {
+      "path": "backend-v2/src/modules/subjects/subjects.module.ts",
+      "sha256": "1429ca21c189b2104f699d948436bc1cae94b6951c6430bc689933506b67cac3"
+    },
+    {
+      "path": "backend-v2/src/modules/subjects/subjects.service.ts",
+      "sha256": "980c88b2b02a627795bc6b2fbc129129021e8e4df5ec9389d02c38c349222ed7"
+    },
+    {
+      "path": "backend-v2/src/modules/sync/dto/sync.dto.ts",
+      "sha256": "dbf6c7b04380d2383532e1887eefce20ed755a7367592ec277adee091ff87256"
+    },
+    {
+      "path": "backend-v2/src/modules/sync/sync.controller.ts",
+      "sha256": "db4e6319fbf5c586e33c80138f234020960f57ffa98268925d6b5de3f573bd2f"
+    },
+    {
+      "path": "backend-v2/src/modules/sync/sync.module.ts",
+      "sha256": "4bd7f715294336ec756dd96461268980c0869501cad3ed87a81dbe0c4e3e68e2"
+    },
+    {
+      "path": "backend-v2/src/modules/sync/sync.service.ts",
+      "sha256": "8836a8a8b8f9450f6b4cbf30cbb91c46dee7efaf6c769f3b7945b5c116e3e866"
+    },
+    {
+      "path": "backend-v2/src/modules/system/system.controller.ts",
+      "sha256": "798e9f0fe12426cd079d29153dae1a1a637469a3ad6bcfbb3dba5216bcd4bdd1"
+    },
+    {
+      "path": "backend-v2/src/modules/system/system.module.ts",
+      "sha256": "356881d40c30432b342aa4bef46c8f848ece15755acdff323b4cf2455a6e8927"
+    },
+    {
+      "path": "backend-v2/src/modules/system/system.service.ts",
+      "sha256": "1d32842c1fc6e06b59a1c0bf66a3c1954b654777ab7ce56885a4248a6d793ca1"
+    },
+    {
+      "path": "backend-v2/src/modules/tasks/dto/complete-task.dto.ts",
+      "sha256": "efddb8a73e9f317659051182c42c528f140c95982c9e83755e1d1fa891a4f6a5"
+    },
+    {
+      "path": "backend-v2/src/modules/tasks/dto/create-task-comment.dto.ts",
+      "sha256": "419556cb93c88820cde687971e34cf433c6eb52d6be1fc79dcbcf07d8d2bdac8"
+    },
+    {
+      "path": "backend-v2/src/modules/tasks/dto/create-task-issue.dto.ts",
+      "sha256": "7bd383a0aeb8744ffd066e33f3486265ef2644c3d6c2c54886a7d89f33150492"
+    },
+    {
+      "path": "backend-v2/src/modules/tasks/tasks.controller.ts",
+      "sha256": "8c3b85f016e5e56a728e4c8c007a01bef2dd153847f0856a0e6968e56fd0cf1a"
+    },
+    {
+      "path": "backend-v2/src/modules/tasks/tasks.module.ts",
+      "sha256": "75bb828ed756369f6fae1cc163b5692ecdb9d2d94d7466967d065fd7f93f94b7"
+    },
+    {
+      "path": "backend-v2/src/modules/tasks/tasks.service.ts",
+      "sha256": "08c2783468631bc767fb6fb940b3a6947b49386d1bacef4a771998d3e47b7363"
+    },
+    {
+      "path": "backend-v2/src/modules/users/dto/user.dto.ts",
+      "sha256": "c52ca04e72071600002636170ef6715463cea2ff6c439521bf74c81cda0286b6"
+    },
+    {
+      "path": "backend-v2/src/modules/users/users.controller.ts",
+      "sha256": "096f930986e5c3e44169b7b05f2e0fad13d31506c02d14507762e06abc5baf93"
+    },
+    {
+      "path": "backend-v2/src/modules/users/users.module.ts",
+      "sha256": "04f9febf241e5a9bb9cfafdf200d0d5c9a24b372b13b31618ffe8c360d58dc47"
+    },
+    {
+      "path": "backend-v2/src/modules/users/users.service.ts",
+      "sha256": "76a39afb76f8ba1f7c4cb2abbdcaee2aad3103ce46814e5f80c581e21e93b10b"
+    },
+    {
+      "path": "backend-v2/test/analytics.service.spec.ts",
+      "sha256": "6431b95781b0e4312d7243eed33b46c27b8fa084b6a303f525ff782500d018ef"
+    },
+    {
+      "path": "backend-v2/test/auth.service.spec.ts",
+      "sha256": "0129a759f9353253b471a610822ed651c5632f5fe676fd5bdfeb9ba88d4738c1"
+    },
+    {
+      "path": "backend-v2/test/chat.service.spec.ts",
+      "sha256": "e31c9b7a5acca0b5bfd8a4ccd479e635b358dcb46f06fd3abf6c8dfff58b7919"
+    },
+    {
+      "path": "backend-v2/test/demo-seed-guard.spec.ts",
+      "sha256": "0728e686a3ff70bfdb39d87bd27eb99ec04fa5c01b7511ec686da7d6d315e7a2"
+    },
+    {
+      "path": "backend-v2/test/exam-scoring.service.spec.ts",
+      "sha256": "dac95ea725e594f3933b15d252a37809dad6734a626ae22fd5142d5f74fa7b15"
+    },
+    {
+      "path": "backend-v2/test/exams.service.spec.ts",
+      "sha256": "4fc84a794521e6d7b9c2eca1daf2e80773d0241474020eab2d948445d9133cb8"
+    },
+    {
+      "path": "backend-v2/test/finish-study-session.dto.spec.ts",
+      "sha256": "9e8c6bca1a4186b66675d6f7856d3600d1dec5b19bc4999d3b6d9e6f4329a539"
+    },
+    {
+      "path": "backend-v2/test/learning-resources.service.spec.ts",
+      "sha256": "247fb95600e97514b934087a0c3aee01567d62f03d8c444c0d3675b547bb4b09"
+    },
+    {
+      "path": "backend-v2/test/login-throttle.service.spec.ts",
+      "sha256": "62ae4804d9992753bf8d1d980b79d274e40e820c504d922f8987804aa18264d2"
+    },
+    {
+      "path": "backend-v2/test/mistakes.service.spec.ts",
+      "sha256": "16d5883fc08ac8d9609e1a8d0646d7f927de90ef0e95b3eb612b05c0b5ccce8c"
+    },
+    {
+      "path": "backend-v2/test/multi-role-isolation.spec.ts",
+      "sha256": "ca7db203fd84c9fe0f9d7060213fae22f2b6aa0892ee90f5b958d7e173194e34"
+    },
+    {
+      "path": "backend-v2/test/notifications.service.spec.ts",
+      "sha256": "b171e549b0138eae203bae5f4aa15716e8b85abdbbe3f0c1bbc522c6e0de27b3"
+    },
+    {
+      "path": "backend-v2/test/organization-chat.spec.ts",
+      "sha256": "2878b1ae7c05a1ecf38256915914ac0dc87934ba801f3c123382ffceaa627732"
+    },
+    {
+      "path": "backend-v2/test/realtime.service.spec.ts",
+      "sha256": "9e48ee5cf33f7c3ba1f1933390f616d5eda1d7e02c2ea0c3ead3e7d4cdcba59d"
+    },
+    {
+      "path": "backend-v2/test/relaxation.service.spec.ts",
+      "sha256": "838f64d5ca31f5d429fd4b6dc3f145b894bec3ab7fe1c5eeb02e3498e4d3aa61"
+    },
+    {
+      "path": "backend-v2/test/signup-throttle.service.spec.ts",
+      "sha256": "c3739d8c499090351b74e38bc46f8ab3c37cdc2b336117d9a02f544eac646f45"
+    },
+    {
+      "path": "backend-v2/test/students.service.spec.ts",
+      "sha256": "662177a21db52a8c4a38d8a5ccb92226d588f73051c7d68b97f7341e75522ded"
+    },
+    {
+      "path": "backend-v2/test/study-sessions.service.spec.ts",
+      "sha256": "2f436f0e3116417e5e151b8e61d7abcf81f75123d3f668adf323258bc66f5e02"
+    },
+    {
+      "path": "backend-v2/test/sync.service.spec.ts",
+      "sha256": "e383f16fc6781e9c08fd54235aaffec553679321dd6bb66a3b2226fa7229f7c6"
+    },
+    {
+      "path": "backend-v2/test/tasks.service.spec.ts",
+      "sha256": "06f3faf674ed104d610b737169cde5288a10cd9b3f18065f2cc76161c6aea444"
+    },
+    {
+      "path": "backend-v2/test/throttle-concurrency.spec.ts",
+      "sha256": "4458d5df0bbc7a4068f59cc5bb1213459789d945c0829fa6141be34e00a30bd7"
+    },
+    {
+      "path": "backend-v2/tsconfig.build.json",
+      "sha256": "962d430fd16dc54dcfc428b41b59e39571daf4fa5621d901c8e1d8b708660ab3"
+    },
+    {
+      "path": "backend-v2/tsconfig.json",
+      "sha256": "af13d6c283ffed7322ff3206757a6cfcfb53ee96db612bd69748d742d2847c99"
+    },
+    {
+      "path": "examples/day-plan-inline-exam.json",
+      "sha256": "631cf687cef851a7bf6797dd884ceb8414983f8151782cc7d0398845444b751c"
+    },
+    {
+      "path": "examples/day-plan.json",
+      "sha256": "5d3abdb735ba5d28e8dfd9b0c37ec82054849d856201bd44a92f9136dec17954"
+    },
+    {
+      "path": "examples/month-plan-template.json",
+      "sha256": "d662c3e094b889606f175f1872b5021e63095e4841f6f2c050b992451bf9c559"
+    },
+    {
+      "path": "examples/moshaver-summer-plan-1405-28mordad-to-10mehr.json",
+      "sha256": "cb3c3d50af58d12ce366aa218faa9c55b110d9aad31fc78506417712888b1059"
+    },
+    {
+      "path": "examples/week-plan-and-exam-v2.json",
+      "sha256": "20d8bf0cd6c90062fe3eba4d9b46e81e685612d7783eccc03c4d2e560545bf64"
+    },
+    {
+      "path": "examples/week-plan-and-exam.json",
+      "sha256": "c3452c82e726a6126757ef753d200f3ebfdb6b7a1a1f434cb95ddf7896d4879e"
+    },
+    {
+      "path": "examples/week-plan-with-motivation.json",
+      "sha256": "edfb8274b172e9ff4e301b6a130d20b11ebc538d956d3a41d46bf55602a3880f"
+    },
+    {
+      "path": "gitbr.sh",
+      "sha256": "4a78e9669dd1e12bbc1a7f27541ac3b019ba83f559055f366fa0832bbf577e89"
+    },
+    {
+      "path": "package.json",
+      "sha256": "aa98586bd3cf123f2f99293f186621660a86a3365d65b1e827f7c3978c97a5f6"
+    },
+    {
+      "path": "packages/api-contract/package.json",
+      "sha256": "cbabfe70b20196fae1a55670588a224aae823416805ae7a7b69e9ae334596097"
+    },
+    {
+      "path": "packages/api-contract/src/index.ts",
+      "sha256": "808468050ecfb9cd90658e293e6578f13e895affa92bc8c7a3b8ef6bc254ea89"
+    },
+    {
+      "path": "scripts/validate-api-manifest.mjs",
+      "sha256": "25e0a7e050ed8e449524f5fae10e8b9de346ff184c91f553244e00081ab55df3"
+    },
+    {
+      "path": "student-app-v2/package-lock.json",
+      "sha256": "d955bd402e1f9a94f4fab6d0838bbb545b72a33a3f573339c10b45786e1e2324"
+    },
+    {
+      "path": "student-app-v2/package.json",
+      "sha256": "9764745b563d0c7254e9a8b5630f132c2307e2a9d588a8f68759c4b18bc3b8fd"
+    },
+    {
+      "path": "student-app-v2/postcss.config.js",
+      "sha256": "e32657baf631d7c5f4dc67b4b2ee0ec8e7d5b3c41860e09cddce7c0377cd80bc"
+    },
+    {
+      "path": "student-app-v2/public/sw.js",
+      "sha256": "923c67925d8d1626633794f6e6c9a7a1ee9ed40b4c498b7f6af6fb3333d01784"
+    },
+    {
+      "path": "student-app-v2/src-tauri/build.rs",
+      "sha256": "487059eaf8a947b80f20a9aacac038a5047b2ad69d2401b827376c67d6fe847f"
+    },
+    {
+      "path": "student-app-v2/src-tauri/capabilities/default.json",
+      "sha256": "2e2f3669261b090ef78c1a6a055072a5998e17e42ce974f8006497c59c25fc9e"
+    },
+    {
+      "path": "student-app-v2/src-tauri/gen/android/app/build.gradle.kts",
+      "sha256": "c6af22034c98f5587cf47a532d72c9a3aebdad2294dd92f8b9b0ac2348a2761b"
+    },
+    {
+      "path": "student-app-v2/src-tauri/gen/android/app/src/main/java/ir/moshaver/student/MainActivity.kt",
+      "sha256": "3581d12771ca2e6807291774bd2f95e7fdf26a3c5eb5d9a4b3245c8a27f89019"
+    },
+    {
+      "path": "student-app-v2/src-tauri/gen/android/build.gradle.kts",
+      "sha256": "f8d6b8ac33de9acbe318595de7be4500fec1009f8ea0edc508fd998cc15294c5"
+    },
+    {
+      "path": "student-app-v2/src-tauri/gen/android/buildSrc/build.gradle.kts",
+      "sha256": "11818be939b3aa44d691228f8666fba5efc796cdc1b4fb8072ab7c91bc056eb0"
+    },
+    {
+      "path": "student-app-v2/src-tauri/gen/android/buildSrc/src/main/java/ir/moshaver/student/kotlin/BuildTask.kt",
+      "sha256": "4dab5a7ad55564f032bbb7957c4df48867faa5cfd5e0d6db650b4fcb78d06d58"
+    },
+    {
+      "path": "student-app-v2/src-tauri/gen/android/buildSrc/src/main/java/ir/moshaver/student/kotlin/RustPlugin.kt",
+      "sha256": "3488450f755ee6ed9eeaaad99e7adcc27de827f98f4657d9a4fb4af47c2f8663"
+    },
+    {
+      "path": "student-app-v2/src-tauri/gen/schemas/acl-manifests.json",
+      "sha256": "c53a127212ce0b5b2713fd53f2d155c9a7afb61af54ca9a3c6a49ee82cc003a8"
+    },
+    {
+      "path": "student-app-v2/src-tauri/gen/schemas/android-schema.json",
+      "sha256": "57d5b80904a659b458491bb8a6d83095ae99bb6099dd79eac225b04f713cdec8"
+    },
+    {
+      "path": "student-app-v2/src-tauri/gen/schemas/capabilities.json",
+      "sha256": "613e9f6049618a3472f58e8c48dd901928b27b2be38ca59ea63766624fe34f20"
+    },
+    {
+      "path": "student-app-v2/src-tauri/gen/schemas/desktop-schema.json",
+      "sha256": "57d5b80904a659b458491bb8a6d83095ae99bb6099dd79eac225b04f713cdec8"
+    },
+    {
+      "path": "student-app-v2/src-tauri/gen/schemas/linux-schema.json",
+      "sha256": "57d5b80904a659b458491bb8a6d83095ae99bb6099dd79eac225b04f713cdec8"
+    },
+    {
+      "path": "student-app-v2/src-tauri/gen/schemas/mobile-schema.json",
+      "sha256": "57d5b80904a659b458491bb8a6d83095ae99bb6099dd79eac225b04f713cdec8"
+    },
+    {
+      "path": "student-app-v2/src-tauri/src/lib.rs",
+      "sha256": "5a3388f748272474f1659c79144de3cdc1f7f633ec60f26d710ecb1fb2680a30"
+    },
+    {
+      "path": "student-app-v2/src-tauri/src/main.rs",
+      "sha256": "d2beec8e3a431fd1e8d417a5d1d8f2264feac284dfedccebec783f600c295048"
+    },
+    {
+      "path": "student-app-v2/src-tauri/tauri.conf.json",
+      "sha256": "e144450d4dc589d397477d75682ef4826e8fc092b0af024d956554463102bf29"
+    },
+    {
+      "path": "student-app-v2/src/a11y/exam-surfaces.a11y.test.tsx",
+      "sha256": "31e78df19a1c59566bf5e2f5c62280bbc50f6b36dc292f0b030e0ec0af55db1e"
+    },
+    {
+      "path": "student-app-v2/src/app/portal-access.test.ts",
+      "sha256": "e2703b3e6f42fa86e7f74ee0108bbd3670beea6cc3752988542d8f3c03f5db89"
+    },
+    {
+      "path": "student-app-v2/src/app/portal-access.ts",
+      "sha256": "173d58e3744d6def80299a9f728dab10bd88450dd4b1acc2cf18169ea5022600"
+    },
+    {
+      "path": "student-app-v2/src/components/SectionTitle.tsx",
+      "sha256": "b8fe05197fb588e3cf5d2d0c2bbb165b75d9c6022ede192c3e96c2e4e3a5e4b2"
+    },
+    {
+      "path": "student-app-v2/src/components/layout/ActivityIsland.tsx",
+      "sha256": "a79e104d751d0ace23c47a9d40313f20b307851ee656abcc51d4f8e6382caa2b"
+    },
+    {
+      "path": "student-app-v2/src/components/layout/StudentAppShell.tsx",
+      "sha256": "72c24ee33a2646c0ffd601eed8f3827fc2fdddce00593fda003e893d49f0ba8c"
+    },
+    {
+      "path": "student-app-v2/src/components/student/index.tsx",
+      "sha256": "2871e554b725d0b5603ca5568afb8a0ab491c329bcd68cadc53a4158bd37f0d5"
+    },
+    {
+      "path": "student-app-v2/src/components/student/student-components.test.tsx",
+      "sha256": "c790a67875e6d6178c910f204d7ba03c70de181e9bb0a03e5bdd8572e99a01ba"
+    },
+    {
+      "path": "student-app-v2/src/components/ui/index.tsx",
+      "sha256": "7fc4b896f273eea5898d8aca966d9a5536e030fe9739c9d6df6727bcc4841cf3"
+    },
+    {
+      "path": "student-app-v2/src/features/audio/core/audio-backend.test.ts",
+      "sha256": "018f7c0c6cfc5e0ef02741cecf2c05decb54b3e5795e4c7da63534ef7bb14e2a"
+    },
+    {
+      "path": "student-app-v2/src/features/audio/core/audio-backend.ts",
+      "sha256": "6778f0536c649f2ffbf6f0364c2beaa1473f50690ded3e4a90239571592bf867"
+    },
+    {
+      "path": "student-app-v2/src/features/chat/ChatPage.test.tsx",
+      "sha256": "cabb1b4ee7f51f57d3337a6c589ad641302396706c03d9568e7ce63ea0201b0a"
+    },
+    {
+      "path": "student-app-v2/src/features/chat/ChatPage.tsx",
+      "sha256": "d257d771bfb7b5bc833c3a5d10d9c9ebcb3bc4f5142ea52728533f1a146d44d7"
+    },
+    {
+      "path": "student-app-v2/src/features/exam/ExamPage.tsx",
+      "sha256": "5ff3441b08398556b539fecf64e6026e33624deea578cd13dea256bab059a782"
+    },
+    {
+      "path": "student-app-v2/src/features/exam/components/ExamCenter.tsx",
+      "sha256": "3587145f0c051432a6f3ef0f179be582e11bc03b4f3e4f6108d7a36f77926e5a"
+    },
+    {
+      "path": "student-app-v2/src/features/exam/components/ExamPreflight.tsx",
+      "sha256": "032c85cafd94d9b6faa8ec785c25bb6af4ae615443ad483e7450fcca6714f13f"
+    },
+    {
+      "path": "student-app-v2/src/features/exam/components/ExamResult.tsx",
+      "sha256": "5f4c55195c007afbf47c41d6ce34901b47ab51932cda932299a28188ebf606db"
+    },
+    {
+      "path": "student-app-v2/src/features/exam/components/ExamRunner.tsx",
+      "sha256": "2be352feeb38839a3824d452f0f49101fee5268a3b9c59f8d104654af0d6fe1d"
+    },
+    {
+      "path": "student-app-v2/src/features/exam/components/GuardianExamView.tsx",
+      "sha256": "9d33c84dc645227a0fc4ef405c76d703708a67b356a7b80c5fcf6fc7c1b4dbc5"
+    },
+    {
+      "path": "student-app-v2/src/features/exam/exam-attempt-store.test.ts",
+      "sha256": "1e5a576a56bc1124d48b7ac1e5a555e3187b8088aedb70c1943a90f05072fed2"
+    },
+    {
+      "path": "student-app-v2/src/features/exam/exam-attempt-store.ts",
+      "sha256": "f810238eb3eb6c83a748e63e1b50f7958a4c28d6dfdedb9ee0a82760d8125020"
+    },
+    {
+      "path": "student-app-v2/src/features/exam/exam-timing.test.ts",
+      "sha256": "6520f30003fb11cf85ed7591b45414120b0e99c3d405355391f868526193f9da"
+    },
+    {
+      "path": "student-app-v2/src/features/exam/exam-timing.ts",
+      "sha256": "5b1f1958e7c26e1204c9f28f7c263f0246afc736b0047fcc4794954319e97917"
+    },
+    {
+      "path": "student-app-v2/src/features/home/HomePage.tsx",
+      "sha256": "02a2c9f4c06a37a3820d577fb33efa11ea0706f7bb4493121f51cad4264a2122"
+    },
+    {
+      "path": "student-app-v2/src/features/learning/LearningPage.tsx",
+      "sha256": "aefd07eda0a3c2ccc681b668e1e2acd86df7840b361fed687695a72a52b29103"
+    },
+    {
+      "path": "student-app-v2/src/features/more/MorePage.tsx",
+      "sha256": "b73d98267624bcc2b96c42f5d94b9a287e32a2af70e996a7bef1c40139c0d51f"
+    },
+    {
+      "path": "student-app-v2/src/features/more/MoreRouterPage.test.tsx",
+      "sha256": "dc8835423757971857827495c7082b38069491daa34c22ffe3e9b6d4a0c96845"
+    },
+    {
+      "path": "student-app-v2/src/features/more/MoreRouterPage.tsx",
+      "sha256": "8658738ddba86b160e2685929ea2b58d487e1db128ee45cbdf5a98471a54b022"
+    },
+    {
+      "path": "student-app-v2/src/features/notifications/NotificationsPage.tsx",
+      "sha256": "b53d92269eac96344bae2f68da90729bc98c5a8dce567eb72bb7e971482fd8f8"
+    },
+    {
+      "path": "student-app-v2/src/features/plan/PlanPage.tsx",
+      "sha256": "e96b5858b3354c64de9067980af54a9a128c8e1c85d537294fbf1c6538efc702"
+    },
+    {
+      "path": "student-app-v2/src/main.tsx",
+      "sha256": "7a649541a09ac8bb82ff04035045f3d3d734d998e329df0973e5e588ee0150ab"
+    },
+    {
+      "path": "student-app-v2/src/native/tauri-sqlite-provider.ts",
+      "sha256": "52145096385f27e9511ad9e1b3f78468f0be764a8c76d1315b6f748767d397fa"
+    },
+    {
+      "path": "student-app-v2/src/pwa/web-update-adapter.ts",
+      "sha256": "2fa3dc5dec129bb967ce91c6c83393838030d69b09b745b5a6d56a89b8172fac"
+    },
+    {
+      "path": "student-app-v2/src/services/api-client.ts",
+      "sha256": "24d4d4f0aff37cb8897a4d7d6189673c03b55ebeaf1ead0ef2d0e21183afed83"
+    },
+    {
+      "path": "student-app-v2/src/services/notification-service.ts",
+      "sha256": "cbd4bf9026563f30b77565161f217e1a7fb884d01742d9fe35d27afee552523d"
+    },
+    {
+      "path": "student-app-v2/src/services/relaxation-player.test.ts",
+      "sha256": "ba611544ae558889f705a03b3c27945f014b85514dd85a063f70f78d05cf2d63"
+    },
+    {
+      "path": "student-app-v2/src/services/relaxation-player.ts",
+      "sha256": "88dfc14871600f388c8e169224d04bef4d9d4b32f05fa225fd9c6ed46a4e6263"
+    },
+    {
+      "path": "student-app-v2/src/services/student-store.test.ts",
+      "sha256": "b889df4802af98eddab1f4a524e762e24aa47dacbd7de3830998a2591432e2f0"
+    },
+    {
+      "path": "student-app-v2/src/services/student-store.ts",
+      "sha256": "4e8b3f56199dc0ef7fbbbdb6c10a63e56775f17fe46b0e2d915a237b84997ebf"
+    },
+    {
+      "path": "student-app-v2/src/storage/web-storage-provider.ts",
+      "sha256": "d129efb7f58b39e882a20dd7a8477c9dd2dd47b1b933e1bc9fd3ab601de4f74d"
+    },
+    {
+      "path": "student-app-v2/src/sync/sqlite-sync-provider.ts",
+      "sha256": "300d0a3a3b69a0e3252fd9dc68b86d6c0bae67d35497c2e5a5016172f758978a"
+    },
+    {
+      "path": "student-app-v2/src/sync/sync-status.ts",
+      "sha256": "ec645029a815677cf9b515f778b2a333c83ab64b815d15208514d9cfb1b78670"
+    },
+    {
+      "path": "student-app-v2/src/test/setup.ts",
+      "sha256": "91a3c8962a0edcb956206a501d943fe99e1c78c6d4d8b5c9a948a3362c75978c"
+    },
+    {
+      "path": "student-app-v2/src/vite-env.d.ts",
+      "sha256": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5"
+    },
+    {
+      "path": "student-app-v2/tailwind.config.ts",
+      "sha256": "9359d79c0845520a84ee75fb9ef4e295c279964fce930430d0d0646eb52f7095"
+    },
+    {
+      "path": "student-app-v2/tsconfig.app.json",
+      "sha256": "6f4d366554700ffd1f51a5c21ec808a8ffc53b546883aa7be8622fd05b7af6e7"
+    },
+    {
+      "path": "student-app-v2/tsconfig.json",
+      "sha256": "770b4140bbb581e2dfd9ea9946ffc9c75a1d86ba7d2db5f77c83e37cbdf9d808"
+    },
+    {
+      "path": "student-app-v2/tsconfig.node.json",
+      "sha256": "b9cc342f105f04bcb2f2d5741600542a3c3b16b718e8fd5c16b11a7cac4ed057"
+    },
+    {
+      "path": "student-app-v2/vite.config.ts",
+      "sha256": "80088f53ed938638152af4b68a339ab4f05b66aa4e944c950f9d82e190dcc692"
+    },
+    {
+      "path": "student-app-v2/vitest.config.ts",
+      "sha256": "e2254addb48461f2ae788506bb2acee0dea6a85b3b7d91c9a3d9aeb747fc43c7"
+    },
+    {
+      "path": "student-core/package-lock.json",
+      "sha256": "23c22d673bd328501098709df4cf0c4e5d917ca8ccc355970209252a128387a8"
+    },
+    {
+      "path": "student-core/package.json",
+      "sha256": "27186ce64ce931ad3739207e67321344631488f5e53e18ebc2f5ec069febc644"
+    },
+    {
+      "path": "student-core/src/auth/index.ts",
+      "sha256": "8c528e44c3c721190bf51f66e4b235df3d15c0459e1965c0f083fa850cc90f1b"
+    },
+    {
+      "path": "student-core/src/chat/index.ts",
+      "sha256": "3b2817be565b1efebdb70e108e906f88dbc52bb845781fc6ba153b9d00fe6553"
+    },
+    {
+      "path": "student-core/src/exams/index.ts",
+      "sha256": "5675445aea15d90b4579e8bbdbe20e1575c052939bb4742ed4ca97949b1f1a73"
+    },
+    {
+      "path": "student-core/src/index.ts",
+      "sha256": "97a8dd7190d7d74e2f2d8a15bbaf1eea7764a314ee35217543b834d49265face"
+    },
+    {
+      "path": "student-core/src/notifications/index.ts",
+      "sha256": "9b5205953031fd7d931f1d1f637cca33f6375357c5d781f4669d7aa0538173c0"
+    },
+    {
+      "path": "student-core/src/planner/index.ts",
+      "sha256": "65bc8887c8a270f16b2da61990c08e002ca5df0a2b852d86119d476f19df7a24"
+    },
+    {
+      "path": "student-core/src/providers/index.ts",
+      "sha256": "b2b34a9b20f658365520102952ddac321c64f47605ce98e7c859dfd2746060e5"
+    },
+    {
+      "path": "student-core/src/questions/index.ts",
+      "sha256": "765667784275889b8e4a27348711e7bb94d92fa93e068a44a01f75fe9ecff7d9"
+    },
+    {
+      "path": "student-core/src/reviews/index.ts",
+      "sha256": "9218ca96e9b77b1766d382e8a3aaa76f4d87cd73fbe422204d0e6eafe0506ef5"
+    },
+    {
+      "path": "student-core/src/storage/index.ts",
+      "sha256": "2ed069da72ac56940b2fa2459cf0366d4c7e8d46a0f2c081b3997c98ae6224c7"
+    },
+    {
+      "path": "student-core/src/sync/index.ts",
+      "sha256": "8a3d0824c3b4483debd3eeaa7d83a126e16370b3bfc7ec5ca27099d4dda2cef3"
+    },
+    {
+      "path": "student-core/src/tasks/index.ts",
+      "sha256": "cbfa7b04d30197ed3ea0d131f1148b88049db185ed7c4f965b103d12a40d4055"
+    },
+    {
+      "path": "student-core/src/types.ts",
+      "sha256": "4640e49a298dfdbf7a5ac67bd8dd6da0fd9bb7d6d21d5cf5eb5706b46da129b8"
+    },
+    {
+      "path": "student-core/tests/core.test.mjs",
+      "sha256": "7c28ad2fbfb5d5977602b9d287ba1ceaa0e3d20396e72468de222dfbb69b2472"
+    },
+    {
+      "path": "student-core/tsconfig.json",
+      "sha256": "7583494cf5de43d195ac5fde832721a03852ae9dbae08a7051469663caae0de4"
+    },
+    {
+      "path": "tooling/architecture/baseline.json",
+      "sha256": "442e2e7d1ae794ec654bf256995965df821f11961fb5fc29a5fd52f59a01e749"
+    },
+    {
+      "path": "tooling/architecture/check-boundaries.mjs",
+      "sha256": "da97439c655097d0fafb60e5d2b7e24583492b4587178e02ac126b8101bb1674"
+    },
+    {
+      "path": "tooling/graphify/fingerprint.mjs",
+      "sha256": "671601d2ca6767a354485e20d0b5c355a098b24e663d3927b9b8b390a8b1be4a"
+    },
+    {
+      "path": "tooling/workspace/check.mjs",
+      "sha256": "dc30f8e32b8a290ba4b27de6e24183134bdd5eaae53b1ec172776547de6d69cb"
+    },
+    {
+      "path": "tooling/workspace/lib.mjs",
+      "sha256": "c3355833e4d2f0c7dca543a63b70437a64acaea3406d769d710232067854a1e2"
+    },
+    {
+      "path": "tooling/workspace/projects.json",
+      "sha256": "aa58bd61d549cd01d970853389094260dbbd23c92302e8b959f7127c917676f2"
+    },
+    {
+      "path": "tooling/workspace/run.mjs",
+      "sha256": "acc28355452709208a02d58e6980d6c5e5c9f5e912cc61a672dbc04e5e200fc1"
+    }
+  ]
+}
