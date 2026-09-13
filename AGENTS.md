@@ -18,15 +18,35 @@ Graph evidence is navigation/context, not a replacement for reading the source o
 
 See `docs/architecture/graphify.md` and `.agents/skills/graphify/SKILL.md`.
 
-## Repository map
+## Repository architecture
 
-- `backend-v2/` — NestJS/Fastify/TypeORM API and current Moshaver backend composition root.
-- `admin-v2/` — React/Vite administration application.
-- `student-app-v2/` — React/PWA/Tauri student application.
-- `student-core/` — runtime-neutral student domain/provider contracts.
-- `packages/api-contract/` — shared API contracts.
-- `docs/` — architecture, migration, operations, product, and release documentation.
-- `.github/` — agents, prompts, instructions, workflows, and repository automation.
+Read `ARCHITECTURE.md` and `docs/architecture/repository-architecture.md` before repository-wide structural work.
+
+The accepted model is a **grouped product monorepo** with a **modular-monolith backend**.
+
+Current physical paths remain valid during migration:
+
+- `backend-v2/` — API application/composition root.
+- `admin-v2/` — Admin application.
+- `student-app-v2/` — Student application.
+- `student-core/` — runtime-neutral Student domain/provider package.
+- `packages/api-contract/` — shared API contract package.
+
+Logical dependency direction is effective immediately even before folders move:
+
+```text
+applications
+    ↓
+product/domain code
+    ↓
+CMB platform modules
+    ↓
+CMB kernel + public contracts
+```
+
+Infrastructure adapters implement lower-level ports and are wired by application composition roots.
+
+Never make a lower/reusable layer depend on a higher/product-specific layer. Cross-project imports must use public entrypoints. See `docs/architecture/dependency-boundaries.md`.
 
 ## Backend architecture direction
 
@@ -39,16 +59,18 @@ When changing backend architecture:
 - prefer explicit module contracts and public entrypoints over private cross-module imports;
 - keep infrastructure replaceable where portability justifies it;
 - preserve `/api/v2` compatibility unless a breaking change is explicitly approved;
-- do not weaken authentication, authorization, CSRF, validation, tenant isolation, or audit boundaries.
+- do not weaken authentication, authorization, CSRF, validation, tenant isolation, or audit boundaries;
+- do not introduce a microservice boundary without a documented operational reason and ADR.
 
 ## First actions
 
 1. Read this file and `.github/copilot-instructions.md`.
 2. Query Graphify first when the graph exists.
-3. Read applicable `.github/instructions/*.instructions.md` files.
-4. Run `.github/ai-toolkit/scripts/detect-project.sh` when a shell is available.
-5. Read `.agent-state/project.json` if present.
-6. Inspect nearby tests, package scripts, migrations, and public contracts before editing.
+3. Read `ARCHITECTURE.md` for structural/repository work.
+4. Read applicable `.github/instructions/*.instructions.md` files.
+5. Run `.github/ai-toolkit/scripts/detect-project.sh` when a shell is available.
+6. Read `.agent-state/project.json` if present.
+7. Inspect nearby tests, package scripts, migrations, and public contracts before editing.
 
 ## Engineering rules
 
@@ -63,6 +85,7 @@ When changing backend architecture:
 - For database changes, inspect migration history, data compatibility, constraints, and rollback safety.
 - For UI work, cover loading, empty, error, disabled, responsive, keyboard, accessibility, theme, and Persian/RTL behavior where relevant.
 - For API changes, identify admin/student/other consumers and synchronize shared contracts.
+- Do not promote code into a shared package without a clear ownership reason or real second consumer.
 
 ## Validation
 
