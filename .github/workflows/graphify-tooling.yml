@@ -1,0 +1,30 @@
+name: Graphify Tooling
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  graphify-tooling:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Graphify with MCP support
+        run: python -m pip install --disable-pip-version-check 'graphifyy[mcp]'
+      - name: Verify Graphify CLI
+        run: graphify --version
+      - name: Validate committed graph when present
+        shell: bash
+        run: |
+          if [ -f graphify-out/graph.json ]; then
+            graphify query 'repository architecture' --budget 300 --graph graphify-out/graph.json >/dev/null
+          else
+            echo 'No committed graph yet; run the project Graphify skill locally to create the initial graph.'
+          fi
