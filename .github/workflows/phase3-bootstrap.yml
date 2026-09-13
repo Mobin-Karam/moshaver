@@ -45,7 +45,7 @@ jobs:
       - name: Install and validate backend adapters
         working-directory: backend-v2
         run: |
-          npm ci --ignore-scripts --no-audit --no-fund
+          npm ci --no-audit --no-fund
           npm run lint
           npm test
           npm run build
