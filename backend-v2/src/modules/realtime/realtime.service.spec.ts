@@ -26,4 +26,4 @@ describe("RealtimeService", () => {
     a.unsubscribe();
     b.unsubscribe();
   });
-}
+});
