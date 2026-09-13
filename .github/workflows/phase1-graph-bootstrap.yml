@@ -25,11 +25,13 @@ jobs:
       - name: Install pinned Graphify
         run: python -m pip install --disable-pip-version-check 'graphifyy==0.9.58'
 
-      - name: Build fresh directed code graph
+      - name: Build fresh code graph and report
         run: |
           rm -rf graphify-out
           graphify extract . --code-only --no-viz
           test -s graphify-out/graph.json
+          graphify cluster-only . --no-viz --no-label
+          test -s graphify-out/GRAPH_REPORT.md
           graphify query 'authentication persistence authorization notifications student plan exam report module dependencies' --graph graphify-out/graph.json --budget 1200 > graphify-out/phase1-query.txt
 
       - name: Record generation metadata
@@ -40,7 +42,7 @@ jobs:
             echo
             echo "- Graphify: $(graphify --version)"
             echo "- Source commit: $(git rev-parse HEAD)"
-            echo '- Mode: code-only, clean rebuild, no visualization'
+            echo '- Mode: code-only clean rebuild + deterministic clustering/report; no visualization'
             echo '- Purpose: Phase 1 source dependency validation'
           } > graphify-out/GENERATION.md
 
