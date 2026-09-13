@@ -4,8 +4,8 @@ import process from "node:process";
 
 const root = process.cwd();
 const contractPath = path.join(root, "packages/api-contract/src/index.ts");
-const migrationPath = path.join(root, "backend-v2/src/database/migrations/1724140700000-IdentityAuthorization.ts");
-const backendSrc = path.join(root, "backend-v2/src");
+const migrationPath = path.join(root, "apps/api/src/database/migrations/1724140700000-IdentityAuthorization.ts");
+const backendSrc = path.join(root, "apps/api/src");
 const errors = [];
 
 function read(relative) {
@@ -65,7 +65,7 @@ for (const capability of backendCapabilities) {
 
 const baseMatch = contract.match(/export const API_BASE_PATH = "([^"]+)" as const;/);
 const versionMatch = contract.match(/export const API_VERSION = "([^"]+)" as const;/);
-const main = read("backend-v2/src/main.ts");
+const main = read("apps/api/src/main.ts");
 const prefixMatch = main.match(/setGlobalPrefix\("([^"]+)"/);
 if (!baseMatch || !versionMatch) errors.push("API contract must export API_BASE_PATH and API_VERSION.");
 else {
@@ -73,8 +73,8 @@ else {
   if (versionMatch[1] !== "v2") errors.push(`Unexpected stable API version ${versionMatch[1]}`);
 }
 
-const envelope = read("backend-v2/src/common/utils/envelope.ts");
-const filter = read("backend-v2/src/common/filters/http-exception.filter.ts");
+const envelope = read("apps/api/src/common/utils/envelope.ts");
+const filter = read("apps/api/src/common/filters/http-exception.filter.ts");
 if (!envelope.includes("ok: true")) errors.push("Backend success envelope no longer matches ApiSuccess<T>.");
 if (!filter.includes("ok: false")) errors.push("Backend error envelope no longer matches ApiErrorContract.");
 if (!main.includes('required: ["ok", "error"]')) errors.push("OpenAPI ApiError schema must require ok + error.");

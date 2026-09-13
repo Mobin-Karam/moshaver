@@ -16,5 +16,5 @@ admin-app-legacy
 student-app
 admin-app
 backend
-student-app-v2/src-tauri/target
-student-app-v2/src-tauri/gen
+apps/student/src-tauri/target
+apps/student/src-tauri/gen

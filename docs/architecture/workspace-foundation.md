@@ -34,11 +34,12 @@ Current install model: `leaf-lockfiles`.
 
 | Project | Install authority |
 | --- | --- |
-| backend-v2 | `backend-v2/package-lock.json` |
-| admin-v2 | `admin-v2/package-lock.json` |
+| backend-v2 | `apps/api/package-lock.json` |
+| admin-v2 | `apps/admin/package-lock.json` |
 | student-core | `student-core/package-lock.json` |
-| student-app-v2 | `student-app-v2/package-lock.json` |
+| student-app-v2 | `apps/student/package-lock.json` |
 | api-contract | no install step today |
+| CMB packages | each `packages/cmb/*/package-lock.json` |
 
 The root `package.json` contains orchestration scripts only. It has no root dependencies and no `workspaces` field.
 
@@ -58,7 +59,7 @@ npm run lint
 npm run verify
 ```
 
-`bootstrap` performs dependency-aware `npm ci` operations using each project's own lockfile. The runner builds `student-core` before downstream Student App validation because `student-app-v2` consumes `@moshaver/student-core` through a local file dependency.
+`bootstrap` performs dependency-aware `npm ci` operations using each project's own lockfile. The runner builds `student-core` before downstream Student App validation because `apps/student` consumes `@moshaver/student-core` through a local file dependency.
 
 Targeted execution includes dependencies automatically:
 

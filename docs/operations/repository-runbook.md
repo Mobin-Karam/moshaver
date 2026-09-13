@@ -19,16 +19,16 @@ Use `docker compose down` to stop containers. Do not add `--volumes` unless dele
 ## Package development
 
 ```bash
-npm --prefix backend-v2 install
-npm --prefix backend-v2 run migration:run
-npm --prefix backend-v2 run seed
-npm --prefix backend-v2 run dev
+npm --prefix apps/api install
+npm --prefix apps/api run migration:run
+npm --prefix apps/api run seed
+npm --prefix apps/api run dev
 
-npm --prefix admin-v2 install
-npm --prefix admin-v2 run dev
+npm --prefix apps/admin install
+npm --prefix apps/admin run dev
 
-npm --prefix student-app-v2 install
-npm --prefix student-app-v2 run dev
+npm --prefix apps/student install
+npm --prefix apps/student run dev
 ```
 
 Seed variants and their safeguards are documented in the [product demo seed guide](./backend-v2-product-demo-seed.md). Treat every printed credential as local development data.
@@ -46,8 +46,8 @@ Seed variants and their safeguards are documented in the [product demo seed guid
 Native checks are separate:
 
 ```bash
-npm --prefix student-app-v2 run tauri:build
-npm --prefix student-app-v2 run android:build
+npm --prefix apps/student run tauri:build
+npm --prefix apps/student run android:build
 ```
 
 ## Access the v1.4 archive

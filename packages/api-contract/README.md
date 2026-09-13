@@ -10,6 +10,6 @@ It may contain stable request/response types, API envelope/error contracts, curs
 
 It intentionally contains **no** NestJS/Fastify controller code, TypeORM entities/database types, React/Tauri/browser runtime code, or client persistence schema.
 
-Backend runtime DTOs/validators may remain in `backend-v2` during incremental migration, but stable shared contract elements must remain compatible with this package. Reusable CMB module/service contracts belong to the relevant CMB package, not here.
+Backend runtime DTOs/validators may remain in `apps/api` during incremental migration, but stable shared contract elements must remain compatible with this package. Reusable CMB module/service contracts belong to the relevant CMB package, not here.
 
 Breaking `/api/v2` changes require an explicit migration/deprecation path; see `docs/architecture/adr/0003-api-contract-authority.md`.

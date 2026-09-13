@@ -23,11 +23,14 @@ const CODE_EXTS = new Set([
 const EXCLUDED_SEGMENTS = new Set(['graphify-out', 'node_modules', 'dist', 'coverage', 'build', 'target', '.git', 'docs']);
 
 function trackedFiles() {
-  const raw = execFileSync('git', ['ls-files', '-z'], { cwd: root });
+  // Include new files and ignore deleted paths so freshness checks also work
+  // before a repository-wide move has been staged.
+  const raw = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], { cwd: root });
   return raw
     .toString('utf8')
     .split('\0')
     .filter(Boolean)
+    .filter((file) => fs.existsSync(path.join(root, file)))
     .filter((file) => CODE_EXTS.has(path.extname(file).toLowerCase()))
     .filter((file) => !file.split('/').some((segment) => EXCLUDED_SEGMENTS.has(segment)))
     .sort();

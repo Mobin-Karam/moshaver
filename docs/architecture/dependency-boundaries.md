@@ -41,6 +41,8 @@ Prefer, in this order:
 
 Do not solve module coupling by importing another module's repository, entity, controller, or private helper directly.
 
+Backend modules expose synchronous cross-module APIs through their `index.ts` public entrypoint. The architecture check rejects any new import of another module's implementation file; the migration baseline now contains zero such deep imports.
+
 ## Database ownership
 
 - Every table/entity/migration has an owning module or platform package.

@@ -1,6 +1,8 @@
 services:
   backend-v2:
-    build: ./backend-v2
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
     container_name: moshaver-backend-v2
     restart: unless-stopped
     environment:
@@ -22,7 +24,7 @@ services:
   student-v2:
     build:
       context: .
-      dockerfile: student-app-v2/Dockerfile
+      dockerfile: apps/student/Dockerfile
       args:
         VITE_API_URL: /api/v2
     container_name: moshaver-student-v2
@@ -37,7 +39,7 @@ services:
   admin-v2:
     build:
       context: .
-      dockerfile: admin-v2/Dockerfile
+      dockerfile: apps/admin/Dockerfile
       args:
         VITE_API_URL: /api/v2
     container_name: moshaver-admin-v2

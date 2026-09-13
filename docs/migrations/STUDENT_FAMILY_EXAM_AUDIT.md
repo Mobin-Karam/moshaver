@@ -2,7 +2,7 @@
 
 Date: 2026-09-06
 
-Scope: `student-app-v2`, `student-core`, and the canonical `backend-v2` `/api/v2` assessment and Guardian contracts. The legacy `student-app/` graph is not authoritative for this phase.
+Scope: `apps/student`, `student-core`, and the canonical `apps/api` `/api/v2` assessment and Guardian contracts. The legacy `student-app/` graph is not authoritative for this phase.
 
 ## Baseline at audit start
 
@@ -32,7 +32,7 @@ The current application already has a five-item mobile navigation, Persian RTL s
 ## Architecture direction
 
 1. Keep exam domain rules framework-neutral in `student-core`.
-2. Extend `backend-v2` as the authority for availability, deadline, attempt ownership, scoring and result release.
+2. Extend `apps/api` as the authority for availability, deadline, attempt ownership, scoring and result release.
 3. Store device answer envelopes with timestamps/revisions, queue only attempt-scoped idempotent autosaves, and reconcile explicitly.
 4. Split Student and Guardian data adapters while sharing a learner/family shell; never expose student mutation methods in Guardian mode.
 5. Build the exam center, preflight, runner, submission receipt and released-result workspace as separate route states.

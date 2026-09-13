@@ -25,7 +25,7 @@ The repository contains several project classes:
 
 | Class | Responsibility | Current examples |
 | --- | --- | --- |
-| Application | Runnable/deployable composition root | `backend-v2`, `admin-v2`, `student-app-v2` |
+| Application | Runnable/deployable composition root | `apps/api`, `apps/admin`, `apps/student` |
 | Product/domain package | Product behavior that belongs to Moshaver | future extracted exam/plan/report packages; current backend modules |
 | Platform package | Reusable application/platform capability | future CMB auth, authorization, notifications, realtime, audit |
 | Foundation package | Stable contracts/kernel with minimal dependencies | `packages/api-contract`, future CMB kernel |
@@ -99,9 +99,9 @@ The architectural boundaries are more important than the orchestration tool.
 
 | Current path | Logical role now | Long-term target |
 | --- | --- | --- |
-| `backend-v2/` | API application + many internal modules | `apps/api/` composition root plus extracted packages over time |
-| `admin-v2/` | Admin application | `apps/admin/` |
-| `student-app-v2/` | Student application | `apps/student/` |
+| `apps/api/` | API application + many internal modules | `apps/api/` composition root plus extracted packages over time |
+| `apps/admin/` | Admin application | `apps/admin/` |
+| `apps/student/` | Student application | `apps/student/` |
 | `student-core/` | Runtime-neutral student package | `packages/product/student-core/` or equivalent |
 | `packages/api-contract/` | Shared foundation contract | `packages/contracts/api/` or keep current name if migration cost is not justified |
 | `.github/`, `.agents/` | repository/AI tooling | remain repository-level |

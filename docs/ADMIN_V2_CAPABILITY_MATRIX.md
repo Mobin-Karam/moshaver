@@ -2,7 +2,7 @@
 
 Last source audit: 2026-09-08
 
-Scope: current working-tree `admin-v2` consumers and canonical `backend-v2` `/api/v2` contracts. This describes source behavior, not branch ancestry.
+Scope: current working-tree `apps/admin` consumers and canonical `apps/api` `/api/v2` contracts. This describes source behavior, not branch ancestry.
 
 This is the current source of truth for Admin v2 capability coverage. Historical migration audits remain useful evidence, but their old gap labels do not override this matrix.
 

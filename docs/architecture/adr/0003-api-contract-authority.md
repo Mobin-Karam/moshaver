@@ -6,7 +6,7 @@
 
 ## Context
 
-`admin-v2` and `student-core` consume `@moshaver/api-contract`, while `backend-v2` historically implemented HTTP DTOs independently. That creates drift risk because the shared client contract and runtime validation layer can evolve separately.
+`apps/admin` and `student-core` consume `@moshaver/api-contract`, while `apps/api` historically implemented HTTP DTOs independently. That creates drift risk because the shared client contract and runtime validation layer can evolve separately.
 
 Reusable CMB modules must also remain independent from NestJS controllers, HTTP envelopes, React clients, and Moshaver-specific transport layout.
 
@@ -20,7 +20,7 @@ It must remain framework- and runtime-neutral. It must not depend on NestJS, Fas
 
 ### Backend responsibility
 
-`backend-v2` remains the authoritative runtime implementation and validation boundary. Existing Nest/class-validator DTO classes may remain while migration is incremental, but repository checks must detect drift for stable shared contract elements.
+`apps/api` remains the authoritative runtime implementation and validation boundary. Existing Nest/class-validator DTO classes may remain while migration is incremental, but repository checks must detect drift for stable shared contract elements.
 
 Backend domain/application code must not depend on HTTP transport types merely to share logic. Controllers are adapters; reusable use-case/service contracts belong with their module/CMB public API.
 

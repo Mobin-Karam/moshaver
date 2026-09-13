@@ -1,0 +1,5 @@
+"use strict";
+const test = require("node:test"); const assert = require("node:assert/strict"); const { normalizePageLimit, encodeCursor, decodeCursor, projectNotification } = require("../src");
+test("bounds page sizes", () => { assert.equal(normalizePageLimit(undefined), 20); assert.equal(normalizePageLimit(-5), 1); assert.equal(normalizePageLimit(500), 100); });
+test("round trips opaque cursors and rejects malformed input", () => { const cursor = encodeCursor({ createdAt: "2026-09-13", id: "n1" }); assert.deepEqual(decodeCursor(cursor), { createdAt: "2026-09-13", id: "n1" }); assert.throws(() => decodeCursor("bad"), { name: "InvalidCursorError" }); });
+test("projects stable public notification state", () => { const createdAt = new Date(); assert.deepEqual(projectNotification({ id: "n1", type: "message", category: "general", title: "Title", body: "Body", priority: "normal", readAt: null, createdAt }), { id: "n1", type: "message", category: "general", title: "Title", body: "Body", message: "Body", url: null, data: null, priority: "normal", isRead: false, readAt: null, createdAt, expiresAt: null }); });

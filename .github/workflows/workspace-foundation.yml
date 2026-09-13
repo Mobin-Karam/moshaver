@@ -6,30 +6,32 @@ on:
     paths:
       - package.json
       - tooling/workspace/**
-      - backend-v2/package.json
-      - backend-v2/package-lock.json
-      - admin-v2/package.json
-      - admin-v2/package-lock.json
+      - apps/api/package.json
+      - apps/api/package-lock.json
+      - apps/admin/package.json
+      - apps/admin/package-lock.json
       - student-core/package.json
       - student-core/package-lock.json
-      - student-app-v2/package.json
-      - student-app-v2/package-lock.json
+      - apps/student/package.json
+      - apps/student/package-lock.json
       - packages/api-contract/package.json
+      - packages/cmb/**
       - .github/workflows/workspace-foundation.yml
   push:
     branches: [develop]
     paths:
       - package.json
       - tooling/workspace/**
-      - backend-v2/package.json
-      - backend-v2/package-lock.json
-      - admin-v2/package.json
-      - admin-v2/package-lock.json
+      - apps/api/package.json
+      - apps/api/package-lock.json
+      - apps/admin/package.json
+      - apps/admin/package-lock.json
       - student-core/package.json
       - student-core/package-lock.json
-      - student-app-v2/package.json
-      - student-app-v2/package-lock.json
+      - apps/student/package.json
+      - apps/student/package-lock.json
       - packages/api-contract/package.json
+      - packages/cmb/**
       - .github/workflows/workspace-foundation.yml
 
 permissions:
@@ -52,3 +54,5 @@ jobs:
         run: npm run workspace:plan -- build
       - name: Dry-run repository verification
         run: node tooling/workspace/run.mjs verify --dry-run
+      - name: Dry-run affected verification
+        run: node tooling/workspace/run.mjs verify --affected --base=${{ github.event.pull_request.base.sha || github.event.before || 'HEAD~1' }} --head=HEAD --dry-run

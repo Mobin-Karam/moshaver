@@ -4,7 +4,7 @@ Date: 2026-08-20
 
 ## Summary
 
-`student-app-v2/` is currently a working multi-platform scaffold, not a feature-complete migration of the legacy `student-app/`.
+`apps/student/` is currently a working multi-platform scaffold, not a feature-complete migration of the legacy `student-app/`.
 
 What v2 has:
 
@@ -153,7 +153,7 @@ Legacy uses these endpoint groups. v2 currently does not call them from UI:
 - `/reports`
 - `/recovery-requests`
 
-`student-app-v2/src/services/api-client.ts` is generic and not yet integrated into feature stores.
+`apps/student/src/services/api-client.ts` is generic and not yet integrated into feature stores.
 
 ## Core Extraction Gap
 

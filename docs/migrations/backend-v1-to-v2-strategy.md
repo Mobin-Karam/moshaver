@@ -2,7 +2,7 @@
 
 ## Strategy
 
-Keep `backend/` as backend v1 and add `backend-v2/` as a separate NestJS/Fastify service. Backend v2 starts with its own TypeORM-managed schema, then receives staged data migration scripts after endpoint parity is tested.
+Keep `backend/` as backend v1 and add `apps/api/` as a separate NestJS/Fastify service. Backend v2 starts with its own TypeORM-managed schema, then receives staged data migration scripts after endpoint parity is tested.
 
 ## Old Database
 

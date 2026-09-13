@@ -14,7 +14,7 @@ Never weaken a guard to make a frontend request succeed. Search current source r
 
 ### Admin directory convention
 
-Reuse `admin-v2/src/shared/ui/admin-data-table.tsx`. Selection is controlled by the feature so it can supply only authorized batch actions. “Select all” applies to rows provided to the component; the owner decides whether those rows are one page or all filtered results.
+Reuse `apps/admin/src/shared/ui/admin-data-table.tsx`. Selection is controlled by the feature so it can supply only authorized batch actions. “Select all” applies to rows provided to the component; the owner decides whether those rows are one page or all filtered results.
 
 ## Bug workflow
 

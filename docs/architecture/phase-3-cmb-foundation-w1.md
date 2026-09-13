@@ -25,7 +25,7 @@ Provides a framework-neutral liveness/readiness service:
 - probe-specific failure metadata;
 - no knowledge of HTTP status codes, TypeORM, or the Moshaver database.
 
-`backend-v2` keeps the transport/infrastructure adapter: it supplies a TypeORM `DataSource` probe and maps probe failure to the existing `DATABASE_UNAVAILABLE` API error. `/health` and `/ready` response behavior stays unchanged.
+`apps/api` keeps the transport/infrastructure adapter: it supplies a TypeORM `DataSource` probe and maps probe failure to the existing `DATABASE_UNAVAILABLE` API error. `/health` and `/ready` response behavior stays unchanged.
 
 ### `@moshaver/cmb-realtime`
 
@@ -37,7 +37,7 @@ Provides an in-memory user-scoped event hub:
 - connection counts;
 - generic string event types with no Moshaver event vocabulary in the reusable package.
 
-`backend-v2` keeps the Nest injectable + RxJS `Observable` adapter and its product event union. Existing SSE controller behavior therefore remains unchanged.
+`apps/api` keeps the Nest injectable + RxJS `Observable` adapter and its product event union. Existing SSE controller behavior therefore remains unchanged.
 
 ## API contract authority
 

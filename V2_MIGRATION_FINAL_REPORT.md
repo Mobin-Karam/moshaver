@@ -8,15 +8,15 @@ The repository implementation, contracts, migration tool, parity gates, and loca
 
 ## Delivered architecture
 
-- `backend-v2`: NestJS/Fastify, SQLite/TypeORM, 32 ordered migrations, explicit users/roles/capabilities, organizations/memberships, typed relationships, and teacher-subject assignments.
+- `apps/api`: NestJS/Fastify, SQLite/TypeORM, 32 ordered migrations, explicit users/roles/capabilities, organizations/memberships, typed relationships, and teacher-subject assignments.
 - Canonical v2 domains cover auth/context, users, organizations, relationships, students, plans/tasks/study, subjects, learning/reviews, exams/questions/assignments/publishing, syllabus/retry/quizzes/mistakes, notifications/push/SSE, direct/group chat, guardian workflows, role dashboards, presence/activity/live monitoring, reports/recovery/analytics/recommendations, import/export, releases/audit/backup-restore, and offline sync.
 - OpenAPI is generated at `/api/v2/openapi.json` with interactive docs at `/api/v2/docs`. Shared transport types live in `packages/api-contract`; persistence entities do not leak into that package.
-- `admin-v2` is pinned to `/api/v2`. Its development backend switch changes host only; there is no runtime v1/v2 API selector. Canonical APIs replace the former `/admin/*` placeholder surface, and capability checks cover routes, navigation, and relevant actions.
-- `student-app-v2` and `student-core` use server-owned student identity and authoritative exam/plan/permission data. Offline mutations use idempotency keys and opaque cursors. The PWA registers v2 push subscriptions, handles push/click events, and reports presence only after authentication.
+- `apps/admin` is pinned to `/api/v2`. Its development backend switch changes host only; there is no runtime v1/v2 API selector. Canonical APIs replace the former `/admin/*` placeholder surface, and capability checks cover routes, navigation, and relevant actions.
+- `apps/student` and `student-core` use server-owned student identity and authoritative exam/plan/permission data. Offline mutations use idempotency keys and opaque cursors. The PWA registers v2 push subscriptions, handles push/click events, and reports presence only after authentication.
 
 ## Data migration rehearsal
 
-`backend-v2/scripts/migrate-v1-to-v2.mjs` opens v1.4 SQLite read-only, requires explicit legacy-organization and platform-owner decisions, preserves stable IDs, maps only source-backed relationships, never migrates sessions, and writes an integrity report.
+`apps/api/scripts/migrate-v1-to-v2.mjs` opens v1.4 SQLite read-only, requires explicit legacy-organization and platform-owner decisions, preserves stable IDs, maps only source-backed relationships, never migrates sessions, and writes an integrity report.
 
 The actual repository v1.4 database was migrated into a fresh 32-migration target:
 

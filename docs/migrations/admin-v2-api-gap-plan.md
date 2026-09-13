@@ -1,6 +1,6 @@
 # Admin v2 to API v2 gap plan
 
-This is the implementation gate for connecting `admin-v2` to `/api/v2`. A UI route is not complete until its backend contract persists real data, enforces admin/student ownership, and has a disposable-database smoke test.
+This is the implementation gate for connecting `apps/admin` to `/api/v2`. A UI route is not complete until its backend contract persists real data, enforces admin/student ownership, and has a disposable-database smoke test.
 
 ## Current gap matrix
 
@@ -31,8 +31,8 @@ This is the implementation gate for connecting `admin-v2` to `/api/v2`. A UI rou
 
 ## Validation rules
 
-- Run `npm run lint`, `npm test`, and `npm run build` in `backend-v2`.
-- Run `npm test`, `npm run build`, and `npm run audit:parity` in `admin-v2`.
+- Run `npm run lint`, `npm test`, and `npm run build` in `apps/api`.
+- Run `npm test`, `npm run build`, and `npm run audit:parity` in `apps/admin`.
 - Run all migrations against a temporary SQLite database, including an upgrade fixture with existing student rows.
 - Do not validate database restore against the active or production database.
 - Keep `/api/v1` available until every row above is implemented and the browser smoke passes.

@@ -35,6 +35,6 @@ graphify explain "Notifications"
 
 ## Moshaver-specific use
 
-Before changing shared contracts, query for consumers across `backend-v2`, `admin-v2`, `student-app-v2`, `student-core`, and `packages/api-contract`.
+Before changing shared contracts, query for consumers across `apps/api`, `apps/admin`, `apps/student`, `student-core`, and `packages/api-contract`.
 
 Before CMB refactoring, query dependency paths between common/platform code and Moshaver domain modules to avoid moving product concepts into the reusable kernel.

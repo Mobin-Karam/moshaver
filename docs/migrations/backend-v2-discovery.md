@@ -23,7 +23,7 @@ The v1 SQLite schema is created in `backend/src/db.js` and includes:
 
 ## Current Frontend Dependencies
 
-- `admin-v2` is Vite + React + TypeScript.
+- `apps/admin` is Vite + React + TypeScript.
 - Its API client defaults to `/api/v1`, with `VITE_API_URL` override support.
 - It expects cookie auth, CSRF refresh via `/auth/me`, and SSE through `/events`.
 - Existing student and admin v1 static apps still consume `/api/v1`.

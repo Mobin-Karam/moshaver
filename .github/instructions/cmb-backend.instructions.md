@@ -1,5 +1,5 @@
 ---
-applyTo: "backend-v2/**,packages/backend-*/**,packages/api-contract/**"
+applyTo: "apps/api/**,packages/backend-*/**,packages/api-contract/**"
 ---
 
 # CMB backend architecture instructions

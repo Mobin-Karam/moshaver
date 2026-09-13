@@ -6,7 +6,7 @@ This is the starting point for humans extending or maintaining Moshaver. It appl
 
 | Target | Frontend | Backend | API |
 | --- | --- | --- | --- |
-| Current v2 development | `admin-v2`, `student-app-v2` | `backend-v2` | `/api/v2` |
+| Current v2 development | `apps/admin`, `apps/student` | `apps/api` | `/api/v2` |
 
 The v1.4 line is archived on `archive/v1.4` and is not maintained in `main` or `develop`. Do not copy its routes, schemas, or runtime assumptions into v2 without an explicit compatibility change. Direct source and tests are authoritative; migration audits describe gaps at the time they were written.
 
@@ -22,13 +22,13 @@ The v1.4 line is archived on `archive/v1.4` and is not maintained in `main` or `
 For v2 web development, start the backend first and then the relevant frontend:
 
 ```bash
-npm --prefix backend-v2 install
-npm --prefix backend-v2 run migration:run
-npm --prefix backend-v2 run seed
-npm --prefix backend-v2 run dev
+npm --prefix apps/api install
+npm --prefix apps/api run migration:run
+npm --prefix apps/api run seed
+npm --prefix apps/api run dev
 
-npm --prefix admin-v2 install
-npm --prefix admin-v2 run dev
+npm --prefix apps/admin install
+npm --prefix apps/admin run dev
 ```
 
 Use a disposable SQLite path for seed, migration, restore, or destructive test work. Development seed credentials are local-only and must never be copied to a deployed environment.
@@ -50,10 +50,10 @@ route/navigation
 Useful searches:
 
 ```bash
-rg "route-or-capability" admin-v2/src backend-v2/src
-rg "Controller|RequireCapabilities" backend-v2/src/modules
-rg "useQuery|useMutation" admin-v2/src/features
-rg --files admin-v2/src backend-v2/src | rg 'test|spec|migration'
+rg "route-or-capability" apps/admin/src apps/api/src
+rg "Controller|RequireCapabilities" apps/api/src/modules
+rg "useQuery|useMutation" apps/admin/src/features
+rg --files apps/admin/src apps/api/src | rg 'test|spec|migration'
 ```
 
 ## Architecture rules
@@ -78,7 +78,7 @@ rg --files admin-v2/src backend-v2/src | rg 'test|spec|migration'
 ### Student v2
 
 - Keep reusable domain logic and providers in `student-core`.
-- Keep browser, PWA, Tauri, SQLite, notification, and device behavior in `student-app-v2` adapters.
+- Keep browser, PWA, Tauri, SQLite, notification, and device behavior in `apps/student` adapters.
 - Validate web and native runtimes separately.
 
 ## Complete a change

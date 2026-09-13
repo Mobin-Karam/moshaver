@@ -7,13 +7,13 @@ updates:
     labels: [dependencies, github-actions]
 
   - package-ecosystem: npm
-    directory: /backend-v2
+    directory: /apps/api
     schedule:
       interval: weekly
     labels: [dependencies, backend]
 
   - package-ecosystem: npm
-    directory: /admin-v2
+    directory: /apps/admin
     schedule:
       interval: weekly
     labels: [dependencies, admin]
@@ -25,13 +25,13 @@ updates:
     labels: [dependencies, student]
 
   - package-ecosystem: npm
-    directory: /student-app-v2
+    directory: /apps/student
     schedule:
       interval: weekly
     labels: [dependencies, student]
 
   - package-ecosystem: cargo
-    directory: /student-app-v2/src-tauri
+    directory: /apps/student/src-tauri
     schedule:
       interval: weekly
     labels: [dependencies, student, tauri]

@@ -1,6 +1,6 @@
 # v1.4 to v2 migration verification
 
-Run v2 migrations against a new target file, then invoke `backend-v2`'s `npm run migrate:v1`. Always pass an explicit legacy organization name. Pass `--platform-owner-username=<trusted-v1-admin>` only after independently confirming that account is the platform owner; use `none` to keep every legacy admin organization-scoped. The source database is opened read-only, sessions are not copied, and users must sign in again.
+Run v2 migrations against a new target file, then invoke `apps/api`'s `npm run migrate:v1`. Always pass an explicit legacy organization name. Pass `--platform-owner-username=<trusted-v1-admin>` only after independently confirming that account is the platform owner; use `none` to keep every legacy admin organization-scoped. The source database is opened read-only, sessions are not copied, and users must sign in again.
 
 ## Integrity gate
 

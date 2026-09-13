@@ -1,7 +1,7 @@
 # Admin v2 endpoint and UX audit
 
 Date: 2026-09-06  
-Scope: current `backend-v2` controllers and `admin-v2` consumers on `feat/v2-parity-completion`.
+Scope: current `apps/api` controllers and `apps/admin` consumers on `feat/v2-parity-completion`.
 
 Snapshot notice: “current” below means the dated 2026-09-06 checkout. Use the [capability matrix](../ADMIN_V2_CAPABILITY_MATRIX.md) and generated [OpenAPI contract](../components/backend-v2-http-api.md) for the present source.
 

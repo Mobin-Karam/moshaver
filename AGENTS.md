@@ -26,9 +26,9 @@ The accepted model is a **grouped product monorepo** with a **modular-monolith b
 
 Current physical paths remain valid during migration:
 
-- `backend-v2/` — API application/composition root.
-- `admin-v2/` — Admin application.
-- `student-app-v2/` — Student application.
+- `apps/api/` — API application/composition root.
+- `apps/admin/` — Admin application.
+- `apps/student/` — Student application.
 - `student-core/` — runtime-neutral Student domain/provider package.
 - `packages/api-contract/` — shared API contract package.
 
@@ -136,7 +136,7 @@ npm run verify
 ### Backend
 
 ```bash
-cd backend-v2
+cd apps/api
 npm ci
 npm run lint
 npm test
@@ -146,7 +146,7 @@ npm run build
 ### Admin
 
 ```bash
-cd admin-v2
+cd apps/admin
 npm ci
 npm run typecheck
 npm run format:check
@@ -168,7 +168,7 @@ npm test
 ### Student app
 
 ```bash
-cd student-app-v2
+cd apps/student
 npm ci
 npm run typecheck
 npm test

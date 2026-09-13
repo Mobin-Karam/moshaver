@@ -10,10 +10,11 @@ The root `package.json` is **orchestration-only**. It intentionally has no depen
 
 Existing leaf lockfiles remain authoritative:
 
-- `backend-v2/package-lock.json`
-- `admin-v2/package-lock.json`
+- `apps/api/package-lock.json`
+- `apps/admin/package-lock.json`
 - `student-core/package-lock.json`
-- `student-app-v2/package-lock.json`
+- `apps/student/package-lock.json`
+- every installable package under `packages/cmb/*/package-lock.json`
 
 Do not run a root dependency install expecting a unified `node_modules`. Use `npm run bootstrap`, which executes `npm ci` inside each installable project in dependency order.
 
@@ -29,6 +30,7 @@ npm run test
 npm run typecheck
 npm run lint
 npm run verify
+npm run verify:affected -- --base=origin/develop --head=HEAD
 ```
 
 Target one project plus its dependencies:
@@ -42,11 +44,12 @@ Preview without executing child npm commands:
 
 ```bash
 node tooling/workspace/run.mjs verify --dry-run
+node tooling/workspace/run.mjs verify --affected --base=origin/develop --head=HEAD --dry-run
 ```
 
 ## Bootstrap semantics
 
-The runner topologically orders the graph. `student-core` is marked `bootstrapBuild: true`, so it is built after its own install and before `student-app-v2` is installed/validated. This preserves the current local `file:../student-core` package contract.
+The runner topologically orders the graph. `student-core` is marked `bootstrapBuild: true`, so it is built after its own install and before `apps/student` is installed/validated. This preserves the current local `file:../student-core` package contract.
 
 `api-contract` has `install: false` because it currently has no dependency lock or build step; consumers use its TypeScript public entrypoint directly.
 

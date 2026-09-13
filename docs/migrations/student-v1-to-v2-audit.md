@@ -4,9 +4,9 @@ Date: 2026-09-01
 
 ## Executive Decision
 
-> **Historical migration gate.** This document records the 2026-09-01 baseline. The legacy source has since moved to `archive/v1.4`, while `student-app-v2/` is the active client on `main` and `develop`. Reassess any open item against current source before treating it as a release blocker.
+> **Historical migration gate.** This document records the 2026-09-01 baseline. The legacy source has since moved to `archive/v1.4`, while `apps/student/` is the active client on `main` and `develop`. Reassess any open item against current source before treating it as a release blocker.
 
-Implementation update (2026-09-01): the first study-session vertical slice is now implemented. `backend-v2` has authenticated student-scoped study-session persistence and `student-app-v2` calls it for active-session restore, start, pause, resume, and finish before task completion. The local session record is retained as a restart fallback, but it is not yet part of the durable sync queue.
+Implementation update (2026-09-01): the first study-session vertical slice is now implemented. `apps/api` has authenticated student-scoped study-session persistence and `apps/student` calls it for active-session restore, start, pause, resume, and finish before task completion. The local session record is retained as a restart fallback, but it is not yet part of the durable sync queue.
 
 Migration update (2026-09-01): task detail/comments/issues, exam progress/attempt persistence, chat discovery/read state, notifications, progress/reviews, password/session management, and the first offline sync worker are now implemented in v2. These changes are staged migration work; legacy replacement is still blocked by the unsupported report/recovery flows, full focus parity, push/update parity, and production-grade sync conflict handling listed below.
 
@@ -17,7 +17,7 @@ The migration is a client rewrite plus an API-contract migration:
 - Legacy client: static HTML, JavaScript, CSS, PWA/service worker, `/api/v1`.
 - Target client: React, TypeScript, Vite, React Router, Zustand, Tauri v2, SQLite, `/api/v2`.
 - Shared target domain logic: `student-core/`.
-- Target server: `backend-v2/`, NestJS/Fastify/TypeORM with SQLite currently configured.
+- Target server: `apps/api/`, NestJS/Fastify/TypeORM with SQLite currently configured.
 
 ## 1. Purpose and Locations
 
@@ -31,7 +31,7 @@ Dependencies include browser DOM APIs, `localStorage`, `EventSource`, service wo
 
 ### Target application
 
-Location: `student-app-v2/`
+Location: `apps/student/`
 
 `src/main.tsx` owns routing, authentication presentation, the shell, and bottom navigation. Feature pages are under `src/features/`. `src/services/student-store.ts` owns auth, dashboard, plan, exam list, and task state. `src/services/api-client.ts` owns cookie-based HTTP and CSRF headers. `src/native/tauri-sqlite-provider.ts` and `src/sync/sqlite-sync-provider.ts` provide persistence/queue primitives. `src-tauri/tauri.conf.json` defines the desktop bundle and Android minimum SDK 24.
 
@@ -40,7 +40,7 @@ Dependencies include React 18, React Router, Zustand, Lucide, Vite, Tauri v2, Ta
 ### Backend contract owners
 
 - Legacy routes: `v1.4/backend/src/routes/` and services under `v1.4/backend/src/services/`.
-- Target routes: `backend-v2/src/modules/`, especially `auth`, `students`, `exams`, `chat`, `realtime`, and `sync`.
+- Target routes: `apps/api/src/modules/`, especially `auth`, `students`, `exams`, `chat`, `realtime`, and `sync`.
 - Target API prefix is configured by the backend bootstrap and consumed by the client as `/api/v2` by default.
 
 ## 2. Relationships and Data Flow
@@ -95,11 +95,11 @@ The following student-facing v2 operations are present in current controllers or
 
 Important contract risks:
 
-1. `backend-v2/src/modules/sync/sync.controller.ts` returns empty arrays and accepts changes without applying them. It is scaffolding, not an offline sync implementation.
+1. `apps/api/src/modules/sync/sync.controller.ts` returns empty arrays and accepts changes without applying them. It is scaffolding, not an offline sync implementation.
 2. The v2 exam controller supports start and submit, but does not expose the legacy progress, retry-request, syllabus-progress, history, or resume contract.
 3. The v2 chat controller supports messages for a supplied conversation id, but the target UI hardcodes `advisor`; conversation discovery and read state are absent.
 4. The v2 student task completion handler is present, but study sessions, comments, issues, reports, recovery, and presence/activity contracts remain UNKNOWN in the target backend.
-5. `student-app-v2/src/features/more/MorePage.tsx` uses hardcoded notification records. It is not connected to `backend-v2` notifications.
+5. `apps/student/src/features/more/MorePage.tsx` uses hardcoded notification records. It is not connected to `apps/api` notifications.
 
 ## 5. Migration Method
 

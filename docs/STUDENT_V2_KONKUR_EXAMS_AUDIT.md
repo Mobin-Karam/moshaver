@@ -4,7 +4,7 @@
 
 ### Frontend
 
-- `student-app-v2/src/features/exam/ExamPage.tsx` owns the center, preflight, active run, review, and result states.
+- `apps/student/src/features/exam/ExamPage.tsx` owns the center, preflight, active run, review, and result states.
 - `ExamAutosaveController` persists a versioned attempt draft in browser storage, batches changed answers to API V2, and reconciles by revision and client timestamp.
 - `ExamRunner` already supports answer selection/clearing, review marks, previous/next navigation, an answer-sheet bottom sheet, timeout submission, and responsive layouts.
 - `student-core/src/exams` centralizes availability, answer reconciliation, summaries, and server-time countdown helpers.

@@ -53,4 +53,4 @@ Read the [developer handbook](../operations/developer-handbook.md) and [feature 
 
 ## Migration
 
-`backup/admin-app-legacy/` is a byte-for-byte copy of the old static Admin app. Keep `admin-app/` deployed until v2 is validated, then switch static hosting to `admin-v2/dist` without changing backend or Student app.
+`backup/admin-app-legacy/` is a byte-for-byte copy of the old static Admin app. Keep `admin-app/` deployed until v2 is validated, then switch static hosting to `apps/admin/dist` without changing backend or Student app.

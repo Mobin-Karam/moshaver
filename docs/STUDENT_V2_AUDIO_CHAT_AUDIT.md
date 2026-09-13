@@ -2,7 +2,7 @@
 
 ## Audio today
 
-- `student-app-v2/src/services/relaxation-player.ts` owns one module-level `HTMLAudioElement` and a Zustand UI store.
+- `apps/student/src/services/relaxation-player.ts` owns one module-level `HTMLAudioElement` and a Zustand UI store.
 - The player survives route changes and exposes play/pause, seek, buffering, duration, and today's admin-selected track.
 - `ActivityIsland` reads the same store, so there is no second Student playback element.
 - `MorePage` combines the full player and complete track list in one large visual card.

@@ -18,14 +18,14 @@ student-app-v2 ─> web/PWA adapters or Tauri v2 shell
 
 | Path | Ownership |
 | --- | --- |
-| `backend-v2/` | NestJS/Fastify `/api/v2`, TypeORM entities and migrations, auth, RBAC, and product modules |
-| `admin-v2/` | React/Vite administration application organized by feature |
-| `student-app-v2/` | React/Vite student UI, PWA adapters, synchronization, and Tauri shell |
+| `apps/api/` | NestJS/Fastify `/api/v2`, TypeORM entities and migrations, auth, RBAC, and product modules |
+| `apps/admin/` | React/Vite administration application organized by feature |
+| `apps/student/` | React/Vite student UI, PWA adapters, synchronization, and Tauri shell |
 | `student-core/` | Framework-neutral student domain types and provider contracts |
 | `docs/` | Current v2 documentation plus clearly identified migration/history evidence |
 | `examples/` | Import and domain examples used by v2 workflows |
 
-Root `docker-compose.yml` is the canonical container topology. Both frontends use `/api/v2` and proxy to `backend-v2`; the backend persists SQLite in the `moshaver_v2_sqlite` volume by default.
+Root `docker-compose.yml` is the canonical container topology. Both frontends use `/api/v2` and proxy to `apps/api`; the backend persists SQLite in the `moshaver_v2_sqlite` volume by default.
 
 ## Security and data boundaries
 

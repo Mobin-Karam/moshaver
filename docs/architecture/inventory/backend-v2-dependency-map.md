@@ -101,7 +101,7 @@ Result: split generic import/export mechanics from Moshaver codecs/handlers; do 
 
 ### Shared database entity catalog
 
-Most modules import entities directly from `backend-v2/src/database/entities` or individual files below it. This shared catalog is the largest architectural coupling hotspot because table/entity ownership is not yet aligned to module ownership.
+Most modules import entities directly from `apps/api/src/database/entities` or individual files below it. This shared catalog is the largest architectural coupling hotspot because table/entity ownership is not yet aligned to module ownership.
 
 ## Desired dependency evolution
 

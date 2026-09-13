@@ -4,7 +4,7 @@
 - **Graphify first:** when `graphify-out/graph.json` exists, use the graph to locate architecture, callers, consumers, and change impact before broad repository search. Verify the source files you will change.
 - If the graph is missing/stale and Graphify is available, refresh it before architecture-wide work. Do not block a small fix solely because Graphify is unavailable.
 - Read the nearest applicable `.github/instructions/*.instructions.md` files.
-- Moshaver is a monorepo: `backend-v2`, `admin-v2`, `student-app-v2`, `student-core`, and `packages/api-contract` can affect each other.
+- Moshaver is a monorepo: `apps/api`, `apps/admin`, `apps/student`, `student-core`, and `packages/api-contract` can affect each other.
 - Backend architectural work must follow the CMB direction tracked by issue #21: reusable kernel/platform modules must not depend on education-domain modules.
 - Prefer existing repository conventions and dependencies. Avoid unnecessary rewrites or new packages.
 - Search/query callers, consumers, tests, types, schemas, routes, migrations, and configuration before changing a shared contract.

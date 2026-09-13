@@ -14,4 +14,12 @@ Current Phase-3 packages:
 
 - `kernel` — module descriptors/tokens;
 - `health` — generic liveness/readiness probes;
-- `realtime` — generic in-memory user event hub.
+- `realtime` — generic in-memory user event hub;
+- `identity` — identity normalization and capability projection;
+- `tenancy` — organization scoping and platform-role policy;
+- `system` — application-version and audit-record primitives.
+- `auth` — secure session credential lifecycle;
+- `authorization` — capability and work-context evaluation;
+- `notifications` — notification cursor, paging, and public-state mechanics.
+- `activity` — presence heartbeat and activity paging mechanics;
+- `data-transfer` — generic secure import normalization mechanics.

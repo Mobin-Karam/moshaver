@@ -44,7 +44,7 @@ The screencast adds concrete parity targets beyond the first backend-v2 foundati
 
 Status: in progress.
 
-- Use `/api/v2` in `student-app-v2`.
+- Use `/api/v2` in `apps/student`.
 - Restore session from `/auth/me`.
 - Store and send backend-v2 CSRF token on mutations.
 - Reject non-student accounts in the student app.
@@ -57,7 +57,7 @@ Status: in progress.
 Status: in progress. First planning increment implemented: backend-v2 stores task timing/subject/test metadata, admin-v2 can create/publish day plans and inspect a week, and student-app-v2 can browse published day plans by date.
 
 - Extend backend-v2 tasks with planned start/end, subject, test count, comments, partial completion, issue reporting, and ownership checks.
-- Add task detail modal in `student-app-v2`.
+- Add task detail modal in `apps/student`.
 - Add complete, partial, issue, comment, and refresh actions.
 - Add day navigation and `/student/plans?date=YYYY-MM-DD`.
 - Cache today plan and queued task mutations in SQLite.

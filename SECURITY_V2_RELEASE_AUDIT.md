@@ -41,7 +41,7 @@ These are deployment checks, not unresolved application authorization defects:
 ## Reproducible verification
 
 ```bash
-cd backend-v2
+cd apps/api
 npm run lint
 npm test -- --runInBand
 npm run build

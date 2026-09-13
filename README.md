@@ -18,9 +18,9 @@ The backend's reusable architecture direction is **CMB — Composable Modular Ba
 
 | Package | Purpose | Local port |
 | --- | --- | --- |
-| `backend-v2/` | NestJS/Fastify API, TypeORM persistence, auth, RBAC, and product modules | 4000 |
-| `admin-v2/` | React administration platform | 8081 |
-| `student-app-v2/` | React/PWA/Tauri student application | 8080 |
+| `apps/api/` | NestJS/Fastify API, TypeORM persistence, auth, RBAC, and product modules | 4000 |
+| `apps/admin/` | React administration platform | 8081 |
+| `apps/student/` | React/PWA/Tauri student application | 8080 |
 | `student-core/` | Runtime-neutral student domain and provider contracts | none |
 
 ## Start the v2 stack
@@ -49,15 +49,15 @@ Do not point v1 clients at `/api/v2`, reuse a v1 database as a v2 database, or c
 ## Validation
 
 ```bash
-npm --prefix backend-v2 run lint
-npm --prefix backend-v2 test
-npm --prefix backend-v2 run build
-npm --prefix admin-v2 test
-npm --prefix admin-v2 run typecheck
-npm --prefix admin-v2 run build
+npm --prefix apps/api run lint
+npm --prefix apps/api test
+npm --prefix apps/api run build
+npm --prefix apps/admin test
+npm --prefix apps/admin run typecheck
+npm --prefix apps/admin run build
 npm --prefix student-core run build
 npm --prefix student-core test
-npm --prefix student-app-v2 run build
+npm --prefix apps/student run build
 ```
 
 Browser, Tauri, Android, and deployed-environment checks are separate release gates.

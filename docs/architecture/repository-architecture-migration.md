@@ -45,7 +45,7 @@ See `docs/architecture/workspace-foundation.md` and `tooling/workspace/README.md
 
 ## Phase 3 — extract low-risk reusable packages
 
-Status: **in progress — W1 implemented on `architecture/phase-3-cmb-foundation-w1`**.
+Status: **complete — W1 through W4 implemented**.
 
 Completed in the W1 slice:
 
@@ -58,30 +58,71 @@ Completed in the W1 slice:
 - [x] add package tests and backend adapter compatibility tests;
 - [x] wire package edges into the Phase-2 workspace graph.
 
+Completed in the W2 slice:
+
+- [x] extract framework-neutral identity normalization and capability projection;
+- [x] extract organization scope and platform-role assignment policy;
+- [x] keep TypeORM membership persistence and product chat effects in backend adapters;
+- [x] extract application-version validation and audit projection;
+- [x] keep SQLite backup/restore and operational policy in the API composition;
+- [x] add standalone package tests and workspace dependency edges.
+
+Completed in the W3 slice:
+
+- [x] extract secure session credential lifecycle while retaining account/student eligibility in the product adapter;
+- [x] extract capability and organization/work-context evaluation over persistence-neutral records;
+- [x] retain student ownership and relationship authorization as Moshaver policy;
+- [x] extract notification cursor, pagination, and public projection mechanics;
+- [x] retain recipient resolution, persistence, realtime, and push delivery in backend adapters.
+
+Completed in the W4 slice:
+
+- [x] extract generic presence normalization, heartbeat de-duplication, and activity paging;
+- [x] retain Moshaver event vocabulary, attention signals, and student/task persistence;
+- [x] extract generic security-field rejection and numeric import normalization;
+- [x] retain schema `2.0`, education codecs, authorization, transactions, and history as product behavior.
+
 Remaining waves:
 
-- [ ] W2 — users, organizations, system primitives;
-- [ ] W3 — auth, authorization, notifications after product-policy/recipient decoupling;
-- [ ] W4 — split generic activity/import-export mechanics from Moshaver handlers;
-- [ ] shared test/config packages only where duplication is proven;
-- [ ] shrink the Phase-1 deep-import/cycle baseline as each extraction removes debt.
+- [x] shared test/config extraction evaluated and skipped because no second-consumer duplication is proven;
+- [x] replace all 72 baseline cross-module implementation imports with explicit module public entrypoints and shrink the baseline to zero deep imports; retain only the six source-backed TypeORM entity relationship cycles.
 
 See `docs/architecture/phase-3-cmb-foundation-w1.md`.
+See also `docs/architecture/phase-3-cmb-platform-w2.md`.
+See also `docs/architecture/phase-3-cmb-platform-w3.md` and `docs/architecture/phase-3-cmb-mechanisms-w4.md`.
 
 ## Phase 4 — thin the backend composition root
 
-Incrementally move reusable/platform capability implementations out of `backend-v2` while leaving the API application as the composition root. Product orchestrators such as `sync`, `dashboard`, `guardian`, and `onboarding` remain product-owned and should consume stable public module APIs over time.
+Status: **complete for the current extraction scope**.
+
+- [x] reusable mechanics live behind public `packages/cmb/*` entrypoints;
+- [x] `apps/api` retains Nest, TypeORM, SQLite, push, transport, and product-policy adapters;
+- [x] `CmbPlatformModule` groups platform adapters so `AppModule` remains the application composition root;
+- [x] product orchestrators such as `sync`, `dashboard`, `guardian`, and `onboarding` remain product-owned.
+
+Further thinning should occur only when a concrete adapter or product package has independent ownership and a real consumer.
 
 ## Phase 5 — optional physical `apps/` normalization
 
-Only after imports/package boundaries and CI are stable, consider physical renames such as `backend-v2` → `apps/api`, `admin-v2` → `apps/admin`, and `student-app-v2` → `apps/student`. Skip moves whose churn exceeds their benefit.
+Status: **complete**.
+
+- [x] moved the API composition root to `apps/api`;
+- [x] moved the Admin application to `apps/admin`;
+- [x] moved the Student web/PWA/Tauri application to `apps/student`;
+- [x] updated workspace metadata, CI path filters, Dependabot, CODEOWNERS, Docker build contexts, documentation, and runtime commands;
+- [x] preserved npm package names, Docker service identities, `/api/v2`, and runtime behavior.
+
+The migration deliberately retains stable product identifiers such as `backend-v2` where they are package names, Docker service names, or historical document labels. They are no longer physical repository roots.
 
 ## Phase 6 — generators and stronger boundaries
 
-- CMB/product module generators;
-- package manifest templates;
-- stronger public-entrypoint architecture checks after package extraction;
-- affected CI/caching when repository scale justifies it.
+Status: **complete**.
+
+- [x] `npm run generate:cmb -- <id> [kind] [dependencies]` scaffolds a guarded CMB package manifest, public entrypoint, declarations, test, and README;
+- [x] architecture validation checks every CMB package manifest, public export, descriptor, declaration, and application/framework backedge;
+- [x] CI installs and tests every CMB package and re-runs workspace, architecture, and API-contract gates;
+- [x] guarded product-package ownership generator with explicit dependency placeholders;
+- [x] affected-project selection over Git ranges, including reverse consumers and dependency closure, without adding another orchestration framework.
 
 ## Non-goals
 

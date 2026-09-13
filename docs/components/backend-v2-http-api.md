@@ -1,6 +1,6 @@
 # Backend v2 HTTP API
 
-Inspected: 2026-09-08. Controllers under `backend-v2/src/modules/` and the generated OpenAPI document are authoritative.
+Inspected: 2026-09-08. Controllers under `apps/api/src/modules/` and the generated OpenAPI document are authoritative.
 
 ## Discovery
 

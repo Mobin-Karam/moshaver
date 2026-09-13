@@ -10,7 +10,7 @@ Do not point these commands at production or a database containing valuable data
 
 ## Create or refresh the demo
 
-From `backend-v2/`:
+From `apps/api/`:
 
 ```bash
 DATABASE_PATH=./data/moshaver-product-demo.sqlite npm run seed:demo

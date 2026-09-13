@@ -1,0 +1,5 @@
+"use strict";
+const test = require("node:test"); const assert = require("node:assert/strict"); const { AUTH_MODULE, SessionCredentialService } = require("../src");
+test("declares auth dependencies", () => { assert.equal(AUTH_MODULE.id, "auth"); assert.deepEqual(AUTH_MODULE.dependencies, ["identity", "kernel"]); });
+test("issues and hashes rotating session credentials", () => { const service = new SessionCredentialService({ accessTokenTtlMinutes: 10, refreshTokenTtlDays: 2, now: () => 1_000 }); const first = service.issue(); const second = service.issue(); assert.notEqual(first.accessToken, second.accessToken); assert.equal(first.expiresAt.getTime(), 601_000); assert.equal(first.refreshExpiresAt.getTime(), 172_801_000); assert.equal(service.hash(first.accessToken).length, 64); });
+test("uses constant-time compatible token comparison", () => { const service = new SessionCredentialService(); assert.equal(service.safeEqual("same", "same"), true); assert.equal(service.safeEqual("same", "nope"), false); assert.equal(service.safeEqual("short", "longer"), false); });

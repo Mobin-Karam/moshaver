@@ -7,7 +7,7 @@
 
 ## Summary
 
-The backend currently has **32 module directories** under `backend-v2/src/modules/`.
+The backend currently has **32 module directories** under `apps/api/src/modules/`.
 
 - **28** are registered in `AppModule`.
 - **4** are dormant placeholder modules and are not registered: `questions`, `quiz`, `recommendations`, and `reviews`.

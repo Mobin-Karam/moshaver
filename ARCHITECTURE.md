@@ -4,15 +4,15 @@ This file is the repository-level architecture entrypoint. Detailed architecture
 
 ## Current physical layout
 
-The current v2 applications remain in place:
+The current v2 applications are grouped under `apps/`:
 
-- `backend-v2/` — NestJS/Fastify API and composition root.
-- `admin-v2/` — React/Vite admin application.
-- `student-app-v2/` — React/PWA/Tauri student application.
+- `apps/api/` — NestJS/Fastify API and composition root.
+- `apps/admin/` — React/Vite admin application.
+- `apps/student/` — React/PWA/Tauri student application.
 - `student-core/` — runtime-neutral student domain/provider contracts.
 - `packages/api-contract/` — shared API contracts.
 
-No source movement is required to follow the architecture rules below.
+Phase 5 normalized the deployable composition roots without changing their package names, service identities, or public API contracts.
 
 ## Target logical model
 
@@ -37,12 +37,19 @@ Current package-level graph:
 
 ```text
 api-contract
-├── admin-v2
+├── apps/admin
 └── student-core
-    └── student-app-v2
+    └── apps/student
 
-backend-v2  (independent at package-manifest level)
+cmb-kernel
+├── cmb-health, cmb-realtime, cmb-identity, cmb-tenancy, cmb-system
+├── cmb-notifications, cmb-activity, cmb-data-transfer
+├── cmb-auth
+└── cmb-authorization
+    └── apps/api
 ```
+
+The diagram is abbreviated; `tooling/workspace/projects.json` is the executable authority for the full graph. `apps/api` consumes CMB public entrypoints while retaining framework and product adapters.
 
 See `docs/architecture/workspace-foundation.md` for commands, validation, TypeScript-reference decisions, adoption triggers, and rollback.
 
@@ -73,9 +80,9 @@ The source-backed module inventory is maintained under `docs/architecture/invent
 Current extraction sequence:
 
 - **W1:** health, realtime
-- **W2:** users, organizations, system
-- **W3 after decoupling:** auth, authorization, notifications
-- **W4 split mechanisms only:** activity, import-export
+- **W2 (implemented):** identity, tenancy, and system primitives extracted; backend persistence/adapters retained
+- **W3 (implemented):** generic auth credentials, authorization evaluation, and notification state extracted; product policy/adapters retained
+- **W4 (implemented):** generic activity and data-transfer mechanics extracted; education handlers retained
 - **Product-owned:** education domains and cross-domain orchestration such as students, plans, exams, tasks, reports, sync, dashboard, guardian, and onboarding
 
 This classification is evidence-based and must be revalidated when the source or Graphify graph changes.

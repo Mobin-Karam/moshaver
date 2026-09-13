@@ -91,7 +91,7 @@ function addFileEdge(source, target) {
 
 function backendModule(file) {
   const relative = rel(file);
-  const match = relative.match(/^backend-v2\/src\/modules\/([^/]+)\//);
+  const match = relative.match(/^apps\/api\/src\/modules\/([^/]+)\//);
   return match?.[1] || null;
 }
 
@@ -122,9 +122,9 @@ function cmbBackedge(sourceFile, specifier, targetFile) {
   if (!rel(sourceFile).startsWith('packages/cmb/')) return false;
   const target = targetFile ? rel(targetFile) : '';
   return (
-    target.startsWith('backend-v2/src/modules/') ||
-    target.startsWith('admin-v2/') ||
-    target.startsWith('student-app-v2/') ||
+    target.startsWith('apps/api/src/modules/') ||
+    target.startsWith('apps/admin/') ||
+    target.startsWith('apps/student/') ||
     target.startsWith('student-core/') ||
     target.startsWith('packages/product/') ||
     specifier === '@moshaver/student-core' ||
@@ -172,9 +172,9 @@ for (const project of projects) {
           }
         }
 
-        if (rel(file).startsWith('backend-v2/src/') && specifier.startsWith('.') && targetFile) {
+        if (rel(file).startsWith('apps/api/src/') && specifier.startsWith('.') && targetFile) {
           const resolved = resolveRelative(file, specifier);
-          if (fs.existsSync(resolved) && fs.statSync(resolved).isFile() && rel(resolved).startsWith('backend-v2/src/')) {
+          if (fs.existsSync(resolved) && fs.statSync(resolved).isFile() && rel(resolved).startsWith('apps/api/src/')) {
             addFileEdge(rel(file), rel(resolved));
             const fromModule = backendModule(file);
             const toModule = backendModule(resolved);

@@ -43,11 +43,91 @@
       "verifyTasks": ["test"]
     },
     {
+      "id": "cmb-identity",
+      "packageName": "@moshaver/cmb-identity",
+      "path": "packages/cmb/identity",
+      "kind": "cmb-platform",
+      "dependsOn": ["cmb-kernel"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
+      "id": "cmb-tenancy",
+      "packageName": "@moshaver/cmb-tenancy",
+      "path": "packages/cmb/tenancy",
+      "kind": "cmb-platform",
+      "dependsOn": ["cmb-kernel"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
+      "id": "cmb-system",
+      "packageName": "@moshaver/cmb-system",
+      "path": "packages/cmb/system",
+      "kind": "cmb-platform",
+      "dependsOn": ["cmb-kernel"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
+      "id": "cmb-auth",
+      "packageName": "@moshaver/cmb-auth",
+      "path": "packages/cmb/auth",
+      "kind": "cmb-platform",
+      "dependsOn": ["cmb-identity", "cmb-kernel"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
+      "id": "cmb-authorization",
+      "packageName": "@moshaver/cmb-authorization",
+      "path": "packages/cmb/authorization",
+      "kind": "cmb-platform",
+      "dependsOn": ["cmb-identity", "cmb-kernel", "cmb-tenancy"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
+      "id": "cmb-notifications",
+      "packageName": "@moshaver/cmb-notifications",
+      "path": "packages/cmb/notifications",
+      "kind": "cmb-platform",
+      "dependsOn": ["cmb-kernel"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
+      "id": "cmb-activity",
+      "packageName": "@moshaver/cmb-activity",
+      "path": "packages/cmb/activity",
+      "kind": "cmb-platform",
+      "dependsOn": ["cmb-kernel"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
+      "id": "cmb-data-transfer",
+      "packageName": "@moshaver/cmb-data-transfer",
+      "path": "packages/cmb/data-transfer",
+      "kind": "cmb-platform",
+      "dependsOn": ["cmb-kernel"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
       "id": "backend-v2",
       "packageName": "moshaver-backend-v2",
-      "path": "backend-v2",
+      "path": "apps/api",
       "kind": "application",
-      "dependsOn": ["cmb-health", "cmb-realtime"],
+      "dependsOn": ["cmb-health", "cmb-realtime", "cmb-identity", "cmb-tenancy", "cmb-system", "cmb-auth", "cmb-authorization", "cmb-notifications", "cmb-activity", "cmb-data-transfer"],
       "install": true,
       "bootstrapBuild": false,
       "verifyTasks": ["lint", "test", "build"]
@@ -55,7 +135,7 @@
     {
       "id": "admin-v2",
       "packageName": "moshaver-admin-v2",
-      "path": "admin-v2",
+      "path": "apps/admin",
       "kind": "application",
       "dependsOn": ["api-contract"],
       "install": true,
@@ -75,7 +155,7 @@
     {
       "id": "student-app-v2",
       "packageName": "moshaver-student-app-v2",
-      "path": "student-app-v2",
+      "path": "apps/student",
       "kind": "application",
       "dependsOn": ["student-core"],
       "install": true,

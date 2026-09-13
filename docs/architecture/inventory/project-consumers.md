@@ -16,10 +16,10 @@ flowchart LR
 
 | Consumer | Dependency | Current form |
 | --- | --- | --- |
-| `admin-v2` | `@moshaver/api-contract` | `file:../packages/api-contract` |
+| `apps/admin` | `@moshaver/api-contract` | `file:../packages/api-contract` |
 | `student-core` | `@moshaver/api-contract` | `file:../packages/api-contract` |
-| `student-app-v2` | `@moshaver/student-core` | `file:../student-core` |
-| `backend-v2` | none of the current workspace packages | standalone package manifest |
+| `apps/student` | `@moshaver/student-core` | `file:../student-core` |
+| `apps/api` | none of the current workspace packages | standalone package manifest |
 
 ## Consequence: API contract ownership gap
 

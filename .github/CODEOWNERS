@@ -8,8 +8,8 @@
 /docs/architecture/ @Mobin-Karam
 
 # Product surfaces
-/backend-v2/ @Mobin-Karam
-/admin-v2/ @Mobin-Karam
-/student-app-v2/ @Mobin-Karam
+/apps/api/ @Mobin-Karam
+/apps/admin/ @Mobin-Karam
+/apps/student/ @Mobin-Karam
 /student-core/ @Mobin-Karam
 /packages/ @Mobin-Karam

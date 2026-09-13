@@ -13,9 +13,9 @@
     "targetLayout": "docs/architecture/target-monorepo-layout.md"
   },
   "components": [
-    "backend-v2",
-    "admin-v2",
-    "student-app-v2",
+    "apps/api",
+    "apps/admin",
+    "apps/student",
     "student-core",
     "packages/api-contract"
   ],

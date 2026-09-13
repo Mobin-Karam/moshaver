@@ -4,7 +4,7 @@ Date: 2026-08-20
 
 ## Project
 
-`student-app-v2/` is the new multi-platform student shell. It does not replace the frozen static v1 app. It consumes `@moshaver/student-core` for planner, exam, chat, notification, storage, and sync decisions.
+`apps/student/` is the new multi-platform student shell. It does not replace the frozen static v1 app. It consumes `@moshaver/student-core` for planner, exam, chat, notification, storage, and sync decisions.
 
 ## Stack
 
@@ -33,11 +33,11 @@ Future targets:
 ## Runtime Boundaries
 
 - `student-core/`: pure business logic and provider interfaces.
-- `student-app-v2/src/services/`: API and app state.
-- `student-app-v2/src/storage/`: web storage adapter.
-- `student-app-v2/src/native/`: native adapter placeholders.
-- `student-app-v2/src/sync/`: sync status and orchestration wiring.
-- `student-app-v2/src-tauri/`: native shell, commands, capabilities, bundle settings.
+- `apps/student/src/services/`: API and app state.
+- `apps/student/src/storage/`: web storage adapter.
+- `apps/student/src/native/`: native adapter placeholders.
+- `apps/student/src/sync/`: sync status and orchestration wiring.
+- `apps/student/src-tauri/`: native shell, commands, capabilities, bundle settings.
 
 ## Low Android Rules
 

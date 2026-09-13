@@ -14,8 +14,8 @@ This is an IMPLEMENTATION task, not a read-only audit.
 
 Primary applications:
 
-- `backend-v2`
-- `admin-v2`
+- `apps/api`
+- `apps/admin`
 - student-facing application if already present in the repository
 - shared packages/components used by these applications
 
@@ -613,7 +613,7 @@ This is a full Admin v2 product-completion implementation.
 
 Goal:
 
-Transform `admin-v2` from a collection of API consumers into a role-aware operational application where every staff type has a useful workspace and authorized administrators can actually manage their allowed domain.
+Transform `apps/admin` from a collection of API consumers into a role-aware operational application where every staff type has a useful workspace and authorized administrators can actually manage their allowed domain.
 
 Do not rebuild authorization.
 

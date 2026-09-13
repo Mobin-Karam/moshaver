@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import path from "node:path";
 import {
   dependencyClosure,
@@ -15,9 +15,49 @@ const command = args[0] || "help";
 const dryRun = args.includes("--dry-run");
 const projectArg = args.find((arg) => arg.startsWith("--project="));
 const projectId = projectArg ? projectArg.slice("--project=".length) : null;
+const affected = args.includes("--affected");
+const baseArg = args.find((arg) => arg.startsWith("--base="));
+const headArg = args.find((arg) => arg.startsWith("--head="));
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 
-const selectedIds = projectId ? dependencyClosure(graph, projectId) : new Set(ordered.map((project) => project.id));
+if (projectId && affected) throw new Error("Use either --project or --affected, not both.");
+
+function affectedClosure() {
+  const base = baseArg?.slice("--base=".length) || "HEAD~1";
+  const head = headArg?.slice("--head=".length) || "HEAD";
+  let changed;
+  try {
+    changed = execFileSync("git", ["diff", "--name-only", `${base}...${head}`], { cwd: repoRoot, encoding: "utf8" }).trim().split("\n").filter(Boolean);
+  } catch {
+    console.warn(`[workspace] Cannot resolve affected range ${base}...${head}; selecting every project.`);
+    return new Set(ordered.map((project) => project.id));
+  }
+  const projectPaths = graph.projects.filter((project) => project.path !== ".").sort((a, b) => b.path.length - a.path.length);
+  const directlyChanged = new Set();
+  let globalChange = false;
+  for (const file of changed) {
+    const owner = projectPaths.find((project) => file === project.path || file.startsWith(`${project.path}/`));
+    if (owner) directlyChanged.add(owner.id);
+    else globalChange = true;
+  }
+  if (globalChange) return new Set(ordered.map((project) => project.id));
+  const selected = new Set(directlyChanged);
+  let expanded = true;
+  while (expanded) {
+    expanded = false;
+    for (const project of graph.projects) {
+      if (!selected.has(project.id) && (project.dependsOn || []).some((dependency) => selected.has(dependency))) {
+        selected.add(project.id);
+        expanded = true;
+      }
+    }
+  }
+  for (const id of [...selected]) for (const dependency of dependencyClosure(graph, id)) selected.add(dependency);
+  console.log(`[workspace] affected range ${base}...${head}: ${changed.length} files -> ${selected.size} projects`);
+  return selected;
+}
+
+const selectedIds = projectId ? dependencyClosure(graph, projectId) : affected ? affectedClosure() : new Set(ordered.map((project) => project.id));
 const selected = ordered.filter((project) => selectedIds.has(project.id));
 
 function exec(project, npmArgs) {
@@ -100,7 +140,7 @@ try {
   node tooling/workspace/run.mjs plan [task] [--project=<id>]
   node tooling/workspace/run.mjs bootstrap [--project=<id>] [--dry-run]
   node tooling/workspace/run.mjs run <task> [--project=<id>] [--dry-run]
-  node tooling/workspace/run.mjs verify [--project=<id>] [--dry-run]`);
+  node tooling/workspace/run.mjs verify [--project=<id>|--affected] [--base=<ref>] [--head=<ref>] [--dry-run]`);
     if (command !== "help") process.exitCode = 1;
   }
 } catch (error) {

@@ -4,17 +4,17 @@ node_modules/
 # Build output
 dist/
 coverage/
-admin-v2/playwright-report/
-admin-v2/test-results/
+apps/admin/playwright-report/
+apps/admin/test-results/
 build/
 target/
 *.tsbuildinfo
-admin-v2/tailwind.config.js
-admin-v2/tailwind.config.d.ts
-admin-v2/vite.config.js
-admin-v2/vite.config.d.ts
-admin-v2/vitest.config.js
-admin-v2/vitest.config.d.ts
+apps/admin/tailwind.config.js
+apps/admin/tailwind.config.d.ts
+apps/admin/vite.config.js
+apps/admin/vite.config.d.ts
+apps/admin/vitest.config.js
+apps/admin/vitest.config.d.ts
 
 # Environment and local config
 .env
