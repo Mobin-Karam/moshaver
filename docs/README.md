@@ -7,13 +7,14 @@ Last repository inspection: 2026-09-13.
 ## Read first
 
 1. [Repository architecture](./architecture/repository-architecture.md) — monorepo model, project classes, ownership and architecture rules.
-2. [Phase-1 architecture inventory](./architecture/inventory/README.md) — current backend module classification, dependency map, and package consumers.
-3. [System map](./architecture/system-map.md) — applications, APIs, data stores, runtime relationships, and version boundaries.
-4. [Repository runbook](./operations/repository-runbook.md) — local commands, validation, deployment entry points, and known script caveats.
-5. Choose the relevant v2 runtime:
+2. [Workspace foundation](./architecture/workspace-foundation.md) — repository task graph, install authority, build order, and root commands.
+3. [Phase-1 architecture inventory](./architecture/inventory/README.md) — current backend module classification, dependency map, and package consumers.
+4. [System map](./architecture/system-map.md) — applications, APIs, data stores, runtime relationships, and version boundaries.
+5. [Repository runbook](./operations/repository-runbook.md) — local commands, validation, deployment entry points, and known script caveats.
+6. Choose the relevant v2 runtime:
    - [backend v2 design](./architecture/backend-v2-design.md)
    - [student v2/Tauri runtime](./architecture/student-v2-tauri-runtime.md)
-6. To change the project safely, read the [developer handbook](./operations/developer-handbook.md).
+7. To change the project safely, read the [developer handbook](./operations/developer-handbook.md).
 
 ## Directory contract
 
@@ -33,6 +34,7 @@ Current behavior belongs in `architecture/`, `components/`, or `operations/`. Un
 ## Architecture
 
 - [Repository architecture](./architecture/repository-architecture.md)
+- [Workspace foundation](./architecture/workspace-foundation.md)
 - [Phase-1 architecture inventory](./architecture/inventory/README.md)
 - [Backend v2 module inventory](./architecture/inventory/backend-v2-module-inventory.md)
 - [Backend v2 dependency map](./architecture/inventory/backend-v2-dependency-map.md)

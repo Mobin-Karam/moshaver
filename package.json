@@ -1,0 +1,24 @@
+{
+  "name": "moshaver-monorepo",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Repository orchestration manifest for the Moshaver v2 monorepo.",
+  "engines": {
+    "node": ">=22.13.0 <23"
+  },
+  "scripts": {
+    "workspace:list": "node tooling/workspace/run.mjs list",
+    "workspace:check": "node tooling/workspace/check.mjs",
+    "workspace:plan": "node tooling/workspace/run.mjs plan",
+    "bootstrap": "node tooling/workspace/run.mjs bootstrap",
+    "build": "node tooling/workspace/run.mjs run build",
+    "test": "node tooling/workspace/run.mjs run test",
+    "typecheck": "node tooling/workspace/run.mjs run typecheck",
+    "lint": "node tooling/workspace/run.mjs run lint",
+    "verify": "node tooling/workspace/run.mjs verify"
+  },
+  "moshaver": {
+    "workspaceGraph": "tooling/workspace/projects.json",
+    "installModel": "leaf-lockfiles"
+  }
+}

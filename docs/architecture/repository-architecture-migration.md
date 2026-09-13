@@ -44,15 +44,27 @@ No physical source moves are required in this phase.
 
 ## Phase 2 — workspace foundation
 
-Only after current validation is green:
+Status: **complete**.
 
-- decide whether native workspaces alone are sufficient or whether Nx/Turborepo is justified;
-- add a root private workspace manifest and shared task entrypoints;
-- introduce TypeScript project references where beneficial;
-- make build order explicit;
-- keep old directory names temporarily if that reduces migration risk.
+Decision: use a zero-dependency repository orchestration layer and explicit project DAG while keeping existing leaf `package-lock.json` files authoritative. Do not enable npm root workspaces, Nx, or Turborepo in this phase.
 
-This phase changes tooling but should not change product behavior.
+Completed:
+
+- [x] add a root private orchestration `package.json` with repository-wide task entrypoints;
+- [x] define `tooling/workspace/projects.json` as the machine-readable cross-project DAG;
+- [x] validate local package edges against package manifests;
+- [x] make topological bootstrap/build/verification order explicit;
+- [x] preserve project-local `npm ci` and leaf lockfile authority;
+- [x] build `student-core` before downstream Student App bootstrap/validation;
+- [x] add targeted project execution including transitive local dependencies;
+- [x] document why a root TypeScript project-reference graph is not yet beneficial;
+- [x] add a CI gate for graph consistency, cycles, scripts, manifests, and lockfiles;
+- [x] document tooling-adoption triggers and rollback;
+- [x] keep all current application directories and product behavior unchanged.
+
+See `docs/architecture/workspace-foundation.md` and `tooling/workspace/README.md`.
+
+A unified root lockfile/npm-workspaces migration, if later justified, must be a separate PR with reproducible-install proof and CI migration.
 
 ## Phase 3 — extract low-risk reusable packages
 

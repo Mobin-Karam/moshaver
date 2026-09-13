@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "installModel": "leaf-lockfiles",
+  "projects": [
+    {
+      "id": "api-contract",
+      "packageName": "@moshaver/api-contract",
+      "path": "packages/api-contract",
+      "kind": "contract",
+      "dependsOn": [],
+      "install": false,
+      "bootstrapBuild": false,
+      "verifyTasks": []
+    },
+    {
+      "id": "backend-v2",
+      "packageName": "moshaver-backend-v2",
+      "path": "backend-v2",
+      "kind": "application",
+      "dependsOn": [],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["lint", "test", "build"]
+    },
+    {
+      "id": "admin-v2",
+      "packageName": "moshaver-admin-v2",
+      "path": "admin-v2",
+      "kind": "application",
+      "dependsOn": ["api-contract"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["typecheck", "format:check", "lint", "test", "test:a11y", "build"]
+    },
+    {
+      "id": "student-core",
+      "packageName": "@moshaver/student-core",
+      "path": "student-core",
+      "kind": "product-package",
+      "dependsOn": ["api-contract"],
+      "install": true,
+      "bootstrapBuild": true,
+      "verifyTasks": ["build", "test"]
+    },
+    {
+      "id": "student-app-v2",
+      "packageName": "moshaver-student-app-v2",
+      "path": "student-app-v2",
+      "kind": "application",
+      "dependsOn": ["student-core"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["typecheck", "test", "test:a11y", "build"]
+    }
+  ]
+}
