@@ -2,6 +2,18 @@
 
 Moshaver is a role-aware education platform with separate Admin and Student applications backed by a NestJS `/api/v2` service. The `main` and `develop` branches contain the active v2 product line only.
 
+## Architecture
+
+Moshaver uses a **grouped product-monorepo** model with a **modular-monolith backend**. Current source paths remain unchanged while architecture boundaries are adopted incrementally.
+
+- Repository architecture entrypoint: [ARCHITECTURE.md](ARCHITECTURE.md)
+- Detailed architecture: [docs/architecture/repository-architecture.md](docs/architecture/repository-architecture.md)
+- Target long-term layout: [docs/architecture/target-monorepo-layout.md](docs/architecture/target-monorepo-layout.md)
+- Dependency rules: [docs/architecture/dependency-boundaries.md](docs/architecture/dependency-boundaries.md)
+- Migration plan: [docs/architecture/repository-architecture-migration.md](docs/architecture/repository-architecture-migration.md)
+
+The backend's reusable architecture direction is **CMB — Composable Modular Backend Architecture**. The current backend remains the API composition root; reusable CMB capabilities are extracted incrementally rather than through a rewrite.
+
 ## Applications
 
 | Package | Purpose | Local port |
