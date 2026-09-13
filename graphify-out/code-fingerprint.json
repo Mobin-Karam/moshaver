@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "scope": "tracked code/config excluding docs and generated/build output",
   "fileCount": 823,
-  "digest": "d2a4e26d6986d62e26685f5ed311b3a924847320514572f1a604a68a2bf887dd",
+  "digest": "e3abd7e1d9d19a4998c45540e9b275616c6e2fa68b5d51d5d89306f577f0781d",
   "files": [
     {
       "path": ".gitbr/project.json",
@@ -2903,7 +2903,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "aa98586bd3cf123f2f99293f186621660a86a3365d65b1e827f7c3978c97a5f6"
+      "sha256": "e22c6f37455ceb9324d44f5ff0c4f897f53983da2c3d1680dc5fcc4f28f7a656"
     },
     {
       "path": "packages/api-contract/package.json",
@@ -3271,7 +3271,7 @@
     },
     {
       "path": "tooling/architecture/baseline.json",
-      "sha256": "442e2e7d1ae794ec654bf256995965df821f11961fb5fc29a5fd52f59a01e749"
+      "sha256": "99d60ab448e35f6e4e7bd65c8b3b5e54f48bfb3979df732dcaa10cc207bf3e86"
     },
     {
       "path": "tooling/architecture/check-boundaries.mjs",
