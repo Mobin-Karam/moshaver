@@ -47,6 +47,20 @@ infrastructure adapters
 
 Dependencies may point downward only. Product concepts must never leak into the reusable kernel.
 
+## Current Phase-1 classification
+
+The source-backed module inventory is maintained under `docs/architecture/inventory/`.
+
+Current extraction sequence:
+
+- **W1:** health, realtime
+- **W2:** users, organizations, system
+- **W3 after decoupling:** auth, authorization, notifications
+- **W4 split mechanisms only:** activity, import-export
+- **Product-owned:** education domains and cross-domain orchestration such as students, plans, exams, tasks, reports, sync, dashboard, guardian, and onboarding
+
+This classification is evidence-based and must be revalidated when the source or Graphify graph changes.
+
 ## Frontend boundaries
 
 - Admin and Student are separate application surfaces.
@@ -58,6 +72,10 @@ Dependencies may point downward only. Product concepts must never leak into the 
 ## Architecture documents
 
 - `docs/architecture/repository-architecture.md`
+- `docs/architecture/inventory/README.md`
+- `docs/architecture/inventory/backend-v2-module-inventory.md`
+- `docs/architecture/inventory/backend-v2-dependency-map.md`
+- `docs/architecture/inventory/project-consumers.md`
 - `docs/architecture/target-monorepo-layout.md`
 - `docs/architecture/dependency-boundaries.md`
 - `docs/architecture/repository-architecture-migration.md`

@@ -2,28 +2,45 @@
 
 The target architecture is intentionally adopted **without moving source code now**.
 
-## Phase 0 — architecture contract (this change)
+## Phase 0 — architecture contract
 
-- document project classes and dependency direction;
-- define the future grouped layout;
-- define CMB/product/application boundaries;
-- update repository/agent guidance;
-- keep every current application path unchanged.
+Status: **complete**.
 
-No runtime behavior changes.
+- [x] document project classes and dependency direction;
+- [x] define the future grouped layout;
+- [x] define CMB/product/application boundaries;
+- [x] update repository/agent guidance;
+- [x] keep every current application path unchanged.
+
+No runtime behavior changed.
 
 ## Phase 1 — make the current layout graphable
 
-Before moving directories:
+Status: **in progress**.
 
-- generate/refresh Graphify for current v2;
-- inventory project-to-project imports;
-- document current package consumers;
-- identify cycles/deep imports;
-- classify every backend module as kernel, platform, adapter, or Moshaver product domain;
-- establish CI checks for affected projects.
+Completed source-backed inventory work:
 
-Still no physical moves required.
+- [x] inventory all `backend-v2/src/modules` directories;
+- [x] distinguish active `AppModule` registrations from dormant module placeholders;
+- [x] inventory explicit Nest module-to-module imports for high-value boundaries;
+- [x] document hidden coupling cases where Nest metadata understates database/domain coupling;
+- [x] classify every backend module as CMB foundation/platform/split candidate or Moshaver product/orchestration;
+- [x] define extraction-readiness rules and W1–W4 candidate waves;
+- [x] document current package consumers (`admin-v2`, `student-app-v2`, `student-core`, `api-contract`, `backend-v2`);
+- [x] record that backend-v2 does not currently consume `@moshaver/api-contract` at package level;
+- [x] establish component CI surfaces for backend, Admin, student-core, student app, and repository safety.
+
+Still required before Phase 1 is complete:
+
+- [ ] generate/refresh a current-v2 `graphify-out/graph.json`;
+- [ ] validate the source inventory against Graphify file-level caller/callee paths;
+- [ ] identify circular/deep imports that are not represented by Nest module metadata;
+- [ ] define an automated forbidden-edge architecture check once stable package boundaries exist;
+- [ ] resolve API-contract authority/versioning under CMB issue #27.
+
+Phase-1 evidence lives in `docs/architecture/inventory/`.
+
+No physical source moves are required in this phase.
 
 ## Phase 2 — workspace foundation
 
@@ -39,12 +56,17 @@ This phase changes tooling but should not change product behavior.
 
 ## Phase 3 — extract low-risk reusable packages
 
-Start with stable boundaries rather than large domains:
+Start with stable boundaries rather than large domains.
 
-1. API/event contracts;
-2. CMB kernel primitives;
-3. shared test helpers/config where duplication is proven;
-4. small platform capabilities with clear ownership.
+Recommended order from the Phase-1 inventory:
+
+1. API/event contract authority decision;
+2. CMB foundation primitives;
+3. W1: health and realtime packaging proof;
+4. W2: users, organizations, and system primitives;
+5. W3: auth, authorization, and notifications after product-policy decoupling;
+6. W4: split generic activity/import-export mechanisms from Moshaver handlers;
+7. shared test helpers/config only where duplication is proven.
 
 Each extraction should be one focused PR with compatibility tests.
 
@@ -53,6 +75,8 @@ Each extraction should be one focused PR with compatibility tests.
 Incrementally move reusable/platform capability implementations out of `backend-v2` while leaving the API application as the composition root.
 
 Do not move all backend modules at once.
+
+Product orchestration modules such as `sync`, `dashboard`, `guardian`, and `onboarding` should remain product-owned and gradually consume stable public module APIs instead of reaching into private persistence.
 
 ## Phase 5 — optional physical `apps/` normalization
 
