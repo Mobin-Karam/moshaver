@@ -7,18 +7,19 @@ Last repository inspection: 2026-09-13.
 ## Read first
 
 1. [Repository architecture](./architecture/repository-architecture.md) — monorepo model, project classes, ownership and architecture rules.
-2. [System map](./architecture/system-map.md) — applications, APIs, data stores, runtime relationships, and version boundaries.
-3. [Repository runbook](./operations/repository-runbook.md) — local commands, validation, deployment entry points, and known script caveats.
-4. Choose the relevant v2 runtime:
+2. [Phase-1 architecture inventory](./architecture/inventory/README.md) — current backend module classification, dependency map, and package consumers.
+3. [System map](./architecture/system-map.md) — applications, APIs, data stores, runtime relationships, and version boundaries.
+4. [Repository runbook](./operations/repository-runbook.md) — local commands, validation, deployment entry points, and known script caveats.
+5. Choose the relevant v2 runtime:
    - [backend v2 design](./architecture/backend-v2-design.md)
    - [student v2/Tauri runtime](./architecture/student-v2-tauri-runtime.md)
-5. To change the project safely, read the [developer handbook](./operations/developer-handbook.md).
+6. To change the project safely, read the [developer handbook](./operations/developer-handbook.md).
 
 ## Directory contract
 
 ```text
 docs/
-├── architecture/  Current system shape, target repository model, ADRs and stable boundaries
+├── architecture/  Current system shape, target repository model, inventories, ADRs and stable boundaries
 ├── components/    One document per runnable app or public API
 ├── operations/    Run, validate, secure, recover, and deploy the system
 ├── migrations/    Compatibility gaps and staged v1-to-v2 work
@@ -32,6 +33,10 @@ Current behavior belongs in `architecture/`, `components/`, or `operations/`. Un
 ## Architecture
 
 - [Repository architecture](./architecture/repository-architecture.md)
+- [Phase-1 architecture inventory](./architecture/inventory/README.md)
+- [Backend v2 module inventory](./architecture/inventory/backend-v2-module-inventory.md)
+- [Backend v2 dependency map](./architecture/inventory/backend-v2-dependency-map.md)
+- [Current project/package consumers](./architecture/inventory/project-consumers.md)
 - [Target monorepo layout](./architecture/target-monorepo-layout.md)
 - [Dependency boundaries](./architecture/dependency-boundaries.md)
 - [Repository architecture migration](./architecture/repository-architecture-migration.md)
@@ -91,7 +96,7 @@ Current behavior belongs in `architecture/`, `components/`, or `operations/`. Un
 - [Initial v2 analysis](./history/audits/v2-initial-analysis.md)
 - [Backend v2 test snapshot](./history/audits/backend-v2-test-report.md)
 - [Admin v2 test snapshot](./history/audits/admin-v2-test-report.md)
-- [Auth/sync fix v1.3.3](./history/fixes/auth-sync-v1-3-3.md)
+- [Auth/sync fix v1.3.3](./history/fixes/auth-sync-v1-3.3.md)
 - [Backend v1 changelog](./history/backend-v1-changelog.md)
 
 ## Maintenance rules
