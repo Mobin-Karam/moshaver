@@ -1,0 +1,15 @@
+# Default repository owner
+* @Mobin-Karam
+
+# Architecture / automation
+/.github/ @Mobin-Karam
+/AGENTS.md @Mobin-Karam
+/.agents/ @Mobin-Karam
+/docs/architecture/ @Mobin-Karam
+
+# Product surfaces
+/backend-v2/ @Mobin-Karam
+/admin-v2/ @Mobin-Karam
+/student-app-v2/ @Mobin-Karam
+/student-core/ @Mobin-Karam
+/packages/ @Mobin-Karam
