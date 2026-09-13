@@ -48,6 +48,40 @@ Infrastructure adapters implement lower-level ports and are wired by application
 
 Never make a lower/reusable layer depend on a higher/product-specific layer. Cross-project imports must use public entrypoints. See `docs/architecture/dependency-boundaries.md`.
 
+## Workspace foundation
+
+Phase 2 uses `tooling/workspace/projects.json` as the authoritative cross-project package DAG.
+
+The root `package.json` is an orchestration manifest only. It intentionally has no `workspaces` field or dependency list. Existing leaf `package-lock.json` files remain install authority until a separate root-lock migration is explicitly approved.
+
+Before repository-wide validation or package extraction:
+
+```bash
+npm run workspace:check
+npm run workspace:list
+npm run workspace:plan -- build
+```
+
+To bootstrap every installable project in dependency order:
+
+```bash
+npm run bootstrap
+```
+
+To run release-quality component scripts in dependency order:
+
+```bash
+npm run verify
+```
+
+For one project and its local dependencies:
+
+```bash
+node tooling/workspace/run.mjs verify --project=student-app-v2
+```
+
+Do not run a root `npm install` expecting unified workspace dependencies. Do not add the npm `workspaces` field, Nx, Turborepo, or a root dependency lock as an incidental change. See `docs/architecture/workspace-foundation.md`.
+
 ## Backend architecture direction
 
 The reusable backend initiative is **CMB — Composable Modular Backend Architecture** (tracking epic #21).
@@ -89,7 +123,15 @@ When changing backend architecture:
 
 ## Validation
 
-Use component-defined commands first.
+Use the root workspace graph for repository-level ordering, but keep component-defined scripts authoritative.
+
+### Repository
+
+```bash
+npm run workspace:check
+npm run workspace:list
+npm run verify
+```
 
 ### Backend
 

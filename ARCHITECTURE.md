@@ -27,6 +27,25 @@ Moshaver follows a grouped product-monorepo model:
 
 The long-term directory shape is documented in `docs/architecture/target-monorepo-layout.md`. It is a migration target, not a requirement to move working code immediately.
 
+## Workspace foundation
+
+Phase 2 defines the current cross-project dependency graph in `tooling/workspace/projects.json` and repository-level commands in the root `package.json`.
+
+The install model is intentionally `leaf-lockfiles`: existing component `package-lock.json` files remain authoritative, and the root manifest is orchestration-only. No npm `workspaces` field or unified root lockfile is introduced in this phase.
+
+Current package-level graph:
+
+```text
+api-contract
+├── admin-v2
+└── student-core
+    └── student-app-v2
+
+backend-v2  (independent at package-manifest level)
+```
+
+See `docs/architecture/workspace-foundation.md` for commands, validation, TypeScript-reference decisions, adoption triggers, and rollback.
+
 ## Backend style
 
 The backend is a **modular monolith first**, built around CMB — Composable Modular Backend Architecture. It should remain one deployable API until there is a concrete operational reason to extract a service.
@@ -72,6 +91,7 @@ This classification is evidence-based and must be revalidated when the source or
 ## Architecture documents
 
 - `docs/architecture/repository-architecture.md`
+- `docs/architecture/workspace-foundation.md`
 - `docs/architecture/inventory/README.md`
 - `docs/architecture/inventory/backend-v2-module-inventory.md`
 - `docs/architecture/inventory/backend-v2-dependency-map.md`
