@@ -12,6 +12,7 @@ import type { AccountContext, OrganizationSummary, User } from "../../../shared/
 import { getCurrentUser, getAccountContext, loginRequest, logoutRequest } from "../api/auth.api";
 import {
   AUTH_SIGNAL_KEY,
+  adminPortalRole,
   normalizeUser,
   PENDING_LOGOUT_KEY,
   signalAuthEvent,
@@ -59,17 +60,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       const raw = await getCurrentUser();
-      const context = await getAccountContext().catch(() => null);
-      const me = normalizeUser(
-        context ? { ...context.user, role: context.roles[0] ?? raw.role } : raw,
-      );
+      const context = await getAccountContext();
+      const me = normalizeUser({ ...context.user, role: context.roles[0] ?? raw.role });
 
       if (current !== operation.current) return;
 
-      const nonStudent = context
-        ? context.roles.some((role) => role !== "STUDENT")
-        : me.role === "admin";
-      if (!nonStudent) {
+      const role = adminPortalRole(context.roles);
+      if (!role) {
         try {
           await logoutRequest();
         } catch {
@@ -84,9 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       restoreAttempts.current = 0;
       setUser(me);
       setAccountContext(context);
-      const role = context?.roles.find((item) => item !== "STUDENT") ?? null;
       setActiveRoleState(role);
-      setApiWorkContext(role ?? undefined, context?.activeOrganization?.id);
+      setApiWorkContext(role, context.activeOrganization?.id);
       setStatus("authenticated");
       setMessage("");
     } catch (error) {
@@ -209,14 +205,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (current !== operation.current) return;
 
         const normalizedUser = normalizeUser(data.user);
-        const context = await getAccountContext().catch(() => null);
-        const contextUser = context
-          ? normalizeUser({ ...context.user, role: context.roles[0] ?? normalizedUser.role })
-          : normalizedUser;
-        const nonStudent = context
-          ? context.roles.some((role) => role !== "STUDENT")
-          : normalizedUser.role === "admin";
-        if (!nonStudent) {
+        let context: AccountContext;
+        try {
+          context = await getAccountContext();
+        } catch (error) {
+          await logoutRequest().catch(() => sessionStorage.setItem(PENDING_LOGOUT_KEY, "1"));
+          finishLocalLogout("تأیید دسترسی مدیریتی انجام نشد.");
+          throw error;
+        }
+        const contextUser = normalizeUser({
+          ...context.user,
+          role: context.roles[0] ?? normalizedUser.role,
+        });
+        const role = adminPortalRole(context.roles);
+        if (!role) {
           try {
             await logoutRequest();
           } catch {
@@ -231,9 +233,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         api.setCsrf(data.csrfToken);
         setUser(contextUser);
         setAccountContext(context);
-        const role = context?.roles.find((item) => item !== "STUDENT") ?? null;
         setActiveRoleState(role);
-        setApiWorkContext(role ?? undefined, context?.activeOrganization?.id);
+        setApiWorkContext(role, context.activeOrganization?.id);
         setStatus("authenticated");
         restoreAttempts.current = 0;
         lastCheck.current = Date.now();
@@ -275,7 +276,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         accountContext?.capabilities ??
         [],
       setActiveRole(role) {
-        if (!accountContext?.roles.includes(role)) return;
+        if (!accountContext?.roles.includes(role) || adminPortalRole([role]) !== role) return;
         setActiveRoleState(role);
         setApiWorkContext(role, accountContext.activeOrganization?.id);
       },

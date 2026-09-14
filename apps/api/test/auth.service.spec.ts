@@ -66,6 +66,43 @@ describe("AuthService", () => {
     }));
   });
 
+  it("rejects refresh for a student account deactivated after login", async () => {
+    const user = { id: "u1", username: "student", role: UserRole.STUDENT } as User;
+    const session = { id: "session-1", user, refreshTokenHash: "hash", csrfToken: "csrf", expiresAt: new Date(Date.now() + 60_000), refreshExpiresAt: new Date(Date.now() + 60_000) } as Session;
+    const sessions = repo<Session>();
+    sessions.findOne.mockResolvedValueOnce(session);
+    const module = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        { provide: getRepositoryToken(User), useValue: repo([user]) },
+        { provide: getRepositoryToken(Session), useValue: sessions },
+        { provide: getRepositoryToken(Student), useValue: { ...repo(), findOne: jest.fn(async () => ({ accountStatus: "archived", user: { id: "u1" } })) } },
+        { provide: ConfigService, useValue: { get: (_key: string, fallback: unknown) => fallback } },
+      ],
+    }).compile();
+
+    await expect(module.get(AuthService).refresh("refresh", "csrf")).rejects.toMatchObject({ response: { error: { code: "ACCOUNT_INACTIVE" } } });
+    expect(sessions.delete).toHaveBeenCalledWith({ id: "session-1" });
+  });
+
+  it("rejects an access token for a student account deactivated after login", async () => {
+    const user = { id: "u1", username: "student", role: UserRole.STUDENT } as User;
+    const sessions = repo<Session>();
+    sessions.findOne.mockResolvedValueOnce({ id: "session-1", user, expiresAt: new Date(Date.now() + 60_000) } as Session);
+    const module = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        { provide: getRepositoryToken(User), useValue: repo([user]) },
+        { provide: getRepositoryToken(Session), useValue: sessions },
+        { provide: getRepositoryToken(Student), useValue: { ...repo(), findOne: jest.fn(async () => ({ accountStatus: "inactive", user: { id: "u1" } })) } },
+        { provide: ConfigService, useValue: { get: (_key: string, fallback: unknown) => fallback } },
+      ],
+    }).compile();
+
+    await expect(module.get(AuthService).userFromToken("access")).resolves.toBeNull();
+    expect(sessions.delete).toHaveBeenCalledWith({ id: "session-1" });
+  });
+
   it("changes the password and revokes other sessions", async () => {
     const user = { id: "u1", username: "student", role: UserRole.STUDENT, passwordHash: await bcrypt.hash("current-password", 4) } as User;
     const users = repo([user]);

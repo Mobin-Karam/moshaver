@@ -12,7 +12,7 @@ afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 describe('More navigation hub', () => {
   it('puts adviser chat first and exposes dedicated section routes', () => {
     useStudentStore.setState({
-      access: portalAccess([
+      access: portalAccess(['STUDENT'], [
         'student.profile.read',
         'tasks.update',
         'learning.create',
@@ -39,7 +39,7 @@ describe('More navigation hub', () => {
   });
 
   it('lets a student explicitly enable guardian read-only chat access', async () => {
-    useStudentStore.setState({ access: portalAccess(['student.profile.read', 'tasks.update', 'learning.create', 'chat.read']) } as never);
+    useStudentStore.setState({ access: portalAccess(['STUDENT'], ['student.profile.read', 'tasks.update', 'learning.create', 'chat.read']) } as never);
     const request = vi.spyOn(apiClient, 'request').mockImplementation(async (method, path) => {
       if (method === 'GET' && path === '/student/chat-privacy') return { guardianReadOnly: false } as never;
       if (method === 'PATCH' && path === '/student/chat-privacy') return { guardianReadOnly: true } as never;
@@ -70,7 +70,7 @@ describe('More navigation hub', () => {
   });
 
   it('searches for a guardian and submits a pending selection', async () => {
-    useStudentStore.setState({ access: portalAccess(['student.profile.read', 'tasks.update', 'learning.create']) } as never);
+    useStudentStore.setState({ access: portalAccess(['STUDENT'], ['student.profile.read', 'tasks.update', 'learning.create']) } as never);
     const request = vi.spyOn(apiClient, 'request').mockImplementation(async (method, path) => {
       if (method === 'GET' && path === '/student/guardian-selection') return { relationships: [], change: { allowed: true, nextAllowedAt: null } } as never;
       if (method === 'GET' && path.startsWith('/student/guardian-candidates')) return [{ id: 'g1', username: 'parent.sara', name: 'مریم کریمی', organization: { id: 'o1', name: 'مدرسه امید' } }] as never;

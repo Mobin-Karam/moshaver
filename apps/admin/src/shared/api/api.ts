@@ -112,6 +112,13 @@ function isMutating(method: string) {
   return ["POST", "PUT", "PATCH", "DELETE"].includes(method.toUpperCase());
 }
 
+function workContextHeaders() {
+  return {
+    ...(activeWorkRole ? { "X-Work-Role": activeWorkRole } : {}),
+    ...(activeOrganizationId ? { "X-Organization-Id": activeOrganizationId } : {}),
+  };
+}
+
 async function refreshCsrf() {
   const me = await request<{ csrfToken?: string }>("GET", "/auth/me", undefined, {
     noCsrfRetry: true,
@@ -224,6 +231,42 @@ async function refreshSession() {
   return refreshPromise;
 }
 
+async function authenticatedBinaryFetch(
+  path: string,
+  body?: Blob,
+  options: { refreshed?: boolean; csrfRetried?: boolean } = {},
+) {
+  const response = await fetch(`${getBackendTargetUrl()}${path}`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      ...workContextHeaders(),
+      ...(body ? { "Content-Type": "application/vnd.sqlite3" } : {}),
+      ...(csrf() ? { "X-CSRF-Token": csrf() } : {}),
+    },
+    body,
+  });
+  if (response.status === 401 && !options.refreshed && (await refreshSession())) {
+    return authenticatedBinaryFetch(path, body, { ...options, refreshed: true });
+  }
+  if (response.status === 403 && !options.csrfRetried) {
+    const payload = (await response
+      .clone()
+      .json()
+      .catch(() => null)) as ApiEnvelope<unknown> | null;
+    if (payload && "error" in payload && payload.error?.code === "CSRF") {
+      await refreshCsrf();
+      return authenticatedBinaryFetch(path, body, { ...options, csrfRetried: true });
+    }
+  }
+  if (response.status === 401) {
+    setCsrf();
+    const error = new ApiError(401, "نشست پایان یافته است. دوباره وارد شوید.", "UNAUTHORIZED");
+    authFailureListeners.forEach((listener) => listener(error));
+  }
+  return response;
+}
+
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
@@ -231,11 +274,7 @@ export const api = {
   patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
   delete: <T>(path: string) => request<T>("DELETE", path),
   async download(path: string) {
-    const response = await fetch(`${getBackendTargetUrl()}${path}`, {
-      method: "POST",
-      credentials: "include",
-      headers: csrf() ? { "X-CSRF-Token": csrf() } : undefined,
-    });
+    const response = await authenticatedBinaryFetch(path);
     if (!response.ok) throw new ApiError(response.status, "دریافت فایل پشتیبان انجام نشد.");
     return {
       blob: await response.blob(),
@@ -245,15 +284,7 @@ export const api = {
     };
   },
   async uploadBinary<T>(path: string, body: Blob) {
-    const response = await fetch(`${getBackendTargetUrl()}${path}`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/vnd.sqlite3",
-        ...(csrf() ? { "X-CSRF-Token": csrf() } : {}),
-      },
-      body,
-    });
+    const response = await authenticatedBinaryFetch(path, body);
     const payload = (await response.json().catch(() => null)) as ApiEnvelope<T> | null;
     if (response.ok && payload?.ok) return payload.data;
     const error = payload && "error" in payload ? payload.error : undefined;

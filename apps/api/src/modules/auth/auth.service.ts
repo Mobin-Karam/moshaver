@@ -6,7 +6,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { IsNull, LessThan, Not, Repository } from "typeorm";
 import { ApiException } from "../../common/exceptions/api.exception";
 import { Session } from "../../database/entities/session.entity";
-import { User } from "../../database/entities/user.entity";
+import { User, UserRole } from "../../database/entities/user.entity";
 import { Student } from "../../database/entities/student.entity";
 import { UserStatus } from "../../database/entities/user.entity";
 import { AuthorizationService } from "../authorization";
@@ -86,6 +86,10 @@ export class AuthService {
       await this.sessions.delete({ id: session.id });
       throw new ApiException(403, "ACCOUNT_INACTIVE", "حساب کاربری غیرفعال یا بایگانی شده است.");
     }
+    if (!(await this.hasActiveStudentAccount(session.user))) {
+      await this.sessions.delete({ id: session.id });
+      throw new ApiException(403, "ACCOUNT_INACTIVE", "حساب دانش‌آموز غیرفعال یا بایگانی شده است.");
+    }
     const credentials = this.newCredentials();
     session.tokenHash = this.credentials.hash(credentials.accessToken);
     session.refreshTokenHash = this.credentials.hash(credentials.refreshToken);
@@ -101,6 +105,10 @@ export class AuthService {
     const session = await this.sessions.findOne({ where: { tokenHash: this.credentials.hash(token) }, relations: { user: true } });
     if (!session || session.expiresAt.getTime() <= Date.now()) return null;
     if (session.user.status && session.user.status !== UserStatus.ACTIVE) return null;
+    if (!(await this.hasActiveStudentAccount(session.user))) {
+      await this.sessions.delete({ id: session.id });
+      return null;
+    }
     const base = { id: session.user.id, username: session.user.username, role: session.user.role, sessionId: session.id };
     return this.authorization ? this.authorization.enrich(base, requestedRole, requestedOrganizationId) : { ...base, roles: [session.user.role], capabilities: [], membershipIds: [], organizationIds: [] };
   }
@@ -175,5 +183,11 @@ export class AuthService {
 
   private newCredentials() {
     return this.credentials.issue();
+  }
+
+  private async hasActiveStudentAccount(user: User) {
+    if (user.role !== UserRole.STUDENT) return true;
+    const student = await this.students.findOne({ where: { user: { id: user.id } } });
+    return student?.accountStatus === "active";
   }
 }

@@ -57,14 +57,20 @@ export class AuthorizationService {
         relations: { organization: true },
       }),
     ]);
+    const activeMembershipIds = new Set(memberships.map((membership) => membership.id));
+    const activeAssignments = assignments.filter(
+      (assignment) =>
+        !assignment.role.organizationScoped ||
+        Boolean(assignment.membership?.id && activeMembershipIds.has(assignment.membership.id)),
+    );
     // A legacy discriminator is never authority. Accounts without an explicit
     // role assignment keep no effective role/capability until provisioned.
     const fallback = base.role === "ADMIN" ? null : base.role;
     const allRoles = [
       ...new Set(
-        assignments
+        activeAssignments
           .map((item) => item.role.code)
-          .concat(assignments.length || !fallback ? [] : [fallback]),
+          .concat(activeAssignments.length || !fallback ? [] : [fallback]),
       ),
     ];
     if (requestedRole && !allRoles.includes(requestedRole))
@@ -73,7 +79,7 @@ export class AuthorizationService {
       throw new ApiException(403, "ORGANIZATION_FORBIDDEN", "به این سازمان دسترسی ندارید.");
     return buildAuthorizationContext(
       base,
-      assignments.map((item) => ({ role: item.role.code, organizationScoped: item.role.organizationScoped, organizationId: item.membership?.organization?.id, capabilities: item.role.permissions.map((rp) => rp.permission.code) })),
+      activeAssignments.map((item) => ({ role: item.role.code, organizationScoped: item.role.organizationScoped, organizationId: item.membership?.organization?.id, capabilities: item.role.permissions.map((rp) => rp.permission.code) })),
       memberships.map((item) => ({ id: item.id, organizationId: item.organization.id })),
       { requestedRole, requestedOrganizationId },
     );

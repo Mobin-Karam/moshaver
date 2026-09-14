@@ -236,6 +236,42 @@ const FOCUS_SESSION_KEY = 'moshaver_v2_active_focus';
 const NIGHT_REPORT_DRAFT_KEY = 'moshaver_v2_night_report_draft';
 const RECOVERY_REQUEST_DRAFT_KEY = 'moshaver_v2_recovery_request_draft';
 
+function clearAccountStorage() {
+  saveFocusSession(null);
+  localStorage.removeItem('moshaver:v2:guardian-child');
+  localStorage.removeItem(NIGHT_REPORT_DRAFT_KEY);
+  localStorage.removeItem(RECOVERY_REQUEST_DRAFT_KEY);
+  resetRelaxationPlayer();
+}
+
+function clearedAccountState(error: string | null = null) {
+  return {
+    authStatus: 'anonymous' as const,
+    loadStatus: 'idle' as const,
+    user: null,
+    access: null,
+    capabilities: [],
+    guardianStudents: [],
+    selectedGuardianStudentId: null,
+    student: null,
+    plan: emptyPlan(),
+    exams: [],
+    notifications: [],
+    subjects: [],
+    relationships: [],
+    mistakes: [],
+    progress: null,
+    reviews: [],
+    learningLoadStatus: 'idle' as const,
+    learningError: null,
+    authSessions: [],
+    nightReportDraft: null,
+    recoveryRequestDraft: null,
+    activeSession: null,
+    error,
+  };
+}
+
 function readFocusSession(): FocusSession | null {
   try {
     const value = localStorage.getItem(FOCUS_SESSION_KEY);
@@ -298,11 +334,12 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       const user = await apiClient.request<BackendUser>('GET', '/auth/me');
       apiClient.setCsrfToken(user.csrfToken);
       const context = await apiClient.request<BackendAccountContext>('GET', '/me/context');
-      const access = portalAccess(context.capabilities);
+      const access = portalAccess(context.roles, context.capabilities);
       if (!access) {
         await apiClient.request('POST', '/auth/logout').catch(() => undefined);
         apiClient.setCsrfToken(null);
-        set({ authStatus: 'anonymous', user: null, student: null, plan: emptyPlan(), error: 'این حساب به پرتال دانش‌آموز و خانواده دسترسی ندارد.' });
+        clearAccountStorage();
+        set(clearedAccountState('این حساب به پرتال دانش‌آموز و خانواده دسترسی ندارد.'));
         return;
       }
       set({ authStatus: 'authenticated', user: { ...user, roles: context.roles }, access, capabilities: context.capabilities });
@@ -312,26 +349,30 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       await get().loadNotifications();
       await get().loadLearning();
       if (access.mode === 'student') await get().restoreActiveSession();
-    } catch {
+    } catch (error) {
       apiClient.setCsrfToken(null);
-      set({ authStatus: 'anonymous', user: null, student: null, plan: emptyPlan() });
+      clearAccountStorage();
+      set(clearedAccountState(error instanceof Error && error.name === 'NETWORK' ? readableError(error) : null));
     }
   },
   async login(username, password) {
     set({ loadStatus: 'loading', error: null });
+    let sessionCreated = false;
     try {
       const session = await apiClient.request<{ user: BackendUser; csrfToken: string; expiresAt: string }, { username: string; password: string }>(
         'POST',
         '/auth/login',
-        { username, password },
+        { username: username.trim(), password },
       );
+      sessionCreated = true;
       apiClient.setCsrfToken(session.csrfToken);
       const context = await apiClient.request<BackendAccountContext>('GET', '/me/context');
-      const access = portalAccess(context.capabilities);
+      const access = portalAccess(context.roles, context.capabilities);
       if (!access) {
         await apiClient.request('POST', '/auth/logout').catch(() => undefined);
         apiClient.setCsrfToken(null);
-        set({ authStatus: 'anonymous', loadStatus: 'error', user: null, error: 'این حساب به پرتال دانش‌آموز و خانواده دسترسی ندارد.' });
+        clearAccountStorage();
+        set({ ...clearedAccountState('این حساب به پرتال دانش‌آموز و خانواده دسترسی ندارد.'), loadStatus: 'error' });
         return;
       }
       set({ authStatus: 'authenticated', user: { ...session.user, roles: context.roles }, access, capabilities: context.capabilities, loadStatus: 'idle' });
@@ -342,16 +383,22 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       await get().loadLearning();
       if (access.mode === 'student') await get().restoreActiveSession();
     } catch (error) {
-      set({ loadStatus: 'error', error: readableError(error) });
+      if (sessionCreated) {
+        await apiClient.request('POST', '/auth/logout').catch(() => undefined);
+        apiClient.setCsrfToken(null);
+        clearAccountStorage();
+        set({ ...clearedAccountState(readableError(error)), loadStatus: 'error' });
+        return;
+      }
+      set({ authStatus: 'anonymous', loadStatus: 'error', error: readableError(error) });
     }
   },
   async logout() {
     set({ loadStatus: 'loading', error: null });
     await apiClient.request('POST', '/auth/logout').catch(() => undefined);
     apiClient.setCsrfToken(null);
-    saveFocusSession(null);
-    resetRelaxationPlayer();
-    set({ authStatus: 'anonymous', loadStatus: 'idle', user: null, access: null, capabilities: [], guardianStudents: [], selectedGuardianStudentId: null, student: null, plan: emptyPlan(), exams: [], notifications: [], subjects: [], relationships: [], mistakes: [], authSessions: [], error: null });
+    clearAccountStorage();
+    set(clearedAccountState());
   },
   async selectGuardianStudent(id) {
     if (!get().guardianStudents.some((student) => student.id === id)) return;

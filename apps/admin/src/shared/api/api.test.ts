@@ -6,6 +6,7 @@ import {
   getBackendTargetUrl,
   getSelectedApiVersion,
   setSelectedBackend,
+  setApiWorkContext,
   setCsrf,
 } from "./api";
 
@@ -14,6 +15,7 @@ const originalFetch = globalThis.fetch;
 beforeEach(() => {
   sessionStorage.clear();
   localStorage.clear();
+  setApiWorkContext();
 });
 
 afterEach(() => {
@@ -101,5 +103,54 @@ describe("api client", () => {
       }),
     );
     expect(sessionStorage.getItem("moshaver_admin_csrf")).toBe("new-csrf");
+  });
+
+  it("keeps binary backup operations inside the selected work context", async () => {
+    setCsrf("csrf");
+    setApiWorkContext("PLATFORM_ADMIN", "org-1");
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(new Blob(["backup"]), { status: 200 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, data: { restored: true } }), { status: 200 }),
+      ) as typeof fetch;
+
+    await api.download("/system/database-backup");
+    await api.uploadBinary("/system/database-restore", new Blob(["backup"]));
+
+    for (const [, options] of vi.mocked(globalThis.fetch).mock.calls) {
+      expect(options?.headers).toMatchObject({
+        "X-Work-Role": "PLATFORM_ADMIN",
+        "X-Organization-Id": "org-1",
+        "X-CSRF-Token": "csrf",
+      });
+    }
+  });
+
+  it("refreshes an expired binary operation once without losing its work context", async () => {
+    setCsrf("old-csrf");
+    setApiWorkContext("PLATFORM_ADMIN", "org-1");
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: false, error: { code: "UNAUTHORIZED" } }), {
+          status: 401,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, data: { csrfToken: "new-csrf" } }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(new Response(new Blob(["backup"]), { status: 200 })) as typeof fetch;
+
+    await api.download("/system/database-backup");
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(3);
+    expect(vi.mocked(globalThis.fetch).mock.calls[2][1]?.headers).toMatchObject({
+      "X-Work-Role": "PLATFORM_ADMIN",
+      "X-Organization-Id": "org-1",
+      "X-CSRF-Token": "new-csrf",
+    });
   });
 });

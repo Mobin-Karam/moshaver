@@ -372,27 +372,33 @@ assert(
   200,
   context.payload,
 );
-const advisorSubjects = await request(multi, "/subjects", {
+const advisorContext = await request(multi, "/auth/me", {
   role: "ADVISOR",
   organizationId: orgA.id,
 });
 assert(
-  advisorSubjects.status === 403,
+  advisorContext.status === 200 &&
+    advisorContext.payload.data.roles.length === 1 &&
+    advisorContext.payload.data.roles[0] === "ADVISOR" &&
+    !advisorContext.payload.data.capabilities.includes("questions.create"),
   "advisor context does not inherit teacher capability",
-  advisorSubjects.status,
-  403,
-  advisorSubjects.payload,
+  advisorContext.status,
+  "200/scoped",
+  advisorContext.payload,
 );
-const teacherSubjects = await request(multi, "/subjects", {
+const teacherContext = await request(multi, "/auth/me", {
   role: "TEACHER",
   organizationId: orgA.id,
 });
 assert(
-  teacherSubjects.status === 200,
+  teacherContext.status === 200 &&
+    teacherContext.payload.data.roles.length === 1 &&
+    teacherContext.payload.data.roles[0] === "TEACHER" &&
+    teacherContext.payload.data.capabilities.includes("questions.create"),
   "teacher context receives teacher capability",
-  teacherSubjects.status,
-  200,
-  teacherSubjects.payload,
+  teacherContext.status,
+  "200/scoped",
+  teacherContext.payload,
 );
 const invalidContext = await request(multi, "/students", {
   role: "PLATFORM_ADMIN",

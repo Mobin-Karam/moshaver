@@ -9,10 +9,10 @@ export interface PortalAccess {
   navigation: Array<'today' | 'plan' | 'exams' | 'chat' | 'more'>;
 }
 
-export function portalAccess(capabilities: readonly string[]): PortalAccess | null {
+export function portalAccess(roles: readonly string[], capabilities: readonly string[]): PortalAccess | null {
   const has = (capability: string) => capabilities.includes(capability);
-  const student = has('student.profile.read') && has('tasks.update') && has('learning.create');
-  const guardian = has('guardian.students.read');
+  const student = roles.includes('STUDENT') && has('student.profile.read') && has('tasks.update') && has('learning.create');
+  const guardian = roles.includes('GUARDIAN') && has('guardian.students.read');
 
   if (!student && !guardian) return null;
 

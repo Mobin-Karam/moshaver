@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
-import { LogIn } from 'lucide-react';
 import { useStudentStore } from './services/student-store';
 import { apiClient } from './services/api-client';
 import { TauriSQLiteProvider } from './native/tauri-sqlite-provider';
@@ -12,6 +11,7 @@ import { registerWebUpdateAdapter } from './pwa/web-update-adapter';
 import { registerNotificationClickHandler } from './services/notification-service';
 import { StudentAppShell } from './components/layout/StudentAppShell';
 import { LoadingState } from './components/ui';
+import { LoginPage } from './features/auth/LoginPage';
 import './styles.css';
 
 const HomePage = lazy(() => import('./features/home/HomePage').then((module) => ({ default: module.HomePage })));
@@ -169,56 +169,6 @@ async function initializeSync() {
       window.removeEventListener('offline', onOffline);
     },
   };
-}
-
-function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const login = useStudentStore((state) => state.login);
-  const loadStatus = useStudentStore((state) => state.loadStatus);
-  const error = useStudentStore((state) => state.error);
-  const isLoading = loadStatus === 'loading';
-
-  return (
-    <div className="grid min-h-screen place-items-center bg-paper px-4 text-ink" dir="rtl">
-      <form
-        className="surface w-full max-w-sm space-y-4 p-5"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void login(username, password);
-        }}
-      >
-        <div>
-          <strong className="block text-lg">ورود دانش‌آموز یا خانواده</strong>
-          <span className="text-sm text-ink/60">ورود امن به فضای شخصی یادگیری</span>
-        </div>
-        <label className="block space-y-1">
-          <span className="text-sm text-ink/70">نام کاربری</span>
-          <input
-            className="w-full rounded-md border border-black/10 bg-white px-3 py-3 outline-none focus:border-ink"
-            autoComplete="username"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-          />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-sm text-ink/70">رمز عبور</span>
-          <input
-            className="w-full rounded-md border border-black/10 bg-white px-3 py-3 outline-none focus:border-ink"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </label>
-        {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
-        <button className="flex w-full items-center justify-center gap-2 rounded-md bg-ink px-4 py-3 text-white disabled:opacity-60" disabled={isLoading}>
-          <LogIn size={18} />
-          {isLoading ? 'در حال ورود' : 'ورود'}
-        </button>
-      </form>
-    </div>
-  );
 }
 
 function syncStatusLabel(status: string) {

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "../../shared/api/api";
@@ -25,11 +25,57 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  cleanup();
   globalThis.fetch = originalFetch;
   vi.restoreAllMocks();
 });
 
 describe("AuthProvider", () => {
+  it("rejects a Student-only account even when its session is valid", async () => {
+    globalThis.fetch = vi.fn(async (input) => {
+      if (String(input).endsWith("/auth/me")) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            data: { id: "student-1", role: "STUDENT", csrfToken: "csrf" },
+          }),
+          { status: 200 },
+        );
+      }
+      if (String(input).endsWith("/me/context")) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            data: {
+              user: { id: "student-1", role: "STUDENT" },
+              roles: ["STUDENT"],
+              capabilities: ["student.profile.read"],
+              memberships: [],
+              activeOrganization: null,
+              availableOrganizations: [],
+            },
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ ok: true, data: { loggedOut: true } }), { status: 200 });
+    }) as typeof fetch;
+
+    render(
+      <AuthProvider>
+        <Probe />
+      </AuthProvider>,
+    );
+
+    expect(await screen.findByText("این حساب مدیر نیست.")).toBeInTheDocument();
+    expect(screen.getByText("anonymous")).toBeInTheDocument();
+    expect(sessionStorage.getItem("moshaver_admin_csrf")).toBeNull();
+    expect(vi.mocked(globalThis.fetch)).toHaveBeenCalledWith(
+      expect.stringMatching(/\/auth\/logout$/),
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
   it("does not erase a possible session when the server is temporarily unreachable", async () => {
     globalThis.fetch = vi.fn(async () => {
       throw new TypeError("offline");
@@ -60,26 +106,43 @@ describe("AuthProvider", () => {
   });
 
   it("ends the local session when a later protected request returns 401", async () => {
-    globalThis.fetch = vi.fn(async (input) =>
-      String(input).endsWith("/auth/me")
-        ? new Response(
-            JSON.stringify({
-              ok: true,
-              data: { id: "admin-1", role: "admin" },
-            }),
-            { status: 200 },
-          )
-        : new Response(
-            JSON.stringify({
-              ok: false,
-              error: {
-                code: "UNAUTHORIZED",
-                message: "نشست پایان یافته است",
-              },
-            }),
-            { status: 401 },
-          ),
-    ) as typeof fetch;
+    globalThis.fetch = vi.fn(async (input) => {
+      if (String(input).endsWith("/auth/me")) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            data: { id: "admin-1", role: "PLATFORM_ADMIN" },
+          }),
+          { status: 200 },
+        );
+      }
+      if (String(input).endsWith("/me/context")) {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            data: {
+              user: { id: "admin-1", role: "PLATFORM_ADMIN" },
+              roles: ["PLATFORM_ADMIN"],
+              capabilities: ["system.manage"],
+              memberships: [],
+              activeOrganization: null,
+              availableOrganizations: [],
+            },
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          error: {
+            code: "UNAUTHORIZED",
+            message: "نشست پایان یافته است",
+          },
+        }),
+        { status: 401 },
+      );
+    }) as typeof fetch;
 
     render(
       <AuthProvider>

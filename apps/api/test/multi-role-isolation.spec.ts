@@ -71,6 +71,20 @@ describe("multi-role authorization isolation", () => {
     await expect(service.enrich({id:"multi",username:"multi",sessionId:"s",role:"ADMIN"},"PLATFORM_ADMIN","org-a")).rejects.toMatchObject({ status: 403 });
   });
 
+  it("removes organization-scoped roles when their membership is inactive", async () => {
+    (assignments as any).find.mockResolvedValueOnce([
+      { role: { code: "ORGANIZATION_ADMIN", organizationScoped: true, permissions: [{ permission: { code: "users.read" } }] }, membership: { id: "inactive-membership", organization: { id: "org-a" } } },
+      { role: { code: "PLATFORM_ADMIN", organizationScoped: false, permissions: [{ permission: { code: "system.manage" } }] }, membership: null },
+    ]);
+    (memberships as any).find.mockResolvedValueOnce([]);
+
+    const enriched = await service.enrich({ id: "suspended", username: "suspended", sessionId: "s", role: "ADMIN" });
+
+    expect(enriched.roles).toEqual(["PLATFORM_ADMIN"]);
+    expect(enriched.capabilities).toEqual(["system.manage"]);
+    expect(enriched.capabilities).not.toContain("users.read");
+  });
+
   it("denies legacy ADMIN in role guards without an explicit assignment", () => {
     const reflector={getAllAndOverride:()=>[UserRole.ADMIN]};
     const guard=new RolesGuard(reflector as never);

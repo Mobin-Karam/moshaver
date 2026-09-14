@@ -28,4 +28,14 @@ test.describe("Admin v2 role login smoke", () => {
       await expect(page.locator("main")).toBeVisible();
     });
   }
+
+  test("Student-only account is rejected by the Admin shell", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByLabel("نام کاربری").fill("e2e.student.a");
+    await page.getByLabel("رمز عبور").fill("Moshaver-e2e-2026!");
+    await page.getByRole("button", { name: "ورود", exact: true }).click();
+
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByText("این حساب مدیر نیست.")).toBeVisible();
+  });
 });

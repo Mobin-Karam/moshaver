@@ -3,7 +3,7 @@ import { portalAccess } from '../app/portal-access';
 import { apiClient } from './api-client';
 import { useStudentStore } from './student-store';
 
-const access = portalAccess(['student.profile.read', 'tasks.update', 'learning.create', 'exams.read']);
+const access = portalAccess(['STUDENT'], ['student.profile.read', 'tasks.update', 'learning.create', 'exams.read']);
 
 describe('student task completion', () => {
   beforeEach(() => {
@@ -98,5 +98,88 @@ describe('student task completion', () => {
     await useStudentStore.getState().heartbeatFocus();
 
     expect(useStudentStore.getState().activeSession).toMatchObject({ startedAt: heartbeatAt, elapsedSeconds: 1_830, status: 'running' });
+  });
+});
+
+describe('student account isolation', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.restoreAllMocks();
+  });
+
+  it('clears all prior account state when session restoration fails', async () => {
+    vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => undefined);
+    localStorage.setItem('moshaver_v2_active_focus', JSON.stringify({ id: 'old-session' }));
+    localStorage.setItem('moshaver_v2_night_report_draft', JSON.stringify({ note: 'private' }));
+    localStorage.setItem('moshaver_v2_recovery_request_draft', JSON.stringify({ details: 'private' }));
+    localStorage.setItem('moshaver:v2:guardian-child', 'old-child');
+    useStudentStore.setState({
+      authStatus: 'authenticated',
+      user: { id: 'old-user', username: 'old', role: 'STUDENT' },
+      access,
+      capabilities: ['student.profile.read'],
+      student: { id: 'old-student', name: 'Old Student' },
+      notifications: [{ id: 'private', title: 'Private', message: 'Private' }],
+      activeSession: { id: 'old-session', status: 'paused', startedAt: new Date().toISOString(), elapsedSeconds: 1 },
+    } as never);
+    vi.spyOn(apiClient, 'request').mockRejectedValue(new Error('expired'));
+
+    await useStudentStore.getState().restoreSession();
+
+    expect(useStudentStore.getState()).toMatchObject({
+      authStatus: 'anonymous',
+      user: null,
+      access: null,
+      student: null,
+      notifications: [],
+      activeSession: null,
+      capabilities: [],
+    });
+    expect(localStorage.getItem('moshaver_v2_active_focus')).toBeNull();
+    expect(localStorage.getItem('moshaver_v2_night_report_draft')).toBeNull();
+    expect(localStorage.getItem('moshaver_v2_recovery_request_draft')).toBeNull();
+    expect(localStorage.getItem('moshaver:v2:guardian-child')).toBeNull();
+  });
+
+  it('revokes a newly-created session when loading its account context fails', async () => {
+    vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => undefined);
+    localStorage.setItem('moshaver_v2_night_report_draft', JSON.stringify({ note: 'private' }));
+    const request = vi.spyOn(apiClient, 'request').mockImplementation(async (_method, path, body) => {
+      if (path === '/auth/login') {
+        expect(body).toEqual({ username: 'student.one', password: 'secret' });
+        return { user: { id: 'user-1', username: 'student.one', role: 'STUDENT' }, csrfToken: 'csrf', expiresAt: new Date().toISOString() } as never;
+      }
+      if (path === '/me/context') throw new Error('context unavailable');
+      if (path === '/auth/logout') return {} as never;
+      throw new Error(`Unexpected request: ${path}`);
+    });
+
+    await useStudentStore.getState().login('  student.one  ', 'secret');
+
+    expect(request.mock.calls.map((call) => call[1])).toEqual(['/auth/login', '/me/context', '/auth/logout']);
+    expect(apiClient.getCsrfToken()).toBeNull();
+    expect(useStudentStore.getState()).toMatchObject({
+      authStatus: 'anonymous',
+      loadStatus: 'error',
+      user: null,
+      access: null,
+      error: 'context unavailable',
+    });
+    expect(localStorage.getItem('moshaver_v2_night_report_draft')).toBeNull();
+  });
+
+  it('shows network failures while restoring without retaining account data', async () => {
+    vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => undefined);
+    const networkError = new Error('ارتباط با سرور برقرار نشد. اتصال اینترنت را بررسی کنید.');
+    networkError.name = 'NETWORK';
+    vi.spyOn(apiClient, 'request').mockRejectedValue(networkError);
+
+    await useStudentStore.getState().restoreSession();
+
+    expect(useStudentStore.getState()).toMatchObject({
+      authStatus: 'anonymous',
+      user: null,
+      error: 'ارتباط با سرور برقرار نشد. اتصال اینترنت را بررسی کنید.',
+    });
   });
 });
