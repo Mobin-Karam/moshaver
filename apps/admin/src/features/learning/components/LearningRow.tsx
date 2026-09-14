@@ -64,7 +64,7 @@ export function LearningRow({
           ) : null}
 
           {onDelete ? (
-            <Button className="size-9 p-0" variant="ghost" aria-label="ویرایش" onClick={onEdit}>
+            <Button size="icon" variant="ghost" aria-label="ویرایش" onClick={onEdit}>
               <Edit3 size={15} />
             </Button>
           ) : null}

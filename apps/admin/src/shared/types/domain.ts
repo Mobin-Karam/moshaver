@@ -112,13 +112,30 @@ export interface Exam {
   persianDate?: string;
   isoDate: string;
   note?: string;
-  status?: "upcoming" | "active" | "completed" | "cancelled";
+  status?:
+    | "draft"
+    | "scheduled"
+    | "available"
+    | "live"
+    | "active"
+    | "upcoming"
+    | "completed"
+    | "expired"
+    | "result_pending"
+    | "result_available"
+    | "cancelled";
   instructions?: string;
   openAt?: string;
   closeAt?: string;
   durationMinutes?: number;
   maxAttempts?: number;
   published?: boolean;
+  subject?: string;
+  subjects?: string[];
+  organization?: { id: string; name: string } | null;
+  createdAt?: string;
+  updatedAt?: string;
+  questions?: Array<{ id: string; explanation?: string; subject?: string }>;
   syllabus?: Array<{
     id: string;
     subject: string;
@@ -131,6 +148,11 @@ export interface Exam {
     attemptsUsed?: number;
     allowedAttempts?: number;
     questionCount?: number;
+    assignmentCount?: number;
+    attemptCount?: number;
+    activeAttemptCount?: number;
+    completedAttemptCount?: number;
+    notStartedCount?: number;
   };
 }
 

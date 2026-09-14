@@ -54,6 +54,25 @@ function NestedHarness() {
   );
 }
 
+function FailingHarness() {
+  const modal = useModal();
+  return (
+    <button
+      onClick={() =>
+        modal.open({
+          title: "ذخیره تغییرات",
+          confirmLabel: "ذخیره",
+          onConfirm: async () => {
+            throw new Error("ارتباط با سرور برقرار نشد.");
+          },
+        })
+      }
+    >
+      open failing
+    </button>
+  );
+}
+
 afterEach(cleanup);
 
 describe("global modal", () => {
@@ -69,6 +88,7 @@ describe("global modal", () => {
     expect(screen.getByRole("presentation").className).not.toContain("backdrop-blur");
     await userEvent.keyboard("{Escape}");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "open" })).toHaveFocus();
   });
 
   it("resolves reusable confirmations", async () => {
@@ -94,5 +114,18 @@ describe("global modal", () => {
     expect(screen.getByRole("dialog", { name: "تأیید داخلی" })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "انصراف" }));
     expect(screen.getByRole("dialog", { name: "مدیریت گروه" })).toBeInTheDocument();
+  });
+
+  it("keeps a failed confirmation open and exposes an inline error", async () => {
+    render(
+      <ModalProvider>
+        <FailingHarness />
+      </ModalProvider>,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "open failing" }));
+    await userEvent.click(screen.getByRole("button", { name: "ذخیره" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("ارتباط با سرور برقرار نشد.");
+    expect(screen.getByRole("dialog", { name: "ذخیره تغییرات" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "ذخیره" })).not.toBeDisabled();
   });
 });

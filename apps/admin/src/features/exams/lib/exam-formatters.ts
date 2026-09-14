@@ -41,8 +41,15 @@ export function statusLabel(status?: Exam["status"]) {
   return (
     {
       upcoming: "آینده",
+      draft: "پیش نویس",
+      scheduled: "زمان بندی شده",
+      available: "در دسترس",
+      live: "در حال برگزاری",
       active: "فعال",
       completed: "تمام",
+      expired: "پایان یافته",
+      result_pending: "در انتظار نتیجه",
+      result_available: "نتیجه منتشرشده",
       cancelled: "لغو",
     } as const
   )[status || "upcoming"];

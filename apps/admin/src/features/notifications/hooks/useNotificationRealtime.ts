@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { api } from "../../../shared/api/api";
-import { notifications as sonner } from "../../../shared/ui/notifications";
+import { notifications } from "../../../shared/ui/notifications";
 import {
   normalizeAdminNotification,
   notificationAdminUrl,
@@ -54,7 +54,7 @@ export function useNotificationRealtime({
             return { ...current, pages };
           });
 
-          sonner.info(item.title || "اعلان جدید", {
+          notifications.info(item.title || "اعلان جدید", {
             id: item.id,
             description: item.body,
             duration: 6500,

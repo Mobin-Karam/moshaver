@@ -8,6 +8,7 @@ import { ConversationList } from "./ConversationList";
 import { ConversationSearch } from "./ConversationSearch";
 import { ConversationSkeleton } from "./ConversationSkeleton";
 import { ConversationToolbar } from "./ConversationToolbar";
+import { CreateDirectButton } from "./CreateDirectButton";
 
 export function ConversationSidebar({
   visible,
@@ -71,7 +72,10 @@ export function ConversationSidebar({
           <Badge>{toFa(total)}</Badge>
           {unread ? <Badge tone="red">{toFa(unread)} خوانده‌نشده</Badge> : null}
           <span className="mr-auto">
-            <CreateGroupButton onCreated={onGroupCreated} />
+            <span className="flex flex-wrap gap-1">
+              <CreateDirectButton onCreated={onGroupCreated} />
+              <CreateGroupButton onCreated={onGroupCreated} />
+            </span>
           </span>
           {fetching && !fetchingMore ? (
             <RefreshCw className="animate-spin text-slate-400" size={15} />

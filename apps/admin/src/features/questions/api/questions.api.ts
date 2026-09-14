@@ -1,8 +1,7 @@
 import { api } from "../../../shared/api/api";
 import type { Exam } from "../../../shared/types/domain";
 import type { QuestionDraft, QuestionView } from "../model/question-model";
-export const getStudentExams = (studentId: string) =>
-  api.get<Exam[]>(`/exams?studentId=${encodeURIComponent(studentId)}`);
+export const getExams = () => api.get<Exam[]>("/exams");
 export const getExamQuestions = (examId: string) =>
   api.get<QuestionView[]>(`/exams/${examId}/questions`);
 export const createExamQuestion = (examId: string, body: QuestionDraft) =>

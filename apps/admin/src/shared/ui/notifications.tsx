@@ -1,380 +1,139 @@
-import { AlertCircle, CheckCircle2, Info, LoaderCircle, TriangleAlert, Undo2 } from "lucide-react";
-
-import { Toaster, toast, type ExternalToast } from "sonner";
+import { LoaderCircle, Undo2 } from "lucide-react";
+import type { ReactNode } from "react";
+import {
+  GooeyToaster,
+  gooeyToast,
+  type GooeyPromiseData,
+  type GooeyToastOptions,
+} from "goey-toast";
 
 export type NotificationTone = "success" | "error" | "warning" | "info" | "loading";
+type NotificationOptions = GooeyToastOptions & { description?: ReactNode };
+const duration = 4500;
 
-const baseClass = `
-!rounded-2xl
-!border
-!bg-white
-!font-sans
-!text-ink
-!shadow-xl
-!backdrop-blur
-`;
-
-const defaults: ExternalToast = {
-  duration: 4500,
-
-  classNames: {
-    toast: `
-  ${baseClass}
-  !border-slate-200
-  `,
-
-    title: `
-  !text-sm
-  !font-black
-  !leading-6
-  `,
-
-    description: `
-  !mt-1
-  !text-xs
-  !leading-5
-  !text-slate-500
-  `,
-
-    actionButton: `
-  !rounded-lg
-  !bg-brand
-  !px-4
-  !py-2
-  !font-bold
-  !text-white
-  `,
-
-    cancelButton: `
-  !rounded-lg
-  !bg-slate-100
-  !px-4
-  !py-2
-  !font-bold
-  !text-slate-700
-  `,
-
-    closeButton: `
-  !rounded-full
-  !border-slate-200
-  !bg-white
-  !text-slate-500
-  `,
-  },
-};
-
-function mergeClasses(options?: ExternalToast) {
-  return {
-    ...defaults.classNames,
-
-    ...options?.classNames,
-  };
+function notificationId(tone: Exclude<NotificationTone, "loading">, message: string) {
+  return `admin:${tone}:${message}`;
 }
 
 export function AppToaster() {
   return (
-    <Toaster
+    <GooeyToaster
       dir="rtl"
       position="top-left"
-      closeButton
+      closeButton="top-right"
+      closeOnEscape
       richColors
       expand
       visibleToasts={5}
+      maxQueue={8}
+      queueOverflow="drop-oldest"
       gap={12}
-      offset={{
-        top: 20,
-        left: 20,
-        right: 20,
-      }}
-      mobileOffset={{
-        top: 12,
-        left: 12,
-        right: 12,
-      }}
-      toastOptions={defaults}
-      icons={{
-        success: <CheckCircle2 size={20} />,
-
-        error: <AlertCircle size={20} />,
-
-        warning: <TriangleAlert size={20} />,
-
-        info: <Info size={20} />,
-
-        loading: <LoaderCircle size={20} className="animate-spin" />,
-      }}
+      offset={16}
+      duration={duration}
+      preset="snappy"
+      bounce={0.32}
+      showProgress
+      swipeToDismiss
     />
   );
 }
 
 export function notify(
   message: string,
-
   tone: NotificationTone = "success",
-
-  duration = tone === "loading" ? Infinity : defaults.duration,
+  displayDuration = tone === "loading" ? Infinity : duration,
 ) {
-  return toast[tone](message, {
-    duration,
+  if (tone === "loading")
+    return gooeyToast(message, {
+      duration: displayDuration,
+      icon: <LoaderCircle size={18} className="animate-spin" aria-hidden="true" />,
+      showProgress: false,
+    });
+  return gooeyToast[tone](message, {
+    id: notificationId(tone, message),
+    duration: displayDuration,
   });
 }
 
-function toPersianNumber(value: number) {
-  const numbers = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
-
-  return String(value).replace(/\d/g, (d) => numbers[Number(d)]);
+function countdownDescription(seconds: number) {
+  return `حذف خودکار تا ${Math.max(0, seconds).toLocaleString("fa-IR")} ثانیه دیگر`;
 }
 
-function UndoCountdown({
-  seconds,
-
-  total,
-}: {
-  seconds: number;
-
-  total: number;
-}) {
-  const progress = Math.max(0, (seconds / total) * 100);
-
-  return (
-    <div
-      className="
- grid
- gap-2
- "
-    >
-      <div
-        className="
- text-xs
- font-medium
- text-slate-500
- "
-      >
-        بازگردانی تا <b>{toPersianNumber(seconds)}</b> ثانیه
-      </div>
-
-      <div
-        className="
- h-1.5
- overflow-hidden
- rounded-full
- bg-amber-100
- "
-      >
-        <div
-          className="
- h-full
- rounded-full
- bg-amber-500
- transition-all
- duration-1000
- "
-          style={{
-            width: `${progress}%`,
-          }}
-        />
-      </div>
-    </div>
-  );
+function typedToast(
+  tone: Exclude<NotificationTone, "loading">,
+  message: string,
+  options?: NotificationOptions,
+) {
+  return gooeyToast[tone](message, {
+    id: options?.id ?? notificationId(tone, message),
+    duration: tone === "error" ? (options?.duration ?? 6000) : (options?.duration ?? duration),
+    preset: "snappy",
+    showProgress: true,
+    ...options,
+  });
 }
 
 export const notifications = {
-  success(message: string, options?: ExternalToast) {
-    return toast.success(message, {
-      ...options,
-
-      classNames: mergeClasses(options),
-    });
-  },
-
-  error(message: string, options?: ExternalToast) {
-    return toast.error(message, {
-      duration: options?.duration ?? 6000,
-
-      ...options,
-
-      classNames: mergeClasses(options),
-    });
-  },
-
-  warning(message: string, options?: ExternalToast) {
-    return toast.warning(message, {
-      ...options,
-
-      classNames: mergeClasses(options),
-    });
-  },
-
-  info(message: string, options?: ExternalToast) {
-    return toast.info(message, {
-      ...options,
-
-      classNames: mergeClasses(options),
-    });
-  },
-
-  loading(message: string, options?: ExternalToast) {
-    return toast.loading(message, {
+  success: (message: string, options?: NotificationOptions) =>
+    typedToast("success", message, options),
+  error: (message: string, options?: NotificationOptions) => typedToast("error", message, options),
+  warning: (message: string, options?: NotificationOptions) =>
+    typedToast("warning", message, options),
+  info: (message: string, options?: NotificationOptions) => typedToast("info", message, options),
+  loading(message: string, options?: NotificationOptions) {
+    return gooeyToast(message, {
       duration: Infinity,
-
+      icon: <LoaderCircle size={18} className="animate-spin" aria-hidden="true" />,
+      showProgress: false,
       ...options,
-
-      icon: <LoaderCircle size={18} className="animate-spin" />,
-
-      classNames: mergeClasses(options),
     });
   },
-
-  undo(
-    message: string,
-
-    onUndo: () => void,
-
-    options?: ExternalToast,
-
-    duration = 10000,
-  ) {
-    const totalSeconds = Math.ceil(duration / 1000);
-
-    let seconds = totalSeconds;
-
-    const id = toast(
-      message,
-
-      {
-        duration,
-
-        icon: <Undo2 size={20} />,
-
-        description: <UndoCountdown seconds={seconds} total={totalSeconds} />,
-
-        action: {
-          label: "بازگردانی",
-
-          onClick() {
-            clearInterval(interval);
-
-            onUndo();
-          },
-        },
-
-        classNames: {
-          ...defaults.classNames,
-
-          toast: `
-   ${baseClass}
-   !border-amber-300
-   !bg-amber-50
-   `,
-
-          actionButton: `
-   !rounded-lg
-   !bg-amber-500
-   !px-4
-   !py-2
-   !font-bold
-   !text-white
-   `,
-
-          ...options?.classNames,
-        },
-
-        ...options,
-      },
-    );
-
-    const interval = setInterval(() => {
-      seconds--;
-
-      toast(
-        message,
-
-        {
-          id,
-
-          description: <UndoCountdown seconds={Math.max(seconds, 0)} total={totalSeconds} />,
-        },
-      );
-
-      if (seconds <= 0) {
-        clearInterval(interval);
-      }
-    }, 1000);
-
-    return id;
+  undo(message: string, onUndo: () => void, options?: NotificationOptions, undoDuration = 10000) {
+    return gooeyToast.warning(message, {
+      duration: undoDuration,
+      description: "برای بازگردانی، دکمه زیر را انتخاب کنید.",
+      icon: <Undo2 size={18} aria-hidden="true" />,
+      showProgress: true,
+      action: { label: "بازگردانی", successLabel: "بازگردانده شد", onClick: onUndo },
+      ...options,
+    });
   },
-
-  promise: toast.promise,
-
+  promise<T>(promise: Promise<T>, data: GooeyPromiseData<T>) {
+    return gooeyToast.promise(promise, data);
+  },
   undoCountdown(
     message: string,
-
     seconds: number,
-
     onUndo: () => void,
-
-    options?: ExternalToast,
+    options?: NotificationOptions,
   ) {
     let remaining = seconds;
-
-    const id = toast(
-      message,
-
-      {
-        duration: seconds * 1000,
-
-        icon: <Undo2 size={20} />,
-
-        description: `حذف خودکار تا ${remaining} ثانیه دیگر`,
-
-        action: {
-          label: "لغو حذف",
-
-          onClick() {
-            onUndo();
-
-            toast.dismiss(id);
-          },
+    let timer = 0;
+    const id = gooeyToast.warning(message, {
+      duration: seconds * 1000,
+      description: countdownDescription(remaining),
+      icon: <Undo2 size={18} aria-hidden="true" />,
+      showProgress: true,
+      action: {
+        label: "لغو حذف",
+        successLabel: "حذف لغو شد",
+        onClick() {
+          window.clearInterval(timer);
+          onUndo();
         },
-
-        ...options,
       },
-    );
-
-    const timer = window.setInterval(() => {
-      remaining--;
-
-      toast.message(
-        message,
-
-        {
-          id,
-
-          description: `حذف خودکار تا ${remaining} ثانیه دیگر`,
-        },
-      );
-
-      if (remaining <= 0) {
-        clearInterval(timer);
-      }
-    }, 1000);
-
-    return id;
-  },
-
-  update(
-    id: string | number,
-
-    message: string,
-
-    options?: ExternalToast,
-  ) {
-    return toast(message, {
-      id,
-
       ...options,
     });
+    timer = window.setInterval(() => {
+      remaining -= 1;
+      gooeyToast.update(id, { description: countdownDescription(remaining) });
+      if (remaining <= 0) window.clearInterval(timer);
+    }, 1000);
+    return id;
   },
-
-  dismiss: toast.dismiss,
+  update(id: string | number, message: string, options?: NotificationOptions) {
+    gooeyToast.update(id, { title: message, description: options?.description });
+    return id;
+  },
+  dismiss: gooeyToast.dismiss,
 };

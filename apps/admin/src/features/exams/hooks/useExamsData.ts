@@ -5,13 +5,11 @@ import { matchesExam } from "../model/exam-model";
 import type { ExamFilterStatus, ExamVisibilityFilter } from "../model/exam.types";
 
 export function useExamsData({
-  studentId,
   search,
   status,
   visibility,
   canReadRetries = true,
 }: {
-  studentId: string;
   search: string;
   status: ExamFilterStatus;
   visibility: ExamVisibilityFilter;
@@ -20,15 +18,14 @@ export function useExamsData({
   const queryClient = useQueryClient();
 
   const exams = useQuery({
-    queryKey: ["exams", studentId],
-    enabled: !!studentId,
-    queryFn: () => getExams(studentId),
+    queryKey: ["exams"],
+    queryFn: getExams,
   });
 
   const retries = useQuery({
-    queryKey: ["exam-retry", studentId],
-    enabled: !!studentId && canReadRetries,
-    queryFn: () => getRetryRequests(studentId),
+    queryKey: ["exam-retry"],
+    enabled: canReadRetries,
+    queryFn: getRetryRequests,
   });
 
   const filtered = useMemo(

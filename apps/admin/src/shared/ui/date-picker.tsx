@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import { addDays, cn, todayIso } from "../lib/utils";
 import { useLocale } from "./locale";
 import { ViewportPopover } from "./popover";
+import { Input } from "./ui";
 
 type DatePickerProps = {
   value: string;
@@ -46,6 +47,7 @@ export function DatePicker({
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"calendar" | "month" | "year">("calendar");
   const [cursor, setCursor] = useState(isValidIso(value) ? value : todayIso());
+  const hasValue = isValidIso(value);
 
   useEffect(() => {
     if (isValidIso(value)) setCursor(value);
@@ -81,20 +83,40 @@ export function DatePicker({
             {...props}
             type="button"
             disabled={disabled}
+            aria-label={
+              hasValue && clearable && !required
+                ? `${formatDate(value)}؛ برای پاک کردن کلید حذف را فشار دهید`
+                : hasValue
+                  ? formatDate(value)
+                  : "انتخاب تاریخ"
+            }
+            onKeyDown={(event) => {
+              if (
+                !event.defaultPrevented &&
+                hasValue &&
+                clearable &&
+                !required &&
+                ["Delete", "Backspace"].includes(event.key)
+              ) {
+                event.preventDefault();
+                onChange("");
+              }
+            }}
             className="flex h-11 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 text-sm dark:border-slate-700 dark:bg-slate-900"
           >
-            <span>{value ? formatDate(value) : "انتخاب تاریخ"}</span>
+            <span>{hasValue ? formatDate(value) : "انتخاب تاریخ"}</span>
 
-            {clearable && value ? (
+            {clearable && !required && hasValue ? (
               <X
                 size={16}
+                aria-hidden="true"
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange("");
                 }}
               />
             ) : (
-              <CalendarDays size={17} />
+              <CalendarDays size={17} aria-hidden="true" />
             )}
           </button>
         )}
@@ -137,7 +159,8 @@ export function DatePicker({
             <div className="mb-3 flex items-center justify-between">
               <button
                 type="button"
-                className="rounded-xl p-2 hover:bg-slate-100"
+                aria-label="ماه قبل"
+                className="rounded-xl p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
                 onClick={() =>
                   setCursor(shiftCalendarMonth(cursor, -1, profile.locale, profile.calendar))
                 }
@@ -155,7 +178,8 @@ export function DatePicker({
 
               <button
                 type="button"
-                className="rounded-xl p-2 hover:bg-slate-100"
+                aria-label="ماه بعد"
+                className="rounded-xl p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
                 onClick={() =>
                   setCursor(shiftCalendarMonth(cursor, 1, profile.locale, profile.calendar))
                 }
@@ -191,6 +215,7 @@ export function DatePicker({
                 type="button"
                 className="mt-3 w-full rounded-xl py-2 text-brand hover:bg-brand/10"
                 onClick={() => selectDate(todayIso())}
+                disabled={(!!min && todayIso() < min) || (!!max && todayIso() > max)}
               >
                 امروز
               </button>
@@ -247,12 +272,12 @@ export function DateTimePicker({
         disabled={disabled}
         onChange={(d) => onChange(`${d}T${time}:00+03:30`)}
       />
-      <input
+      <Input
         type="time"
         disabled={disabled}
         value={time}
         onChange={(e) => onChange(`${date}T${e.target.value}:00+03:30`)}
-        className="h-11 rounded-xl border px-3"
+        className="px-3"
       />
     </div>
   );

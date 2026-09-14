@@ -22,10 +22,7 @@ import {
 import { ExamsService } from "./exams.service";
 import { ExamHeartbeatDto, SubmitExamDto } from "./dto/submit-exam.dto";
 import { RequireCapabilities } from "../../common/decorators/capabilities.decorator";
-import {
-  AuthorizationService,
-  UserContext,
-} from "../authorization";
+import { AuthorizationService, UserContext } from "../authorization";
 import { ApiException } from "../../common/exceptions/api.exception";
 
 @Controller()
@@ -174,6 +171,7 @@ export class ExamsController {
     @Param("id") id: string,
     @Body() dto: AssignExamDto,
   ) {
+    await this.requireExamScope(user, id, "exams.assign");
     for (const studentId of dto.studentIds)
       if (
         !(await this.authorization.canAccessStudent(
@@ -190,6 +188,16 @@ export class ExamsController {
     return ok(await this.exams.assign(id, dto.studentIds, user.id));
   }
 
+  @Get("exams/:id/assignments")
+  @RequireCapabilities("exams.read")
+  async assignments(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id") id: string,
+  ) {
+    await this.requireExamScope(user, id, "exams.read");
+    return ok(await this.exams.assignmentsForExam(id));
+  }
+
   @Delete("exams/:id/assignments/:studentId")
   @RequireCapabilities("exams.assign")
   async unassign(
@@ -197,6 +205,7 @@ export class ExamsController {
     @Param("id") id: string,
     @Param("studentId") studentId: string,
   ) {
+    await this.requireExamScope(user, id, "exams.assign");
     if (
       !(await this.authorization.canAccessStudent(
         this.context(user),
@@ -333,7 +342,9 @@ export class ExamsController {
     @Body() dto: ExamHeartbeatDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.exams.heartbeat(examId, attemptId, user.id, dto.currentSectionId).then(ok);
+    return this.exams
+      .heartbeat(examId, attemptId, user.id, dto.currentSectionId)
+      .then(ok);
   }
 
   @Post("admin/exams")

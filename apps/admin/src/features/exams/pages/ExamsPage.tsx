@@ -3,6 +3,7 @@ import { notifications, notify } from "../../../shared/ui/notifications";
 import { DataTransferWorkspace } from "../../../shared/ui/data-transfer";
 import type { Exam } from "../../../shared/types/domain";
 import { ExamAttempts } from "../components/ExamAttempts";
+import { ExamAssignmentManager } from "../components/ExamAssignmentManager";
 import { ExamFilters } from "../components/ExamFilters";
 import { ExamForm } from "../components/ExamForm";
 import { ExamList } from "../components/ExamList";
@@ -25,7 +26,6 @@ export function ExamsPage() {
   const filters = useExamFilters();
 
   const data = useExamsData({
-    studentId: filters.students.studentId,
     search: filters.deferredSearch,
     status: filters.status,
     visibility: filters.visibility,
@@ -278,6 +278,19 @@ export function ExamsPage() {
           mutations.togglePublish.isPending ? mutations.togglePublish.variables?.id : undefined
         }
         onRetry={() => void data.exams.refetch()}
+        onManageAssignments={
+          auth.can("exams.assign")
+            ? (exam) =>
+                modal.open({
+                  title: `تخصیص آزمون: ${exam.title}`,
+                  description: "حذف تخصیص پس از شروع آزمون برای حفظ داده های تلاش مسدود است.",
+                  size: "lg",
+                  content: (
+                    <ExamAssignmentManager examId={exam.id} students={filters.students.students} />
+                  ),
+                })
+            : undefined
+        }
         onSelectAll={
           auth.can("exams.update")
             ? (checked) => filters.setSelected(checked ? data.filtered.map((exam) => exam.id) : [])

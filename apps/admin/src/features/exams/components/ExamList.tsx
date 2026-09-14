@@ -19,6 +19,7 @@ export function ExamList({
   onAddSyllabus,
   onDeleteSyllabus,
   showQuestions = false,
+  onManageAssignments,
 }: {
   exams: Exam[];
   filtered: Exam[];
@@ -36,6 +37,7 @@ export function ExamList({
   onAddSyllabus?: (exam: Exam) => void;
   onDeleteSyllabus?: (id: string) => void;
   showQuestions?: boolean;
+  onManageAssignments?: (exam: Exam) => void;
 }) {
   void exams;
 
@@ -91,6 +93,9 @@ export function ExamList({
               onDeleteSyllabus={onDeleteSyllabus}
               studentId={studentId}
               showQuestions={showQuestions}
+              onManageAssignments={
+                onManageAssignments ? () => onManageAssignments(exam) : undefined
+              }
             />
           ))}
         </div>

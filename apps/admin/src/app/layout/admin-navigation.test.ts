@@ -15,6 +15,7 @@ describe("admin navigation metadata", () => {
   it("defines a title and description for every admin destination", () => {
     expect(flatAdminNavigation.map((item) => item.path)).toEqual([
       "",
+      "education",
       "planner",
       "learning",
       "exams",
@@ -26,10 +27,12 @@ describe("admin navigation metadata", () => {
       "communication/chat",
       "communication/notifications",
       "students",
+      "family",
       "onboarding",
       "users",
       "organizations",
       "reports",
+      "follow-up",
       "system",
       "releases",
       "database",
@@ -40,7 +43,7 @@ describe("admin navigation metadata", () => {
     expect(adminNavigation.every((group) => group.items.length > 0)).toBe(true);
     expect(mainAdminNavigation.map((item) => item.path)).toEqual([
       "",
-      "planner",
+      "education",
       "communication/live",
       "students",
       "system",
@@ -99,20 +102,20 @@ describe("admin navigation metadata", () => {
   it("resolves browser URLs, nested learning locations, and aliases", () => {
     expect(normalizeAdminPath("/admin/exams/42?tab=questions")).toBe("exams/42");
     expect(resolveAdminNavigation("/admin/exams/42").path).toBe("exams");
-    expect(resolveAdminNavigation("/admin/education").path).toBe("learning");
+    expect(resolveAdminNavigation("/admin/education").path).toBe("education");
     expect(resolveAdminNavigation("/admin/students/s-1/learning").path).toBe("learning");
     expect(adminBreadcrumbs("/admin/students/s-1/learning").at(-1)?.title).toBe("سیستم یادگیری");
   });
 
   it("avoids duplicate breadcrumb destinations on section landing pages", () => {
     expect(adminBreadcrumbs("")).toEqual([{ title: "خانه", path: "" }]);
-    expect(adminBreadcrumbs("planner")).toEqual([
+    expect(adminBreadcrumbs("education")).toEqual([
       { title: "خانه", path: "" },
-      { title: "آموزش", path: "planner" },
+      { title: "آموزش", path: "education" },
     ]);
     expect(adminBreadcrumbs("exams")).toEqual([
       { title: "خانه", path: "" },
-      { title: "آموزش", path: "planner" },
+      { title: "آموزش", path: "education" },
       { title: "آزمون‌ها", path: "exams" },
     ]);
     expect(adminBreadcrumbs("settings").map((item) => item.title)).toEqual([

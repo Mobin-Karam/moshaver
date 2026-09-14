@@ -49,7 +49,11 @@ describe("role dashboard workflows", () => {
 
   it("never exposes an action missing from the active capability set", () => {
     const actions = quickActionsForRole("TEACHER", ["exams.read", "subjects.read"]);
-    expect(actions.map((item) => item.to)).toEqual(["/admin/exams", "/admin/subjects"]);
+    expect(actions.map((item) => item.to)).toEqual([
+      "/admin/education",
+      "/admin/exams",
+      "/admin/subjects",
+    ]);
     expect(actions.some((item) => item.to === "/admin/questions")).toBe(false);
   });
 });

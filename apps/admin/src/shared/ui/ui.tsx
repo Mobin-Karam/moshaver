@@ -1,15 +1,34 @@
 import { LoaderCircle } from "lucide-react";
-import { ComponentProps, ReactNode, forwardRef } from "react";
+import {
+  ComponentProps,
+  Children,
+  ReactElement,
+  ReactNode,
+  cloneElement,
+  forwardRef,
+  isValidElement,
+  useId,
+} from "react";
 import { cn } from "../lib/utils";
 
 type ButtonProps = ComponentProps<"button"> & {
   variant?: "primary" | "soft" | "danger" | "ghost";
+  size?: "sm" | "md" | "icon";
   loading?: boolean;
   loadingLabel?: string;
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { className, variant = "primary", loading = false, loadingLabel, children, disabled, ...props },
+  {
+    className,
+    variant = "primary",
+    size = "md",
+    loading = false,
+    loadingLabel,
+    children,
+    disabled,
+    ...props
+  },
   ref,
 ) {
   return (
@@ -45,6 +64,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
           focus-visible:outline-none
           focus-visible:ring-4
           focus-visible:ring-brand/20
+          motion-reduce:transition-none
+          motion-reduce:active:scale-100
           `,
 
         variant === "primary" &&
@@ -91,6 +112,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
             dark:text-slate-300
             dark:hover:bg-slate-800
             `,
+
+        size === "sm" && "h-9 rounded-lg px-3 text-xs",
+        size === "icon" && "size-10 h-10 rounded-lg p-0",
 
         className,
       )}
@@ -176,6 +200,12 @@ placeholder:text-slate-400
 
 hover:border-brand/40
 
+disabled:cursor-not-allowed disabled:opacity-60
+
+read-only:bg-[rgb(var(--surface-muted))] read-only:text-slate-500
+
+aria-[invalid=true]:border-rosewood aria-[invalid=true]:ring-rosewood/10
+
 
 focus:border-brand
 
@@ -243,6 +273,12 @@ placeholder:text-slate-400
 
 hover:border-brand/40
 
+disabled:cursor-not-allowed disabled:opacity-60
+
+read-only:bg-[rgb(var(--surface-muted))] read-only:text-slate-500
+
+aria-[invalid=true]:border-rosewood aria-[invalid=true]:ring-rosewood/10
+
 
 focus:border-brand
 
@@ -307,6 +343,10 @@ transition-all
 
 
 hover:border-brand/40
+
+disabled:cursor-not-allowed disabled:opacity-60
+
+aria-[invalid=true]:border-rosewood aria-[invalid=true]:ring-rosewood/10
 
 
 focus:border-brand
@@ -429,11 +469,11 @@ dark:text-blue-400
 
 export function EmptyState({
   title,
-
+  description,
   action,
 }: {
   title: string;
-
+  description?: ReactNode;
   action?: ReactNode;
 }) {
   return (
@@ -482,7 +522,9 @@ dark:text-slate-400
 
 "
     >
-      {title}
+      <strong className="text-ink">{title}</strong>
+
+      {description ? <p className="max-w-xl text-xs leading-5">{description}</p> : null}
 
       {action}
     </div>
@@ -492,6 +534,9 @@ dark:text-slate-400
 export function LoadingState({ label = "در حال دریافت..." }: { label?: string }) {
   return (
     <div
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
       className="
 
 animate-pulse
@@ -526,21 +571,77 @@ dark:text-slate-400
   );
 }
 
-export function Field({
-  label,
-
-  children,
-
-  error,
+export function ErrorState({
+  title,
+  description,
+  action,
 }: {
-  label: string;
-
-  children: ReactNode;
-
-  error?: string;
+  title: string;
+  description?: ReactNode;
+  action?: ReactNode;
 }) {
   return (
-    <label
+    <div
+      role="alert"
+      className="flex min-h-40 flex-col items-center justify-center gap-3 rounded-2xl border border-rose-200 bg-rose-50/70 p-6 text-center text-sm text-rose-800 dark:border-rose-900 dark:bg-rose-950/20 dark:text-rose-200"
+    >
+      <strong>{title}</strong>
+      {description ? <p className="max-w-xl text-xs leading-5">{description}</p> : null}
+      {action}
+    </div>
+  );
+}
+
+export function Field({
+  label,
+  children,
+  description,
+  error,
+  required = false,
+  id,
+}: {
+  label: string;
+  children: ReactNode;
+  description?: ReactNode;
+  error?: string;
+  required?: boolean;
+  id?: string;
+}) {
+  const generatedId = useId();
+  const fieldId = id || `field-${generatedId}`;
+  const descriptionId = `${fieldId}-description`;
+  const errorId = `${fieldId}-error`;
+  const describedBy =
+    [description ? descriptionId : "", error ? errorId : ""].filter(Boolean).join(" ") || undefined;
+  type ControlProps = {
+    id?: string;
+    required?: boolean;
+    "aria-describedby"?: string;
+    "aria-invalid"?: boolean;
+  };
+  const target = findFieldControl(children);
+  const element = target as ReactElement<ControlProps> | null;
+  const controlId = element ? element.props.id || fieldId : undefined;
+  const control = element
+    ? enhanceFieldControl(children, element, {
+        id: controlId,
+        required: element.props.required ?? required,
+        "aria-describedby": element.props["aria-describedby"] || describedBy,
+        "aria-invalid": element.props["aria-invalid"] ?? (error ? true : undefined),
+      })
+    : children;
+  const labelContent = (
+    <>
+      {label}
+      {required ? (
+        <span className="mr-1 text-rosewood" aria-hidden="true">
+          *
+        </span>
+      ) : null}
+    </>
+  );
+  return (
+    <div
       className="
 
 grid
@@ -558,12 +659,20 @@ text-[rgb(var(--color-ink))]
 
 "
     >
-      <span>{label}</span>
+      {controlId ? <label htmlFor={controlId}>{labelContent}</label> : <span>{labelContent}</span>}
 
-      {children}
+      {control}
+
+      {description ? (
+        <span id={descriptionId} className="text-xs font-normal text-slate-500 dark:text-slate-400">
+          {description}
+        </span>
+      ) : null}
 
       {error && (
         <span
+          id={errorId}
+          role="alert"
           className="
 
 text-xs
@@ -577,6 +686,43 @@ text-rosewood
           {error}
         </span>
       )}
-    </label>
+    </div>
   );
+}
+
+function isFieldControl(element: ReactElement) {
+  return (
+    (typeof element.type === "string" && ["input", "textarea", "select"].includes(element.type)) ||
+    element.type === Input ||
+    element.type === Textarea ||
+    element.type === Select
+  );
+}
+
+function findFieldControl(node: ReactNode): ReactElement | null {
+  let result: ReactElement | null = null;
+  Children.forEach(node, (child) => {
+    if (result || !isValidElement(child)) return;
+    if (isFieldControl(child)) {
+      result = child;
+      return;
+    }
+    result = findFieldControl((child.props as { children?: ReactNode }).children);
+  });
+  return result;
+}
+
+function enhanceFieldControl(
+  node: ReactNode,
+  target: ReactElement,
+  props: Record<string, unknown>,
+): ReactNode {
+  return Children.map(node, (child) => {
+    if (!isValidElement(child)) return child;
+    if (child === target) return cloneElement(child, props);
+    const nested = (child.props as { children?: ReactNode }).children;
+    return nested === undefined
+      ? child
+      : cloneElement(child, {}, enhanceFieldControl(nested, target, props));
+  });
 }

@@ -140,10 +140,12 @@ function ModalSurface({
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useRef(`modal-title-${Math.random().toString(36).slice(2)}`);
+  const descriptionId = useRef(`modal-description-${Math.random().toString(36).slice(2)}`);
 
   const previousFocus = useRef<HTMLElement | null>(null);
 
   const [busy, setBusy] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const dismissible = modal.dismissible !== false && !busy;
 
@@ -209,6 +211,7 @@ function ModalSurface({
     }
 
     setBusy(true);
+    setSubmitError("");
 
     try {
       const result = await modal.onConfirm();
@@ -216,6 +219,8 @@ function ModalSurface({
       if (result !== false) {
         onConfirm();
       }
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "انجام عملیات ناموفق بود.");
     } finally {
       setBusy(false);
     }
@@ -242,6 +247,7 @@ function ModalSurface({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId.current}
+        aria-describedby={modal.description ? descriptionId.current : undefined}
         tabIndex={-1}
         className={cn(
           `
@@ -253,6 +259,7 @@ function ModalSurface({
           border
           border-slate-200
           bg-white
+          dark:border-slate-700
           text-ink
           shadow-2xl
           outline-none
@@ -269,7 +276,7 @@ function ModalSurface({
         <header
           className="
 flex items-start gap-4
-border-b border-slate-200
+border-b border-slate-200 dark:border-slate-700
 px-5 py-4
 "
         >
@@ -283,6 +290,7 @@ px-5 py-4
 
             {modal.description && (
               <div
+                id={descriptionId.current}
                 className="
 mt-1 text-sm
 leading-6 text-slate-500
@@ -296,6 +304,7 @@ leading-6 text-slate-500
           {dismissible && (
             <button
               type="button"
+              aria-label="بستن پنجره"
               onClick={onCancel}
               className="
 grid size-9
@@ -303,6 +312,8 @@ place-items-center
 rounded-md
 text-slate-500
 hover:bg-slate-100
+focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand
+dark:hover:bg-slate-800
 "
             >
               <X size={19} />
@@ -322,6 +333,15 @@ px-4 py-4
           </div>
         )}
 
+        {submitError ? (
+          <p
+            role="alert"
+            className="mx-4 mb-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-950/30 dark:text-rose-300"
+          >
+            {submitError}
+          </p>
+        ) : null}
+
         {(modal.showCancel || modal.confirmLabel || modal.onConfirm) && (
           <footer
             className="
@@ -329,6 +349,7 @@ flex justify-end gap-2
 border-t
 border-slate-200
 bg-slate-50/70
+dark:border-slate-700 dark:bg-slate-900/70
 px-5 py-4
 "
           >

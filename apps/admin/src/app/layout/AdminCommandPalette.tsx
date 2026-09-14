@@ -183,13 +183,13 @@ export function AdminCommandPalette({
     >
       <section
         ref={dialogRef}
-        className="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+        className="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
         role="dialog"
         aria-modal="true"
         aria-label="جستجو و رفتن سریع"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center gap-2 border-b border-slate-200 px-3">
+        <div className="flex items-center gap-2 border-b border-slate-200 px-3 dark:border-slate-700">
           <Search size={19} className="shrink-0 text-slate-400" />
           <input
             ref={inputRef}
@@ -210,7 +210,7 @@ export function AdminCommandPalette({
           />
           <button
             type="button"
-            className="grid size-9 shrink-0 place-items-center rounded-lg text-slate-400 outline-none transition hover:bg-slate-100 hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-brand"
+            className="grid size-9 shrink-0 place-items-center rounded-lg text-slate-400 outline-none transition hover:bg-slate-100 hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-brand dark:hover:bg-slate-800 dark:hover:text-slate-200"
             onClick={onClose}
             aria-label="بستن جستجو"
           >
@@ -218,7 +218,7 @@ export function AdminCommandPalette({
           </button>
         </div>
 
-        <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/70 px-3 py-2 text-[10px] text-slate-400">
+        <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/70 px-3 py-2 text-[10px] text-slate-400 dark:border-slate-800 dark:bg-slate-800/60">
           <span className="flex items-center gap-1 font-bold">
             {!normalizedQuery ? <Clock3 size={12} /> : <Search size={12} />}
             {!normalizedQuery
@@ -228,10 +228,18 @@ export function AdminCommandPalette({
               : `${results.length.toLocaleString("fa-IR")} نتیجه`}
           </span>
           <span className="hidden items-center gap-2 sm:flex" dir="rtl">
-            <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5">↑ ↓</kbd> انتخاب
-            <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5">Enter</kbd>{" "}
+            <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5 dark:border-slate-700 dark:bg-slate-900">
+              ↑ ↓
+            </kbd>{" "}
+            انتخاب
+            <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5 dark:border-slate-700 dark:bg-slate-900">
+              Enter
+            </kbd>{" "}
             بازکردن
-            <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5">Esc</kbd> بستن
+            <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5 dark:border-slate-700 dark:bg-slate-900">
+              Esc
+            </kbd>{" "}
+            بستن
           </span>
         </div>
 

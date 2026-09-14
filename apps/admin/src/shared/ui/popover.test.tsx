@@ -14,5 +14,6 @@ describe("viewport popover", () => {
     expect(screen.getByRole("dialog").parentElement).toBe(document.body);
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "بازکردن" })).toHaveFocus();
   });
 });

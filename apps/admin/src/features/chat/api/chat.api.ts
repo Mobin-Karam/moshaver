@@ -69,6 +69,20 @@ export async function fetchMessages(conversationId: string, beforeMessageId = ""
 }
 
 export const chatApi = {
+  myProfile: () =>
+    api.get<{ id: string; username: string; displayName: string; bio: string; avatarUrl: string }>(
+      "/chat/profile",
+    ),
+  updateMyProfile: (body: { displayName: string; bio: string; avatarUrl: string }) =>
+    api.patch<{
+      id: string;
+      username: string;
+      displayName: string;
+      bio: string;
+      avatarUrl: string;
+    }>("/chat/profile", body),
+  createDirect: (peerUserId: string) =>
+    api.post<{ id: string }>("/chat/conversations", { peerUserId }),
   configuration: () => api.get<{ allowedEmojis: string[] }>("/chat/configuration"),
   updateConfiguration: (allowedEmojis: string[]) =>
     api.patch<{ allowedEmojis: string[] }>("/chat/configuration", { allowedEmojis }),

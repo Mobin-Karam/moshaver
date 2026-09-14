@@ -7,6 +7,7 @@ export type RoleQuickAction = {
 };
 
 const sharedActions: Record<string, RoleQuickAction> = {
+  education: { to: "/admin/education", label: "مرکز آموزش", capability: "exams.read" },
   students: { to: "/admin/students", label: "دانش‌آموزان", capability: "students.read" },
   planner: { to: "/admin/planner", label: "برنامه‌ها", capability: "plans.read" },
   learning: { to: "/admin/learning", label: "یادگیری و مرور", capability: "learning.read" },
@@ -39,6 +40,7 @@ const sharedActions: Record<string, RoleQuickAction> = {
 
 const roleActions: Partial<Record<RoleCode, RoleQuickAction[]>> = {
   GUARDIAN: [
+    { to: "/admin/family", label: "خانه خانواده", capability: "guardian.students.read" },
     sharedActions.students,
     sharedActions.planner,
     sharedActions.reports,
@@ -54,6 +56,7 @@ const roleActions: Partial<Record<RoleCode, RoleQuickAction[]>> = {
     sharedActions.resources,
   ],
   TEACHER: [
+    sharedActions.education,
     sharedActions.exams,
     sharedActions.questions,
     sharedActions.quizzes,
@@ -70,6 +73,7 @@ const roleActions: Partial<Record<RoleCode, RoleQuickAction[]>> = {
     sharedActions.resources,
   ],
   CONTENT_MANAGER: [
+    sharedActions.education,
     sharedActions.resources,
     sharedActions.questions,
     sharedActions.quizzes,
@@ -77,6 +81,7 @@ const roleActions: Partial<Record<RoleCode, RoleQuickAction[]>> = {
     sharedActions.subjects,
   ],
   ORGANIZATION_ADMIN: [
+    sharedActions.education,
     sharedActions.students,
     sharedActions.users,
     sharedActions.organizations,
@@ -84,6 +89,7 @@ const roleActions: Partial<Record<RoleCode, RoleQuickAction[]>> = {
     sharedActions.resources,
   ],
   PLATFORM_ADMIN: [
+    sharedActions.education,
     sharedActions.onboarding,
     sharedActions.users,
     sharedActions.organizations,

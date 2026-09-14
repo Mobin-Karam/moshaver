@@ -1,11 +1,14 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { act } from "react";
 import { afterEach, describe, expect, it } from "vitest";
-import { toast } from "sonner";
+import { gooeyToast } from "goey-toast";
 import { AppToaster, notify, notifications } from "./notifications";
 
-describe("Sonner notification adapter", () => {
-  afterEach(() => toast.dismiss());
+describe("Gooey notification adapter", () => {
+  afterEach(() => {
+    gooeyToast.dismiss();
+    cleanup();
+  });
 
   it("renders typed RTL notifications", async () => {
     render(<AppToaster />);
@@ -22,7 +25,7 @@ describe("Sonner notification adapter", () => {
     act(() => {
       id = notifications.loading("در حال ذخیره");
     });
-    expect(await screen.findByText("در حال ذخیره")).toBeInTheDocument();
+    expect((await screen.findAllByText("در حال ذخیره")).length).toBeGreaterThan(0);
     act(() => {
       notifications.update(id, "ذخیره شد");
     });
@@ -30,5 +33,15 @@ describe("Sonner notification adapter", () => {
     act(() => {
       notifications.dismiss(id);
     });
+  });
+
+  it("deduplicates repeated typed feedback by stable id", () => {
+    let first: string | number = "";
+    let second: string | number = "";
+    act(() => {
+      first = notifications.error("ذخیره ناموفق بود");
+      second = notifications.error("ذخیره ناموفق بود");
+    });
+    expect(first).toBe(second);
   });
 });

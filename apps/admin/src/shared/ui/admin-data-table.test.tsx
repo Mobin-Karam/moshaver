@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AdminDataTable } from "./admin-data-table";
@@ -34,7 +35,7 @@ describe("AdminDataTable", () => {
     expect(screen.queryByText(/انتخاب‌شده/)).not.toBeInTheDocument();
   });
 
-  it("supports sorting and row activation independently", () => {
+  it("supports semantic sorting and keyboard row activation independently", async () => {
     const sort = vi.fn(),
       open = vi.fn();
     render(
@@ -49,8 +50,28 @@ describe("AdminDataTable", () => {
       />,
     );
     fireEvent.click(screen.getByRole("button", { name: "مرتب‌سازی بر اساس نام" }));
-    fireEvent.click(screen.getByText("کاربر اول"));
+    expect(screen.getByRole("columnheader", { name: /نام/ })).toHaveAttribute(
+      "aria-sort",
+      "ascending",
+    );
+    screen.getByText("کاربر اول").closest("tr")?.focus();
+    await userEvent.keyboard("{Enter}");
     expect(sort).toHaveBeenCalledWith("name");
     expect(open).toHaveBeenCalledWith(rows[0]);
+  });
+
+  it("uses the shared alert contract for contextual load failures", () => {
+    render(
+      <AdminDataTable
+        rows={[]}
+        rowId={(row: { id: string }) => row.id}
+        label="کاربران"
+        error
+        errorDescription="اتصال شبکه را بررسی کنید."
+        columns={[]}
+      />,
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent("دریافت کاربران ناموفق بود.");
+    expect(screen.getByRole("alert")).toHaveTextContent("اتصال شبکه را بررسی کنید.");
   });
 });

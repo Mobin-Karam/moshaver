@@ -9,6 +9,7 @@ import { LocationSettings } from "../components/LocationSettings";
 import { SessionsSettings } from "../components/SessionsSettings";
 import { ApiConnectionCard } from "../components/ApiConnectionCard";
 import { AccountSecurityPanel } from "../../system/components/AccountSecurityPanel";
+import { ChatProfileSettings } from "../components/ChatProfileSettings";
 export function SettingsPage() {
   const qc = useQueryClient(),
     modal = useModal(),
@@ -81,6 +82,7 @@ export function SettingsPage() {
           />
         </div>
       </section>
+      <ChatProfileSettings />
     </div>
   );
 }

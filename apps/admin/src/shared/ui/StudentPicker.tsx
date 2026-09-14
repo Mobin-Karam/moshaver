@@ -83,7 +83,7 @@ export function StudentPicker({
         <button
           {...props}
           type="button"
-          className="flex h-10 w-full min-w-0 items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 text-right outline-none transition hover:border-slate-300 focus:border-brand focus:ring-2 focus:ring-indigo-100"
+          className="flex h-10 w-full min-w-0 items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 text-right outline-none transition hover:border-slate-300 focus:border-brand focus:ring-2 focus:ring-brand/20 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
           aria-label={selected ? `دانش‌آموز انتخاب‌شده: ${selected.name}` : "انتخاب دانش‌آموز"}
         >
           <StudentAvatar student={selected} />
@@ -118,7 +118,7 @@ export function StudentPicker({
           {value ? (
             <button
               type="button"
-              className="rounded p-1 text-slate-400 hover:bg-slate-100"
+              className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
               aria-label="بستن انتخابگر"
               onClick={() => setOpen(false)}
             >
@@ -126,7 +126,7 @@ export function StudentPicker({
             </button>
           ) : null}
         </div>
-        <label className="flex h-10 items-center gap-2 rounded-md border bg-slate-50 px-3">
+        <label className="flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 dark:border-slate-700 dark:bg-slate-800">
           <Search size={16} className="text-slate-400" />
           <input
             autoFocus
@@ -135,6 +135,11 @@ export function StudentPicker({
             onChange={(event) => {
               setQuery(event.target.value);
               setExpanded(false);
+            }}
+            onKeyDown={(event) => {
+              if (event.key !== "ArrowDown") return;
+              event.preventDefault();
+              document.querySelector<HTMLElement>('[role="listbox"] [role="option"]')?.focus();
             }}
             placeholder="نام، نام کاربری، پایه یا رشته…"
           />
@@ -156,7 +161,7 @@ export function StudentPicker({
               type="button"
               key={key}
               aria-pressed={filter === key}
-              className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${filter === key ? "bg-brand text-white" : "bg-slate-100 text-slate-600"}`}
+              className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${filter === key ? "bg-brand text-white" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"}`}
               onClick={() => {
                 setFilter(key);
                 setExpanded(false);
@@ -168,14 +173,14 @@ export function StudentPicker({
         </div>
       </div>
       {!query && filter === "all" && recent.length ? (
-        <section className="border-b bg-slate-50/70 p-2">
+        <section className="border-b border-slate-200 bg-slate-50/70 p-2 dark:border-slate-700 dark:bg-slate-800/60">
           <p className="mb-1 px-1 text-[10px] font-bold text-slate-400">اخیراً انتخاب‌شده</p>
           <div className="flex gap-1 overflow-x-auto">
             {recent.slice(0, 5).map((student) => (
               <button
                 type="button"
                 key={student.id}
-                className="flex shrink-0 items-center gap-1.5 rounded-md bg-white px-2 py-1.5 text-xs ring-1 ring-slate-200 hover:ring-indigo-300"
+                className="flex shrink-0 items-center gap-1.5 rounded-md bg-white px-2 py-1.5 text-xs ring-1 ring-slate-200 hover:ring-brand/40 dark:bg-slate-900 dark:ring-slate-700"
                 onClick={() => choose(student.id)}
               >
                 <StudentAvatar student={student} small />{" "}
@@ -210,7 +215,7 @@ export function StudentPicker({
         {!expanded && filtered.length > visible.length ? (
           <button
             type="button"
-            className="mt-1 w-full rounded-md bg-slate-50 py-2 text-xs font-bold text-brand hover:bg-indigo-50"
+            className="mt-1 w-full rounded-md bg-slate-50 py-2 text-xs font-bold text-brand hover:bg-brand/10 dark:bg-slate-800"
             onClick={() => setExpanded(true)}
           >
             نمایش {filtered.length.toLocaleString("fa-IR")} دانش‌آموز
@@ -244,9 +249,30 @@ function StudentOption({
       aria-selected={selected}
       className={cn(
         "mb-1 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-right transition last:mb-0",
-        selected ? "bg-indigo-50 text-brand" : "hover:bg-slate-50",
+        selected ? "bg-brand/10 text-brand" : "hover:bg-slate-50 dark:hover:bg-slate-800",
       )}
       onClick={onClick}
+      onKeyDown={(event) => {
+        if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+        const options = Array.from(
+          event.currentTarget
+            .closest('[role="listbox"]')
+            ?.querySelectorAll<HTMLElement>('[role="option"]') || [],
+        );
+        const current = options.indexOf(event.currentTarget);
+        const next =
+          event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? options.length - 1
+              : event.key === "ArrowDown"
+                ? Math.min(current + 1, options.length - 1)
+                : Math.max(current - 1, 0);
+        if (options[next]) {
+          event.preventDefault();
+          options[next].focus();
+        }
+      }}
     >
       <StudentAvatar student={student} />
       <span className="min-w-0 flex-1">

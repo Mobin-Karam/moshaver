@@ -29,22 +29,20 @@ export function QuestionsSelector({
     <>
       <header className="flex justify-end">
         {examId ? (
-          <Link to={`/admin/exams?studentId=${encodeURIComponent(studentId)}`}>
+          <Link
+            to={`/admin/exams${studentId ? `?studentId=${encodeURIComponent(studentId)}` : ""}`}
+          >
             <Button variant="soft">بازگشت به آزمون‌ها</Button>
           </Link>
         ) : null}
       </header>
       <Card className="sticky top-16 z-10 shadow-sm">
         <div className="grid gap-3 md:grid-cols-2">
-          <Field label="دانش‌آموز">
+          <Field label="دانش‌آموز (اختیاری)">
             <StudentPicker students={students} value={studentId} onChange={setStudentId} />
           </Field>
           <Field label="آزمون">
-            <Select
-              value={examId}
-              disabled={!studentId || loading}
-              onChange={(e) => setExamId(e.target.value)}
-            >
+            <Select value={examId} disabled={loading} onChange={(e) => setExamId(e.target.value)}>
               <option value="">
                 {loading
                   ? "در حال دریافت آزمون‌ها…"

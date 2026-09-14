@@ -5,13 +5,18 @@ import type { RoleCode } from "../../shared/types/domain";
 import { Button, Card, EmptyState, Field, Select } from "../../shared/ui/ui";
 import { useModal } from "../../shared/ui/modal";
 import { roleLabels } from "../../shared/lib/role-ui";
+import { useAuth } from "../auth";
 import {
   acceptRelationship,
   addOrganizationMember,
+  allowGuardianChange,
+  createRelationship,
+  listRelationshipStudents,
   listOrganizationMembers,
   listRelationships,
   listUsers,
   rejectRelationship,
+  removeRelationship,
   removeOrganizationMember,
   updateOrganizationMember,
 } from "./api/access.api";
@@ -33,10 +38,16 @@ export function OrganizationWorkspace({
   organizationId: string;
   organizationName: string;
 }) {
+  const auth = useAuth();
   const qc = useQueryClient();
   const modal = useModal();
   const [userId, setUserId] = useState("");
   const [role, setRole] = useState<RoleCode>("ADVISOR");
+  const [relationUserId, setRelationUserId] = useState("");
+  const [relationStudentId, setRelationStudentId] = useState("");
+  const [relationType, setRelationType] = useState<
+    "GUARDIAN_OF" | "ADVISOR_OF" | "TEACHER_OF" | "MENTOR_OF"
+  >("GUARDIAN_OF");
   const members = useQuery({
     queryKey: ["organization-members", organizationId],
     queryFn: () => listOrganizationMembers(organizationId),
@@ -46,6 +57,10 @@ export function OrganizationWorkspace({
     queryFn: () => listUsers(),
   });
   const relationships = useQuery({ queryKey: ["relationships"], queryFn: listRelationships });
+  const relationshipStudents = useQuery({
+    queryKey: ["students", "relationship-picker"],
+    queryFn: listRelationshipStudents,
+  });
   const refresh = async () => {
     await Promise.all([
       qc.invalidateQueries({ queryKey: ["organization-members", organizationId] }),
@@ -80,6 +95,22 @@ export function OrganizationWorkspace({
       action === "accept" ? acceptRelationship(id) : rejectRelationship(id),
     onSuccess: refresh,
   });
+  const createLink = useMutation({
+    mutationFn: () =>
+      createRelationship({
+        fromUserId: relationUserId,
+        toStudentId: relationStudentId,
+        organizationId,
+        type: relationType,
+      }),
+    onSuccess: async () => {
+      setRelationUserId("");
+      setRelationStudentId("");
+      await refresh();
+    },
+  });
+  const revokeLink = useMutation({ mutationFn: removeRelationship, onSuccess: refresh });
+  const guardianOverride = useMutation({ mutationFn: allowGuardianChange });
   const available = (users.data || []).filter(
     (user) => !members.data?.some((member) => member.user.id === user.id),
   );
@@ -141,6 +172,64 @@ export function OrganizationWorkspace({
           <Users size={18} />
           <h3 className="font-bold">اعضای سازمان</h3>
         </div>
+        <form
+          className="mb-4 grid gap-3 rounded-xl border p-3 md:grid-cols-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            createLink.mutate();
+          }}
+        >
+          <Field label="کاربر مرتبط">
+            <Select
+              required
+              value={relationUserId}
+              onChange={(event) => setRelationUserId(event.target.value)}
+            >
+              <option value="">انتخاب کاربر…</option>
+              {(users.data ?? [])
+                .filter((user) =>
+                  user.assignments.some((assignment) => assignment.role !== "STUDENT"),
+                )
+                .map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {[user.firstName, user.lastName].filter(Boolean).join(" ") || user.username}
+                  </option>
+                ))}
+            </Select>
+          </Field>
+          <Field label="دانش‌آموز">
+            <Select
+              required
+              value={relationStudentId}
+              onChange={(event) => setRelationStudentId(event.target.value)}
+            >
+              <option value="">انتخاب دانش‌آموز…</option>
+              {(relationshipStudents.data ?? []).map((student) => (
+                <option key={student.id} value={student.id}>
+                  {student.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="نوع ارتباط">
+            <Select
+              value={relationType}
+              onChange={(event) => setRelationType(event.target.value as typeof relationType)}
+            >
+              <option value="GUARDIAN_OF">سرپرست</option>
+              <option value="ADVISOR_OF">مشاور</option>
+              <option value="TEACHER_OF">دبیر</option>
+              <option value="MENTOR_OF">منتور</option>
+            </Select>
+          </Field>
+          <Button
+            className="md:mt-6"
+            loading={createLink.isPending}
+            disabled={!relationUserId || !relationStudentId}
+          >
+            ایجاد ارتباط
+          </Button>
+        </form>
         {members.isLoading ? (
           <div className="h-24 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />
         ) : members.isError ? (
@@ -288,7 +377,26 @@ export function OrganizationWorkspace({
                       رد
                     </Button>
                   </div>
-                ) : null}
+                ) : (
+                  <div className="flex gap-2">
+                    {item.type === "GUARDIAN_OF" && auth.can("system.manage") ? (
+                      <Button
+                        variant="soft"
+                        loading={guardianOverride.isPending}
+                        onClick={() => guardianOverride.mutate(item.student.id)}
+                      >
+                        لغو محدودیت تغییر
+                      </Button>
+                    ) : null}
+                    <Button
+                      variant="danger"
+                      loading={revokeLink.isPending}
+                      onClick={() => revokeLink.mutate(item.id)}
+                    >
+                      لغو ارتباط
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

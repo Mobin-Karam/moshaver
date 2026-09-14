@@ -9,7 +9,7 @@ import {
   createExamQuestion,
   deleteExamQuestion,
   getExamQuestions,
-  getStudentExams,
+  getExams,
   updateQuestion,
 } from "../api/questions.api";
 import { QuestionEditor } from "../components/QuestionEditor";
@@ -47,9 +47,8 @@ export function QuestionsPage() {
     setSubmitted(false);
   }, [students.studentId, examId]);
   const exams = useQuery({
-    queryKey: ["exams-all", students.studentId],
-    enabled: !!students.studentId,
-    queryFn: () => getStudentExams(students.studentId),
+    queryKey: ["exams"],
+    queryFn: getExams,
   });
   const questions = useQuery({
     queryKey: ["exam-questions", examId],
@@ -110,7 +109,7 @@ export function QuestionsPage() {
       },
       { replace: true },
     );
-    notify("آزمون انتخاب‌شده متعلق به این دانش‌آموز نیست.", "warning");
+    notify("آزمون انتخاب‌شده در محدوده دسترسی شما نیست.", "warning");
   }, [examId, exams.isSuccess, selectedExam, setParams]);
   const setSearch = (value: string) =>
     setParams(
@@ -134,7 +133,9 @@ export function QuestionsPage() {
           setParams((current) => {
             const next = new URLSearchParams(current);
             value ? next.set("examId", value) : next.delete("examId");
-            next.set("studentId", students.studentId);
+            students.studentId
+              ? next.set("studentId", students.studentId)
+              : next.delete("studentId");
             next.delete("search");
             return next;
           });

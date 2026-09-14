@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   UserRoundCheck,
   LibraryBig,
+  HeartHandshake,
 } from "lucide-react";
 
 export const adminNavigation = [
@@ -34,6 +35,13 @@ export const adminNavigation = [
     section: "آموزش",
     items: [
       {
+        path: "education",
+        title: "مرکز آموزش",
+        description: "نمای عملیاتی آزمون‌ها، سؤال‌ها، تلاش‌ها و درخواست‌های بازیابی",
+        icon: GraduationCap,
+        capability: "exams.read",
+      },
+      {
         path: "planner",
         title: "برنامه‌ریز",
         description: "مدیریت برنامه روزانه، هفتگی و وظایف دانش‌آموز",
@@ -46,7 +54,7 @@ export const adminNavigation = [
         description: "مدیریت مرورهای فاصله‌دار، تسلط و الگوهای خطای دانش‌آموز",
         icon: Sparkles,
         capability: "learning.read",
-        aliases: ["education", "students/:studentId/learning"],
+        aliases: ["students/:studentId/learning"],
       },
       {
         path: "exams",
@@ -121,6 +129,13 @@ export const adminNavigation = [
         capability: "students.read",
       },
       {
+        path: "family",
+        title: "خانه خانواده",
+        description: "برنامه، پیشرفت، آزمون‌ها و پیام دلگرم‌کننده فرزند",
+        icon: HeartHandshake,
+        capability: "guardian.students.read",
+      },
+      {
         path: "onboarding",
         title: "ورودی دانش‌آموزان",
         description: "اتصال ثبت‌نام‌های جدید به سازمان و مشاور",
@@ -147,6 +162,13 @@ export const adminNavigation = [
         description: "گزارش عملکرد، مطالعه و روند پیشرفت دانش‌آموز",
         icon: LayoutDashboard,
         capability: "reports.read",
+      },
+      {
+        path: "follow-up",
+        title: "مرکز پیگیری",
+        description: "رسیدگی به درخواست‌های بازیابی و موارد نیازمند اقدام",
+        icon: ShieldCheck,
+        capability: "recovery_requests.read",
       },
     ],
   },
@@ -269,6 +291,7 @@ export function mainNavigationForCapabilities(
 const roleTitles: Record<string, Record<string, string>> = {
   GUARDIAN: {
     "": "خانه",
+    family: "فرزندان من",
     students: "فرزندان",
     reports: "پیشرفت",
     planner: "برنامه",
@@ -288,6 +311,7 @@ const roleTitles: Record<string, Record<string, string>> = {
   },
   TEACHER: {
     "": "میز کار دبیر",
+    education: "نمای آموزش",
     students: "دانش‌آموزان / کلاس‌ها",
     exams: "آزمون‌ها",
     questions: "بانک سؤال",
@@ -306,6 +330,7 @@ const roleTitles: Record<string, Record<string, string>> = {
   },
   CONTENT_MANAGER: {
     "": "استودیوی محتوا",
+    education: "نمای محتوا",
     subjects: "درس‌ها",
     questions: "بانک سؤال",
     quizzes: "آزمونک‌ها",
@@ -314,6 +339,7 @@ const roleTitles: Record<string, Record<string, string>> = {
   },
   ORGANIZATION_ADMIN: {
     "": "داشبورد سازمان",
+    education: "عملیات آموزشی",
     students: "دانش‌آموزان",
     users: "کارکنان",
     organizations: "عضویت و دسترسی",
@@ -322,6 +348,7 @@ const roleTitles: Record<string, Record<string, string>> = {
   },
   PLATFORM_ADMIN: {
     "": "داشبورد پلتفرم",
+    education: "عملیات آموزشی",
     onboarding: "تعیین تکلیف ورودی‌ها",
     users: "همه کاربران",
     organizations: "سازمان‌ها",

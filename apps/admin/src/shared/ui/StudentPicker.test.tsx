@@ -38,4 +38,17 @@ describe("StudentPicker at cohort scale", () => {
     expect(screen.getByRole("option", { name: /دانش‌آموز هدف/ })).toBeInTheDocument();
     expect(screen.getAllByRole("option")).toHaveLength(1);
   });
+
+  it("moves through options with RTL-safe keyboard navigation", async () => {
+    const user = userEvent.setup();
+    render(<StudentPicker students={students.slice(0, 3)} value="" onChange={() => undefined} />);
+    await user.click(screen.getByRole("button", { name: "انتخاب دانش‌آموز" }));
+    const search = screen.getByPlaceholderText(/نام، نام کاربری/);
+    await user.type(search, "{ArrowDown}");
+    expect(screen.getAllByRole("option")[0]).toHaveFocus();
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getAllByRole("option")[1]).toHaveFocus();
+    await user.keyboard("{End}");
+    expect(screen.getAllByRole("option")[2]).toHaveFocus();
+  });
 });

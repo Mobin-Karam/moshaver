@@ -1,4 +1,4 @@
-import { CalendarClock, Pencil, Trash2 } from "lucide-react";
+import { CalendarClock, Pencil, Trash2, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Exam } from "../../../shared/types/domain";
 import { useLocale } from "../../../shared/ui/locale";
@@ -19,6 +19,7 @@ export function ExamCard({
   onDeleteSyllabus,
   studentId,
   showQuestions = false,
+  onManageAssignments,
 }: {
   exam: Exam;
   checked: boolean;
@@ -31,6 +32,7 @@ export function ExamCard({
   onDeleteSyllabus?: (id: string) => void;
   studentId: string;
   showQuestions?: boolean;
+  onManageAssignments?: () => void;
 }) {
   const { formatDate, formatDateTime } = useLocale();
 
@@ -61,7 +63,7 @@ export function ExamCard({
       </div>
 
       <div className="mt-3 grid grid-cols-4 gap-2 text-center text-xs">
-        <Metric label="وضعیت" value={statusLabel(exam.status)} />
+        <Metric label="وضعیت" value={statusLabel(exam.status) || "نامشخص"} />
 
         <Metric label="دقیقه" value={exam.durationMinutes || 120} />
 
@@ -69,6 +71,10 @@ export function ExamCard({
 
         <Metric label="تلاش" value={exam.maxAttempts || 1} />
       </div>
+
+      <p className="mt-2 text-xs text-slate-500">
+        {`${(exam.delivery?.assignmentCount || 0).toLocaleString("fa-IR")} تخصیص • ${(exam.delivery?.attemptCount || 0).toLocaleString("fa-IR")} تلاش • ${(exam.delivery?.notStartedCount || 0).toLocaleString("fa-IR")} شروع نشده`}
+      </p>
 
       <p className="mt-3 text-xs text-slate-500">
         {formatDateTime(exam.openAt)} → {formatDateTime(exam.closeAt)}
@@ -84,14 +90,19 @@ export function ExamCard({
 
         {showQuestions ? (
           <Link
-            to={`/admin/questions?examId=${encodeURIComponent(
-              exam.id,
-            )}&studentId=${encodeURIComponent(studentId)}`}
+            to={`/admin/questions?examId=${encodeURIComponent(exam.id)}${studentId ? `&studentId=${encodeURIComponent(studentId)}` : ""}`}
           >
             <Button className="h-8 px-2 text-xs" variant="soft">
               سؤال‌ها
             </Button>
           </Link>
+        ) : null}
+
+        {onManageAssignments ? (
+          <Button className="h-8 px-2 text-xs" variant="soft" onClick={onManageAssignments}>
+            <Users size={14} />
+            تخصیص
+          </Button>
         ) : null}
 
         {onToggle ? (
@@ -106,7 +117,12 @@ export function ExamCard({
         ) : null}
 
         {onDelete ? (
-          <Button className="h-8 px-2" variant="danger" onClick={onDelete}>
+          <Button
+            size="icon"
+            variant="danger"
+            aria-label={`حذف آزمون ${exam.title}`}
+            onClick={onDelete}
+          >
             <Trash2 size={14} />
           </Button>
         ) : null}

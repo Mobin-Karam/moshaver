@@ -130,6 +130,7 @@ export function ViewportPopover({
     const keyboard = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         change(false);
+        anchor.current?.focus();
       }
     };
 

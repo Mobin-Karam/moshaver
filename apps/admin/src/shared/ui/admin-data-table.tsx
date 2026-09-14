@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowUp, CheckSquare2, Minus, Square, X } from "lucide-react";
 import type { ReactNode } from "react";
-import { Button, EmptyState, LoadingState } from "./ui";
+import { Button, EmptyState, ErrorState, LoadingState } from "./ui";
 
 export type AdminDataColumn<T> = {
   id: string;
@@ -18,6 +18,8 @@ export function AdminDataTable<T>({
   loading = false,
   error = false,
   emptyTitle = "رکوردی وجود ندارد.",
+  errorTitle,
+  errorDescription,
   onRetry,
   onRowClick,
   activeId,
@@ -35,6 +37,8 @@ export function AdminDataTable<T>({
   loading?: boolean;
   error?: boolean;
   emptyTitle?: string;
+  errorTitle?: string;
+  errorDescription?: ReactNode;
   onRetry?: () => void;
   onRowClick?: (row: T) => void;
   activeId?: string;
@@ -72,8 +76,9 @@ export function AdminDataTable<T>({
   if (error)
     return (
       <div className="p-5">
-        <EmptyState
-          title={`دریافت ${label} ناموفق بود.`}
+        <ErrorState
+          title={errorTitle || `دریافت ${label} ناموفق بود.`}
+          description={errorDescription}
           action={
             onRetry ? (
               <Button variant="soft" onClick={onRetry}>
@@ -106,7 +111,12 @@ export function AdminDataTable<T>({
           <div className="flex flex-1 flex-wrap items-center gap-2">
             {typeof batchActions === "function" ? batchActions(selectedRows) : batchActions}
           </div>
-          <Button variant="ghost" className="mr-auto h-9" onClick={() => onSelectionChange?.([])}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="mr-auto"
+            onClick={() => onSelectionChange?.([])}
+          >
             <X size={14} />
             لغو انتخاب
           </Button>
@@ -139,13 +149,24 @@ export function AdminDataTable<T>({
                 </th>
               ) : null}
               {columns.map((column) => (
-                <th key={column.id} className={`px-3 py-2 font-semibold ${column.className || ""}`}>
+                <th
+                  key={column.id}
+                  className={`px-3 py-2 font-semibold ${column.className || ""}`}
+                  aria-sort={
+                    sortId === column.id
+                      ? sortDirection === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : undefined
+                  }
+                >
                   {column.sortLabel && onSort ? (
                     <button
                       type="button"
                       className="inline-flex items-center gap-1 rounded-md px-1 py-1 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                       onClick={() => onSort(column.id)}
                       aria-label={`مرتب‌سازی بر اساس ${column.sortLabel}`}
+                      aria-pressed={sortId === column.id}
                     >
                       {column.header}
                       {sortId === column.id ? (
@@ -173,6 +194,17 @@ export function AdminDataTable<T>({
                   key={id}
                   className={`${onRowClick ? "cursor-pointer" : ""} transition-colors ${checked || active ? "bg-brand/5 dark:bg-brand/10" : "hover:bg-slate-50 dark:hover:bg-slate-900/70"}`}
                   onClick={() => onRowClick?.(row)}
+                  tabIndex={onRowClick ? 0 : undefined}
+                  onKeyDown={(event) => {
+                    if (
+                      !onRowClick ||
+                      event.target !== event.currentTarget ||
+                      !["Enter", " "].includes(event.key)
+                    )
+                      return;
+                    event.preventDefault();
+                    onRowClick(row);
+                  }}
                   aria-selected={checked || active || undefined}
                 >
                   {selectable ? (

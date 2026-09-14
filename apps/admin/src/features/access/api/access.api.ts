@@ -25,6 +25,7 @@ export type UserRelationship = {
   organizationId?: string;
   createdAt: string;
 };
+export type RelationshipStudent = { id: string; name: string; grade?: string; major?: string };
 
 export const listUsers = (organizationId?: string) =>
   api.get<PortalUser[]>(
@@ -71,6 +72,16 @@ export const updateOrganizationMember = (
 export const removeOrganizationMember = (id: string, userId: string) =>
   api.delete(`/organizations/${id}/members/${userId}`);
 export const listRelationships = () => api.get<UserRelationship[]>("/relationships");
+export const listRelationshipStudents = () => api.get<RelationshipStudent[]>("/students");
+export const createRelationship = (body: {
+  fromUserId: string;
+  toStudentId: string;
+  organizationId?: string;
+  type: "GUARDIAN_OF" | "ADVISOR_OF" | "TEACHER_OF" | "MENTOR_OF";
+}) => api.post<UserRelationship>("/relationships", body);
+export const removeRelationship = (id: string) => api.delete(`/relationships/${id}`);
+export const allowGuardianChange = (studentId: string) =>
+  api.post(`/students/${studentId}/guardian-change-override`, {});
 export const acceptRelationship = (id: string) =>
   api.post<UserRelationship>(`/relationships/${id}/accept`, {});
 export const rejectRelationship = (id: string) =>

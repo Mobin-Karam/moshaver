@@ -23,7 +23,7 @@ export function useExamMutations(studentId: string) {
 
   const save = useMutation({
     mutationFn: ({ id, body }: { id?: string; body: ExamDraft }) =>
-      id ? updateExam(id, body) : createExam(studentId, body),
+      id ? updateExam(id, body) : createExam(body, studentId || undefined),
 
     onSuccess: (_, variables) => {
       notify(variables.id ? "آزمون ویرایش شد." : "آزمون ساخته شد.");
@@ -103,12 +103,12 @@ export function useExamMutations(studentId: string) {
 
     onMutate: async ({ id, published }) => {
       await queryClient.cancelQueries({
-        queryKey: ["exams", studentId],
+        queryKey: ["exams"],
       });
 
-      const previous = queryClient.getQueryData<Exam[]>(["exams", studentId]);
+      const previous = queryClient.getQueryData<Exam[]>(["exams"]);
 
-      queryClient.setQueryData<Exam[]>(["exams", studentId], (items) =>
+      queryClient.setQueryData<Exam[]>(["exams"], (items) =>
         items?.map((item) =>
           item.id === id
             ? {
@@ -126,7 +126,7 @@ export function useExamMutations(studentId: string) {
 
     onError: (error, _, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(["exams", studentId], context.previous);
+        queryClient.setQueryData(["exams"], context.previous);
       }
 
       notify(error instanceof Error ? error.message : "تغییر انتشار ناموفق بود.", "error");

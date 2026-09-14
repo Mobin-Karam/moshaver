@@ -45,6 +45,9 @@ const PlannerPage = lazy(() =>
 const LearningPage = lazy(() =>
   import("../features/learning").then((module) => ({ default: module.LearningPage })),
 );
+const EducationOverviewPage = lazy(() =>
+  import("../features/education").then((module) => ({ default: module.EducationOverviewPage })),
+);
 const ExamsPage = lazy(() =>
   import("../features/exams").then((module) => ({ default: module.ExamsPage })),
 );
@@ -62,6 +65,9 @@ const OnboardingPage = lazy(() =>
 );
 const ResourcesPage = lazy(() =>
   import("../features/resources").then((module) => ({ default: module.ResourcesPage })),
+);
+const GuardianPage = lazy(() =>
+  import("../features/guardian").then((module) => ({ default: module.GuardianPage })),
 );
 
 function RouteScreen({ children }: { children: ReactNode }) {
@@ -165,6 +171,16 @@ export const router = createBrowserRouter([
           },
           { path: "live", element: <CommunicationRedirect page="live" /> },
           {
+            path: "family",
+            element: (
+              <CapabilityRoute capability="guardian.students.read">
+                <RouteScreen>
+                  <GuardianPage />
+                </RouteScreen>
+              </CapabilityRoute>
+            ),
+          },
+          {
             path: "students",
             element: (
               <CapabilityRoute capability="students.read">
@@ -234,7 +250,16 @@ export const router = createBrowserRouter([
               </CapabilityRoute>
             ),
           },
-          { path: "education", element: <Navigate to="/admin/learning" replace /> },
+          {
+            path: "education",
+            element: (
+              <CapabilityRoute capability="exams.read">
+                <RouteScreen>
+                  <EducationOverviewPage />
+                </RouteScreen>
+              </CapabilityRoute>
+            ),
+          },
           {
             path: "students/:studentId/learning",
             element: (
