@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Route, Routes, BrowserRouter } from 'react-router-dom';
+import { Navigate, Route, Routes, BrowserRouter } from 'react-router-dom';
 import { useStudentStore } from './services/student-store';
 import { apiClient } from './services/api-client';
 import { TauriSQLiteProvider } from './native/tauri-sqlite-provider';
@@ -21,6 +21,7 @@ const ChatPage = lazy(() => import('./features/chat/ChatPage').then((module) => 
 const MoreRouterPage = lazy(() => import('./features/more/MoreRouterPage').then((module) => ({ default: module.MoreRouterPage })));
 const LazyLearningPage = lazy(() => import('./features/learning/LearningPage').then((module) => ({ default: module.LearningPage })));
 const NotificationsPage = lazy(() => import('./features/notifications/NotificationsPage').then((module) => ({ default: module.NotificationsPage })));
+const LearningResourcesPage = lazy(() => import('./features/resources/LearningResourcesPage').then((module) => ({ default: module.LearningResourcesPage })));
 
 const syncController = initializeSync();
 
@@ -123,11 +124,12 @@ function App() {
         <StudentAppShell access={access} unread={unread} syncLabel={syncStatusLabel(syncStatus)} theme={theme} onThemeChange={() => setTheme((value) => value === 'light' ? 'dark' : value === 'dark' ? 'system' : 'light')} guardianSelector={access?.mode === 'guardian' && guardianStudents.length ? <label className="guardian-picker"><span>فرزند:</span><select value={selectedGuardianStudentId || ''} onChange={(event) => void selectGuardianStudent(event.target.value)}>{guardianStudents.map((child) => <option key={child.id} value={child.id}>{child.name}</option>)}</select></label> : undefined}>
           <Suspense fallback={<LoadingState label="در حال آماده‌سازی صفحه" />}><Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/plan" element={<PlanPage />} />
-            <Route path="/exam" element={<ExamPage />} />
-            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/plan" element={access?.canReadPlans ? <PlanPage /> : <Navigate to="/" replace />} />
+            <Route path="/exam" element={access?.canReadExams ? <ExamPage /> : <Navigate to="/" replace />} />
+            <Route path="/chat" element={access?.canUseChat ? <ChatPage /> : <Navigate to="/" replace />} />
             <Route path="/more/:section?" element={<MoreRouterPage theme={theme} onThemeChange={setTheme} />} />
-            <Route path="/learning" element={<LazyLearningPage />} />
+            <Route path="/learning" element={access?.canReadLearning ? <LazyLearningPage /> : <Navigate to="/more" replace />} />
+            <Route path="/resources" element={access?.canReadResources ? <LearningResourcesPage /> : <Navigate to="/more" replace />} />
             <Route path="/notifications" element={<NotificationsPage />} />
           </Routes></Suspense>
         </StudentAppShell>

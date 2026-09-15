@@ -10,7 +10,7 @@ import type { PortalAccess } from '../../app/portal-access';
 
 const task = { id: 'task-1', type: 'study' as const, subject: 'ریاضی', title: 'فصل دوم', start: '14:30', end: '15:30' };
 const exam = { id: 'exam-1', title: 'آزمون جامع', durationMinutes: 60, subjects: ['ریاضی'], delivery: { questionCount: 20, attemptsUsed: 0, allowedAttempts: 1 } };
-const studentAccess: PortalAccess = { mode: 'student', canMutateStudentWork: true, canTakeExams: true, canReadGuardianStudents: false, canUseChat: true, navigation: ['today', 'plan', 'exams', 'chat', 'more'] };
+const studentAccess: PortalAccess = { mode: 'student', canMutateStudentWork: true, canTakeExams: true, canReadPlans: true, canReadExams: true, canReadLearning: true, canReadResources: true, canReadGuardianStudents: false, canUseChat: true, navigation: ['today', 'plan', 'exams', 'chat', 'more'] };
 
 afterEach(() => {
   cleanup();
@@ -30,10 +30,17 @@ describe('student design system', () => {
   });
 
   it('exposes five primary navigation targets and the unread count', () => {
-    render(<MemoryRouter><StudentAppShell access={null} unread={3} syncLabel="آنلاین" theme="system" onThemeChange={vi.fn()}><p>محتوا</p></StudentAppShell></MemoryRouter>);
+    render(<MemoryRouter><StudentAppShell access={studentAccess} unread={3} syncLabel="آنلاین" theme="system" onThemeChange={vi.fn()}><p>محتوا</p></StudentAppShell></MemoryRouter>);
     expect(screen.getByRole('navigation', { name: 'ناوبری اصلی' })).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'ناوبری اصلی' }).querySelectorAll('a')).toHaveLength(5);
     expect(screen.getByRole('link', { name: /گفتگو، ۳ خوانده‌نشده/ })).toBeInTheDocument();
+  });
+
+  it('hides navigation destinations that are absent from active capabilities', () => {
+    render(<MemoryRouter><StudentAppShell access={{ ...studentAccess, canReadExams: false, canUseChat: false, navigation: ['today', 'plan', 'more'] }} unread={3} syncLabel="آنلاین" theme="system" onThemeChange={vi.fn()}><p>محتوا</p></StudentAppShell></MemoryRouter>);
+    expect(screen.queryByRole('link', { name: 'آزمون‌ها' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /گفتگو/ })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('link')).toHaveLength(3);
   });
 
   it('opens the active task from the island with a deep link', async () => {

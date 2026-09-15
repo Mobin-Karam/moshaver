@@ -11,6 +11,7 @@ import {
   Moon,
   MoonStar,
   NotebookTabs,
+  LibraryBig,
   Palette,
   RotateCcw,
   Search,
@@ -118,12 +119,19 @@ function MoreHub() {
             tone="purple"
           />
         ) : null}
-        <MoreRow
+        {access?.canReadLearning ? <MoreRow
           to="/learning"
           icon={<BookOpenCheck />}
           title="پیشرفت و مرور"
           subtitle="گزارش یادگیری و مرورهای ثبت‌شده"
-        />
+        /> : null}
+        {access?.canReadResources ? <MoreRow
+          to="/resources"
+          icon={<LibraryBig />}
+          title="منابع آموزشی"
+          subtitle="ویدئوها و پیوندهای منتشرشده برای شما"
+          tone="blue"
+        /> : null}
         {access?.mode === "student" ? <MoreRow to="/more/mistakes" icon={<NotebookTabs />} title="دفترچه اشتباهات" subtitle="دسته‌بندی خطاها و ثبت مرور" tone="amber" /> : null}
         {access?.mode === "student" ? (
           <MoreRow

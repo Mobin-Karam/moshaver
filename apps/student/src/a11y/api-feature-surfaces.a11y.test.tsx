@@ -1,9 +1,11 @@
 import { cleanup, render, waitFor } from '@testing-library/react';
 import axe from 'axe-core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 import { GuardianInsightsPage } from '../features/more/GuardianInsightsPage';
 import { ReportsHistory } from '../features/more/ReportsHistory';
 import { TaskSupportPanel } from '../features/plan/TaskSupportPanel';
+import { LearningResourcesPage } from '../features/resources/LearningResourcesPage';
 import { apiClient } from '../services/api-client';
 import { useStudentStore } from '../services/student-store';
 
@@ -31,6 +33,16 @@ describe('new API feature surfaces accessibility', () => {
     const family = render(<GuardianInsightsPage />);
     await waitFor(() => expect(family.getByText('هنوز گزارش شبانه‌ای ثبت نشده است.')).toBeInTheDocument());
     expect((await audit(family.container)).violations).toEqual([]);
+  });
+
+  it('keeps the assigned resource library accessible', async () => {
+    useStudentStore.setState({ access: { mode: 'student' }, selectedGuardianStudentId: null } as never);
+    vi.spyOn(apiClient, 'request').mockResolvedValue([
+      { id: 'resource-1', title: 'مرور فصل اول', description: 'ویدئوی آموزشی', type: 'VIDEO', url: 'https://example.test/video' },
+    ] as never);
+    const resource = render(<MemoryRouter><LearningResourcesPage /></MemoryRouter>);
+    await resource.findByText('مرور فصل اول');
+    expect((await audit(resource.container)).violations).toEqual([]);
   });
 });
 

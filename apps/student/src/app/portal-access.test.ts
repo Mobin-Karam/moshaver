@@ -7,6 +7,9 @@ describe('Student and Family portal access', () => {
       'student.profile.read',
       'tasks.update',
       'learning.create',
+      'learning.read',
+      'plans.read',
+      'learning_resources.read',
       'exams.read',
       'chat.read',
     ]);
@@ -14,6 +17,10 @@ describe('Student and Family portal access', () => {
       mode: 'student',
       canMutateStudentWork: true,
       canTakeExams: true,
+      canReadPlans: true,
+      canReadExams: true,
+      canReadLearning: true,
+      canReadResources: true,
       canReadGuardianStudents: false,
     });
   });
@@ -22,14 +29,32 @@ describe('Student and Family portal access', () => {
     const access = portalAccess(['GUARDIAN'], [
       'guardian.students.read',
       'guardian.dashboard.read',
+      'guardian.schedule.read',
+      'guardian.progress.read',
       'guardian.exams.read',
+      'learning_resources.read',
       'chat.read',
     ]);
     expect(access).toMatchObject({
       mode: 'guardian',
       canMutateStudentWork: false,
       canTakeExams: false,
+      canReadPlans: true,
+      canReadExams: true,
+      canReadLearning: true,
+      canReadResources: true,
       canReadGuardianStudents: true,
+    });
+  });
+
+  it('keeps read-only students in the portal and hides unavailable sections', () => {
+    const access = portalAccess(['STUDENT'], ['student.profile.read', 'plans.read']);
+    expect(access).toMatchObject({
+      mode: 'student',
+      canMutateStudentWork: false,
+      canReadPlans: true,
+      canReadExams: false,
+      navigation: ['today', 'plan', 'more'],
     });
   });
 

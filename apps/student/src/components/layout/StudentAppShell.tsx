@@ -11,11 +11,11 @@ export function StudentAppShell({ children, access, unread, syncLabel, theme, on
     {access?.mode === 'student' ? <ActivityIsland syncLabel={syncLabel} /> : null}
     <main className="page-container">{guardianSelector}{children}</main>
     <nav className="bottom-nav" aria-label="ناوبری اصلی"><div className="bottom-nav__inner">
-      <Tab to="/" icon={<Home />} label="خانه" />
-      <Tab to="/plan" icon={<CalendarDays />} label="برنامه" />
-      <Tab to="/exam" icon={<GraduationCap />} label="آزمون‌ها" />
-      <Tab to="/chat" icon={<MessageCircleIcon />} label="گفتگو" badge={unread} />
-      <Tab to="/more" icon={<Menu />} label="بیشتر" />
+      {access?.navigation.includes('today') ? <Tab to="/" icon={<Home />} label="خانه" /> : null}
+      {access?.navigation.includes('plan') ? <Tab to="/plan" icon={<CalendarDays />} label="برنامه" /> : null}
+      {access?.navigation.includes('exams') ? <Tab to="/exam" icon={<GraduationCap />} label="آزمون‌ها" /> : null}
+      {access?.navigation.includes('chat') ? <Tab to="/chat" icon={<MessageCircleIcon />} label="گفتگو" badge={unread} /> : null}
+      {access?.navigation.includes('more') ? <Tab to="/more" icon={<Menu />} label="بیشتر" /> : null}
     </div></nav>
     {access?.mode === 'guardian' ? <span className="sr-only">پرتال خانواده، فقط خواندنی</span> : null}
   </div>;
