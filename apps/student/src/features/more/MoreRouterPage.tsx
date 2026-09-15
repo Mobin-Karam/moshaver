@@ -12,6 +12,7 @@ import {
   MoonStar,
   NotebookTabs,
   LibraryBig,
+  ListChecks,
   Palette,
   RotateCcw,
   Search,
@@ -131,6 +132,13 @@ function MoreHub() {
           title="منابع آموزشی"
           subtitle="ویدئوها و پیوندهای منتشرشده برای شما"
           tone="blue"
+        /> : null}
+        {access?.canUseQuizzes ? <MoreRow
+          to="/quizzes"
+          icon={<ListChecks />}
+          title="آزمونک‌ها"
+          subtitle="تمرین کوتاه، نتیجه فوری و مرور پاسخ‌ها"
+          tone="purple"
         /> : null}
         {access?.mode === "student" ? <MoreRow to="/more/mistakes" icon={<NotebookTabs />} title="دفترچه اشتباهات" subtitle="دسته‌بندی خطاها و ثبت مرور" tone="amber" /> : null}
         {access?.mode === "student" ? (

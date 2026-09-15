@@ -6,6 +6,7 @@ import { GuardianInsightsPage } from '../features/more/GuardianInsightsPage';
 import { ReportsHistory } from '../features/more/ReportsHistory';
 import { TaskSupportPanel } from '../features/plan/TaskSupportPanel';
 import { LearningResourcesPage } from '../features/resources/LearningResourcesPage';
+import { StudentQuizzesPage } from '../features/quiz/StudentQuizzesPage';
 import { apiClient } from '../services/api-client';
 import { useStudentStore } from '../services/student-store';
 
@@ -43,6 +44,15 @@ describe('new API feature surfaces accessibility', () => {
     const resource = render(<MemoryRouter><LearningResourcesPage /></MemoryRouter>);
     await resource.findByText('مرور فصل اول');
     expect((await audit(resource.container)).violations).toEqual([]);
+  });
+
+  it('keeps the student quiz list accessible', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue([
+      { id: 'quiz-1', title: 'مرور ریاضی', subject: 'ریاضی', durationMinutes: 10, questionCount: 4, attempt: null },
+    ] as never);
+    const quizzes = render(<MemoryRouter><StudentQuizzesPage /></MemoryRouter>);
+    await quizzes.findByText('مرور ریاضی');
+    expect((await audit(quizzes.container)).violations).toEqual([]);
   });
 });
 

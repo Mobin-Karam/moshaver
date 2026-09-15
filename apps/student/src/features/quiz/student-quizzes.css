@@ -1,0 +1,18 @@
+.student-quiz-timer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 10px;
+  background: rgb(var(--warning) / 0.12);
+  padding: 7px 9px;
+  color: rgb(var(--warning));
+}
+
+.student-quiz-timer svg {
+  width: 14px;
+}
+
+.student-quiz-timer strong {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}

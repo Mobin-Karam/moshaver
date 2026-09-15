@@ -75,3 +75,56 @@ describe("AssessmentsService retry isolation", () => {
     expect(manager.save).toHaveBeenCalledWith(expect.any(Function), expect.objectContaining({ status: RetryRequestStatus.APPROVED }));
   });
 });
+
+describe("AssessmentsService student quiz isolation", () => {
+  function quizService() {
+    const quizzes = repo({
+      find: jest.fn(async () => [
+        { id: "quiz-assigned", title: "Assigned", subject: "Math", durationMinutes: 10, active: true, questions: [{ id: "q1", correctAnswer: "A" }], exam: { id: "exam-1" }, organization: null },
+        { id: "quiz-org", title: "Organization", subject: "Physics", durationMinutes: 15, active: true, questions: [], exam: null, organization: { id: "org-1" } },
+        { id: "quiz-other", title: "Other", subject: "Chemistry", durationMinutes: 20, active: true, questions: [], exam: null, organization: { id: "org-2" } },
+      ]),
+    });
+    const assignments = repo({
+      findOne: jest.fn(async ({ where }: any) => where.exam?.id === "exam-1" ? { id: "assignment-1" } : null),
+    });
+    const manager = {
+      findOne: jest.fn(async (_entity: unknown, { where }: any) => where.organization?.id === "org-1" ? { id: "membership-1" } : null),
+    };
+    const result = new AssessmentsService(
+      repo() as any,
+      assignments as any,
+      repo() as any,
+      repo() as any,
+      repo() as any,
+      quizzes as any,
+      repo() as any,
+      repo({ findOne: jest.fn(async () => null) }) as any,
+      repo({ findOneOrFail: jest.fn(async () => ({ id: "student-1", user: { id: "user-1" } })) }) as any,
+      repo() as any,
+      {} as any,
+      { manager } as any,
+    );
+    return { result, quizzes };
+  }
+
+  it("lists only exam-assigned or same-organization active quizzes", async () => {
+    const { result } = quizService();
+
+    const visible = await result.studentQuizzes("user-1");
+
+    expect(visible.map((quiz) => quiz.id)).toEqual(["quiz-assigned", "quiz-org"]);
+    expect(visible[0]).toEqual(expect.objectContaining({ questionCount: 1, attempt: null }));
+    expect(visible[0]).not.toHaveProperty("questions");
+  });
+
+  it("returns not found rather than exposing a cross-organization standalone quiz", async () => {
+    const { result, quizzes } = quizService();
+    quizzes.findOne.mockResolvedValue({ id: "quiz-other", active: true, exam: null, organization: { id: "org-2" } });
+
+    const failure = await result.studentQuiz("user-1", "quiz-other").catch((error: ApiException) => error);
+
+    expect(failure).toBeInstanceOf(ApiException);
+    expect((failure as ApiException).getStatus()).toBe(404);
+  });
+});

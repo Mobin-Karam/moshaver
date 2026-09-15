@@ -8,6 +8,7 @@ export interface PortalAccess {
   canReadExams: boolean;
   canReadLearning: boolean;
   canReadResources: boolean;
+  canUseQuizzes: boolean;
   canReadGuardianStudents: boolean;
   canUseChat: boolean;
   navigation: Array<'today' | 'plan' | 'exams' | 'chat' | 'more'>;
@@ -32,6 +33,7 @@ export function portalAccess(roles: readonly string[], capabilities: readonly st
     canReadExams,
     canReadLearning,
     canReadResources: has('learning_resources.read'),
+    canUseQuizzes: student && has('student.quizzes.read'),
     canReadGuardianStudents: guardian,
     canUseChat: has('chat.read'),
     navigation: [

@@ -10,6 +10,7 @@ describe('Student and Family portal access', () => {
       'learning.read',
       'plans.read',
       'learning_resources.read',
+      'student.quizzes.read',
       'exams.read',
       'chat.read',
     ]);
@@ -21,6 +22,7 @@ describe('Student and Family portal access', () => {
       canReadExams: true,
       canReadLearning: true,
       canReadResources: true,
+      canUseQuizzes: true,
       canReadGuardianStudents: false,
     });
   });
@@ -43,6 +45,7 @@ describe('Student and Family portal access', () => {
       canReadExams: true,
       canReadLearning: true,
       canReadResources: true,
+      canUseQuizzes: false,
       canReadGuardianStudents: true,
     });
   });

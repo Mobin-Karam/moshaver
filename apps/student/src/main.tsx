@@ -22,6 +22,7 @@ const MoreRouterPage = lazy(() => import('./features/more/MoreRouterPage').then(
 const LazyLearningPage = lazy(() => import('./features/learning/LearningPage').then((module) => ({ default: module.LearningPage })));
 const NotificationsPage = lazy(() => import('./features/notifications/NotificationsPage').then((module) => ({ default: module.NotificationsPage })));
 const LearningResourcesPage = lazy(() => import('./features/resources/LearningResourcesPage').then((module) => ({ default: module.LearningResourcesPage })));
+const StudentQuizzesPage = lazy(() => import('./features/quiz/StudentQuizzesPage').then((module) => ({ default: module.StudentQuizzesPage })));
 
 const syncController = initializeSync();
 
@@ -130,6 +131,7 @@ function App() {
             <Route path="/more/:section?" element={<MoreRouterPage theme={theme} onThemeChange={setTheme} />} />
             <Route path="/learning" element={access?.canReadLearning ? <LazyLearningPage /> : <Navigate to="/more" replace />} />
             <Route path="/resources" element={access?.canReadResources ? <LearningResourcesPage /> : <Navigate to="/more" replace />} />
+            <Route path="/quizzes" element={access?.canUseQuizzes ? <StudentQuizzesPage /> : <Navigate to="/more" replace />} />
             <Route path="/notifications" element={<NotificationsPage />} />
           </Routes></Suspense>
         </StudentAppShell>
