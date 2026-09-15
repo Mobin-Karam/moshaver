@@ -265,6 +265,7 @@ function ReportsPage() {
 }
 
 function ProfilePage() {
+  const access = useStudentStore((state) => state.access);
   const student = useStudentStore((state) => state.student);
   const subjects = useStudentStore((state) => state.subjects);
   const relationships = useStudentStore((state) => state.relationships);
@@ -293,7 +294,11 @@ function ProfilePage() {
               .join("، ") || "درسی ثبت نشده است."
           }
         />
-        <InfoRow
+        {subjects.some((item) => item.enabled && item.weeklyTargetMinutes) ? <InfoRow
+          title="هدف هفتگی درس‌ها"
+          value={subjects.filter((item) => item.enabled && item.weeklyTargetMinutes).map((item) => `${item.displayName || item.subject.name}: ${(item.weeklyTargetMinutes || 0).toLocaleString("fa-IR")} دقیقه`).join(" · ")}
+        /> : null}
+        {access?.mode === "student" ? <InfoRow
           title="ارتباط‌های فعال"
           value={
             relationships
@@ -308,15 +313,15 @@ function ProfilePage() {
               )
               .join("، ") || "ارتباط فعالی ثبت نشده است."
           }
-        />
-        <InfoRow
+        /> : null}
+        {access?.mode === "student" ? <InfoRow
           title="دفترچه اشتباهات"
           value={
             mistakes.length
               ? `${mistakes.length.toLocaleString("fa-IR")} مورد نیازمند مرور`
               : "موردی ثبت نشده است."
           }
-        />
+        /> : null}
       </MoreGroup>
     </MoreSection>
   );

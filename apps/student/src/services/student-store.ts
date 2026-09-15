@@ -407,7 +407,7 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       selectedGuardianStudentId: id,
       student: get().guardianStudents.find((item) => item.id === id) || null,
     });
-    await Promise.all([get().loadDashboard(), get().loadExams(), get().loadLearning()]);
+    await Promise.all([get().loadProfileDomains(), get().loadDashboard(), get().loadExams(), get().loadLearning()]);
   },
   async loadDashboard() {
     set({ loadStatus: 'loading', error: null });
@@ -508,10 +508,16 @@ export const useStudentStore = create<StudentState>((set, get) => ({
         const children = await apiClient.request<BackendStudent[]>('GET', '/guardian/students');
         const cached = localStorage.getItem('moshaver:v2:guardian-child');
         const selected = children.find((child) => child.id === cached) || children[0] || null;
+        const subjects = selected && get().access?.canReadSubjects
+          ? await apiClient.request<StudentSubject[]>('GET', `/students/${encodeURIComponent(selected.id)}/subjects`)
+          : [];
         set({
           guardianStudents: children,
           selectedGuardianStudentId: selected?.id || null,
           student: selected,
+          subjects,
+          relationships: [],
+          mistakes: [],
         });
         return;
       }

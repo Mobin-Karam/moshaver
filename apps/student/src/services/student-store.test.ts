@@ -183,3 +183,31 @@ describe('student account isolation', () => {
     });
   });
 });
+
+describe('guardian education projections', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.restoreAllMocks();
+    useStudentStore.setState({
+      access: portalAccess(['GUARDIAN'], ['guardian.students.read', 'studentSubjects.read']),
+      guardianStudents: [],
+      selectedGuardianStudentId: null,
+      subjects: [],
+    } as never);
+  });
+
+  it('loads subject settings for the selected related student', async () => {
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce([{ id: 'student/1', name: 'سارا' }] as never)
+      .mockResolvedValueOnce([{ subject: { id: 'subject-1', code: 'math', name: 'ریاضی' }, enabled: true, displayName: 'ریاضی پایه', weeklyTargetMinutes: 240 }] as never);
+
+    await useStudentStore.getState().loadProfileDomains();
+
+    expect(request).toHaveBeenNthCalledWith(1, 'GET', '/guardian/students');
+    expect(request).toHaveBeenNthCalledWith(2, 'GET', '/students/student%2F1/subjects');
+    expect(useStudentStore.getState()).toMatchObject({
+      selectedGuardianStudentId: 'student/1',
+      subjects: [{ enabled: true, displayName: 'ریاضی پایه', weeklyTargetMinutes: 240 }],
+    });
+  });
+});

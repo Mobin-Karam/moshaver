@@ -11,6 +11,7 @@ describe('Student and Family portal access', () => {
       'plans.read',
       'learning_resources.read',
       'student.quizzes.read',
+      'studentSubjects.read',
       'exams.read',
       'chat.read',
     ]);
@@ -23,6 +24,7 @@ describe('Student and Family portal access', () => {
       canReadLearning: true,
       canReadResources: true,
       canUseQuizzes: true,
+      canReadSubjects: true,
       canReadGuardianStudents: false,
     });
   });
@@ -35,6 +37,7 @@ describe('Student and Family portal access', () => {
       'guardian.progress.read',
       'guardian.exams.read',
       'learning_resources.read',
+      'studentSubjects.read',
       'chat.read',
     ]);
     expect(access).toMatchObject({
@@ -46,6 +49,7 @@ describe('Student and Family portal access', () => {
       canReadLearning: true,
       canReadResources: true,
       canUseQuizzes: false,
+      canReadSubjects: true,
       canReadGuardianStudents: true,
     });
   });

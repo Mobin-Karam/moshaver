@@ -84,6 +84,27 @@ describe('More navigation hub', () => {
     await userEvent.click(screen.getByRole('button', { name: 'انتخاب' }));
     expect(request).toHaveBeenCalledWith('POST', '/student/guardian-selection', { guardianUserId: 'g1' });
   });
+
+  it('shows the selected child subject plan without student-only private domains', async () => {
+    useStudentStore.setState({
+      access: portalAccess(['GUARDIAN'], ['guardian.students.read', 'studentSubjects.read']),
+      selectedGuardianStudentId: 'student-1',
+      student: { id: 'student-1', name: 'سارا' },
+      subjects: [],
+      relationships: [{ id: 'private-relationship', status: 'ACTIVE' }],
+      mistakes: [{ id: 'private-mistake' }],
+    } as never);
+    vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce([{ id: 'student-1', name: 'سارا' }] as never)
+      .mockResolvedValueOnce([{ subject: { id: 'subject-1', code: 'math', name: 'ریاضی' }, enabled: true, displayName: 'ریاضی پایه', weeklyTargetMinutes: 240 }] as never);
+
+    renderPage('/more/profile');
+
+    expect(await screen.findByText('ریاضی پایه')).toBeInTheDocument();
+    expect(screen.getByText(/ریاضی پایه: ۲۴۰ دقیقه/)).toBeInTheDocument();
+    expect(screen.queryByText('ارتباط‌های فعال')).not.toBeInTheDocument();
+    expect(screen.queryByText('دفترچه اشتباهات')).not.toBeInTheDocument();
+  });
 });
 
 function renderPage(path: string, onThemeChange = vi.fn()) {
