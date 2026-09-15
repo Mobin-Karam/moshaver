@@ -81,7 +81,7 @@ export function LearningPage() {
           </article>
         </>
       ) : null}
-      {access?.mode === 'student' ? <LearningItemsPanel /> : null}
+      {access?.mode === 'student' ? <LearningItemsPanel canCreate={access.canCreateLearning} canUpdate={access.canUpdateLearning} canReview={access.canReviewLearning} /> : null}
     </section>
   );
 }

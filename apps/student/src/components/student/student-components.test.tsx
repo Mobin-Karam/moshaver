@@ -10,7 +10,7 @@ import type { PortalAccess } from '../../app/portal-access';
 
 const task = { id: 'task-1', type: 'study' as const, subject: 'ریاضی', title: 'فصل دوم', start: '14:30', end: '15:30' };
 const exam = { id: 'exam-1', title: 'آزمون جامع', durationMinutes: 60, subjects: ['ریاضی'], delivery: { questionCount: 20, attemptsUsed: 0, allowedAttempts: 1 } };
-const studentAccess: PortalAccess = { mode: 'student', canMutateStudentWork: true, canTakeExams: true, canReadPlans: true, canReadExams: true, canReadLearning: true, canReadResources: true, canUseQuizzes: true, canReadSubjects: true, canReadGuardianStudents: false, canUseChat: true, navigation: ['today', 'plan', 'exams', 'chat', 'more'] };
+const studentAccess: PortalAccess = { mode: 'student', canMutateStudentWork: true, canTakeExams: true, canReadPlans: true, canReadExams: true, canReadLearning: true, canCreateLearning: true, canUpdateLearning: true, canReviewLearning: true, canReadResources: true, canUseQuizzes: true, canReadSubjects: true, canReadGuardianStudents: false, canUseChat: true, navigation: ['today', 'plan', 'exams', 'chat', 'more'] };
 
 afterEach(() => {
   cleanup();

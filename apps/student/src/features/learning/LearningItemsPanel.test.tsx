@@ -12,7 +12,7 @@ describe('LearningItemsPanel', () => {
       .mockResolvedValueOnce([] as never)
       .mockResolvedValueOnce({ id: 'item/1', title: 'مرور اتحادها', subject: 'ریاضی', dueDate: '2026-09-15', note: '', status: 'pending', mastery: 0 } as never)
       .mockResolvedValueOnce({ item: { id: 'item/1', title: 'مرور اتحادها', subject: 'ریاضی', dueDate: '2026-09-20', note: '', status: 'pending', mastery: 2 } } as never);
-    render(<LearningItemsPanel />);
+    render(<LearningItemsPanel canCreate canUpdate canReview />);
     await screen.findByText('هنوز مرور شخصی نساخته‌اید.');
 
     fireEvent.change(screen.getByLabelText('عنوان مرور'), { target: { value: '  مرور اتحادها  ' } });
@@ -32,7 +32,7 @@ describe('LearningItemsPanel', () => {
       .mockResolvedValueOnce({ ...item, status: 'done' } as never)
       .mockResolvedValueOnce({ id: 'item-1', deleted: true } as never);
     vi.spyOn(window, 'confirm').mockReturnValue(true);
-    render(<LearningItemsPanel />);
+    render(<LearningItemsPanel canCreate canUpdate canReview />);
     await screen.findByText('مرور فصل');
 
     fireEvent.click(screen.getByRole('button', { name: 'انجام شد' }));
@@ -40,5 +40,16 @@ describe('LearningItemsPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'حذف' }));
     await waitFor(() => expect(request).toHaveBeenNthCalledWith(3, 'DELETE', '/learning/items/item-1'));
     expect(screen.queryByText('مرور فصل')).not.toBeInTheDocument();
+  });
+
+  it('keeps a read-only learning capability free of mutation controls', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValueOnce([{ id: 'item-1', title: 'مرور فصل', status: 'pending', mastery: 2 }] as never);
+    render(<LearningItemsPanel canCreate={false} canUpdate={false} canReview={false} />);
+
+    await screen.findByText('مرور فصل');
+    expect(screen.queryByRole('button', { name: 'افزودن مرور' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'انجام شد' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'حذف' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'امتیاز 5' })).not.toBeInTheDocument();
   });
 });

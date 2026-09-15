@@ -7,6 +7,9 @@ export interface PortalAccess {
   canReadPlans: boolean;
   canReadExams: boolean;
   canReadLearning: boolean;
+  canCreateLearning: boolean;
+  canUpdateLearning: boolean;
+  canReviewLearning: boolean;
   canReadResources: boolean;
   canUseQuizzes: boolean;
   canReadSubjects: boolean;
@@ -33,6 +36,9 @@ export function portalAccess(roles: readonly string[], capabilities: readonly st
     canReadPlans,
     canReadExams,
     canReadLearning,
+    canCreateLearning: student && has('learning.create'),
+    canUpdateLearning: student && has('learning.update'),
+    canReviewLearning: student && has('learning.review'),
     canReadResources: has('learning_resources.read'),
     canUseQuizzes: student && has('student.quizzes.read'),
     canReadSubjects: has('studentSubjects.read'),
