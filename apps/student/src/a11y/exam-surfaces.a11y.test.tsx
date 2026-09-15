@@ -4,11 +4,13 @@ import { describe, expect, it, vi } from 'vitest';
 import { ExamPreflight } from '../features/exam/components/ExamPreflight';
 import { ExamRunner } from '../features/exam/components/ExamRunner';
 import { GuardianExamView } from '../features/exam/components/GuardianExamView';
+import { apiClient } from '../services/api-client';
 
 const exam = { id: 'exam-1', title: 'آزمون جامع تجربی', durationMinutes: 90, delivery: { canStart: true, questionCount: 1, attemptsUsed: 0, allowedAttempts: 1, state: 'available' as const } };
 
 describe('exam surfaces accessibility', () => {
   it('keeps the preflight free from automatic accessibility violations', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue([] as never);
     const { container } = render(<ExamPreflight exam={exam} busy={false} error="" onBack={vi.fn()} onStart={vi.fn()} />);
     expect((await audit(container)).violations).toEqual([]);
   });

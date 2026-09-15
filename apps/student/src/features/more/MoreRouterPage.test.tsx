@@ -26,6 +26,8 @@ describe('More navigation hub', () => {
     expect(within(hub).getByRole('link', { name: /گفت‌وگو با مشاور/ })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /صوت‌ها و آرامش/ })).toHaveAttribute('href', '/more/audio');
     expect(screen.getByRole('link', { name: /تنظیمات/ })).toHaveAttribute('href', '/more/settings');
+    expect(screen.getByRole('link', { name: /روند و پیشنهادها/ })).toHaveAttribute('href', '/more/insights');
+    expect(screen.getByRole('link', { name: /دفترچه اشتباهات/ })).toHaveAttribute('href', '/more/mistakes');
     expect(screen.getByRole('link', { name: /انتخاب سرپرست/ })).toHaveAttribute('href', '/more/guardian');
   });
 

@@ -13,6 +13,7 @@ import { DataSource, In } from "typeorm";
 import { Organization } from "../../database/entities/organization.entity";
 import { Mistake } from "../../database/entities/mistake.entity";
 import { ExamScoringService } from "./exam-scoring.service";
+import { ExamRetryRequest, RetryRequestStatus } from "../../database/entities/exam-retry-request.entity";
 
 type QuestionInput = CreateQuestionDto & {
   question?: string;
@@ -40,6 +41,9 @@ export class ExamsService {
     @InjectRepository(Mistake)
     private readonly mistakes?: Repository<Mistake>,
     @Optional() private readonly scoringEngine?: ExamScoringService,
+    @Optional()
+    @InjectRepository(ExamRetryRequest)
+    private readonly retryRequests?: Repository<ExamRetryRequest>,
   ) {}
 
   async list(includeAnswers = true) {
@@ -97,7 +101,10 @@ export class ExamsService {
         : { published: true },
       relations: { questions: true, attempts: { student: true }, syllabus: true },
     });
-    return exams.map((exam) => this.publicExam(exam, false, student.id));
+    const bonuses = await this.retryBonuses(student.id);
+    return exams.map((exam) =>
+      this.publicExam(exam, false, student.id, exam.attemptLimit + (bonuses.get(exam.id) || 0)),
+    );
   }
 
   async listForGuardianStudent(studentId: string) {
@@ -115,7 +122,10 @@ export class ExamsService {
         : { published: true },
       relations: { questions: true, attempts: { student: true }, syllabus: true },
     });
-    return exams.map((exam) => this.publicExam(exam, false, studentId));
+    const bonuses = await this.retryBonuses(studentId);
+    return exams.map((exam) =>
+      this.publicExam(exam, false, studentId, exam.attemptLimit + (bonuses.get(exam.id) || 0)),
+    );
   }
 
   async detail(examId: string, userId: string) {
@@ -127,7 +137,8 @@ export class ExamsService {
     });
     if (!exam)
       throw new ApiException(404, "EXAM_NOT_FOUND", "آزمون در دسترس نیست.");
-    return this.publicExam(exam, false, student.id);
+    const allowedAttempts = await this.allowedAttempts(exam.id, student.id, exam.attemptLimit);
+    return this.publicExam(exam, false, student.id, allowedAttempts);
   }
 
   async history(userId: string) {
@@ -390,7 +401,8 @@ export class ExamsService {
     const used = await this.attempts.count({
       where: { exam: { id: examId }, student: { id: student.id } },
     });
-    if (used >= exam.attemptLimit)
+    const allowedAttempts = await this.allowedAttempts(examId, student.id, exam.attemptLimit);
+    if (used >= allowedAttempts)
       throw new ApiException(
         409,
         "ATTEMPT_LIMIT_REACHED",
@@ -807,7 +819,7 @@ export class ExamsService {
     }));
   }
 
-  private publicExam(exam: Exam, includeAnswers = true, studentId?: string) {
+  private publicExam(exam: Exam, includeAnswers = true, studentId?: string, allowedAttempts = exam.attemptLimit) {
     const studentAttempts = studentId
       ? (exam.attempts || [])
           .filter((attempt) => attempt.student?.id === studentId)
@@ -831,7 +843,7 @@ export class ExamsService {
       exam.questions?.length &&
       !beforeWindow &&
       !afterWindow &&
-      (activeAttempt || attemptsUsed < exam.attemptLimit),
+      (activeAttempt || attemptsUsed < allowedAttempts),
     );
     const reason = beforeWindow
       ? "زمان شروع آزمون هنوز نرسیده است."
@@ -839,7 +851,7 @@ export class ExamsService {
         ? "مهلت شرکت در آزمون به پایان رسیده است."
         : !exam.questions?.length
           ? "آزمون هنوز سؤال ندارد."
-          : attemptsUsed >= exam.attemptLimit && !activeAttempt
+          : attemptsUsed >= allowedAttempts && !activeAttempt
             ? "تعداد تلاش‌های مجاز تکمیل شده است."
             : undefined;
     const state = activeAttempt
@@ -948,7 +960,7 @@ export class ExamsService {
                 .filter(Boolean),
             ).size,
         ),
-        allowedAttempts: exam.attemptLimit,
+        allowedAttempts,
         attemptsUsed: studentId ? attemptsUsed : 0,
         activeAttemptId: activeAttempt?.id || null,
         canStart,
@@ -959,6 +971,25 @@ export class ExamsService {
           : null,
       },
     };
+  }
+
+  private async allowedAttempts(examId: string, studentId: string, base: number) {
+    if (!this.retryRequests) return base;
+    const bonus = await this.retryRequests.count({
+      where: { exam: { id: examId }, student: { id: studentId }, status: RetryRequestStatus.APPROVED },
+    });
+    return base + bonus;
+  }
+
+  private async retryBonuses(studentId: string) {
+    const bonuses = new Map<string, number>();
+    if (!this.retryRequests) return bonuses;
+    const rows = await this.retryRequests.find({
+      where: { student: { id: studentId }, status: RetryRequestStatus.APPROVED },
+      relations: { exam: true },
+    });
+    for (const row of rows) bonuses.set(row.exam.id, (bonuses.get(row.exam.id) || 0) + 1);
+    return bonuses;
   }
 
   async questionsForExam(examId: string) {

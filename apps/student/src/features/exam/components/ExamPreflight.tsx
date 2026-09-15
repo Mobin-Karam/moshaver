@@ -1,6 +1,7 @@
 import { ArrowRight, Check, CircleAlert, Cloud, Database, LockKeyhole, Timer } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import type { ExamSummary } from '@moshaver/student-core';
+import { ExamPreparationPanel } from './ExamPreparationPanel';
 
 export function ExamPreflight({ exam, busy, error, onBack, onStart, onRefresh }: { exam: ExamSummary; busy: boolean; error: string; onBack: () => void; onStart: () => void; onRefresh?: () => void }) {
   const [accepted, setAccepted] = useState(false);
@@ -35,6 +36,8 @@ export function ExamPreflight({ exam, busy, error, onBack, onStart, onRefresh }:
           <li className="flex gap-2"><Check className="mt-1.5 size-4 shrink-0 text-mint" />نتیجه مطابق سیاست انتشار برگزارکننده نمایش داده می‌شود.</li>
         </ul>
       </article>
+
+      <ExamPreparationPanel examId={exam.id} attemptsUsed={exam.delivery?.attemptsUsed ?? 0} allowedAttempts={exam.delivery?.allowedAttempts ?? 1} />
 
       <article className="surface rounded-3xl p-4">
         <h2 className="font-black">بررسی آمادگی</h2>

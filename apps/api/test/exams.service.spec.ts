@@ -30,6 +30,38 @@ function repository<T>(items: T[] = []) {
 }
 
 describe("ExamsService student attempt safety", () => {
+  it("applies an approved retry only to the requesting student's allowance", async () => {
+    const exam = {
+      id: "exam-1",
+      title: "Retry",
+      published: true,
+      lifecycleStatus: "scheduled",
+      duration: 60,
+      attemptLimit: 1,
+      questions: [{ id: "q1", text: "Q", options: ["A"] }],
+      attempts: [{ id: "attempt-1", student: { id: "student-1" }, startedAt: new Date(), finishedAt: new Date() }],
+    } as any;
+    const retryRequests = repository([{ id: "retry-1", exam, student: { id: "student-1" }, status: "approved" }]);
+    const service = new ExamsService(
+      repository([exam]) as any,
+      repository() as any,
+      repository() as any,
+      repository([{ id: "student-1" }]) as any,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      retryRequests as any,
+    );
+
+    const detail = await service.detail("exam-1", "user-1");
+
+    expect(detail.delivery.allowedAttempts).toBe(2);
+    expect(detail.delivery.canStart).toBe(true);
+    expect(exam.attemptLimit).toBe(1);
+  });
+
   it("does not leak answer keys or explanations from student exam detail", async () => {
     const exam = {
       id: "exam-1",

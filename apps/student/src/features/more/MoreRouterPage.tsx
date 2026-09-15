@@ -10,6 +10,7 @@ import {
   MessageCircle,
   Moon,
   MoonStar,
+  NotebookTabs,
   Palette,
   RotateCcw,
   Search,
@@ -17,6 +18,7 @@ import {
   ShieldCheck,
   Smartphone,
   Sun,
+  TrendingUp,
   UserRoundPlus,
   UsersRound,
   Wifi,
@@ -35,6 +37,8 @@ import { ReportsHistory } from "./ReportsHistory";
 import { GuardianInsightsPage } from "./GuardianInsightsPage";
 import { PasswordChangeForm } from "./PasswordChangeForm";
 import { PushSettings } from "./PushSettings";
+import { StudentInsightsPage } from "./StudentInsightsPage";
+import { MistakeNotebook } from "./MistakeNotebook";
 
 export type StudentTheme = "light" | "dark" | "system";
 
@@ -54,6 +58,8 @@ export function MoreRouterPage({
       </MoreSection>
     );
   if (section === "reports") return <ReportsPage />;
+  if (section === "insights") return <MoreSection title="روند و پیشنهادها" subtitle="تحلیل عملکرد و تصمیم درباره پیشنهادهای مشاور"><StudentInsightsPage /></MoreSection>;
+  if (section === "mistakes") return <MoreSection title="دفترچه اشتباهات" subtitle="دلیل خطاها و وضعیت مرور"><MistakeNotebook /></MoreSection>;
   if (section === "profile") return <ProfilePage />;
   if (section === "chat-profile") return <ChatProfilePage />;
   if (section === "guardian") return <GuardianSelectionPage />;
@@ -96,6 +102,15 @@ function MoreHub() {
         {access?.mode === "guardian" ? <MoreRow to="/more/family" icon={<UsersRound />} title="همراهی خانواده" subtitle="پیشرفت، گزارش‌ها و ارسال دلگرمی" tone="amber" /> : null}
         {access?.mode === "student" ? (
           <MoreRow
+            to="/more/insights"
+            icon={<TrendingUp />}
+            title="روند و پیشنهادها"
+            subtitle="تحلیل عملکرد و پیشنهادهای مشاور"
+            tone="blue"
+          />
+        ) : null}
+        {access?.mode === "student" ? (
+          <MoreRow
             to="/more/audio"
             icon={<Headphones />}
             title="صوت‌ها و آرامش"
@@ -109,6 +124,7 @@ function MoreHub() {
           title="پیشرفت و مرور"
           subtitle="گزارش یادگیری و مرورهای ثبت‌شده"
         />
+        {access?.mode === "student" ? <MoreRow to="/more/mistakes" icon={<NotebookTabs />} title="دفترچه اشتباهات" subtitle="دسته‌بندی خطاها و ثبت مرور" tone="amber" /> : null}
         {access?.mode === "student" ? (
           <MoreRow
             to="/more/reports"
