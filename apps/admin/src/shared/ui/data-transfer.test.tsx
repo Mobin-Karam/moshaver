@@ -34,6 +34,32 @@ function renderWorkspace() {
 afterEach(cleanup);
 
 describe("data transfer workspace", () => {
+  it("keeps import controls unavailable for an export-only role", () => {
+    const queryClient = new QueryClient();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LocaleProvider>
+          <ModalProvider>
+            <DataTransferWorkspace
+              studentId="student-1"
+              scope="plans"
+              title="انتقال"
+              description=""
+              canImport={false}
+              canCommit={false}
+              canExport
+              onImported={() => undefined}
+            />
+          </ModalProvider>
+        </LocaleProvider>
+      </QueryClientProvider>,
+    );
+    expect(screen.queryByRole("button", { name: /ورود اطلاعات/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /خروجی گرفتن/ })).toBeInTheDocument();
+    expect(screen.getByText("دانلود خروجی Excel")).toBeInTheDocument();
+    expect(screen.getByText("دانلود خروجی JSON")).toBeInTheDocument();
+  });
+
   it("guides import and exposes manual JSON only on request", async () => {
     renderWorkspace();
     expect(screen.getByText("فایل را انتخاب کنید")).toBeInTheDocument();
@@ -48,6 +74,6 @@ describe("data transfer workspace", () => {
     renderWorkspace();
     await userEvent.click(screen.getByRole("button", { name: /خروجی گرفتن/ }));
     expect(screen.getByText("خروجی قابل بازیابی")).toBeInTheDocument();
-    expect(screen.getByText("دانلود خروجی JSON")).toBeInTheDocument();
+    expect(screen.getByText("دانلود خروجی Excel")).toBeInTheDocument();
   });
 });

@@ -464,7 +464,7 @@ export function PlannerPage() {
               onTransfer={() => {
                 setMoreOpen(false);
                 modal.open({
-                  title: "ورود و خروج JSON",
+                  title: "ورود و خروج Excel",
                   size: "xl",
                   content: (
                     <DataTransferWorkspace
@@ -476,6 +476,9 @@ export function PlannerPage() {
                       exportTo={range.to}
                       showPlanReplacement
                       showExamReplacement
+                      canImport={auth.can("import.preview")}
+                      canCommit={auth.can("import.commit")}
+                      canExport={auth.can("export.read")}
                       onImported={() => void refresh()}
                     />
                   ),

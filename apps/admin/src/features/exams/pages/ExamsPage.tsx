@@ -240,6 +240,9 @@ export function ExamsPage() {
                       title="انتقال کامل آزمون‌ها"
                       description="آزمون‌ها را همراه سؤال، پاسخ، توضیح، بودجه‌بندی، زمان‌بندی و محدودیت تلاش بررسی و منتقل کنید."
                       showExamReplacement
+                      canImport={auth.can("import.preview")}
+                      canCommit={auth.can("import.commit")}
+                      canExport={auth.can("export.read")}
                       onImported={() => void data.refreshExams()}
                     />
                   ),

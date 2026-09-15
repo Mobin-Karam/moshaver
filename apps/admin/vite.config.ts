@@ -72,6 +72,12 @@ export default defineConfig({
           if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return "react";
           if (id.includes("node_modules/react-router")) return "router";
           if (id.includes("node_modules/@tanstack/")) return "query";
+          if (
+            /node_modules\/(exceljs|jszip|fast-csv|dayjs|saxes|readable-stream|archiver|unzipper|uuid)\//.test(
+              id,
+            )
+          )
+            return "spreadsheet";
           if (/node_modules\/(lucide-react|react-multi-date-picker|@persian-tools)\//.test(id))
             return "ui";
           return "vendor";

@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   Download,
   FileJson,
+  FileSpreadsheet,
   FileUp,
   ShieldCheck,
   UploadCloud,
@@ -16,6 +17,11 @@ import { fa } from "../lib/utils";
 import { useLocale } from "./locale";
 import { useModal } from "./modal";
 import { Button, Card, Field, Textarea } from "./ui";
+import {
+  downloadTransferWorkbook,
+  examplePayload,
+  readTransferWorkbook,
+} from "../lib/data-transfer-xlsx";
 
 export type TransferPreview = {
   schemaVersion?: number;
@@ -50,6 +56,9 @@ type Props = {
   showPlanReplacement?: boolean;
   showExamReplacement?: boolean;
   onImported: () => void;
+  canImport?: boolean;
+  canCommit?: boolean;
+  canExport?: boolean;
 };
 type Tab = "import" | "export";
 type ConflictPolicy = "stop" | "skip" | "replace";
@@ -58,7 +67,10 @@ export function DataTransferWorkspace(props: Props) {
   const modal = useModal(),
     { formatDate } = useLocale(),
     fileRef = useRef<HTMLInputElement>(null);
-  const [tab, setTab] = useState<Tab>("import"),
+  const canImport = props.canImport !== false;
+  const canCommit = props.canCommit !== false;
+  const canExport = props.canExport !== false;
+  const [tab, setTab] = useState<Tab>(canImport ? "import" : "export"),
     [json, setJson] = useState(""),
     [fileName, setFileName] = useState(""),
     [advanced, setAdvanced] = useState(false),
@@ -70,6 +82,7 @@ export function DataTransferWorkspace(props: Props) {
     mutationFn: (data: unknown) =>
       api.post<TransferPreview>("/import/preview", {
         studentId: props.studentId,
+        scope: props.scope,
         data,
       }),
     meta: { successMessage: false },
@@ -78,6 +91,7 @@ export function DataTransferWorkspace(props: Props) {
     mutationFn: ({ data, published }: { data: unknown; published: boolean }) =>
       api.post<ImportResult>("/import/commit", {
         studentId: props.studentId,
+        scope: props.scope,
         data,
         publishImported: published,
         replaceExistingPlans: planPolicy === "replace",
@@ -93,29 +107,54 @@ export function DataTransferWorkspace(props: Props) {
     meta: { successMessage: "ورود اطلاعات با موفقیت تکمیل شد." },
   });
   const download = useMutation({
-    mutationFn: ({ path, filename }: { path: string; filename: string }) =>
-      downloadJson(path, filename),
-    meta: { successMessage: "فایل JSON آماده و دانلود شد." },
+    mutationFn: async ({
+      path,
+      filename,
+      template = false,
+      format,
+    }: {
+      path?: string;
+      filename: string;
+      template?: boolean;
+      format: "json" | "xlsx";
+    }) => {
+      const data = template ? examplePayload(props.scope) : await api.get<any>(path!);
+      if (format === "xlsx") await downloadTransferWorkbook(data, props.scope, filename);
+      else downloadJsonData(data, filename);
+    },
+    meta: { successMessage: "فایل آماده و دانلود شد." },
   });
   const valid = !!preview.data && !preview.data.errors?.length;
 
-  function loadFile(file?: File) {
+  async function loadFile(file?: File) {
     if (!file) return;
-    if (!file.name.toLowerCase().endsWith(".json")) {
+    const lowerName = file.name.toLowerCase();
+    if (!lowerName.endsWith(".json") && !lowerName.endsWith(".xlsx")) {
       modal.open({
         title: "فرمت فایل قابل قبول نیست",
-        description: "یک فایل JSON انتخاب کنید.",
+        description: "یک فایل Excel (.xlsx) یا JSON انتخاب کنید.",
         tone: "danger",
       });
       return;
     }
-    void file.text().then((text) => {
+    try {
+      const data = lowerName.endsWith(".xlsx")
+        ? await readTransferWorkbook(file)
+        : JSON.parse(await file.text());
+      if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error();
+      const text = JSON.stringify(data, null, 2);
       setJson(text);
       setFileName(file.name);
       setResult(null);
       preview.reset();
-      parse(text, (data) => preview.mutate(data));
-    });
+      preview.mutate(data);
+    } catch (error) {
+      modal.open({
+        title: "فایل قابل خواندن نیست",
+        description: workbookError(error),
+        tone: "danger",
+      });
+    }
   }
   function parse(text: string, action: (data: unknown) => void) {
     try {
@@ -164,8 +203,7 @@ export function DataTransferWorkspace(props: Props) {
     if (fileRef.current) fileRef.current.value = "";
   }
   const exportPath = `/export/json?studentId=${encodeURIComponent(props.studentId)}&scope=${props.scope}${props.exportFrom ? `&from=${props.exportFrom}` : ""}${props.exportTo ? `&to=${props.exportTo}` : ""}`;
-  const templatePath = `/import/template?studentId=${encodeURIComponent(props.studentId)}&scope=${props.scope}`;
-  const filename = `moshaver-${props.scope}-${props.exportFrom || "all"}-${props.exportTo || "all"}.json`;
+  const filename = `moshaver-${props.scope}-${props.exportFrom || "all"}-${props.exportTo || "all"}.xlsx`;
 
   return (
     <Card className="overflow-hidden p-0">
@@ -173,7 +211,7 @@ export function DataTransferWorkspace(props: Props) {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-3">
             <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand text-white">
-              <FileJson size={22} />
+              <FileSpreadsheet size={22} />
             </span>
             <div>
               <h3 className="text-lg font-black">{props.title}</h3>
@@ -181,14 +219,18 @@ export function DataTransferWorkspace(props: Props) {
             </div>
           </div>
           <div className="flex rounded-lg bg-slate-100 p-1">
-            <TabButton active={tab === "import"} onClick={() => setTab("import")}>
-              <FileUp size={16} />
-              ورود اطلاعات
-            </TabButton>
-            <TabButton active={tab === "export"} onClick={() => setTab("export")}>
-              <Download size={16} />
-              خروجی گرفتن
-            </TabButton>
+            {canImport ? (
+              <TabButton active={tab === "import"} onClick={() => setTab("import")}>
+                <FileUp size={16} />
+                ورود اطلاعات
+              </TabButton>
+            ) : null}
+            {canExport ? (
+              <TabButton active={tab === "export"} onClick={() => setTab("export")}>
+                <Download size={16} />
+                خروجی گرفتن
+              </TabButton>
+            ) : null}
           </div>
         </div>
       </div>
@@ -221,7 +263,9 @@ export function DataTransferWorkspace(props: Props) {
                       <UploadCloud size={42} className="text-slate-400" />
                     )}
                     <div>
-                      <strong className="block">{fileName || "فایل JSON را اینجا رها کنید"}</strong>
+                      <strong className="block">
+                        {fileName || "فایل Excel یا JSON را اینجا رها کنید"}
+                      </strong>
                       <span className="mt-1 block text-xs text-slate-500">
                         {fileName
                           ? "فایل به‌صورت خودکار اعتبارسنجی شد"
@@ -232,8 +276,8 @@ export function DataTransferWorkspace(props: Props) {
                       ref={fileRef}
                       className="sr-only"
                       type="file"
-                      accept="application/json,.json"
-                      onChange={(event) => loadFile(event.target.files?.[0])}
+                      accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/json,.xlsx,.json"
+                      onChange={(event) => void loadFile(event.target.files?.[0])}
                     />
                     <Button type="button" variant="soft" onClick={() => fileRef.current?.click()}>
                       {fileName ? "تغییر فایل" : "انتخاب فایل"}
@@ -272,19 +316,44 @@ export function DataTransferWorkspace(props: Props) {
                     </Button>
                   </Field>
                 ) : null}
-                <Button
-                  variant="ghost"
-                  disabled={!props.studentId}
-                  loading={download.isPending && download.variables?.path === templatePath}
-                  onClick={() =>
-                    download.mutate({
-                      path: templatePath,
-                      filename: `moshaver-${props.scope}-template.json`,
-                    })
-                  }
-                >
-                  دانلود فایل نمونه و قالب
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="ghost"
+                    disabled={!props.studentId}
+                    loading={
+                      download.isPending &&
+                      download.variables?.template &&
+                      download.variables.format === "xlsx"
+                    }
+                    onClick={() =>
+                      download.mutate({
+                        filename: `moshaver-${props.scope}-template.xlsx`,
+                        template: true,
+                        format: "xlsx",
+                      })
+                    }
+                  >
+                    نمونه Excel
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    disabled={!props.studentId}
+                    loading={
+                      download.isPending &&
+                      download.variables?.template &&
+                      download.variables.format === "json"
+                    }
+                    onClick={() =>
+                      download.mutate({
+                        filename: `moshaver-${props.scope}-template.json`,
+                        template: true,
+                        format: "json",
+                      })
+                    }
+                  >
+                    نمونه JSON
+                  </Button>
+                </div>
               </section>
               <section className="grid content-start gap-4">
                 <Step number={2} title="بررسی و رفع مشکل" active={!!preview.data} />
@@ -300,24 +369,31 @@ export function DataTransferWorkspace(props: Props) {
                   <div
                     className={`mt-3 grid gap-3 ${valid ? "" : "pointer-events-none opacity-45"}`}
                   >
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {props.showPlanReplacement ? (
-                        <ConflictPolicyPicker
-                          value={planPolicy}
-                          onChange={setPlanPolicy}
-                          title="برنامه‌های هم‌تاریخ"
-                          description="برنامه دارای سابقه انجام‌شده هرگز جایگزین نمی‌شود."
-                        />
-                      ) : null}
-                      {props.showExamReplacement ? (
-                        <ConflictPolicyPicker
-                          value={examPolicy}
-                          onChange={setExamPolicy}
-                          title="آزمون‌های تکراری"
-                          description="تطبیق بر اساس عنوان و تاریخ آزمون انجام می‌شود."
-                        />
-                      ) : null}
-                    </div>
+                    {canCommit ? (
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {props.showPlanReplacement ? (
+                          <ConflictPolicyPicker
+                            value={planPolicy}
+                            onChange={setPlanPolicy}
+                            title="برنامه‌های هم‌تاریخ"
+                            description="برنامه دارای سابقه انجام‌شده هرگز جایگزین نمی‌شود."
+                          />
+                        ) : null}
+                        {props.showExamReplacement ? (
+                          <ConflictPolicyPicker
+                            value={examPolicy}
+                            onChange={setExamPolicy}
+                            title="آزمون‌های تکراری"
+                            description="تطبیق بر اساس عنوان و تاریخ آزمون انجام می‌شود."
+                          />
+                        ) : null}
+                      </div>
+                    ) : (
+                      <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+                        شما اجازه بررسی فایل را دارید، اما ثبت نهایی به دسترسی import.commit نیاز
+                        دارد.
+                      </p>
+                    )}
                     <div className="grid gap-2 sm:grid-cols-2">
                       <Button
                         loading={commit.isPending}
@@ -373,7 +449,7 @@ export function DataTransferWorkspace(props: Props) {
                     : "تمام تاریخ‌ها"
                 }
               />
-              <ExportFact label="ساختار" value="JSON schema-v2" />
+              <ExportFact label="ساختار" value="Excel قابل ویرایش · schema-v2" />
               <ExportFact
                 label="محتوا"
                 value={
@@ -392,16 +468,39 @@ export function DataTransferWorkspace(props: Props) {
               مجدد حفظ شود.
             </p>
             <Button
-              loading={download.isPending && download.variables?.path === exportPath}
+              loading={
+                download.isPending &&
+                download.variables?.path === exportPath &&
+                download.variables.format === "xlsx"
+              }
               disabled={!props.studentId}
-              onClick={() => download.mutate({ path: exportPath, filename })}
+              onClick={() => download.mutate({ path: exportPath, filename, format: "xlsx" })}
             >
-              <Download size={17} />
-              دانلود خروجی JSON
+              <FileSpreadsheet size={17} /> دانلود خروجی Excel
             </Button>
-            <Button variant="ghost" onClick={() => setTab("import")}>
-              بازگشت به ورود اطلاعات
+            <Button
+              variant="soft"
+              loading={
+                download.isPending &&
+                download.variables?.path === exportPath &&
+                download.variables.format === "json"
+              }
+              disabled={!props.studentId}
+              onClick={() =>
+                download.mutate({
+                  path: exportPath,
+                  filename: filename.replace(/\.xlsx$/, ".json"),
+                  format: "json",
+                })
+              }
+            >
+              <FileJson size={17} /> دانلود خروجی JSON
             </Button>
+            {canImport ? (
+              <Button variant="ghost" onClick={() => setTab("import")}>
+                بازگشت به ورود اطلاعات
+              </Button>
+            ) : null}
           </aside>
         </div>
       )}
@@ -642,8 +741,15 @@ function summarySentence(preview?: TransferPreview) {
   const summary = preview?.summary || {};
   return `${fa(summary.plans || 0)} برنامه، ${fa(summary.tasks || 0)} فعالیت، ${fa(summary.exams || 0)} آزمون و ${fa(summary.questions || 0)} سؤال ثبت می‌شود.`;
 }
-async function downloadJson(path: string, filename: string) {
-  const data = await api.get<unknown>(path);
+function workbookError(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  if (message.startsWith("MISSING_COLUMNS:"))
+    return `ستون‌های لازم پیدا نشد: ${message.slice("MISSING_COLUMNS:".length)}`;
+  if (message === "WORKBOOK_SHEETS_MISSING") return "برگه Plans یا Exams در فایل وجود ندارد.";
+  return "ساختار فایل یا داده‌های آن معتبر نیست. قالب نمونه را دانلود و ویرایش کنید.";
+}
+
+function downloadJsonData(data: unknown, filename: string) {
   const url = URL.createObjectURL(
     new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
   );
