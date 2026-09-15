@@ -3,6 +3,8 @@ import {
   adminBreadcrumbs,
   adminDestination,
   adminNavigation,
+  educationCapabilities,
+  educationNavigation,
   flatAdminNavigation,
   mainAdminNavigation,
   mainNavigationForCapabilities,
@@ -54,6 +56,29 @@ describe("admin navigation metadata", () => {
       "ارتباط و پیگیری",
       "افراد و دسترسی",
       "سامانه و امنیت",
+    ]);
+  });
+
+  it("keeps the eight education sections and their route capabilities in one registry", () => {
+    expect(educationNavigation).toHaveLength(8);
+    expect(educationNavigation.map((item) => item.path)).toEqual([
+      "education",
+      "planner",
+      "learning",
+      "exams",
+      "questions",
+      "quizzes",
+      "subjects",
+      "resources",
+    ]);
+    expect(educationCapabilities).toEqual([
+      "exams.read",
+      "plans.read",
+      "learning.read",
+      "questions.read",
+      "quizzes.read",
+      "subjects.read",
+      "learning_resources.manage",
     ]);
   });
 

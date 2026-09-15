@@ -1,6 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BookOpenCheck, CircleHelp, FilePlus2, RotateCcw, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpLeft,
+  BookOpenCheck,
+  CircleHelp,
+  FilePlus2,
+  RotateCcw,
+  Sparkles,
+} from "lucide-react";
 import { Link } from "react-router-dom";
+import { educationNavigation } from "../../../app/layout/admin-navigation";
 import { ManagementPageHeader, ManagementStat } from "../../../shared/ui/management-workspace";
 import { Button, Card, EmptyState, LoadingState } from "../../../shared/ui/ui";
 import { useAuth } from "../../auth";
@@ -22,7 +31,8 @@ const actions = [
 
 export function EducationOverviewPage() {
   const auth = useAuth();
-  const exams = useQuery({ queryKey: ["exams"], queryFn: getExams });
+  const canReadExams = auth.can("exams.read");
+  const exams = useQuery({ queryKey: ["exams"], queryFn: getExams, enabled: canReadExams });
   const canReadRetries = auth.can("retry_requests.read");
   const retries = useQuery({
     queryKey: ["exam-retry"],
@@ -32,6 +42,7 @@ export function EducationOverviewPage() {
   const metrics = educationMetrics(exams.data || [], retries.data || []);
   const subjects = subjectDistribution(exams.data || []);
   const visibleActions = actions.filter((action) => auth.can(action.capability));
+  const visibleSections = educationNavigation.filter((section) => auth.can(section.capability));
 
   return (
     <div className="grid gap-5">
@@ -40,16 +51,56 @@ export function EducationOverviewPage() {
         title="عملیات آموزشی"
         description="نمای زنده و محدود به سازمان فعال از آزمون ها، تلاش ها، محتوا و درخواست های بازیابی."
         action={
-          <Link to="/admin/exams">
-            <Button>
-              <BookOpenCheck size={16} />
-              آزمون ها
-            </Button>
-          </Link>
+          canReadExams ? (
+            <Link to="/admin/exams">
+              <Button>
+                <BookOpenCheck size={16} />
+                آزمون ها
+              </Button>
+            </Link>
+          ) : undefined
         }
       />
 
-      {exams.isLoading ? (
+      <section aria-labelledby="education-sections-title">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <h2 id="education-sections-title" className="font-black text-ink">
+              بخش‌های آموزش
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              فقط ابزارهای مجاز برای نقش و سازمان فعال شما نمایش داده می‌شوند.
+            </p>
+          </div>
+          <span className="text-xs font-bold text-slate-500">
+            {visibleSections.length.toLocaleString("fa-IR")} از ۸ بخش
+          </span>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {visibleSections.map((section) => (
+            <Link
+              key={section.path}
+              to={`/admin/${section.path}`}
+              className="group rounded-2xl border border-[rgb(var(--border-subtle))] bg-[rgb(var(--surface-card))] p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand/20 motion-reduce:transform-none"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <span className="grid size-10 place-items-center rounded-xl bg-brand/10 text-brand">
+                  <section.icon size={20} aria-hidden="true" />
+                </span>
+                <ArrowUpLeft
+                  size={17}
+                  className="text-slate-400 transition group-hover:text-brand"
+                  aria-hidden="true"
+                />
+              </div>
+              <h3 className="mt-4 font-black text-ink">{section.title}</h3>
+              <p className="mt-1 text-sm leading-6 text-slate-500">{section.description}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {!canReadExams ? null : exams.isLoading ? (
         <LoadingState label="در حال دریافت نمای آموزش…" />
       ) : exams.isError ? (
         <EmptyState

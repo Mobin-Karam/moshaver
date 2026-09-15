@@ -4,6 +4,7 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "../shared/ui/ui";
 import { LoginPage, useAuth } from "../features/auth";
 import { AdminLayout } from "./layout/AdminLayout";
+import { educationCapabilities } from "./layout/admin-navigation";
 import { RouteErrorBoundary } from "../shared/errors";
 
 const DashboardPage = lazy(() =>
@@ -126,11 +127,15 @@ export function CapabilityRoute({
   capability,
   children,
 }: {
-  capability: string;
+  capability: string | readonly string[];
   children: ReactNode;
 }) {
   const auth = useAuth();
-  if (!auth.can(capability))
+  const allowed =
+    typeof capability === "string"
+      ? auth.can(capability)
+      : capability.some((item) => auth.can(item));
+  if (!allowed)
     return (
       <div
         role="alert"
@@ -253,7 +258,7 @@ export const router = createBrowserRouter([
           {
             path: "education",
             element: (
-              <CapabilityRoute capability="exams.read">
+              <CapabilityRoute capability={educationCapabilities}>
                 <RouteScreen>
                   <EducationOverviewPage />
                 </RouteScreen>

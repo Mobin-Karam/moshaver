@@ -19,6 +19,70 @@ import {
   HeartHandshake,
 } from "lucide-react";
 
+export const educationNavigation = [
+  {
+    path: "education",
+    title: "مرکز آموزش",
+    description: "نمای عملیاتی آزمون‌ها، سؤال‌ها، تلاش‌ها و درخواست‌های بازیابی",
+    icon: GraduationCap,
+    capability: "exams.read",
+  },
+  {
+    path: "planner",
+    title: "برنامه‌ریز",
+    description: "مدیریت برنامه روزانه، هفتگی و وظایف دانش‌آموز",
+    icon: CalendarDays,
+    capability: "plans.read",
+  },
+  {
+    path: "learning",
+    title: "سیستم یادگیری",
+    description: "مدیریت مرورهای فاصله‌دار، تسلط و الگوهای خطای دانش‌آموز",
+    icon: Sparkles,
+    capability: "learning.read",
+    aliases: ["students/:studentId/learning"],
+  },
+  {
+    path: "exams",
+    title: "آزمون‌ها",
+    description: "زمان‌بندی، انتشار، تلاش مجدد، بودجه و سؤال‌ها",
+    icon: BookOpenCheck,
+    capability: "exams.read",
+  },
+  {
+    path: "questions",
+    title: "بانک سؤال",
+    description: "ساخت، بازبینی و مرتب‌سازی سؤال‌های هر آزمون",
+    icon: GraduationCap,
+    capability: "questions.read",
+  },
+  {
+    path: "quizzes",
+    title: "آزمونک‌ها",
+    description: "مدیریت آزمونک‌ها، سؤال‌ها و وضعیت انتشار",
+    icon: BookOpenCheck,
+    capability: "quizzes.read",
+  },
+  {
+    path: "subjects",
+    title: "درس‌ها",
+    description: "مدیریت درس‌ها و شناسه‌های آموزشی",
+    icon: BookOpen,
+    capability: "subjects.read",
+  },
+  {
+    path: "resources",
+    title: "منابع آموزشی",
+    description: "انتشار پیوند و ویدئو برای یک یا چند دانش‌آموز",
+    icon: LibraryBig,
+    capability: "learning_resources.manage",
+  },
+] as const;
+
+export const educationCapabilities = [
+  ...new Set(educationNavigation.map((item) => item.capability)),
+] as const;
+
 export const adminNavigation = [
   {
     section: "خانه",
@@ -33,65 +97,7 @@ export const adminNavigation = [
   },
   {
     section: "آموزش",
-    items: [
-      {
-        path: "education",
-        title: "مرکز آموزش",
-        description: "نمای عملیاتی آزمون‌ها، سؤال‌ها، تلاش‌ها و درخواست‌های بازیابی",
-        icon: GraduationCap,
-        capability: "exams.read",
-      },
-      {
-        path: "planner",
-        title: "برنامه‌ریز",
-        description: "مدیریت برنامه روزانه، هفتگی و وظایف دانش‌آموز",
-        icon: CalendarDays,
-        capability: "plans.read",
-      },
-      {
-        path: "learning",
-        title: "سیستم یادگیری",
-        description: "مدیریت مرورهای فاصله‌دار، تسلط و الگوهای خطای دانش‌آموز",
-        icon: Sparkles,
-        capability: "learning.read",
-        aliases: ["students/:studentId/learning"],
-      },
-      {
-        path: "exams",
-        title: "آزمون‌ها",
-        description: "زمان‌بندی، انتشار، تلاش مجدد، بودجه و سؤال‌ها",
-        icon: BookOpenCheck,
-        capability: "exams.read",
-      },
-      {
-        path: "questions",
-        title: "بانک سؤال",
-        description: "ساخت، بازبینی و مرتب‌سازی سؤال‌های هر آزمون",
-        icon: GraduationCap,
-        capability: "questions.read",
-      },
-      {
-        path: "quizzes",
-        title: "آزمونک‌ها",
-        description: "مدیریت آزمونک‌ها، سؤال‌ها و وضعیت انتشار",
-        icon: BookOpenCheck,
-        capability: "quizzes.read",
-      },
-      {
-        path: "subjects",
-        title: "درس‌ها",
-        description: "مدیریت درس‌ها و شناسه‌های آموزشی",
-        icon: BookOpen,
-        capability: "subjects.read",
-      },
-      {
-        path: "resources",
-        title: "منابع آموزشی",
-        description: "انتشار پیوند و ویدئو برای یک یا چند دانش‌آموز",
-        icon: LibraryBig,
-        capability: "learning_resources.manage",
-      },
-    ],
+    items: educationNavigation,
   },
   {
     section: "ارتباط",

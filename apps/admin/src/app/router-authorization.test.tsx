@@ -31,4 +31,13 @@ describe("protected portal routes", () => {
     );
     expect(screen.getByText("student directory")).toBeInTheDocument();
   });
+  it("renders a section hub when any one of its capabilities is authorized", () => {
+    can.mockImplementation((capability) => capability === "plans.read");
+    render(
+      <CapabilityRoute capability={["exams.read", "plans.read", "learning.read"]}>
+        <span>education hub</span>
+      </CapabilityRoute>,
+    );
+    expect(screen.getByText("education hub")).toBeInTheDocument();
+  });
 });
