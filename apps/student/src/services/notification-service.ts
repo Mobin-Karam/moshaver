@@ -21,6 +21,9 @@ async function loadTauriNotificationPlugin(): Promise<TauriNotificationPlugin | 
 }
 
 export type NotificationPermission = 'granted' | 'denied' | 'default' | 'unsupported';
+export interface PushPreferences { lessons: boolean; messages: boolean; exams: boolean; announcements: boolean; }
+export interface PushStatus { supported: boolean; permission: NotificationPermission; registered: boolean; serverConfigured: boolean; preferences: PushPreferences; }
+const defaultPreferences: PushPreferences = { lessons: true, messages: true, exams: true, announcements: true };
 
 function readSeenIds(): Set<string> {
   try {
@@ -63,6 +66,41 @@ export async function ensurePwaPushSubscription() {
   subscription ||= await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidKey(config.vapidPublicKey) });
   await apiClient.request('POST', '/push/subscriptions', subscription.toJSON());
   return true;
+}
+
+export async function getPushStatus(): Promise<PushStatus> {
+  const permission = await getNotificationPermission();
+  if (isTauri || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    const remote = await apiClient.request<Omit<PushStatus, 'supported' | 'permission'>>('GET', '/push/status');
+    return { supported: permission !== 'unsupported', permission, registered: remote.registered, serverConfigured: remote.serverConfigured, preferences: remote.preferences || defaultPreferences };
+  }
+  const registration = await navigator.serviceWorker.getRegistration('/').catch(() => undefined);
+  const subscription = await registration?.pushManager.getSubscription().catch(() => null);
+  const endpoint = subscription?.endpoint ? `?endpoint=${encodeURIComponent(subscription.endpoint)}` : '';
+  const remote = await apiClient.request<Omit<PushStatus, 'supported' | 'permission'>>('GET', `/push/status${endpoint}`);
+  return { supported: true, permission, registered: Boolean(subscription && remote.registered), serverConfigured: remote.serverConfigured, preferences: remote.preferences || defaultPreferences };
+}
+
+export async function disablePwaPushSubscription() {
+  if (isTauri || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    await apiClient.request('DELETE', '/push/subscriptions');
+    return;
+  }
+  const registration = await navigator.serviceWorker.getRegistration('/').catch(() => undefined);
+  const subscription = await registration?.pushManager.getSubscription().catch(() => null);
+  if (!subscription) return;
+  let remoteError: unknown;
+  try { await apiClient.request('DELETE', `/push/subscriptions?endpoint=${encodeURIComponent(subscription.endpoint)}`); } catch (error) { remoteError = error; }
+  await subscription.unsubscribe().catch(() => false);
+  if (remoteError) throw remoteError;
+}
+
+export async function savePushPreferences(preferences: PushPreferences) {
+  return apiClient.request<PushStatus>('PUT', '/push/preferences', { categories: preferences });
+}
+
+export async function sendTestPush() {
+  return apiClient.request<{ notificationId: string; pushConfigured: boolean }>('POST', '/push/test');
 }
 
 function vapidKey(value: string) {

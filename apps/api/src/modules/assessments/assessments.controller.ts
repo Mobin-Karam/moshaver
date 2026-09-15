@@ -16,7 +16,9 @@ export class AssessmentsController {
   @Post("exams/:id/syllabus") @RequireCapabilities("syllabus.manage") addSyllabus(@CurrentUser()u:AuthenticatedUser,@Param("id") id:string,@Body() dto:SyllabusDto){return this.service.addSyllabus(this.context(u),id,dto).then(ok);}
   @Delete("syllabus/:id") @RequireCapabilities("syllabus.manage") removeSyllabus(@CurrentUser()u:AuthenticatedUser,@Param("id") id:string){return this.service.removeSyllabus(this.context(u),id).then(ok);}
   @Put("syllabus/:id/progress") @Roles(UserRole.STUDENT) progress(@CurrentUser() u:AuthenticatedUser,@Param("id") id:string,@Body() dto:SyllabusProgressDto){return this.service.updateProgress(u.id,id,dto).then(ok);}
+  @Get("student/exams/:id/syllabus") @Roles(UserRole.STUDENT) studentSyllabus(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string){return this.service.studentSyllabus(u.id,id).then(ok);}
   @Post("exams/:id/retry-request") @Roles(UserRole.STUDENT) retry(@CurrentUser() u:AuthenticatedUser,@Param("id") id:string,@Body() dto:RetryRequestDto){return this.service.requestRetry(u.id,id,dto.message).then(ok);}
+  @Get("student/exam-attempt-requests") @Roles(UserRole.STUDENT) studentRetries(@CurrentUser()u:AuthenticatedUser){return this.service.studentRetries(u.id).then(ok);}
   @Get("exam-attempt-requests") @RequireCapabilities("retry_requests.read") retries(@CurrentUser() u:AuthenticatedUser){return this.service.listRetries(this.context(u)).then(ok);}
   @Patch("exam-attempt-requests/:id") @RequireCapabilities("retry_requests.moderate") moderate(@CurrentUser() u:AuthenticatedUser,@Param("id") id:string,@Body() dto:ModerateRetryDto){return this.service.moderateRetry(this.context(u),u.id,id,dto).then(ok);}
   @Get("quizzes") @RequireCapabilities("quizzes.read") quizzes(@CurrentUser()u:AuthenticatedUser){return this.service.listQuizzes(this.context(u)).then(ok);}

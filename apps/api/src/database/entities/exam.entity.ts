@@ -4,6 +4,7 @@ import { ExamAttempt } from "./exam-attempt.entity";
 import { ExamAssignment } from "./exam-assignment.entity";
 import { Organization } from "./organization.entity";
 import { User } from "./user.entity";
+import { ExamSyllabus } from "./exam-syllabus.entity";
 
 @Entity("exams")
 export class Exam {
@@ -114,4 +115,7 @@ export class Exam {
 
   @OneToMany(() => ExamAssignment, (assignment) => assignment.exam)
   assignments!: ExamAssignment[];
+
+  @OneToMany(() => ExamSyllabus, (syllabus) => syllabus.exam)
+  syllabus!: ExamSyllabus[];
 }

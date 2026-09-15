@@ -6,7 +6,6 @@ import {
   CircleUserRound,
   Cloud,
   Headphones,
-  KeyRound,
   LogOut,
   MessageCircle,
   Moon,
@@ -19,15 +18,11 @@ import {
   Smartphone,
   Sun,
   UserRoundPlus,
+  UsersRound,
   Wifi,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import {
-  getNotificationPermission,
-  requestNotificationPermission,
-  type NotificationPermission,
-} from "../../services/notification-service";
 import { useRelaxationPlayer } from "../../services/relaxation-player";
 import { useStudentStore } from "../../services/student-store";
 import { apiClient } from "../../services/api-client";
@@ -36,6 +31,10 @@ import {
   RecoveryRequestForm,
   RelaxationLibrary,
 } from "./MorePage";
+import { ReportsHistory } from "./ReportsHistory";
+import { GuardianInsightsPage } from "./GuardianInsightsPage";
+import { PasswordChangeForm } from "./PasswordChangeForm";
+import { PushSettings } from "./PushSettings";
 
 export type StudentTheme = "light" | "dark" | "system";
 
@@ -58,6 +57,7 @@ export function MoreRouterPage({
   if (section === "profile") return <ProfilePage />;
   if (section === "chat-profile") return <ChatProfilePage />;
   if (section === "guardian") return <GuardianSelectionPage />;
+  if (section === "family") return <MoreSection title="همراهی خانواده" subtitle="پیشرفت، گزارش‌ها و دلگرمی"><GuardianInsightsPage /></MoreSection>;
   if (section === "settings")
     return <SettingsPage theme={theme} onThemeChange={onThemeChange} />;
   return <Navigate to="/more" replace />;
@@ -93,6 +93,7 @@ function MoreHub() {
         </section>
       ) : null}
       <MoreGroup title="یادگیری">
+        {access?.mode === "guardian" ? <MoreRow to="/more/family" icon={<UsersRound />} title="همراهی خانواده" subtitle="پیشرفت، گزارش‌ها و ارسال دلگرمی" tone="amber" /> : null}
         {access?.mode === "student" ? (
           <MoreRow
             to="/more/audio"
@@ -186,6 +187,7 @@ function MoreSection({
 }
 
 function ReportsPage() {
+  const [historyRevision, setHistoryRevision] = useState(0);
   const draft = useStudentStore((state) => state.nightReportDraft);
   const recovery = useStudentStore((state) => state.recoveryRequestDraft);
   const saveDraft = useStudentStore((state) => state.saveNightReportDraft);
@@ -209,7 +211,7 @@ function ReportsPage() {
             <small>خواب، مطالعه و حال‌وهوای امروز</small>
           </span>
         </header>
-        <NightReportForm draft={draft} onSave={saveDraft} onSubmit={submit} />
+        <NightReportForm draft={draft} onSave={saveDraft} onSubmit={async (value) => { await submit(value); setHistoryRevision((current) => current + 1); }} />
       </div>
       <div className="more-settings-group">
         <header>
@@ -222,9 +224,10 @@ function ReportsPage() {
         <RecoveryRequestForm
           draft={recovery}
           onSave={saveRecovery}
-          onSubmit={submitRecovery}
+          onSubmit={async (value) => { await submitRecovery(value); setHistoryRevision((current) => current + 1); }}
         />
       </div>
+      <ReportsHistory revision={historyRevision} />
     </MoreSection>
   );
 }
@@ -524,13 +527,10 @@ function SettingsPage({
   const logout = useStudentStore((state) => state.logout);
   const preferences = useRelaxationPlayer((state) => state.preferences);
   const setPreference = useRelaxationPlayer((state) => state.setPreference);
-  const [permission, setPermission] =
-    useState<NotificationPermission>("default");
   const [guardianReadOnly, setGuardianReadOnly] = useState(false);
   const [privacySaving, setPrivacySaving] = useState(false);
   useEffect(() => {
     void loadSessions();
-    void getNotificationPermission().then(setPermission);
     if (access?.mode === "student") {
       void apiClient.request<{ guardianReadOnly: boolean }>("GET", "/student/chat-privacy")
         .then((value) => setGuardianReadOnly(value.guardianReadOnly))
@@ -585,27 +585,7 @@ function SettingsPage({
         subtitle="مجوز اعلان روی این دستگاه"
         icon={<Bell />}
       >
-        <SettingAction
-          label="اعلان دستگاه"
-          value={
-            permission === "granted"
-              ? "فعال"
-              : permission === "unsupported"
-                ? "پشتیبانی نمی‌شود"
-                : "غیرفعال"
-          }
-          action={
-            permission !== "granted" && permission !== "unsupported" ? (
-              <button
-                onClick={() =>
-                  void requestNotificationPermission().then(setPermission)
-                }
-              >
-                فعال‌سازی
-              </button>
-            ) : undefined
-          }
-        />
+        <PushSettings />
       </SettingsGroup>
       {access?.mode === "student" ? <SettingsGroup
         title="حریم خصوصی گفتگو"
@@ -670,11 +650,7 @@ function SettingsPage({
         ) : (
           <p className="settings-empty">نشستی برای نمایش وجود ندارد.</p>
         )}
-        <SettingAction
-          label="رمز عبور"
-          value="مدیریت امن حساب"
-          icon={<KeyRound />}
-        />
+        <PasswordChangeForm />
       </SettingsGroup>
       <button className="settings-logout" onClick={() => void logout()}>
         <LogOut />

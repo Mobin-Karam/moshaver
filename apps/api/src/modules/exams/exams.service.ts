@@ -59,6 +59,7 @@ export class ExamsService {
         organization: true,
         assignments: true,
         attempts: true,
+        syllabus: true,
       },
     });
     return exams.map((exam) => this.publicExam(exam, includeAnswers));
@@ -94,7 +95,7 @@ export class ExamsService {
       where: this.assignments
         ? { id: In(ids), published: true }
         : { published: true },
-      relations: { questions: true, attempts: { student: true } },
+      relations: { questions: true, attempts: { student: true }, syllabus: true },
     });
     return exams.map((exam) => this.publicExam(exam, false, student.id));
   }
@@ -112,7 +113,7 @@ export class ExamsService {
       where: this.assignments
         ? { id: In(ids), published: true }
         : { published: true },
-      relations: { questions: true, attempts: { student: true } },
+      relations: { questions: true, attempts: { student: true }, syllabus: true },
     });
     return exams.map((exam) => this.publicExam(exam, false, studentId));
   }
@@ -122,7 +123,7 @@ export class ExamsService {
     await this.requireAssignment(examId, student.id);
     const exam = await this.exams.findOne({
       where: { id: examId, published: true },
-      relations: { questions: true, attempts: { student: true } },
+      relations: { questions: true, attempts: { student: true }, syllabus: true },
     });
     if (!exam)
       throw new ApiException(404, "EXAM_NOT_FOUND", "آزمون در دسترس نیست.");
@@ -909,6 +910,7 @@ export class ExamsService {
       rankingReleaseAt: exam.rankingReleaseAt?.toISOString() || null,
       resultsReleased: exam.resultsReleased,
       sections: exam.sections || [],
+      syllabus: (exam.syllabus || []).map((item) => ({ id: item.id, subject: item.subject, description: item.description, required: item.required, track: item.track })),
       duration: exam.duration,
       durationMinutes: exam.duration,
       attemptLimit: exam.attemptLimit,

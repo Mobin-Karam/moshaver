@@ -2,6 +2,7 @@ import { AlertCircle, ArrowRight, BookOpenCheck, RefreshCw } from 'lucide-react'
 import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useStudentStore } from '../../services/student-store';
+import { LearningItemsPanel } from './LearningItemsPanel';
 
 export function LearningPage() {
   const progress = useStudentStore((state) => state.progress);
@@ -9,6 +10,7 @@ export function LearningPage() {
   const status = useStudentStore((state) => state.learningLoadStatus);
   const error = useStudentStore((state) => state.learningError);
   const loadLearning = useStudentStore((state) => state.loadLearning);
+  const access = useStudentStore((state) => state.access);
 
   useEffect(() => {
     void loadLearning();
@@ -79,6 +81,7 @@ export function LearningPage() {
           </article>
         </>
       ) : null}
+      {access?.mode === 'student' ? <LearningItemsPanel /> : null}
     </section>
   );
 }
