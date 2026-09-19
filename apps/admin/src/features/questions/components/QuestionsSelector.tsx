@@ -4,6 +4,8 @@ import { StudentPicker } from "../../../shared/ui/StudentPicker";
 import { Button, Card, Field, Select } from "../../../shared/ui/ui";
 export function QuestionsSelector({
   students,
+  showStudentPicker,
+  showExamsLink,
   studentId,
   setStudentId,
   examId,
@@ -15,6 +17,8 @@ export function QuestionsSelector({
   questionCount,
 }: {
   students: Parameters<typeof StudentPicker>[0]["students"];
+  showStudentPicker: boolean;
+  showExamsLink: boolean;
   studentId: string;
   setStudentId: (id: string) => void;
   examId: string;
@@ -28,7 +32,7 @@ export function QuestionsSelector({
   return (
     <>
       <header className="flex justify-end">
-        {examId ? (
+        {examId && showExamsLink ? (
           <Link
             to={`/admin/exams${studentId ? `?studentId=${encodeURIComponent(studentId)}` : ""}`}
           >
@@ -37,10 +41,12 @@ export function QuestionsSelector({
         ) : null}
       </header>
       <Card className="sticky top-16 z-10 shadow-sm">
-        <div className="grid gap-3 md:grid-cols-2">
-          <Field label="دانش‌آموز (اختیاری)">
-            <StudentPicker students={students} value={studentId} onChange={setStudentId} />
-          </Field>
+        <div className={`grid gap-3 ${showStudentPicker ? "md:grid-cols-2" : ""}`}>
+          {showStudentPicker ? (
+            <Field label="دانش‌آموز (اختیاری)">
+              <StudentPicker students={students} value={studentId} onChange={setStudentId} />
+            </Field>
+          ) : null}
           <Field label="آزمون">
             <Select value={examId} disabled={loading} onChange={(e) => setExamId(e.target.value)}>
               <option value="">

@@ -129,6 +129,17 @@ export class ExamsController {
     await this.requireExamScope(user, id, "questions.read");
     return this.exams.questionsForExam(id).then(ok);
   }
+  @Get("question-bank/exams")
+  @RequireCapabilities("questions.read")
+  questionBankExams(@CurrentUser() user: AuthenticatedUser) {
+    const context = this.context(user);
+    return this.exams
+      .listScoped(
+        context.organizationIds,
+        context.roles.includes("PLATFORM_ADMIN"),
+      )
+      .then(ok);
+  }
   @Post("exams/:id/questions")
   @RequireCapabilities("questions.create")
   async addQuestionCanonical(

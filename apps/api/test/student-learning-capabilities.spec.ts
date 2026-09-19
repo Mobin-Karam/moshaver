@@ -20,6 +20,7 @@ describe("student learning capability metadata", () => {
     ["student exam detail", ExamsController, "detail", "exams.read"],
     ["start student exam", ExamsController, "start", "exams.read"],
     ["submit student exam", ExamsController, "submit", "exams.read"],
+    ["question bank exam selector", ExamsController, "questionBankExams", "questions.read"],
     ["student exam syllabus", AssessmentsController, "studentSyllabus", "exams.read"],
     ["student syllabus progress", AssessmentsController, "progress", "exams.read"],
     ["student retry requests", AssessmentsController, "studentRetries", "exams.read"],

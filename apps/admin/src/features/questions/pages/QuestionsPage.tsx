@@ -9,7 +9,7 @@ import {
   createExamQuestion,
   deleteExamQuestion,
   getExamQuestions,
-  getExams,
+  getQuestionBankExams,
   updateQuestion,
 } from "../api/questions.api";
 import { QuestionEditor } from "../components/QuestionEditor";
@@ -25,7 +25,12 @@ import {
 } from "../model/question-model";
 export function QuestionsPage() {
   const [params, setParams] = useSearchParams();
-  const students = useStudentSelection({ clearOnChange: ["examId", "search"] });
+  const auth = useAuth();
+  const canReadStudents = auth.can("students.read");
+  const students = useStudentSelection({
+    clearOnChange: ["examId", "search"],
+    enabled: canReadStudents,
+  });
   const examId = params.get("examId") || "";
   const search = params.get("search") || "";
   const [editingId, setEditingId] = useState("");
@@ -35,7 +40,6 @@ export function QuestionsPage() {
   const [form, setForm] = useState(emptyQuestion);
   const qc = useQueryClient();
   const modal = useModal();
-  const auth = useAuth();
   const canCreate = auth.can("questions.create");
   const canUpdate = auth.can("questions.update");
   const canDelete = auth.can("questions.delete");
@@ -47,8 +51,8 @@ export function QuestionsPage() {
     setSubmitted(false);
   }, [students.studentId, examId]);
   const exams = useQuery({
-    queryKey: ["exams"],
-    queryFn: getExams,
+    queryKey: ["question-bank-exams"],
+    queryFn: getQuestionBankExams,
   });
   const questions = useQuery({
     queryKey: ["exam-questions", examId],
@@ -72,6 +76,7 @@ export function QuestionsPage() {
       notify(editingId ? "سؤال ویرایش شد." : "سؤال افزوده شد.");
       setSubmitted(false);
       void qc.invalidateQueries({ queryKey: ["exam-questions", examId] });
+      void qc.invalidateQueries({ queryKey: ["question-bank-exams"] });
       void qc.invalidateQueries({ queryKey: ["exams"] });
     },
     onError: (error) =>
@@ -87,6 +92,7 @@ export function QuestionsPage() {
       }
       notify("سؤال حذف شد.");
       void qc.invalidateQueries({ queryKey: ["exam-questions", examId] });
+      void qc.invalidateQueries({ queryKey: ["question-bank-exams"] });
       void qc.invalidateQueries({ queryKey: ["exams"] });
     },
     onError: (error) =>
@@ -124,6 +130,8 @@ export function QuestionsPage() {
     <div className="grid gap-5">
       <QuestionsSelector
         students={students.students}
+        showStudentPicker={canReadStudents}
+        showExamsLink={auth.can("exams.read")}
         studentId={students.studentId}
         setStudentId={(studentId) => {
           students.selectStudent(studentId);
@@ -210,6 +218,7 @@ export function QuestionsPage() {
                   void qc.invalidateQueries({
                     queryKey: ["exam-questions", examId],
                   });
+                  void qc.invalidateQueries({ queryKey: ["question-bank-exams"] });
                   void qc.invalidateQueries({ queryKey: ["exams"] });
                 } finally {
                   setBulkDeleting(false);
