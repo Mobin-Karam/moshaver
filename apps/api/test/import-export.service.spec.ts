@@ -27,6 +27,105 @@ function authorization() {
 }
 
 describe("ImportExportService", () => {
+  it("accepts the editable plan and exam example shape", async () => {
+    const manager = { find: jest.fn(async () => []) };
+    const service = new ImportExportService(
+      { manager } as any,
+      authorization() as any,
+    );
+
+    const preview = await service.preview(context, {
+      schemaVersion: "2.0",
+      studentId: "student-1",
+      scope: "all",
+      plans: [
+        {
+          date: "2026-09-20",
+          published: false,
+          tasks: [
+            {
+              type: "STUDY",
+              title: "مطالعه فصل اول",
+              subject: "ریاضی",
+              startTime: "08:00",
+              endTime: "09:00",
+              duration: 60,
+              testCount: 0,
+              priority: 0,
+            },
+          ],
+        },
+      ],
+      exams: [
+        {
+          title: "آزمون نمونه ریاضی",
+          subject: "ریاضی",
+          durationMinutes: 60,
+          maxAttempts: 1,
+          openAt: "2026-09-21T08:00:00.000Z",
+          closeAt: "2026-09-21T10:00:00.000Z",
+          questions: [
+            {
+              text: "حاصل ۲ + ۲ کدام است؟",
+              options: ["۱", "۲", "۳", "۴"],
+              correctAnswer: "۴",
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(preview.valid).toBe(true);
+    expect(preview.summary).toEqual(
+      expect.objectContaining({ plans: 1, tasks: 1, exams: 1, questions: 1 }),
+    );
+  });
+
+  it("rejects plan preview without a destination student", async () => {
+    const manager = { find: jest.fn(async () => []) };
+    const service = new ImportExportService(
+      { manager } as any,
+      authorization() as any,
+    );
+
+    const preview = await service.preview(context, {
+      schemaVersion: "2.0",
+      scope: "plans",
+      plans: [{ date: "2026-09-20", tasks: [{ type: "STUDY", title: "مطالعه" }] }],
+    });
+
+    expect(preview.valid).toBe(false);
+    expect(preview.errors).toContain("studentId is required when importing plans");
+  });
+
+  it("counts and checks conflicts only inside the selected scope", async () => {
+    const manager = { find: jest.fn(async () => []) };
+    const service = new ImportExportService(
+      { manager } as any,
+      authorization() as any,
+    );
+
+    const preview = await service.preview(context, {
+      schemaVersion: "2.0",
+      studentId: "student-1",
+      scope: "plans",
+      plans: [{ date: "2026-09-20", tasks: [{ type: "STUDY", title: "مطالعه" }] }],
+      exams: [
+        {
+          title: "آزمون نادیده",
+          durationMinutes: 60,
+          maxAttempts: 1,
+          questions: [],
+        },
+      ],
+    });
+
+    expect(preview.summary).toEqual(
+      expect.objectContaining({ plans: 1, tasks: 1, exams: 0, questions: 0 }),
+    );
+    expect(manager.find).toHaveBeenCalledTimes(1);
+  });
+
   it("reports existing rows as preview conflicts without hiding valid counts", async () => {
     const manager = {
       find: jest.fn(async (entity: unknown) =>

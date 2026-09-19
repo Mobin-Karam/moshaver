@@ -413,6 +413,9 @@ export class ImportExportService {
       conflicts: string[] = [];
     const schemaVersion = String(payload.schemaVersion || "");
     if (schemaVersion !== "2.0") errors.push("schemaVersion must be 2.0");
+    const scope = String(payload.scope || "all");
+    if (!["all", "plans", "exams"].includes(scope))
+      errors.push("scope must be all, plans, or exams");
     if (containsForbiddenFields(payload))
       errors.push(
         "Identity, role, permission, and authentication fields are forbidden.",
@@ -520,8 +523,12 @@ export class ImportExportService {
         questions,
       };
     });
-    if (!plans.length && !exams.length)
+    const scopedPlans = scope === "exams" ? [] : plans;
+    const scopedExams = scope === "plans" ? [] : exams;
+    if (!scopedPlans.length && !scopedExams.length)
       warnings.push("No plans or exams found.");
+    if (scopedPlans.length && !payload.studentId)
+      errors.push("studentId is required when importing plans");
     if (
       plans.length > 366 ||
       plans.reduce((sum, plan) => sum + plan.tasks.length, 0) > 5000
@@ -532,11 +539,11 @@ export class ImportExportService {
       exams.reduce((sum, exam) => sum + exam.questions.length, 0) > 10000
     )
       errors.push("Exam import exceeds the supported size.");
-    if (payload.studentId && plans.length) {
+    if (payload.studentId && scopedPlans.length) {
       const existing = await this.db.manager.find(Plan, {
         where: {
           student: { id: payload.studentId },
-          date: In(plans.map((plan) => plan.date)),
+          date: In(scopedPlans.map((plan) => plan.date)),
         },
       });
       conflicts.push(
@@ -548,10 +555,10 @@ export class ImportExportService {
       (context.organizationIds.length === 1
         ? context.organizationIds[0]
         : null);
-    if (exams.length) {
+    if (scopedExams.length) {
       const existing = await this.db.manager.find(Exam, {
         where: {
-          title: In(exams.map((exam) => exam.title)),
+          title: In(scopedExams.map((exam) => exam.title)),
           ...(organizationId ? { organization: { id: organizationId } } : {}),
         },
       });
@@ -566,17 +573,17 @@ export class ImportExportService {
       schemaVersion,
       counts: {
         students: payload.studentId ? 1 : 0,
-        plans: plans.length,
-        tasks: plans.reduce((n, p) => n + p.tasks.length, 0),
-        exams: exams.length,
-        questions: exams.reduce((n, e) => n + e.questions.length, 0),
+        plans: scopedPlans.length,
+        tasks: scopedPlans.reduce((n, p) => n + p.tasks.length, 0),
+        exams: scopedExams.length,
+        questions: scopedExams.reduce((n, e) => n + e.questions.length, 0),
       },
       normalized: {
         schemaVersion,
         organizationId,
         studentId: payload.studentId || null,
-        plans: payload.scope === "exams" ? [] : plans,
-        exams: payload.scope === "plans" ? [] : exams,
+        plans: scopedPlans,
+        exams: scopedExams,
         publishImported: payload.publishImported === true,
         replaceExistingPlans: payload.replaceExistingPlans === true,
         replaceExistingExams: payload.replaceExistingExams === true,
