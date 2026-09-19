@@ -344,11 +344,11 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       }
       set({ authStatus: 'authenticated', user: { ...user, roles: context.roles }, access, capabilities: context.capabilities });
       await get().loadProfileDomains();
-      await get().loadDashboard();
-      await get().loadExams();
+      if (access.canReadDashboard) await get().loadDashboard();
+      if (access.canReadExams) await get().loadExams();
       await get().loadNotifications();
-      await get().loadLearning();
-      if (access.mode === 'student') await get().restoreActiveSession();
+      if (access.canReadLearning) await get().loadLearning();
+      if (access.mode === 'student' && access.canMutateStudentWork) await get().restoreActiveSession();
     } catch (error) {
       apiClient.setCsrfToken(null);
       clearAccountStorage();
@@ -377,11 +377,11 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       }
       set({ authStatus: 'authenticated', user: { ...session.user, roles: context.roles }, access, capabilities: context.capabilities, loadStatus: 'idle' });
       await get().loadProfileDomains();
-      await get().loadDashboard();
-      await get().loadExams();
+      if (access.canReadDashboard) await get().loadDashboard();
+      if (access.canReadExams) await get().loadExams();
       await get().loadNotifications();
-      await get().loadLearning();
-      if (access.mode === 'student') await get().restoreActiveSession();
+      if (access.canReadLearning) await get().loadLearning();
+      if (access.mode === 'student' && access.canMutateStudentWork) await get().restoreActiveSession();
     } catch (error) {
       if (sessionCreated) {
         await apiClient.request('POST', '/auth/logout').catch(() => undefined);
@@ -407,7 +407,13 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       selectedGuardianStudentId: id,
       student: get().guardianStudents.find((item) => item.id === id) || null,
     });
-    await Promise.all([get().loadProfileDomains(), get().loadDashboard(), get().loadExams(), get().loadLearning()]);
+    const access = get().access;
+    await Promise.all([
+      get().loadProfileDomains(),
+      ...(access?.canReadDashboard ? [get().loadDashboard()] : []),
+      ...(access?.canReadExams ? [get().loadExams()] : []),
+      ...(access?.canReadLearning ? [get().loadLearning()] : []),
+    ]);
   },
   async loadDashboard() {
     set({ loadStatus: 'loading', error: null });
@@ -523,7 +529,9 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       }
       const student = await apiClient.request<BackendStudent>('GET', '/students/me');
       const [subjects, relationships, mistakes] = await Promise.all([
-        apiClient.request<StudentSubject[]>('GET', `/students/${encodeURIComponent(student.id)}/subjects`),
+        get().access?.canReadSubjects
+          ? apiClient.request<StudentSubject[]>('GET', `/students/${encodeURIComponent(student.id)}/subjects`)
+          : Promise.resolve([]),
         apiClient.request<StudentRelationship[]>('GET', '/relationships'),
         apiClient.request<StudentMistake[]>('GET', '/student/mistakes'),
       ]);

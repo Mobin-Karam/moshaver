@@ -277,18 +277,21 @@ export class ExamsController {
 
   @Get("student/exams")
   @Roles(UserRole.STUDENT)
+  @RequireCapabilities("exams.read")
   listForStudent(@CurrentUser() user: AuthenticatedUser) {
     return this.exams.listForStudent(user.id).then(ok);
   }
 
   @Get("student/exams/attempts")
   @Roles(UserRole.STUDENT)
+  @RequireCapabilities("exams.read")
   history(@CurrentUser() user: AuthenticatedUser) {
     return this.exams.history(user.id).then(ok);
   }
 
   @Get("student/exams/attempts/:id")
   @Roles(UserRole.STUDENT)
+  @RequireCapabilities("exams.read")
   resultForStudent(
     @Param("id") id: string,
     @CurrentUser() user: AuthenticatedUser,
@@ -298,18 +301,21 @@ export class ExamsController {
 
   @Get("student/exams/:id/progress")
   @Roles(UserRole.STUDENT)
+  @RequireCapabilities("exams.read")
   progress(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.exams.progress(id, user.id).then(ok);
   }
 
   @Get("student/exams/:id")
   @Roles(UserRole.STUDENT)
+  @RequireCapabilities("exams.read")
   detail(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.exams.detail(id, user.id).then(ok);
   }
 
   @Patch("student/exams/attempts/:id")
   @Roles(UserRole.STUDENT)
+  @RequireCapabilities("exams.read")
   saveProgress(
     @Param("id") id: string,
     @Body() dto: SubmitExamDto,
@@ -320,12 +326,14 @@ export class ExamsController {
 
   @Post("student/exams/:id/start")
   @Roles(UserRole.STUDENT)
+  @RequireCapabilities("exams.read")
   start(@Param("id") id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.exams.start(id, user.id).then(ok);
   }
 
   @Post("student/exams/:id/submit")
   @Roles(UserRole.STUDENT)
+  @RequireCapabilities("exams.read")
   submit(
     @Param("id") id: string,
     @Body() dto: SubmitExamDto,
@@ -336,6 +344,7 @@ export class ExamsController {
 
   @Post("student/exams/:examId/attempts/:attemptId/heartbeat")
   @Roles(UserRole.STUDENT)
+  @RequireCapabilities("exams.read")
   heartbeat(
     @Param("examId") examId: string,
     @Param("attemptId") attemptId: string,

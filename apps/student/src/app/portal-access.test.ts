@@ -17,6 +17,7 @@ describe('Student and Family portal access', () => {
     ]);
     expect(access).toMatchObject({
       mode: 'student',
+      canReadDashboard: true,
       canMutateStudentWork: true,
       canTakeExams: true,
       canReadPlans: true,
@@ -45,6 +46,7 @@ describe('Student and Family portal access', () => {
     ]);
     expect(access).toMatchObject({
       mode: 'guardian',
+      canReadDashboard: true,
       canMutateStudentWork: false,
       canTakeExams: false,
       canReadPlans: true,
@@ -64,6 +66,7 @@ describe('Student and Family portal access', () => {
     const access = portalAccess(['STUDENT'], ['student.profile.read', 'plans.read']);
     expect(access).toMatchObject({
       mode: 'student',
+      canReadDashboard: true,
       canMutateStudentWork: false,
       canReadPlans: true,
       canReadExams: false,

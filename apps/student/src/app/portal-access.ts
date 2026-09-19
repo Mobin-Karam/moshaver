@@ -3,6 +3,7 @@ export type PortalMode = 'student' | 'guardian' | 'observer';
 export interface PortalAccess {
   mode: PortalMode;
   canMutateStudentWork: boolean;
+  canReadDashboard: boolean;
   canTakeExams: boolean;
   canReadPlans: boolean;
   canReadExams: boolean;
@@ -44,8 +45,9 @@ export function portalAccess(roles: readonly string[], capabilities: readonly st
     canReadSubjects: has('studentSubjects.read'),
     canReadGuardianStudents: guardian,
     canUseChat: has('chat.read'),
+    canReadDashboard: student ? has('plans.read') : has('guardian.dashboard.read'),
     navigation: [
-      'today',
+      ...((student ? has('plans.read') : has('guardian.dashboard.read')) ? (['today'] as const) : []),
       ...(canReadPlans ? (['plan'] as const) : []),
       ...(canReadExams ? (['exams'] as const) : []),
       ...(has('chat.read') ? (['chat'] as const) : []),

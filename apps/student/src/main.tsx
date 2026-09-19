@@ -76,19 +76,20 @@ function App() {
       window.dispatchEvent(new CustomEvent('moshaver:v2-event', { detail: { type } }));
       const state = useStudentStore.getState();
       if (type.startsWith('notification.')) void state.loadNotifications();
-      if (type.startsWith('plan.') || type.startsWith('task.')) void state.loadDashboard();
-      if (type.startsWith('exam.')) void state.loadExams();
-      if (type.startsWith('learning.') || type.startsWith('relationship.')) void Promise.all([state.loadLearning(), state.loadProfileDomains()]);
+      if ((type.startsWith('plan.') || type.startsWith('task.')) && access.canReadDashboard) void state.loadDashboard();
+      if (type.startsWith('exam.') && access.canReadExams) void state.loadExams();
+      if (type.startsWith('learning.') && access.canReadLearning) void state.loadLearning();
+      if (type.startsWith('relationship.')) void state.loadProfileDomains();
     });
     return () => source.close();
-  }, [access?.mode, authStatus]);
+  }, [access?.canReadDashboard, access?.canReadExams, access?.canReadLearning, access?.mode, authStatus]);
 
   useEffect(() => {
-    if (authStatus !== 'authenticated' || access?.mode !== 'student') return;
+    if (authStatus !== 'authenticated' || access?.mode !== 'student' || !access.canMutateStudentWork) return;
     let active = true;
     void syncController.then((controller) => { if (active) controller.start(); });
     return () => { active = false; void syncController.then((controller) => controller.stop()); };
-  }, [access?.mode, authStatus]);
+  }, [access?.canMutateStudentWork, access?.mode, authStatus]);
 
   useEffect(() => {
     if (authStatus !== 'authenticated' || access?.mode !== 'student') return;
@@ -124,7 +125,7 @@ function App() {
         {online && reconnected ? <div className="bg-mint px-4 py-2 text-center text-sm text-white" role="status">اتصال اینترنت برقرار شد.</div> : null}
         <StudentAppShell access={access} unread={unread} syncLabel={syncStatusLabel(syncStatus)} theme={theme} onThemeChange={() => setTheme((value) => value === 'light' ? 'dark' : value === 'dark' ? 'system' : 'light')} guardianSelector={access?.mode === 'guardian' && guardianStudents.length ? <label className="guardian-picker"><span>فرزند:</span><select value={selectedGuardianStudentId || ''} onChange={(event) => void selectGuardianStudent(event.target.value)}>{guardianStudents.map((child) => <option key={child.id} value={child.id}>{child.name}</option>)}</select></label> : undefined}>
           <Suspense fallback={<LoadingState label="در حال آماده‌سازی صفحه" />}><Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={access?.canReadDashboard ? <HomePage /> : <Navigate to="/more" replace />} />
             <Route path="/plan" element={access?.canReadPlans ? <PlanPage /> : <Navigate to="/" replace />} />
             <Route path="/exam" element={access?.canReadExams ? <ExamPage /> : <Navigate to="/" replace />} />
             <Route path="/chat" element={access?.canUseChat ? <ChatPage /> : <Navigate to="/" replace />} />
@@ -148,7 +149,14 @@ async function initializeSync() {
     await pullChanges(syncProvider, apiClient, async () => {
       const state = useStudentStore.getState();
       if (state.authStatus !== 'authenticated') return;
-      await Promise.all([state.loadDashboard(), state.loadPlan(new Date().toISOString().slice(0, 10)), state.loadExams(), state.loadNotifications(), state.loadLearning()]);
+      const access = state.access;
+      await Promise.all([
+        ...(access?.canReadDashboard ? [state.loadDashboard()] : []),
+        ...(access?.canReadPlans ? [state.loadPlan(new Date().toISOString().slice(0, 10))] : []),
+        ...(access?.canReadExams ? [state.loadExams()] : []),
+        state.loadNotifications(),
+        ...(access?.canReadLearning ? [state.loadLearning()] : []),
+      ]);
     });
   };
   const worker = new SyncWorker(syncProvider, apiClient, () => navigator.onLine, reconcile);

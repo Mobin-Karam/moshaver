@@ -14,16 +14,19 @@ export class StudentController {
   constructor(private readonly students: StudentsService) {}
 
   @Get("dashboard")
+  @RequireCapabilities("plans.read")
   dashboard(@CurrentUser() user: AuthenticatedUser) {
     return this.students.dashboard(user?.id).then(ok);
   }
 
   @Get("today")
+  @RequireCapabilities("plans.read")
   today(@CurrentUser() user: AuthenticatedUser) {
     return this.students.today(user?.id).then(ok);
   }
 
   @Get("plans")
+  @RequireCapabilities("plans.read")
   plans(@CurrentUser() user: AuthenticatedUser, @Query("date") date?: string) {
     return this.students.day(user?.id, date).then((data) => ok(data.plan ? [data.plan] : []));
   }

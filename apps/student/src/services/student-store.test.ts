@@ -182,6 +182,33 @@ describe('student account isolation', () => {
       error: 'ارتباط با سرور برقرار نشد. اتصال اینترنت را بررسی کنید.',
     });
   });
+
+  it('does not bootstrap education APIs hidden by the active capabilities', async () => {
+    const request = vi.spyOn(apiClient, 'request').mockImplementation(async (_method, path) => {
+      if (path === '/auth/me') return { id: 'user-1', username: 'readonly', role: 'STUDENT', csrfToken: 'csrf' } as never;
+      if (path === '/me/context') return { user: { id: 'user-1' }, roles: ['STUDENT'], capabilities: ['student.profile.read', 'plans.read'] } as never;
+      if (path === '/students/me') return { id: 'student-1', name: 'Read Only' } as never;
+      if (path === '/relationships' || path === '/student/mistakes') return [] as never;
+      if (path === '/student/dashboard') return { student: { id: 'student-1', name: 'Read Only' }, tasks: [] } as never;
+      if (path === '/notifications?limit=50') return { items: [], unreadCount: 0 } as never;
+      throw new Error(`Unexpected request: ${path}`);
+    });
+
+    await useStudentStore.getState().restoreSession();
+
+    expect(useStudentStore.getState().authStatus).toBe('authenticated');
+    expect(request.mock.calls.map((call) => call[1])).toEqual([
+      '/auth/me',
+      '/me/context',
+      '/students/me',
+      '/relationships',
+      '/student/mistakes',
+      '/student/dashboard',
+      '/notifications?limit=50',
+    ]);
+    expect(request).not.toHaveBeenCalledWith('GET', '/student/exams');
+    expect(request).not.toHaveBeenCalledWith('GET', '/student/progress');
+  });
 });
 
 describe('guardian education projections', () => {
