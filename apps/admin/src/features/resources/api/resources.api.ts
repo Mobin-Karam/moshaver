@@ -16,7 +16,10 @@ export type ResourceInput = Omit<LearningResource, "id" | "assignments" | "updat
 };
 
 export const listResources = () => api.get<LearningResource[]>("/learning-resources");
-export const listResourceStudents = () => api.get<Student[]>("/students");
+export const listResourceStudents = () =>
+  api.get<Array<Pick<Student, "id" | "name" | "grade" | "major">>>(
+    "/learning-resources/assignable-students",
+  );
 export const createResource = (body: ResourceInput) =>
   api.post<LearningResource>("/learning-resources", body);
 export const updateResource = (id: string, body: ResourceInput) =>

@@ -25,6 +25,27 @@ export class LearningResourcesService {
     return rows.filter((_, index) => visible[index]);
   }
 
+  async listAssignableStudents(actor: AuthenticatedUser) {
+    const rows = await this.students.find({ order: { name: "ASC" } });
+    const visible = this.isPlatformAdmin(actor)
+      ? rows
+      : (
+          await Promise.all(
+            rows.map(async (student) => ({
+              student,
+              allowed: await this.authorization.canAccessStudent(
+                this.context(actor),
+                student.id,
+                "learning_resources.manage",
+              ),
+            })),
+          )
+        )
+          .filter((entry) => entry.allowed)
+          .map((entry) => entry.student);
+    return visible.map(({ id, name, grade, major }) => ({ id, name, grade, major }));
+  }
+
   async listForStudent(actor: AuthenticatedUser, studentId?: string) {
     let target = studentId;
     if (!target) target = (await this.students.findOne({ where: { user: { id: actor.id } }, relations: { user: true } }))?.id;

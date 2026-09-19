@@ -23,8 +23,15 @@ describe("LearningResourcesService authorization", () => {
       create: jest.fn(),
     };
     const authorization = { canAccessStudent: jest.fn(async (_context, id) => canAccess(id)) };
-    const service = new LearningResourcesService(resources as any, { delete: jest.fn(), save: jest.fn(), create: jest.fn(), find: jest.fn() } as any, { findBy: jest.fn() } as any, authorization as any);
-    return { service, authorization };
+    const students = {
+      find: jest.fn(async () => [
+        { id: "student-1", name: "دانش‌آموز یک", grade: "دهم", major: "ریاضی", user: { passwordHash: "secret" } },
+        { id: "student-2", name: "دانش‌آموز دو", grade: "یازدهم", major: "تجربی", user: { passwordHash: "secret" } },
+      ]),
+      findBy: jest.fn(),
+    };
+    const service = new LearningResourcesService(resources as any, { delete: jest.fn(), save: jest.fn(), create: jest.fn(), find: jest.fn() } as any, students as any, authorization as any);
+    return { service, authorization, students };
   }
 
   it("lists only owned or in-scope resources for organization managers", async () => {
@@ -42,6 +49,23 @@ describe("LearningResourcesService authorization", () => {
     const { service, authorization } = setup(() => false);
     const rows = await service.listManaged({ ...actor, role: "PLATFORM_ADMIN", roles: ["PLATFORM_ADMIN"] } as any);
     expect(rows).toHaveLength(3);
+    expect(authorization.canAccessStudent).not.toHaveBeenCalled();
+  });
+
+  it("lists only assignment-safe student fields within the manager scope", async () => {
+    const { service } = setup((id) => id === "student-1");
+
+    await expect(service.listAssignableStudents(actor as any)).resolves.toEqual([
+      { id: "student-1", name: "دانش‌آموز یک", grade: "دهم", major: "ریاضی" },
+    ]);
+  });
+
+  it("lets platform administrators select any student without scope probes", async () => {
+    const { service, authorization } = setup(() => false);
+
+    await expect(
+      service.listAssignableStudents({ ...actor, role: "PLATFORM_ADMIN", roles: ["PLATFORM_ADMIN"] } as any),
+    ).resolves.toHaveLength(2);
     expect(authorization.canAccessStudent).not.toHaveBeenCalled();
   });
 });
