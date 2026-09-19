@@ -14,6 +14,7 @@ import { ok } from "../../common/utils/envelope";
 import { AuthenticatedUser } from "../auth";
 import {
   AssignTeacherSubjectDto,
+  ArchiveSubjectDto,
   CreateSubjectDto,
   UpdateStudentSubjectDto,
   UpdateSubjectDto,
@@ -24,8 +25,9 @@ export class SubjectsController {
   constructor(private service: SubjectsService) {}
   @Get("subjects") @RequireCapabilities("subjects.read") list(
     @CurrentUser() u: AuthenticatedUser,
+    @Query("includeArchived") includeArchived?: string,
   ) {
-    return this.service.list(u).then(ok);
+    return this.service.list(u, includeArchived === "true").then(ok);
   }
   @Post("subjects") @RequireCapabilities("subjects.create") create(
     @CurrentUser() u: AuthenticatedUser,
@@ -39,6 +41,13 @@ export class SubjectsController {
     @Body() d: UpdateSubjectDto,
   ) {
     return this.service.update(u, id, d).then(ok);
+  }
+  @Patch("subjects/:id/archive") @RequireCapabilities("subjects.archive") archive(
+    @CurrentUser() u: AuthenticatedUser,
+    @Param("id") id: string,
+    @Body() d: ArchiveSubjectDto,
+  ) {
+    return this.service.setActive(u, id, d.active).then(ok);
   }
   @Post("subjects/:id/teachers")
   @RequireCapabilities("organization.members.manage")

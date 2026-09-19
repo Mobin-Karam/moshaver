@@ -1,14 +1,16 @@
 export type Subject = {
   id: string;
+  code: string;
   name: string;
-  subject_key?: string;
-  subjectKey?: string;
-  display_order?: number;
-  displayOrder?: number;
-  status?: string;
-  progress?: number;
-  mastery?: string;
-  note?: string;
+  active: boolean;
+  organization?: { id: string; name: string } | null;
+};
+
+export type StudentSubject = {
+  subject: Pick<Subject, "id" | "code" | "name">;
+  enabled: boolean;
+  displayName: string;
+  weeklyTargetMinutes: number;
 };
 
 export type SubjectsMode = "student" | "catalog";

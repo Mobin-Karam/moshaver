@@ -14,7 +14,9 @@ export class CreateSubjectDto {
 }
 export class UpdateSubjectDto {
   @IsOptional() @IsString() @Length(2, 160) name?: string;
-  @IsOptional() @IsBoolean() active?: boolean;
+}
+export class ArchiveSubjectDto {
+  @IsBoolean() active!: boolean;
 }
 export class UpdateStudentSubjectDto {
   @IsOptional() @IsBoolean() enabled?: boolean;

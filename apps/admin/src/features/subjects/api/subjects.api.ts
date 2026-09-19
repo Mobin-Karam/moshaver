@@ -1,22 +1,21 @@
 import { api } from "../../../shared/api/api";
-import type { Subject } from "../model/subject.types";
+import type { StudentSubject, Subject } from "../model/subject.types";
 
-export const getSubjects = () => api.get<Subject[]>("/subjects");
+export const getSubjects = (includeArchived = false) =>
+  api.get<Subject[]>(`/subjects${includeArchived ? "?includeArchived=true" : ""}`);
 export const getStudentSubjects = (studentId: string) =>
-  api.get<Subject[]>(`/students/${studentId}/subjects`);
-export const createSubject = (draft: { name: string; subjectKey: string; displayOrder: number }) =>
+  api.get<StudentSubject[]>(`/students/${studentId}/subjects`);
+export const createSubject = (draft: { name: string; code: string }) =>
   api.post("/subjects", draft);
-export const updateSubject = (subject: Subject) =>
-  api.patch(`/subjects/${subject.id}`, {
-    name: subject.name,
-    displayOrder: Number(subject.display_order ?? subject.displayOrder ?? 0),
-  });
-export const updateStudentSubject = (studentId: string, subject: Subject) =>
-  api.patch(`/students/${studentId}/subjects/${subject.id}`, {
-    status: subject.status || "yellow",
-    progress: Number(subject.progress || 0),
-    mastery: subject.mastery || "",
-    note: subject.note || "",
+export const updateSubject = (id: string, draft: { name: string }) =>
+  api.patch(`/subjects/${id}`, draft);
+export const setSubjectActive = (id: string, active: boolean) =>
+  api.patch(`/subjects/${id}/archive`, { active });
+export const updateStudentSubject = (studentId: string, setting: StudentSubject) =>
+  api.patch(`/students/${studentId}/subjects/${setting.subject.id}`, {
+    enabled: setting.enabled,
+    displayName: setting.displayName,
+    weeklyTargetMinutes: setting.weeklyTargetMinutes,
   });
 export type TeacherAssignment = {
   id: string;

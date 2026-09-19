@@ -54,14 +54,15 @@ export class SubjectsService {
     };
   }
 
-  async list(u: AuthenticatedUser) {
+  async list(u: AuthenticatedUser, includeArchived = false) {
     const c = this.context(u);
+    if (includeArchived) this.authorization.requireCapability(c, "subjects.archive");
     if (c.roles.length === 1 && c.roles[0] === "TEACHER") {
       const rows = await this.teacherSubjects.find({
         where: {
           teacher: { id: c.id },
           organization: { id: In(c.organizationIds) },
-          subject: { active: true },
+          subject: includeArchived ? {} : { active: true },
         },
         relations: { subject: { organization: true } },
         order: { subject: { name: "ASC" } },
@@ -72,10 +73,10 @@ export class SubjectsService {
     return this.subjects.find({
       where: orgs.length
         ? [
-            { organization: IsNull(), active: true },
-            { organization: { id: In(orgs) }, active: true },
+            { organization: IsNull(), ...(includeArchived ? {} : { active: true }) },
+            { organization: { id: In(orgs) }, ...(includeArchived ? {} : { active: true }) },
           ]
-        : { organization: IsNull(), active: true },
+        : { organization: IsNull(), ...(includeArchived ? {} : { active: true }) },
       order: { name: "ASC" },
     });
   }
@@ -113,10 +114,21 @@ export class SubjectsService {
 
   async update(u: AuthenticatedUser, id: string, d: UpdateSubjectDto) {
     const c = this.context(u);
-    this.authorization.requireCapability(
-      c,
-      d.active === false ? "subjects.archive" : "subjects.update",
-    );
+    this.authorization.requireCapability(c, "subjects.update");
+    const subject = await this.accessibleSubject(c, id);
+    Object.assign(subject, d);
+    return this.subjects.save(subject);
+  }
+
+  async setActive(u: AuthenticatedUser, id: string, active: boolean) {
+    const c = this.context(u);
+    this.authorization.requireCapability(c, "subjects.archive");
+    const subject = await this.accessibleSubject(c, id);
+    subject.active = active;
+    return this.subjects.save(subject);
+  }
+
+  private async accessibleSubject(c: UserContext, id: string) {
     const subject = await this.subjects.findOne({
       where: { id },
       relations: { organization: true },
@@ -131,8 +143,7 @@ export class SubjectsService {
       )
     )
       throw new ApiException(404, "NOT_FOUND", "درس یافت نشد.");
-    Object.assign(subject, d);
-    return this.subjects.save(subject);
+    return subject;
   }
 
   async assignTeacher(

@@ -1,5 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookOpen, BookPlus, Edit3, RotateCcw, Save, Search, Users } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  BookOpen,
+  BookPlus,
+  Edit3,
+  RotateCcw,
+  Save,
+  Search,
+  Users,
+} from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useStudentSelection } from "../../../shared/hooks/useStudentSelection";
@@ -8,42 +18,41 @@ import { fa, normalizePersianText } from "../../../shared/lib/utils";
 import { useModal } from "../../../shared/ui/modal";
 import { notify } from "../../../shared/ui/notifications";
 import { StudentPicker } from "../../../shared/ui/StudentPicker";
-import {
-  Badge,
-  Button,
-  Card,
-  EmptyState,
-  Field,
-  Input,
-  Select,
-  Textarea,
-} from "../../../shared/ui/ui";
+import { Badge, Button, Card, EmptyState, Field, Input, Select } from "../../../shared/ui/ui";
 import {
   createSubject,
   getStudentSubjects,
   getSubjects,
+  setSubjectActive,
   updateStudentSubject,
   updateSubject,
 } from "../api/subjects.api";
-import type { Subject, SubjectsMode as Mode } from "../model/subject.types";
+import type { StudentSubject, Subject, SubjectsMode as Mode } from "../model/subject.types";
 import { TeacherAssignments } from "../components/TeacherAssignments";
 
 export function SubjectsPage() {
-  const students = useStudentSelection(),
+  const auth = useAuth();
+  const canReadStudentSubjects = auth.can("studentSubjects.read") && auth.can("students.read");
+  const students = useStudentSelection({ enabled: canReadStudentSubjects }),
     qc = useQueryClient(),
     modal = useModal(),
     [params, setParams] = useSearchParams();
-  const [mode, setMode] = useState<Mode>(params.get("mode") === "catalog" ? "catalog" : "student"),
+  const [mode, setMode] = useState<Mode>(
+      params.get("mode") !== "catalog" && canReadStudentSubjects ? "student" : "catalog",
+    ),
     [search, setSearch] = useState(params.get("q") || "");
   const deferredSearch = useDeferredValue(search);
-  const auth = useAuth();
   const canCreate = auth.can("subjects.create");
   const canUpdate = auth.can("subjects.update");
+  const canArchive = auth.can("subjects.archive");
   const canManageStudentSubjects = auth.can("studentSubjects.manage");
-  const subjects = useQuery({ queryKey: ["subjects"], queryFn: getSubjects });
+  const subjects = useQuery({
+    queryKey: ["subjects", { includeArchived: canArchive }],
+    queryFn: () => getSubjects(canArchive),
+  });
   const assigned = useQuery({
     queryKey: ["student-subjects", students.studentId],
-    enabled: !!students.studentId && mode === "student",
+    enabled: canReadStudentSubjects && !!students.studentId && mode === "student",
     queryFn: () => getStudentSubjects(students.studentId),
   });
   const create = useMutation({
@@ -56,7 +65,7 @@ export function SubjectsPage() {
       notify(error instanceof Error ? error.message : "ساخت درس ناموفق بود.", "error"),
   });
   const updateCatalog = useMutation({
-    mutationFn: updateSubject,
+    mutationFn: ({ id, name }: { id: string; name: string }) => updateSubject(id, { name }),
     onSuccess: () => {
       notify("مشخصات درس به‌روز شد.");
       void refreshAll();
@@ -64,8 +73,17 @@ export function SubjectsPage() {
     onError: (error) =>
       notify(error instanceof Error ? error.message : "ویرایش درس ناموفق بود.", "error"),
   });
+  const archiveCatalog = useMutation({
+    mutationFn: ({ id, active }: { id: string; active: boolean }) => setSubjectActive(id, active),
+    onSuccess: (_, variables) => {
+      notify(variables.active ? "درس دوباره فعال شد." : "درس بایگانی شد.");
+      void refreshAll();
+    },
+    onError: (error) =>
+      notify(error instanceof Error ? error.message : "تغییر وضعیت درس ناموفق بود.", "error"),
+  });
   const updateStudent = useMutation({
-    mutationFn: (subject: Subject) => updateStudentSubject(students.studentId, subject),
+    mutationFn: (setting: StudentSubject) => updateStudentSubject(students.studentId, setting),
     onSuccess: () => {
       notify("وضعیت آموزشی دانش‌آموز ذخیره شد.");
       void qc.invalidateQueries({
@@ -75,29 +93,32 @@ export function SubjectsPage() {
     onError: (error) =>
       notify(error instanceof Error ? error.message : "ذخیره وضعیت درس ناموفق بود.", "error"),
   });
-  const source = mode === "catalog" ? subjects.data : assigned.data;
-  const rows = useMemo(
+  const catalogRows = useMemo(
     () =>
-      (source || [])
-        .filter((row) =>
-          normalizePersianText(
-            `${row.name} ${row.subject_key || row.subjectKey || ""} ${row.note || ""}`,
-          ).includes(normalizePersianText(deferredSearch)),
-        )
-        .sort(
-          (a, b) =>
-            Number(a.display_order ?? a.displayOrder ?? 0) -
-            Number(b.display_order ?? b.displayOrder ?? 0),
+      (subjects.data || []).filter((row) =>
+        normalizePersianText(`${row.name} ${row.code}`).includes(
+          normalizePersianText(deferredSearch),
         ),
-    [deferredSearch, source],
+      ),
+    [deferredSearch, subjects.data],
   );
+  const studentRows = useMemo(
+    () =>
+      (assigned.data || []).filter((row) =>
+        normalizePersianText(`${row.subject.name} ${row.subject.code} ${row.displayName}`).includes(
+          normalizePersianText(deferredSearch),
+        ),
+      ),
+    [assigned.data, deferredSearch],
+  );
+  const rows = mode === "catalog" ? catalogRows : studentRows;
   const summary = {
-    total: source?.length || 0,
-    strong: (assigned.data || []).filter((row) => row.status === "green").length,
-    attention: (assigned.data || []).filter((row) => row.status === "red").length,
+    total: assigned.data?.length || 0,
+    enabled: (assigned.data || []).filter((row) => row.enabled).length,
+    disabled: (assigned.data || []).filter((row) => !row.enabled).length,
     average: assigned.data?.length
       ? Math.round(
-          assigned.data.reduce((sum, row) => sum + Number(row.progress || 0), 0) /
+          assigned.data.reduce((sum, row) => sum + row.weeklyTargetMinutes, 0) /
             assigned.data.length,
         )
       : 0,
@@ -140,16 +161,12 @@ export function SubjectsPage() {
   function openCatalogEdit(subject: Subject) {
     modal.open({
       title: "ویرایش درس",
-      description: subject.subject_key || subject.subjectKey,
+      description: subject.code,
       content: (
         <CatalogForm
           initial={subject}
           onSubmit={async (value) => {
-            await updateCatalog.mutateAsync({
-              ...subject,
-              ...value,
-              display_order: value.displayOrder,
-            });
+            await updateCatalog.mutateAsync({ id: subject.id, name: value.name });
             modal.close();
           }}
         />
@@ -171,15 +188,17 @@ export function SubjectsPage() {
       <Card className="sticky top-16 z-10 p-3 shadow-sm">
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex rounded-md bg-slate-100 p-1">
-            <button
-              className={`rounded px-3 py-2 text-xs font-bold ${mode === "student" ? "bg-white text-brand shadow-sm" : "text-slate-500"}`}
-              onClick={() => {
-                setMode("student");
-                updateUrl({ mode: "student" });
-              }}
-            >
-              وضعیت دانش‌آموز
-            </button>
+            {canReadStudentSubjects ? (
+              <button
+                className={`rounded px-3 py-2 text-xs font-bold ${mode === "student" ? "bg-white text-brand shadow-sm" : "text-slate-500"}`}
+                onClick={() => {
+                  setMode("student");
+                  updateUrl({ mode: "student" });
+                }}
+              >
+                وضعیت دانش‌آموز
+              </button>
+            ) : null}
             <button
               className={`rounded px-3 py-2 text-xs font-bold ${mode === "catalog" ? "bg-white text-brand shadow-sm" : "text-slate-500"}`}
               onClick={() => {
@@ -238,9 +257,9 @@ export function SubjectsPage() {
       {mode === "student" ? (
         <section className="grid grid-cols-2 gap-2 md:grid-cols-4">
           <Metric label="همه درس‌ها" value={summary.total} />
-          <Metric label="میانگین پیشرفت" value={`${fa(summary.average)}٪`} />
-          <Metric label="وضعیت خوب" value={summary.strong} tone="green" />
-          <Metric label="نیازمند توجه" value={summary.attention} tone="red" />
+          <Metric label="فعال" value={summary.enabled} tone="green" />
+          <Metric label="غیرفعال" value={summary.disabled} tone="red" />
+          <Metric label="میانگین هدف هفتگی" value={`${fa(summary.average)} دقیقه`} />
         </section>
       ) : null}
       <Card>
@@ -257,28 +276,37 @@ export function SubjectsPage() {
           />
         ) : rows.length ? (
           <div className="grid gap-3">
-            {rows.map((row) =>
-              mode === "catalog" ? (
-                <CatalogRow
-                  key={row.id}
-                  subject={row}
-                  onEdit={canUpdate ? () => openCatalogEdit(row) : undefined}
-                  onTeachers={
-                    auth.can("organization.members.manage") && auth.context?.activeOrganization
-                      ? () => openTeacherAssignments(row)
-                      : undefined
-                  }
-                />
-              ) : (
-                <StudentSubjectEditor
-                  key={`${students.studentId}-${row.id}`}
-                  initial={row}
-                  onSave={(value) => updateStudent.mutate(value)}
-                  saving={updateStudent.isPending && updateStudent.variables?.id === row.id}
-                  editable={canManageStudentSubjects}
-                />
-              ),
-            )}
+            {mode === "catalog"
+              ? catalogRows.map((row) => (
+                  <CatalogRow
+                    key={row.id}
+                    subject={row}
+                    onEdit={canUpdate ? () => openCatalogEdit(row) : undefined}
+                    onToggleActive={
+                      canArchive
+                        ? () => archiveCatalog.mutate({ id: row.id, active: !row.active })
+                        : undefined
+                    }
+                    toggling={archiveCatalog.isPending && archiveCatalog.variables?.id === row.id}
+                    onTeachers={
+                      auth.can("organization.members.manage") && auth.context?.activeOrganization
+                        ? () => openTeacherAssignments(row)
+                        : undefined
+                    }
+                  />
+                ))
+              : studentRows.map((row) => (
+                  <StudentSubjectEditor
+                    key={`${students.studentId}-${row.subject.id}`}
+                    initial={row}
+                    onSave={(value) => updateStudent.mutate(value)}
+                    saving={
+                      updateStudent.isPending &&
+                      updateStudent.variables?.subject.id === row.subject.id
+                    }
+                    editable={canManageStudentSubjects}
+                  />
+                ))}
           </div>
         ) : (
           <EmptyState title={search ? "درسی با این جستجو پیدا نشد." : "درسی ثبت نشده است."} />
@@ -292,10 +320,14 @@ function CatalogRow({
   subject,
   onEdit,
   onTeachers,
+  onToggleActive,
+  toggling,
 }: {
   subject: Subject;
   onEdit?: () => void;
   onTeachers?: () => void;
+  onToggleActive?: () => void;
+  toggling: boolean;
 }) {
   return (
     <article className="flex flex-wrap items-center gap-3 rounded-lg border p-3">
@@ -303,12 +335,14 @@ function CatalogRow({
         <BookOpen size={18} />
       </span>
       <div className="min-w-0 flex-1">
-        <strong>{subject.name}</strong>
+        <strong className={subject.active ? "" : "text-slate-500"}>{subject.name}</strong>
         <p className="truncate text-xs text-slate-500" dir="ltr">
-          {subject.subject_key || subject.subjectKey}
+          {subject.code}
         </p>
       </div>
-      <Badge>ترتیب {fa(subject.display_order ?? subject.displayOrder ?? 0)}</Badge>
+      <Badge tone={subject.active ? "green" : "neutral"}>
+        {subject.active ? "فعال" : "بایگانی‌شده"}
+      </Badge>
       {onEdit ? (
         <Button variant="soft" onClick={onEdit}>
           <Edit3 size={15} /> ویرایش
@@ -320,6 +354,12 @@ function CatalogRow({
           دبیران
         </Button>
       ) : null}
+      {onToggleActive ? (
+        <Button variant="ghost" loading={toggling} onClick={onToggleActive}>
+          {subject.active ? <Archive size={15} /> : <ArchiveRestore size={15} />}
+          {subject.active ? "بایگانی" : "فعال‌سازی"}
+        </Button>
+      ) : null}
     </article>
   );
 }
@@ -329,59 +369,52 @@ function StudentSubjectEditor({
   saving,
   editable,
 }: {
-  initial: Subject;
-  onSave: (subject: Subject) => void;
+  initial: StudentSubject;
+  onSave: (subject: StudentSubject) => void;
   saving: boolean;
   editable: boolean;
 }) {
-  const [subject, setSubject] = useState(initial);
-  useEffect(() => setSubject(initial), [initial]);
-  const dirty = JSON.stringify(subject) !== JSON.stringify(initial);
+  const [setting, setSetting] = useState(initial);
+  useEffect(() => setSetting(initial), [initial]);
+  const dirty = JSON.stringify(setting) !== JSON.stringify(initial);
   return (
-    <article
-      className={`grid gap-3 rounded-lg border p-3 lg:grid-cols-[1.1fr_140px_150px_1fr_1.4fr_auto] lg:items-end ${subject.status === "red" ? "border-rose-200 bg-rose-50/30" : ""}`}
-    >
+    <article className="grid gap-3 rounded-lg border p-3 lg:grid-cols-[1.1fr_140px_1fr_180px_auto] lg:items-end">
       <div>
-        <strong>{subject.name}</strong>
+        <strong>{setting.subject.name}</strong>
         <p className="text-xs text-slate-500" dir="ltr">
-          {subject.subject_key || subject.subjectKey}
+          {setting.subject.code}
         </p>
       </div>
-      <Field label="وضعیت">
+      <Field label="نمایش برای دانش‌آموز">
         <Select
           disabled={!editable}
-          value={subject.status || "yellow"}
-          onChange={(event) => setSubject({ ...subject, status: event.target.value })}
+          value={setting.enabled ? "enabled" : "disabled"}
+          onChange={(event) =>
+            setSetting({ ...setting, enabled: event.target.value === "enabled" })
+          }
         >
-          <option value="green">خوب</option>
-          <option value="yellow">نیازمند پیگیری</option>
-          <option value="red">ضعیف</option>
+          <option value="enabled">فعال</option>
+          <option value="disabled">غیرفعال</option>
         </Select>
       </Field>
-      <Field label={`پیشرفت ${fa(subject.progress || 0)}٪`}>
+      <Field label="نام نمایشی">
         <Input
           disabled={!editable}
-          type="range"
+          maxLength={120}
+          value={setting.displayName}
+          onChange={(event) => setSetting({ ...setting, displayName: event.target.value })}
+          placeholder={setting.subject.name}
+        />
+      </Field>
+      <Field label="هدف هفتگی (دقیقه)">
+        <Input
+          disabled={!editable}
+          type="number"
           min={0}
-          max={100}
-          value={subject.progress || 0}
-          onChange={(event) => setSubject({ ...subject, progress: Number(event.target.value) })}
-        />
-      </Field>
-      <Field label="تسلط">
-        <Input
-          disabled={!editable}
-          value={subject.mastery || ""}
-          onChange={(event) => setSubject({ ...subject, mastery: event.target.value })}
-          placeholder="مثلاً متوسط"
-        />
-      </Field>
-      <Field label="یادداشت مشاور">
-        <Textarea
-          disabled={!editable}
-          rows={1}
-          value={subject.note || ""}
-          onChange={(event) => setSubject({ ...subject, note: event.target.value })}
+          value={setting.weeklyTargetMinutes}
+          onChange={(event) =>
+            setSetting({ ...setting, weeklyTargetMinutes: Number(event.target.value) })
+          }
         />
       </Field>
       {editable ? (
@@ -389,7 +422,7 @@ function StudentSubjectEditor({
           loading={saving}
           variant={dirty ? "primary" : "soft"}
           disabled={!dirty || saving}
-          onClick={() => onSave(subject)}
+          onClick={() => onSave(setting)}
         >
           <Save size={15} /> ذخیره
         </Button>
@@ -402,12 +435,11 @@ function CatalogForm({
   onSubmit,
 }: {
   initial?: Subject;
-  onSubmit: (value: { name: string; subjectKey: string; displayOrder: number }) => Promise<void>;
+  onSubmit: (value: { name: string; code: string }) => Promise<void>;
 }) {
   const [value, setValue] = useState({
       name: initial?.name || "",
-      subjectKey: initial?.subject_key || initial?.subjectKey || "",
-      displayOrder: Number(initial?.display_order ?? initial?.displayOrder ?? 99),
+      code: initial?.code || "",
     }),
     [busy, setBusy] = useState(false);
   return (
@@ -432,22 +464,14 @@ function CatalogForm({
           dir="ltr"
           maxLength={80}
           disabled={!!initial}
-          value={value.subjectKey}
+          value={value.code}
           onChange={(event) =>
             setValue({
               ...value,
-              subjectKey: event.target.value.trim().replace(/\s+/g, "-"),
+              code: event.target.value.trim().replace(/\s+/g, "-"),
             })
           }
           placeholder="mathematics"
-        />
-      </Field>
-      <Field label="ترتیب نمایش">
-        <Input
-          type="number"
-          min={0}
-          value={value.displayOrder}
-          onChange={(event) => setValue({ ...value, displayOrder: Number(event.target.value) })}
         />
       </Field>
       {initial ? (
@@ -458,7 +482,7 @@ function CatalogForm({
       <Button
         type="submit"
         loading={busy}
-        disabled={busy || value.name.trim().length < 2 || !value.subjectKey.trim()}
+        disabled={busy || value.name.trim().length < 2 || !value.code.trim()}
       >
         {initial ? "ذخیره تغییرات" : "ساخت درس"}
       </Button>
