@@ -1,8 +1,10 @@
 import { api } from "../../../shared/api/api";
 import type { StudentSubject, Subject } from "../model/subject.types";
 
-export const getSubjects = (includeArchived = false) =>
-  api.get<Subject[]>(`/subjects${includeArchived ? "?includeArchived=true" : ""}`);
+export const getSubjects = (includeArchived = false) => {
+  if (includeArchived) return api.get<Subject[]>("/subjects?includeArchived=true");
+  return api.get<Subject[]>("/subjects");
+};
 export const getStudentSubjects = (studentId: string) =>
   api.get<StudentSubject[]>(`/students/${studentId}/subjects`);
 export const createSubject = (draft: { name: string; code: string }) =>

@@ -17,11 +17,7 @@ import { fa } from "../lib/utils";
 import { useLocale } from "./locale";
 import { useModal } from "./modal";
 import { Button, Card, Field, Textarea } from "./ui";
-import {
-  downloadTransferWorkbook,
-  examplePayload,
-  readTransferWorkbook,
-} from "../lib/data-transfer-xlsx";
+import { downloadTransferWorkbook, readTransferWorkbook } from "../lib/data-transfer-xlsx";
 
 export type TransferPreview = {
   schemaVersion?: number;
@@ -118,7 +114,9 @@ export function DataTransferWorkspace(props: Props) {
       template?: boolean;
       format: "json" | "xlsx";
     }) => {
-      const data = template ? examplePayload(props.scope) : await api.get<any>(path!);
+      const data = template
+        ? scopePayload(await api.get<any>("/import/template"), props.scope)
+        : await api.get<any>(path!);
       if (format === "xlsx") await downloadTransferWorkbook(data, props.scope, filename);
       else downloadJsonData(data, filename);
     },
@@ -520,6 +518,14 @@ export function DataTransferWorkspace(props: Props) {
       )}
     </Card>
   );
+}
+
+function scopePayload(data: Record<string, unknown>, scope: Props["scope"]) {
+  return {
+    ...data,
+    plans: scope === "exams" ? [] : Array.isArray(data.plans) ? data.plans : [],
+    exams: scope === "plans" ? [] : Array.isArray(data.exams) ? data.exams : [],
+  };
 }
 
 function TabButton({
