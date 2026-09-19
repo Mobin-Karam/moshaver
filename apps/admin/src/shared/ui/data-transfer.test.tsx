@@ -70,6 +70,56 @@ describe("data transfer workspace", () => {
     expect(screen.getByLabelText("متن JSON")).toBeInTheDocument();
   });
 
+  it("does not render commit actions for a preview-only role", () => {
+    const queryClient = new QueryClient();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LocaleProvider>
+          <ModalProvider>
+            <DataTransferWorkspace
+              studentId="student-1"
+              scope="plans"
+              title="انتقال"
+              description=""
+              canImport
+              canCommit={false}
+              canExport={false}
+              onImported={() => undefined}
+            />
+          </ModalProvider>
+        </LocaleProvider>
+      </QueryClientProvider>,
+    );
+
+    expect(screen.queryByRole("button", { name: "ثبت به‌صورت پیش‌نویس" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "ثبت و انتشار برای دانش‌آموز" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps editable example downloads available before selecting a student", () => {
+    const queryClient = new QueryClient();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LocaleProvider>
+          <ModalProvider>
+            <DataTransferWorkspace
+              studentId=""
+              scope="plans"
+              title="انتقال"
+              description=""
+              onImported={() => undefined}
+            />
+          </ModalProvider>
+        </LocaleProvider>
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByRole("button", { name: "انتخاب فایل" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "نمونه Excel" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "نمونه JSON" })).toBeEnabled();
+  });
+
   it("keeps export in the same workspace with a readable date summary", async () => {
     renderWorkspace();
     await userEvent.click(screen.getByRole("button", { name: /خروجی گرفتن/ }));

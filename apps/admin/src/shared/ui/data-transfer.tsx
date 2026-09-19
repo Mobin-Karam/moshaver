@@ -128,6 +128,14 @@ export function DataTransferWorkspace(props: Props) {
 
   async function loadFile(file?: File) {
     if (!file) return;
+    if (!props.studentId) {
+      modal.open({
+        title: "دانش‌آموز را انتخاب کنید",
+        description: "پیش از بارگذاری فایل، دانش‌آموز مقصد را انتخاب کنید.",
+        tone: "default",
+      });
+      return;
+    }
     const lowerName = file.name.toLowerCase();
     if (!lowerName.endsWith(".json") && !lowerName.endsWith(".xlsx")) {
       modal.open({
@@ -254,7 +262,8 @@ export function DataTransferWorkspace(props: Props) {
                     setDragging(false);
                     loadFile(event.dataTransfer.files[0]);
                   }}
-                  className={`grid min-h-52 place-items-center rounded-xl border-2 border-dashed p-6 text-center transition ${dragging ? "border-brand bg-indigo-50" : fileName ? "border-emerald-300 bg-emerald-50/50" : "border-slate-200 bg-slate-50 hover:border-indigo-300"}`}
+                  aria-disabled={!props.studentId}
+                  className={`grid min-h-52 place-items-center rounded-xl border-2 border-dashed p-6 text-center transition ${!props.studentId ? "border-slate-200 bg-slate-100 opacity-70" : dragging ? "border-brand bg-indigo-50" : fileName ? "border-emerald-300 bg-emerald-50/50" : "border-slate-200 bg-slate-50 hover:border-indigo-300"}`}
                 >
                   <div className="grid justify-items-center gap-3">
                     {fileName ? (
@@ -279,7 +288,12 @@ export function DataTransferWorkspace(props: Props) {
                       accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/json,.xlsx,.json"
                       onChange={(event) => void loadFile(event.target.files?.[0])}
                     />
-                    <Button type="button" variant="soft" onClick={() => fileRef.current?.click()}>
+                    <Button
+                      type="button"
+                      variant="soft"
+                      disabled={!props.studentId}
+                      onClick={() => fileRef.current?.click()}
+                    >
                       {fileName ? "تغییر فایل" : "انتخاب فایل"}
                     </Button>
                   </div>
@@ -319,7 +333,6 @@ export function DataTransferWorkspace(props: Props) {
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     variant="ghost"
-                    disabled={!props.studentId}
                     loading={
                       download.isPending &&
                       download.variables?.template &&
@@ -337,7 +350,6 @@ export function DataTransferWorkspace(props: Props) {
                   </Button>
                   <Button
                     variant="ghost"
-                    disabled={!props.studentId}
                     loading={
                       download.isPending &&
                       download.variables?.template &&
@@ -394,22 +406,24 @@ export function DataTransferWorkspace(props: Props) {
                         دارد.
                       </p>
                     )}
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <Button
-                        loading={commit.isPending}
-                        disabled={!valid}
-                        onClick={() => confirmCommit(false)}
-                      >
-                        ثبت به‌صورت پیش‌نویس
-                      </Button>
-                      <Button
-                        loading={commit.isPending}
-                        disabled={!valid}
-                        onClick={() => confirmCommit(true)}
-                      >
-                        ثبت و انتشار برای دانش‌آموز
-                      </Button>
-                    </div>
+                    {canCommit ? (
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <Button
+                          loading={commit.isPending}
+                          disabled={!valid}
+                          onClick={() => confirmCommit(false)}
+                        >
+                          ثبت به‌صورت پیش‌نویس
+                        </Button>
+                        <Button
+                          loading={commit.isPending}
+                          disabled={!valid}
+                          onClick={() => confirmCommit(true)}
+                        >
+                          ثبت و انتشار برای دانش‌آموز
+                        </Button>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </section>
