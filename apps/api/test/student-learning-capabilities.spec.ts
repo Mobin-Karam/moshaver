@@ -1,4 +1,5 @@
 import { CAPABILITIES_KEY } from "../src/common/decorators/capabilities.decorator";
+import { AssessmentsController } from "../src/modules/assessments/assessments.controller";
 import { StudentController, StudentParityController } from "../src/modules/students/students.controller";
 import { ExamsController } from "../src/modules/exams/exams.controller";
 
@@ -18,6 +19,10 @@ describe("student learning capability metadata", () => {
     ["student exam detail", ExamsController, "detail", "exams.read"],
     ["start student exam", ExamsController, "start", "exams.read"],
     ["submit student exam", ExamsController, "submit", "exams.read"],
+    ["student exam syllabus", AssessmentsController, "studentSyllabus", "exams.read"],
+    ["student syllabus progress", AssessmentsController, "progress", "exams.read"],
+    ["student retry requests", AssessmentsController, "studentRetries", "exams.read"],
+    ["request another exam attempt", AssessmentsController, "retry", "exams.read"],
   ] as const)("requires a capability for %s", (_label, controller, method, capability) => {
     const handler = controller.prototype[method as keyof typeof controller.prototype];
     expect(Reflect.getMetadata(CAPABILITIES_KEY, handler)).toEqual([capability]);
