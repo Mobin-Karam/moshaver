@@ -2,6 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RetryRequestsPanel } from "./exams/components/RetryRequestsPanel";
 import { LearningHeader } from "./learning/components/LearningHeader";
+import { LearningRow } from "./learning/components/LearningRow";
 import { QuestionsSelector } from "./questions/components/QuestionsSelector";
 
 afterEach(cleanup);
@@ -11,6 +12,37 @@ describe("read-only role controls", () => {
     render(<LearningHeader students={[]} studentId="" onStudentChange={vi.fn()} />);
 
     expect(screen.queryByRole("button", { name: /مرور جدید/ })).not.toBeInTheDocument();
+  });
+
+  it("keeps learning history available without exposing mutation controls", () => {
+    render(
+      <LearningRow
+        item={{
+          id: "learning-1",
+          studentId: "student-1",
+          subject: "ریاضی",
+          book: "",
+          chapter: "",
+          lesson: "",
+          topic: "",
+          title: "مرور مشتق",
+          note: "",
+          hint: "",
+          dueDate: "2026-09-20",
+          intervalDays: 2,
+          reviewCount: 1,
+          mastery: 3,
+          status: "pending",
+        }}
+        formatDate={() => "۲۹ شهریور"}
+        onHistory={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "تاریخچه مرور" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "ثبت مرور" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "ویرایش" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "حذف" })).not.toBeInTheDocument();
   });
 
   it("shows retry state without moderation actions", () => {

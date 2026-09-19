@@ -54,6 +54,7 @@ export class StudentAdministrationService {
   async createLearning(actor:AuthenticatedUser,id:string,dto:CreateLearningItemDto){await this.get(actor,id,"learning.create");return this.legacy.createLearningItem(id,dto);}
   async updateLearning(actor:AuthenticatedUser,id:string,itemId:string,dto:UpdateLearningItemDto){await this.get(actor,id,"learning.update");return this.legacy.updateLearningItem(id,itemId,dto);}
   async deleteLearning(actor:AuthenticatedUser,id:string,itemId:string){await this.get(actor,id,"learning.update");return this.legacy.deleteLearningItem(id,itemId);}
+  async reviewLearning(actor:AuthenticatedUser,id:string,itemId:string,rating:number){await this.get(actor,id,"learning.review");return this.legacy.reviewLearningItem(id,itemId,rating);}
   async learningHistory(actor:AuthenticatedUser,id:string,itemId:string){await this.get(actor,id,"learning.read");return this.legacy.learningReviewHistory(id,itemId);}
   async weekly(actor:AuthenticatedUser,id:string){await this.get(actor,id,"student.progress.read");return this.legacy.weeklyForStudent(id);}
   async topics(actor:AuthenticatedUser,id:string,limit=8){await this.get(actor,id,"student.progress.read");return this.legacy.topicsForStudent(id,limit);}

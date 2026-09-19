@@ -14,6 +14,7 @@ export function LearningList({
   onSearchChange,
   onFilterChange,
   onEdit,
+  onReview,
   onHistory,
   onDelete,
 }: {
@@ -25,6 +26,7 @@ export function LearningList({
   onSearchChange: (value: string) => void;
   onFilterChange: (value: LearningFilter) => void;
   onEdit?: (item: LearningItem) => void;
+  onReview?: (item: LearningItem) => void;
   onHistory: (item: LearningItem) => void;
   onDelete?: (item: LearningItem) => void;
 }) {
@@ -48,6 +50,7 @@ export function LearningList({
               item={item}
               formatDate={formatDate}
               onEdit={onEdit ? () => onEdit(item) : undefined}
+              onReview={onReview ? () => onReview(item) : undefined}
               onHistory={() => onHistory(item)}
               onDelete={onDelete ? () => onDelete(item) : undefined}
             />

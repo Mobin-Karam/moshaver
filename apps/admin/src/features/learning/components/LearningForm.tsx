@@ -95,21 +95,22 @@ export function LearningForm({
         </Field>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="تسلط از ۰ تا ۵">
-          <Input type="number" min={0} max={5} {...form.register("mastery")} />
-        </Field>
+      {item ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="تسلط فعلی">
+            <Input value={`${item.mastery.toLocaleString("fa-IR")} از ۵`} disabled readOnly />
+          </Field>
+          <Field label="وضعیت">
+            <Select {...form.register("status")}>
+              <option value="pending">در انتظار مرور</option>
 
-        <Field label="وضعیت">
-          <Select {...form.register("status")}>
-            <option value="pending">در انتظار مرور</option>
+              <option value="done">تکمیل‌شده</option>
 
-            <option value="done">تکمیل‌شده</option>
-
-            <option value="archived">بایگانی</option>
-          </Select>
-        </Field>
-      </div>
+              <option value="archived">بایگانی</option>
+            </Select>
+          </Field>
+        </div>
+      ) : null}
 
       <Field label="یادداشت">
         <Textarea rows={3} {...form.register("note")} />

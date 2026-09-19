@@ -7,11 +7,15 @@ export function getStudentLearning(studentId: string) {
 }
 
 export function createLearningItem(studentId: string, values: LearningFormValues) {
-  return api.post(`/students/${studentId}/learning`, values);
+  return api.post(`/students/${studentId}/learning`, learningPayload(values, false));
 }
 
 export function updateLearningItem(studentId: string, itemId: string, values: LearningFormValues) {
-  return api.patch(`/students/${studentId}/learning/${itemId}`, values);
+  return api.patch(`/students/${studentId}/learning/${itemId}`, learningPayload(values, true));
+}
+
+export function reviewLearningItem(studentId: string, itemId: string, rating: number) {
+  return api.post(`/students/${studentId}/learning/${itemId}/review`, { rating });
 }
 
 export function deleteLearningItem(studentId: string, itemId: string) {
@@ -20,4 +24,9 @@ export function deleteLearningItem(studentId: string, itemId: string) {
 
 export function getLearningReviewHistory(studentId: string, itemId: string) {
   return api.get<LearningReview[]>(`/students/${studentId}/learning/${itemId}/reviews?limit=50`);
+}
+
+function learningPayload(values: LearningFormValues, includeStatus: boolean) {
+  const { mastery: _mastery, status, ...editable } = values;
+  return includeStatus ? { ...editable, status } : editable;
 }

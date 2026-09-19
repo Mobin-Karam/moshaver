@@ -8,6 +8,7 @@ import { LearningList } from "../components/LearningList";
 import { LearningSidebar } from "../components/LearningSidebar";
 import { LearningSummaryMetrics } from "../components/LearningSummaryMetrics";
 import { ReviewHistory } from "../components/ReviewHistory";
+import { LearningReviewForm } from "../components/LearningReviewForm";
 import { useLearningData } from "../hooks/useLearningData";
 import { useLearningMutations } from "../hooks/useLearningMutations";
 import { useLearningPageState } from "../hooks/useLearningPageState";
@@ -68,6 +69,17 @@ export function LearningPage() {
           itemId={item.id}
           formatDateTime={formatDateTime}
         />
+      ),
+    });
+  }
+
+  function openReview(item: LearningItem) {
+    modal.open({
+      title: `ثبت مرور: ${item.title}`,
+      description: "کیفیت یادآوری را ثبت کنید تا زمان مرور بعدی محاسبه شود.",
+      size: "sm",
+      content: (
+        <LearningReviewForm studentId={state.studentId} itemId={item.id} onSaved={modal.close} />
       ),
     });
   }
@@ -186,6 +198,7 @@ export function LearningPage() {
               onSearchChange={state.changeSearch}
               onFilterChange={state.changeFilter}
               onEdit={auth.can("learning.update") ? openEditor : undefined}
+              onReview={auth.can("learning.review") ? openReview : undefined}
               onHistory={openHistory}
               onDelete={auth.can("learning.update") ? confirmDelete : undefined}
             />

@@ -1,4 +1,4 @@
-import { Edit3, History, Trash2 } from "lucide-react";
+import { Edit3, History, RefreshCw, Trash2 } from "lucide-react";
 import { todayIso } from "../../../shared/lib/utils";
 import { Badge, Button } from "../../../shared/ui/ui";
 import { isLearningDue, learningStatusLabel, type LearningItem } from "../model/learning-model";
@@ -7,12 +7,14 @@ export function LearningRow({
   item,
   formatDate,
   onEdit,
+  onReview,
   onHistory,
   onDelete,
 }: {
   item: LearningItem;
   formatDate: (value?: string | Date) => string;
   onEdit?: () => void;
+  onReview?: () => void;
   onHistory: () => void;
   onDelete?: () => void;
 }) {
@@ -52,31 +54,37 @@ export function LearningRow({
         </div>
 
         <div className="flex gap-1">
-          {onEdit ? (
-            <Button
-              className="size-9 p-0"
-              variant="ghost"
-              aria-label="تاریخچه مرور"
-              onClick={onHistory}
-            >
-              <History size={15} />
+          <Button
+            className="size-9 p-0"
+            variant="ghost"
+            aria-label="تاریخچه مرور"
+            onClick={onHistory}
+          >
+            <History size={15} />
+          </Button>
+
+          {onReview ? (
+            <Button className="size-9 p-0" variant="ghost" aria-label="ثبت مرور" onClick={onReview}>
+              <RefreshCw size={15} />
             </Button>
           ) : null}
 
-          {onDelete ? (
+          {onEdit ? (
             <Button size="icon" variant="ghost" aria-label="ویرایش" onClick={onEdit}>
               <Edit3 size={15} />
             </Button>
           ) : null}
 
-          <Button
-            className="size-9 p-0 text-rose-700"
-            variant="ghost"
-            aria-label="حذف"
-            onClick={onDelete}
-          >
-            <Trash2 size={15} />
-          </Button>
+          {onDelete ? (
+            <Button
+              className="size-9 p-0 text-rose-700"
+              variant="ghost"
+              aria-label="حذف"
+              onClick={onDelete}
+            >
+              <Trash2 size={15} />
+            </Button>
+          ) : null}
         </div>
       </div>
 

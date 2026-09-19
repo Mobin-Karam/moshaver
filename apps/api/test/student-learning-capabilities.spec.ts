@@ -1,6 +1,7 @@
 import { CAPABILITIES_KEY } from "../src/common/decorators/capabilities.decorator";
 import { AssessmentsController } from "../src/modules/assessments/assessments.controller";
 import { StudentController, StudentParityController } from "../src/modules/students/students.controller";
+import { StudentAdministrationController } from "../src/modules/students/student-administration.controller";
 import { ExamsController } from "../src/modules/exams/exams.controller";
 import { SubjectsController } from "../src/modules/subjects/subjects.controller";
 
@@ -16,6 +17,7 @@ describe("student learning capability metadata", () => {
     ["delete learning item", StudentParityController, "deleteLearning", "learning.update"],
     ["review learning item", StudentParityController, "reviewLearning", "learning.review"],
     ["learning history", StudentParityController, "learningHistory", "learning.read"],
+    ["staff learning review", StudentAdministrationController, "reviewLearning", "learning.review"],
     ["student exam list", ExamsController, "listForStudent", "exams.read"],
     ["student exam detail", ExamsController, "detail", "exams.read"],
     ["start student exam", ExamsController, "start", "exams.read"],

@@ -5,7 +5,7 @@ import { ok } from "../../common/utils/envelope";
 import { AuthenticatedUser } from "../auth";
 import { CreateStudentDto, ResetStudentPasswordDto, UpdateStudentDto } from "./dto/student-admin.dto";
 import { StudentAdministrationService } from "./student-administration.service";
-import { CreateLearningItemDto, UpdateLearningItemDto } from "./dto/learning.dto";
+import { CreateLearningItemDto, ReviewLearningItemDto, UpdateLearningItemDto } from "./dto/learning.dto";
 import { UpdateTaskIssueDto } from "./dto/task-issue.dto";
 @Controller("students")
 export class StudentAdministrationController{constructor(private service:StudentAdministrationService){}
@@ -24,6 +24,7 @@ export class StudentAdministrationController{constructor(private service:Student
 @Post(":id/learning") @RequireCapabilities("learning.create") createLearning(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string,@Body()d:CreateLearningItemDto){return this.service.createLearning(u,id,d).then(ok)}
 @Patch(":id/learning/:itemId") @RequireCapabilities("learning.update") updateLearning(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string,@Param("itemId")itemId:string,@Body()d:UpdateLearningItemDto){return this.service.updateLearning(u,id,itemId,d).then(ok)}
 @Delete(":id/learning/:itemId") @RequireCapabilities("learning.update") deleteLearning(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string,@Param("itemId")itemId:string){return this.service.deleteLearning(u,id,itemId).then(ok)}
+@Post(":id/learning/:itemId/review") @RequireCapabilities("learning.review") reviewLearning(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string,@Param("itemId")itemId:string,@Body()d:ReviewLearningItemDto){return this.service.reviewLearning(u,id,itemId,d.rating).then(ok)}
 @Get(":id/learning/:itemId/reviews") @RequireCapabilities("learning.read") history(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string,@Param("itemId")itemId:string){return this.service.learningHistory(u,id,itemId).then(ok)}
 @Get(":id/progress/weekly") @RequireCapabilities("student.progress.read") weekly(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string){return this.service.weekly(u,id).then(ok)}
 @Get(":id/performance/topics") @RequireCapabilities("student.progress.read") topics(@CurrentUser()u:AuthenticatedUser,@Param("id")id:string){return this.service.topics(u,id).then(ok)}
