@@ -85,8 +85,8 @@ export function QuizSidebar({
                 </Badge>
               </span>
               <span className="mt-1 block text-xs text-slate-400">
-                {item.question_count || 0} سؤال
-                {item.exam_title ? ` • ${item.exam_title}` : ""}
+                {item.questions?.length || 0} سؤال
+                {item.exam?.title ? ` • ${item.exam.title}` : ""}
               </span>
             </button>
           ))}

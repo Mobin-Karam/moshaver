@@ -52,7 +52,7 @@ export function QuizzesPage() {
   const selected = quizzes.data?.find((item) => item.id === quizId);
   const visibleQuizzes = (quizzes.data || []).filter(
     (item) =>
-      `${item.title} ${item.subject || ""} ${item.exam_title || ""}`
+      `${item.title} ${item.subject || ""} ${item.exam?.title || ""}`
         .toLocaleLowerCase("fa")
         .includes(quizSearch.trim().toLocaleLowerCase("fa")) &&
       (status === "all" || (status === "active" ? !!item.active : !item.active)),
@@ -92,7 +92,7 @@ export function QuizzesPage() {
       setQuiz({
         title: selected.title,
         subject: selected.subject || "",
-        durationMinutes: selected.duration_minutes || 20,
+        durationMinutes: selected.durationMinutes || 20,
       });
   }, [selected?.id]);
   const save = useMutation({
