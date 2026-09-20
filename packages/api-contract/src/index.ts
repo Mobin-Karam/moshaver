@@ -28,6 +28,15 @@ export const CAPABILITIES = [
   "student.analytics.read",
   "student.live.read",
   "student.activity.read",
+  "student.quizzes.read",
+  "student_onboarding.manage",
+  "guardian.students.read",
+  "guardian.dashboard.read",
+  "guardian.progress.read",
+  "guardian.schedule.read",
+  "guardian.exams.read",
+  "guardian.reports.read",
+  "guardian.encouragement.create",
   "subjects.read",
   "subjects.manage",
   "subjects.create",
@@ -39,6 +48,8 @@ export const CAPABILITIES = [
   "learning.create",
   "learning.update",
   "learning.review",
+  "learning_resources.read",
+  "learning_resources.manage",
   "plans.read",
   "plans.create",
   "plans.update",
@@ -73,6 +84,8 @@ export const CAPABILITIES = [
   "chat.moderate",
   "reports.read",
   "reports.manage",
+  "recovery_requests.read",
+  "recovery_requests.manage",
   "analytics.read",
   "recommendations.read",
   "recommendations.manage",
@@ -95,7 +108,12 @@ export type ApiErrorContract = {
 };
 export type ApiSuccess<T> = { ok: true; data: T };
 export type ApiEnvelope<T> = ApiSuccess<T> | ApiErrorContract;
-export type CursorPage<T> = { items: T[]; unreadCount?: number; hasMore: boolean; nextCursor: string | null };
+export type CursorPage<T> = {
+  items: T[];
+  unreadCount?: number;
+  hasMore: boolean;
+  nextCursor: string | null;
+};
 export type NotificationContract = {
   id: string;
   type: string;
@@ -111,10 +129,20 @@ export type NotificationContract = {
   expiresAt: string | null;
 };
 export type AccountContextContract = {
-  user: { id: string; username: string; firstName?: string; lastName?: string; status: string };
+  user: {
+    id: string;
+    username: string;
+    firstName?: string;
+    lastName?: string;
+    status: string;
+  };
   roles: RoleCode[];
   capabilities: Capability[];
-  memberships: Array<{ id: string; organization: { id: string; name: string }; status: string }>;
+  memberships: Array<{
+    id: string;
+    organization: { id: string; name: string };
+    status: string;
+  }>;
   activeOrganization: null | { id: string; name: string };
 };
 export type SyncPullContract = {

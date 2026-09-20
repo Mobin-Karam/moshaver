@@ -1,6 +1,6 @@
 # Admin v2 capability matrix
 
-Last source audit: 2026-09-14
+Last source audit: 2026-09-20
 
 Scope: current working-tree `apps/admin` consumers and canonical `apps/api` `/api/v2` contracts. This describes source behavior, not branch ancestry.
 
@@ -40,6 +40,10 @@ Status meanings: **Complete** is implemented in both layers and covered by an au
 | Reports         | Recovery administration      | `GET/PATCH /recovery-requests`                                                                         | `features/followup`, notifications                | `recovery_requests.*`                                  | Security E2E, role tests                 | Complete |
 | Family          | Guardian workspace            | `/guardian/students` plus dashboard, progress, schedule, exams, reports and encouragement              | `features/guardian`, `/admin/family`               | `guardian.*`                                           | Controller-aware parity, build           | Complete |
 | Family          | Relationships/resources       | `GET /me/students`, `GET /learning-resources/assigned?studentId=`                                      | Guardian relationship context and resource cards  | `learning_resources.read`, actor scope                  | Controller-aware parity                  | Complete |
+| Student portal  | Capability-aware shell         | `GET /me/context` plus Student and Guardian projections                                                 | `portal-access.ts`, guarded routes and More hub    | Student/Guardian capabilities                           | Portal-access and store tests            | Complete |
+| Student portal  | Full exam journey              | `/student/exams`, detail, start, autosave, heartbeat, progress and submit                               | Exam center, preflight, runner, review and result  | `exams.read`, assignment ownership                      | Unit, accessibility, student E2E         | Complete |
+| Student portal  | Short quiz journey             | `/student/quizzes`, `/quizzes/:id/start`, `/quizzes/:id/attempts`                                      | Preview, focused runner, answer review and result  | `student.quizzes.read`, Student role                    | Component and accessibility tests        | Complete |
+| Student portal  | Guardian read-only education   | `/guardian/students/:id/{dashboard,progress,schedule,exams,reports}`                                    | Guardian child picker and read-only projections    | `guardian.*`, active relationship                       | Store, portal-access and security E2E    | Complete |
 | System          | Health/readiness             | `/health`, `/ready`                                                                                    | `SystemHealthCards`, login health                 | Public/system                                          | Backend, build                           | Complete |
 | System          | Releases/versions            | `/app-releases`, `/app-versions`, `/public/app-version/:app`                                           | `SystemPage`, `AppVersionManager`                 | `release.read/manage`                                  | Component, HTTP smoke                    | Complete |
 | System          | Database operations          | `/system/database`, backup and restore routes                                                          | `DatabaseBackupPanel`                             | `database.read/backup/restore`                         | Component/source; target restore pending | Partial  |
@@ -57,4 +61,5 @@ Status meanings: **Complete** is implemented in both layers and covered by an au
 - Real VAPID-backed Web Push delivery remains **Partial** until received in a production-like browser.
 - Database restore remains **Partial** for target acceptance and must only be tested with a disposable database.
 - Historical v1.6 retirement still requires a complete browser smoke suite.
+- Student exam and quiz flows pass component, contract, accessibility and production-build checks; rendered browser verification remains pending when a browser runtime is available.
 - `npm run audit:parity` now derives all controller method/path pairs from `apps/api`, excludes explicitly student-only, public and deprecated alias routes, and fails when an Admin-applicable canonical route has no Admin request consumer.
