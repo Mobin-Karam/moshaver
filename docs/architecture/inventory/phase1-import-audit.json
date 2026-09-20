@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "auditOnly": true,
-  "scannedFiles": 743,
+  "scannedFiles": 804,
   "workspaceEdges": [
     "admin-v2 -> api-contract",
     "backend-v2 -> cmb-activity",
@@ -77,6 +77,8 @@
     "notifications -> auth: apps/api/src/modules/notifications/push.controller.ts -> apps/api/src/modules/auth/index.ts",
     "notifications -> realtime: apps/api/src/modules/notifications/notifications.module.ts -> apps/api/src/modules/realtime/realtime.module.ts",
     "notifications -> realtime: apps/api/src/modules/notifications/notifications.service.ts -> apps/api/src/modules/realtime/index.ts",
+    "onboarding -> education-catalog: apps/api/src/modules/onboarding/onboarding.module.ts -> apps/api/src/modules/education-catalog/education-catalog.module.ts",
+    "onboarding -> education-catalog: apps/api/src/modules/onboarding/onboarding.service.ts -> apps/api/src/modules/education-catalog/index.ts",
     "organizations -> auth: apps/api/src/modules/organizations/organizations.controller.ts -> apps/api/src/modules/auth/index.ts",
     "organizations -> auth: apps/api/src/modules/organizations/organizations.service.ts -> apps/api/src/modules/auth/index.ts",
     "organizations -> chat: apps/api/src/modules/organizations/organizations.service.ts -> apps/api/src/modules/chat/index.ts",
@@ -123,7 +125,7 @@
   ],
   "backendDeepImports": [],
   "backendCycles": [
-    "apps/api/src/database/entities/audit-log.entity.ts <-> apps/api/src/database/entities/chat-message.entity.ts <-> apps/api/src/database/entities/conversation-member.entity.ts <-> apps/api/src/database/entities/conversation.entity.ts <-> apps/api/src/database/entities/daily-report.entity.ts <-> apps/api/src/database/entities/exam-assignment.entity.ts <-> apps/api/src/database/entities/exam-attempt.entity.ts <-> apps/api/src/database/entities/exam.entity.ts <-> apps/api/src/database/entities/learning-item.entity.ts <-> apps/api/src/database/entities/learning-review.entity.ts <-> apps/api/src/database/entities/organization-membership.entity.ts <-> apps/api/src/database/entities/organization.entity.ts <-> apps/api/src/database/entities/plan.entity.ts <-> apps/api/src/database/entities/question.entity.ts <-> apps/api/src/database/entities/recovery-request.entity.ts <-> apps/api/src/database/entities/session.entity.ts <-> apps/api/src/database/entities/student.entity.ts <-> apps/api/src/database/entities/task.entity.ts <-> apps/api/src/database/entities/user-role-assignment.entity.ts <-> apps/api/src/database/entities/user.entity.ts",
+    "apps/api/src/database/entities/audit-log.entity.ts <-> apps/api/src/database/entities/chat-message.entity.ts <-> apps/api/src/database/entities/conversation-member.entity.ts <-> apps/api/src/database/entities/conversation.entity.ts <-> apps/api/src/database/entities/daily-report.entity.ts <-> apps/api/src/database/entities/exam-assignment.entity.ts <-> apps/api/src/database/entities/exam-attempt.entity.ts <-> apps/api/src/database/entities/exam-syllabus.entity.ts <-> apps/api/src/database/entities/exam.entity.ts <-> apps/api/src/database/entities/learning-item.entity.ts <-> apps/api/src/database/entities/learning-review.entity.ts <-> apps/api/src/database/entities/organization-membership.entity.ts <-> apps/api/src/database/entities/organization.entity.ts <-> apps/api/src/database/entities/plan.entity.ts <-> apps/api/src/database/entities/question.entity.ts <-> apps/api/src/database/entities/recovery-request.entity.ts <-> apps/api/src/database/entities/session.entity.ts <-> apps/api/src/database/entities/student.entity.ts <-> apps/api/src/database/entities/task.entity.ts <-> apps/api/src/database/entities/user-role-assignment.entity.ts <-> apps/api/src/database/entities/user.entity.ts",
     "apps/api/src/database/entities/learning-resource-assignment.entity.ts <-> apps/api/src/database/entities/learning-resource.entity.ts",
     "apps/api/src/database/entities/permission.entity.ts <-> apps/api/src/database/entities/role-permission.entity.ts <-> apps/api/src/database/entities/role.entity.ts",
     "apps/api/src/database/entities/quiz-question.entity.ts <-> apps/api/src/database/entities/quiz.entity.ts",

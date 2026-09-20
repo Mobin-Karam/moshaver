@@ -13,7 +13,7 @@ import { Conversation } from "../../database/entities/conversation.entity";
 import { ConversationMember } from "../../database/entities/conversation-member.entity";
 import { ConversationType } from "../../database/entities/conversation.entity";
 import { AssignStudentOnboardingDto, StudentSignupDto } from "./onboarding.dto";
-import { EducationCatalogService } from "../education-catalog/education-catalog.service";
+import { EducationCatalogService } from "../education-catalog";
 import { isValidIranianNationalCode, normalizeNationalCode } from "./national-code";
 
 @Injectable()

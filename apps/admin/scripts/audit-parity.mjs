@@ -145,6 +145,7 @@ const excluded = (endpoint) =>
   endpoint.path.startsWith("/admin/") ||
   endpoint.path === "/onboarding/student-signup" ||
   endpoint.path.startsWith("/public/") ||
+  endpoint.path === "/education-catalog/signup-options" ||
   `${endpoint.method} ${endpoint.path}` === "PUT /chat/conversations/:id/mute" ||
   `${endpoint.method} ${endpoint.path}` === "PUT /chat/groups/:id/owner";
 const equivalentWorkflowRoutes = new Set([

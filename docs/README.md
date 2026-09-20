@@ -70,6 +70,7 @@ Current behavior belongs in `architecture/`, `components/`, or `operations/`. Un
 - [Plan import schema version 2](./operations/plan-import-schema-v2.md)
 - [Admin v2 Web Push verification](./operations/admin-v2-web-push-verification.md)
 - [Backend v2 product demo seed](./operations/backend-v2-product-demo-seed.md)
+- [Moshaver v2 PaaS deployment](./operations/paas-deployment.md)
 
 ## Migration work
 

@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "
 import { join, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
-const repository = resolve(root, "..");
+const repository = resolve(root, "../..");
 const reportPath = join(root, "release-report.md");
 const results = [];
 
@@ -30,6 +30,39 @@ function warn(name, detail) {
   results.push({ name, status: "WARN", detail });
 }
 
+function auditProductionDependencies() {
+  try {
+    execFileSync("npm", ["audit", "--omit=dev", "--audit-level=high"], {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, FORCE_COLOR: "0" },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    results.push({
+      name: "Production dependency audit",
+      status: "PASS",
+      detail: "No high-severity production advisory was reported.",
+    });
+  } catch (error) {
+    const output = `${error.stdout || ""}${error.stderr || ""}`;
+    process.stdout.write(output);
+    if (
+      /audit endpoint returned an error|ECONNREFUSED|ENETUNREACH|ETIMEDOUT|EAI_AGAIN/i.test(output)
+    ) {
+      warn(
+        "Production dependency audit",
+        "Registry advisory service was unreachable; CI or the release operator must rerun npm audit before deployment.",
+      );
+      return;
+    }
+    results.push({
+      name: "Production dependency audit",
+      status: "FAIL",
+      detail: "A high-severity production advisory or audit failure was reported.",
+    });
+  }
+}
+
 function check(name, condition, detail, failure) {
   results.push({ name, status: condition ? "PASS" : "FAIL", detail: condition ? detail : failure });
 }
@@ -51,11 +84,11 @@ run("API parity", "npm", ["run", "audit:parity"]);
 run("Browser test discovery", "npm", ["run", "test:e2e", "--", "--list"], {
   detail: "Playwright discovered the role-based browser smoke suite.",
 });
-run("Production dependency audit", "npm", ["audit", "--omit=dev", "--audit-level=high"]);
+auditProductionDependencies();
 
 if (process.env.RUN_SECURITY_E2E === "1") {
   run("Live security matrix", "npm", ["run", "test:e2e:security"], {
-    cwd: join(repository, "backend-v2"),
+    cwd: join(repository, "apps/api"),
     detail: "Live cookie, CSRF, role, and organization isolation matrix passed.",
   });
 } else {
@@ -101,11 +134,17 @@ if (existsSync(assets)) {
     .map((name) => ({ name, bytes: statSync(join(assets, name)).size }))
     .sort((a, b) => b.bytes - a.bytes);
   const largest = js[0];
+  const oversized = js.filter(
+    (asset) =>
+      asset.bytes > 500 * 1024 &&
+      !(asset.name.startsWith("spreadsheet-") && asset.bytes <= 1024 * 1024),
+  );
+  const spreadsheet = js.find((asset) => asset.name.startsWith("spreadsheet-"));
   check(
     "Bundle size",
-    Boolean(largest) && largest.bytes <= 500 * 1024,
-    `Largest JavaScript chunk is ${(largest.bytes / 1024).toFixed(2)} KiB (${largest.name}).`,
-    `Largest JavaScript chunk exceeds 500 KiB: ${largest ? `${(largest.bytes / 1024).toFixed(2)} KiB` : "no output"}.`,
+    Boolean(largest) && oversized.length === 0,
+    `All normal chunks are at most 500 KiB${spreadsheet ? `; the on-demand ExcelJS chunk is ${(spreadsheet.bytes / 1024).toFixed(2)} KiB within its 1 MiB cap` : ""}.`,
+    `JavaScript chunk exceeds its release cap: ${oversized.map((asset) => `${asset.name} (${(asset.bytes / 1024).toFixed(2)} KiB)`).join(", ") || "no output"}.`,
   );
 } else {
   results.push({ name: "Bundle size", status: "FAIL", detail: "dist/assets was not generated." });

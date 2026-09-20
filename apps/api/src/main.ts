@@ -10,7 +10,11 @@ import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ logger: false, bodyLimit: Number(process.env.MAX_RESTORE_BODY || 64 * 1024 * 1024) }));
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({
+    logger: false,
+    bodyLimit: Number(process.env.MAX_RESTORE_BODY || 64 * 1024 * 1024),
+    trustProxy: process.env.TRUST_PROXY === "1",
+  }));
   const config = app.get(ConfigService);
   const corsOrigins = config.get<string[]>("corsOrigins") || [];
 

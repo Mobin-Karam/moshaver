@@ -1,0 +1,50 @@
+name: Deployment Readiness
+
+on:
+  pull_request:
+    paths:
+      - 'apps/api/**'
+      - 'apps/admin/**'
+      - 'apps/student/**'
+      - 'student-core/**'
+      - 'packages/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/deployment-readiness.yml'
+  push:
+    branches: [develop, main]
+    paths:
+      - 'apps/api/**'
+      - 'apps/admin/**'
+      - 'apps/student/**'
+      - 'student-core/**'
+      - 'packages/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/deployment-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+      - name: Build production images
+        run: docker compose build
+      - name: Reject production development seeds and insecure cookie overrides
+        shell: bash
+        run: |
+          set -euo pipefail
+          rendered="$(docker compose config)"
+          if grep -q 'database/seeds' <<<"$rendered"; then
+            echo 'Production Compose must not execute seed scripts.'
+            exit 1
+          fi
+          if grep -Eq 'COOKIE_SECURE:[[:space:]]+[" ]?0' <<<"$rendered"; then
+            echo 'Production Compose must not disable secure cookies.'
+            exit 1
+          fi
