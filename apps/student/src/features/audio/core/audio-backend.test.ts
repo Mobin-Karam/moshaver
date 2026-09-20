@@ -16,7 +16,9 @@ afterEach(() => { globalThis.Audio = OriginalAudio; });
 describe('HtmlAudioBackend streaming lifecycle', () => {
   it('uses one source and releases it when playback pauses', async () => {
     const instance = new FakeAudio();
-    globalThis.Audio = vi.fn(() => instance) as unknown as typeof Audio;
+    globalThis.Audio = vi.fn(function AudioMock() {
+      return instance;
+    }) as unknown as typeof Audio;
     const backend = new HtmlAudioBackend();
     await backend.load({ id: 'one', title: 'صوت', artist: '', url: 'https://example.test/audio.mp3', active: true });
     await backend.play();

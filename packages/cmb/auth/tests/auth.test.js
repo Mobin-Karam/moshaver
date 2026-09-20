@@ -1,5 +1,21 @@
 "use strict";
-const test = require("node:test"); const assert = require("node:assert/strict"); const { AUTH_MODULE, SessionCredentialService } = require("../src");
+const test = require("node:test"); const assert = require("node:assert/strict"); const { AUTH_MODULE, SessionCredentialService, InMemorySessionStore } = require("../src");
 test("declares auth dependencies", () => { assert.equal(AUTH_MODULE.id, "auth"); assert.deepEqual(AUTH_MODULE.dependencies, ["identity", "kernel"]); });
 test("issues and hashes rotating session credentials", () => { const service = new SessionCredentialService({ accessTokenTtlMinutes: 10, refreshTokenTtlDays: 2, now: () => 1_000 }); const first = service.issue(); const second = service.issue(); assert.notEqual(first.accessToken, second.accessToken); assert.equal(first.expiresAt.getTime(), 601_000); assert.equal(first.refreshExpiresAt.getTime(), 172_801_000); assert.equal(service.hash(first.accessToken).length, 64); });
 test("uses constant-time compatible token comparison", () => { const service = new SessionCredentialService(); assert.equal(service.safeEqual("same", "same"), true); assert.equal(service.safeEqual("same", "nope"), false); assert.equal(service.safeEqual("short", "longer"), false); });
+test("sessions fail closed for missing CSRF, revocation, expiry, and deactivation", () => {
+  let now = 1_000;
+  const sessions = new InMemorySessionStore({ now: () => now, accessTokenTtlMinutes: 1 });
+  const first = sessions.create("operator", { capabilities: ["notes.write"] });
+  assert.equal(sessions.require(first.accessToken).subjectId, "operator");
+  assert.throws(() => sessions.verifyCsrf(first.accessToken, "wrong"), /CSRF/);
+  assert.equal(sessions.verifyCsrf(first.accessToken, first.csrfToken).subjectId, "operator");
+  assert.equal(sessions.revoke(first.accessToken), true);
+  assert.equal(sessions.authenticate(first.accessToken), null);
+  const second = sessions.create("operator");
+  sessions.deactivateSubject("operator");
+  assert.equal(sessions.authenticate(second.accessToken), null);
+  const expiring = sessions.create("viewer");
+  now += 60_001;
+  assert.equal(sessions.authenticate(expiring.accessToken), null);
+});

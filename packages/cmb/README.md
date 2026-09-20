@@ -14,6 +14,8 @@ Current Phase-3 packages:
 
 - `kernel` — module descriptors/tokens plus dependency and lifecycle registry;
 - `health` — generic liveness/readiness probes;
+- `persistence` — deterministic module-owned migrations and unit-of-work contract;
+- `infrastructure` — replaceable adapter inventory/readiness and local defaults;
 - `realtime` — generic in-memory user event hub;
 - `identity` — identity normalization and capability projection;
 - `tenancy` — organization scoping and platform-role policy;

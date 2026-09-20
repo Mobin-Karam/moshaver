@@ -8,8 +8,16 @@
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {
+    "@moshaver/cmb-auth": "file:../../packages/cmb/auth",
+    "@moshaver/cmb-authorization": "file:../../packages/cmb/authorization",
     "@moshaver/cmb-health": "file:../../packages/cmb/health",
-    "@moshaver/cmb-kernel": "file:../../packages/cmb/kernel"
+    "@moshaver/cmb-identity": "file:../../packages/cmb/identity",
+    "@moshaver/cmb-infrastructure": "file:../../packages/cmb/infrastructure",
+    "@moshaver/cmb-kernel": "file:../../packages/cmb/kernel",
+    "@moshaver/cmb-notifications": "file:../../packages/cmb/notifications",
+    "@moshaver/cmb-persistence": "file:../../packages/cmb/persistence",
+    "@moshaver/cmb-realtime": "file:../../packages/cmb/realtime",
+    "@moshaver/cmb-tenancy": "file:../../packages/cmb/tenancy"
   },
   "engines": {
     "node": ">=22.13.0 <23"

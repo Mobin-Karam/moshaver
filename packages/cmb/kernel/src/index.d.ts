@@ -6,6 +6,15 @@ export type CmbModuleDescriptor = Readonly<{
   version: string;
   kind: CmbModuleKind;
   dependencies: readonly string[];
+  optionalDependencies?: readonly string[];
+  provides?: readonly string[];
+  requires?: readonly string[];
+  routes?: readonly string[];
+  migrations?: readonly string[];
+  health?: readonly string[];
+  permissions?: readonly string[];
+  events?: Readonly<{ publishes: readonly string[]; subscribes: readonly string[] }>;
+  configuration?: Readonly<Record<string, unknown>>;
 }>;
 
 export type CmbModuleRegistration<TContext = unknown> = Readonly<{
@@ -30,6 +39,16 @@ export function defineModule(input: {
   version: string;
   kind: CmbModuleKind;
   dependencies?: Iterable<string>;
+  optionalDependencies?: Iterable<string>;
+  provides?: Iterable<string>;
+  requires?: Iterable<string>;
+  routes?: Iterable<string>;
+  migrations?: Iterable<string>;
+  health?: Iterable<string>;
+  permissions?: Iterable<string>;
+  publishes?: Iterable<string>;
+  subscribes?: Iterable<string>;
+  configuration?: Record<string, unknown>;
 }): CmbModuleDescriptor;
 
 export function createToken(scope: string, name: string): symbol;

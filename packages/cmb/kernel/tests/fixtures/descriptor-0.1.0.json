@@ -1,0 +1,6 @@
+{
+  "id": "legacy-module",
+  "version": "0.1.0",
+  "kind": "platform",
+  "dependencies": ["kernel"]
+}

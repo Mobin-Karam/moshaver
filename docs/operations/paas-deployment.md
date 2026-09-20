@@ -53,4 +53,9 @@ Production cookies are secure by default and therefore require HTTPS. For an HTT
 COOKIE_SECURE=0 COOKIE_SAMESITE=lax docker compose up --build
 ```
 
+The deployment-readiness CI performs the equivalent immutable-image startup with
+`docker compose up --wait`, verifies API liveness/readiness, both web roots, and
+both same-origin `/api/v2/openapi.json` proxy paths, then removes the disposable
+containers and volume. A failed smoke attaches container status and logs.
+
 Before a public deployment, remove those overrides and verify that the public endpoints use HTTPS.

@@ -11,6 +11,8 @@
     "workspace:check": "node tooling/workspace/check.mjs",
     "workspace:plan": "node tooling/workspace/run.mjs plan",
     "architecture:check": "node tooling/architecture/check-boundaries.mjs && node tooling/architecture/check-cmb-packages.mjs",
+    "architecture:self-test": "node tooling/architecture/check-cmb-packages.mjs --self-test",
+    "cmb:compatibility": "node tooling/cmb/check-compatibility.mjs",
     "generate:cmb": "node tooling/generators/create-cmb-package.mjs",
     "generate:cmb-app": "node tooling/generators/create-cmb-app.mjs",
     "test:generators": "node --test tooling/generators/*.test.mjs",

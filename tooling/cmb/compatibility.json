@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "releaseModel": "lockstep-minor",
+  "supportedLine": "0.1",
+  "nodeMajor": 22,
+  "consumers": ["backend-v2", "cmb-reference"],
+  "publicSurface": "package-root-exports-only"
+}

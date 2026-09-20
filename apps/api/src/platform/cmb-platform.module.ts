@@ -7,8 +7,10 @@ import { OrganizationsModule } from "../modules/organizations/organizations.modu
 import { RealtimeModule } from "../modules/realtime/realtime.module";
 import { SystemModule } from "../modules/system/system.module";
 import { UsersModule } from "../modules/users/users.module";
+import { CmbRuntimeModule } from "./cmb-runtime.module";
 
 const platformAdapters = [
+  CmbRuntimeModule,
   AuthorizationModule,
   HealthModule,
   OrganizationsModule,

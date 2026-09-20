@@ -20,6 +20,7 @@ RUN npm run build
 FROM node:22-slim AS runtime
 WORKDIR /app/apps/api
 ENV NODE_ENV=production
+ENV NODE_PATH=/app/apps/api/node_modules
 RUN mkdir -p /data && chown node:node /data
 COPY --from=prod-deps /app/apps/api/node_modules ./node_modules
 COPY packages/cmb /app/packages/cmb

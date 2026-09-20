@@ -1,6 +1,6 @@
 "use strict";
 const { defineModule } = require("@moshaver/cmb-kernel");
-const IDENTITY_MODULE = defineModule({ id: "identity", version: "0.1.0", kind: "platform", dependencies: ["kernel"] });
+const IDENTITY_MODULE = defineModule({ id: "identity", version: "0.1.0", kind: "platform", dependencies: ["kernel"], provides: ["identity.context"] });
 function normalizeUsername(value) {
   const username = String(value ?? "").trim().toLowerCase();
   if (!username) throw new TypeError("Username is required.");

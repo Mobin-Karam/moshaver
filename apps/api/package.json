@@ -33,8 +33,11 @@
     "@moshaver/cmb-activity": "file:../../packages/cmb/activity",
     "@moshaver/cmb-authorization": "file:../../packages/cmb/authorization",
     "@moshaver/cmb-identity": "file:../../packages/cmb/identity",
+    "@moshaver/cmb-infrastructure": "file:../../packages/cmb/infrastructure",
+    "@moshaver/cmb-kernel": "file:../../packages/cmb/kernel",
     "@moshaver/cmb-realtime": "file:../../packages/cmb/realtime",
     "@moshaver/cmb-notifications": "file:../../packages/cmb/notifications",
+    "@moshaver/cmb-persistence": "file:../../packages/cmb/persistence",
     "@moshaver/cmb-system": "file:../../packages/cmb/system",
     "@moshaver/cmb-data-transfer": "file:../../packages/cmb/data-transfer",
     "@moshaver/cmb-tenancy": "file:../../packages/cmb/tenancy",
@@ -68,6 +71,9 @@
     "tsx": "^4.19.2",
     "typeorm-ts-node-commonjs": "^0.3.20",
     "typescript": "^5.7.2"
+  },
+  "overrides": {
+    "fastify": "5.12.1"
   },
   "engines": {
     "node": ">=22.5.0 <23"

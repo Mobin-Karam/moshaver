@@ -9,6 +9,12 @@ const errors = [];
 const require = createRequire(import.meta.url);
 const cmbProjects = graph.projects.filter((project) => project.path.startsWith("packages/cmb/"));
 
+export function reusableBoundaryViolations(source, declaration = "") {
+  return ["apps/api", "apps/student", "student-core", "@nestjs/", "typeorm", "react"].filter(
+    (forbidden) => source.includes(forbidden) || declaration.includes(forbidden),
+  );
+}
+
 for (const project of cmbProjects) {
   const directory = path.join(root, project.path);
   const manifest = JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8"));
@@ -28,9 +34,13 @@ for (const project of cmbProjects) {
     const actualDependencies = Array.from(descriptor?.dependencies || []).sort();
     if (JSON.stringify(actualDependencies) !== JSON.stringify(expectedDependencies)) errors.push(`${project.id}: descriptor dependencies do not match workspace graph`);
   }
-  for (const forbidden of ["apps/api", "apps/student", "student-core", "@nestjs/", "typeorm", "react"]) {
-    if (source.includes(forbidden) || declaration.includes(forbidden)) errors.push(`${project.id}: reusable public source references ${forbidden}`);
-  }
+  for (const forbidden of reusableBoundaryViolations(source, declaration)) errors.push(`${project.id}: reusable public source references ${forbidden}`);
+}
+
+if (process.argv.includes("--self-test")) {
+  const fixture = fs.readFileSync(path.join(root, "tooling/architecture/fixtures/forbidden-platform-backedge.fixture"), "utf8");
+  const violations = reusableBoundaryViolations(fixture);
+  if (!violations.includes("apps/api")) errors.push("architecture self-test did not detect the intentional application backedge fixture");
 }
 
 if (errors.length) {
@@ -39,3 +49,4 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(`CMB package contracts OK: ${cmbProjects.length} packages with public descriptors and no application backedges.`);
+if (process.argv.includes("--self-test")) console.log("Architecture self-test OK: intentional forbidden dependency fixture was detected.");

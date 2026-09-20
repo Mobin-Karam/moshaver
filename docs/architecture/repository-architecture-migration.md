@@ -128,6 +128,19 @@ Status: **complete**.
 
 This plan does **not** require microservices, framework replacement, a big-bang rewrite, breaking `/api/v2`, moving all code to `packages/`, or immediate Nx/Turborepo adoption.
 
+## Phase safeguards and rollback
+
+| Phase | Required evidence | Rollback criterion |
+| --- | --- | --- |
+| Kernel/foundation | package tests, architecture boundaries, unchanged health contract | remove the new composition import; no database rollback |
+| Security/platform | package tests plus full security matrix and tenant isolation | revert adapter wiring while retaining compatible package code |
+| Persistence | migration-from-zero, existing-data migration, explicit down/restore plan | stop rollout and restore the pre-migration database snapshot |
+| Product slice | API contract plus Admin/Student consumer journeys | revert that slice's composition/adapter commit |
+| Deployment | container build, startup/readiness, migration and rollback drill | route traffic to the prior immutable image and retained disk snapshot |
+
+No phase may delete the compatibility path until its replacement and rollback are
+verified. Authorization/data-isolation coverage is a hard gate, not a follow-up.
+
 ## Success criteria
 
 - ownership is obvious from project/package names;

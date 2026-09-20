@@ -1,22 +1,27 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ThemeProvider, ThemeSwitcher } from "./theme";
 
 describe("admin theme switcher", () => {
   beforeEach(() => {
     window.localStorage.clear();
     document.documentElement.classList.remove("dark");
-    vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn((query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    );
   });
+
+  afterEach(() => vi.unstubAllGlobals());
 
   it("offers light, dark and system modes and persists the selection", () => {
     render(

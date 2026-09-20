@@ -31,10 +31,11 @@ export async function createCmbApp({ target, name }) {
 
   const manifest = JSON.parse(await readFile(path.join(referenceRoot, "package.json"), "utf8"));
   manifest.name = packageName;
-  const dependencyPaths = {
-    "@moshaver/cmb-health": path.join(repoRoot, "packages/cmb/health"),
-    "@moshaver/cmb-kernel": path.join(repoRoot, "packages/cmb/kernel"),
-  };
+  const dependencyPaths = Object.fromEntries(
+    Object.keys(manifest.dependencies)
+      .filter((dependency) => dependency.startsWith("@moshaver/cmb-"))
+      .map((dependency) => [dependency, path.join(repoRoot, "packages/cmb", dependency.slice("@moshaver/cmb-".length))]),
+  );
   for (const [dependency, dependencyPath] of Object.entries(dependencyPaths)) {
     const relative = path.relative(targetPath, dependencyPath).split(path.sep).join("/");
     manifest.dependencies[dependency] = `file:${relative.startsWith(".") ? relative : `./${relative}`}`;

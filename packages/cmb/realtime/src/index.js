@@ -7,6 +7,8 @@ const REALTIME_MODULE = defineModule({
   version: "0.1.0",
   kind: "platform",
   dependencies: ["kernel"],
+  provides: ["realtime.transport"],
+  health: ["connection-count"],
 });
 
 class InMemoryRealtimeHub {

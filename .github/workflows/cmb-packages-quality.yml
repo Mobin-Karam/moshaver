@@ -31,7 +31,17 @@ jobs:
         run: |
           npm run workspace:check
           npm run architecture:check
+          npm run architecture:self-test
           npm run contracts:check
+          npm run cmb:compatibility
+      - name: Verify reusable package artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for dir in packages/cmb/*; do
+            test -f "$dir/package.json" || continue
+            (cd "$dir" && npm pack --dry-run --json >/dev/null)
+          done
       - name: Test the non-education reference service
         working-directory: apps/cmb-reference
         run: |

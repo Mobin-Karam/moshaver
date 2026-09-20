@@ -1,6 +1,6 @@
 "use strict";
 const { defineModule } = require("@moshaver/cmb-kernel"); const { uniqueValues } = require("@moshaver/cmb-identity"); const { TenancyPolicy } = require("@moshaver/cmb-tenancy");
-const AUTHORIZATION_MODULE = defineModule({ id: "authorization", version: "0.1.0", kind: "platform", dependencies: ["identity", "kernel", "tenancy"] });
+const AUTHORIZATION_MODULE = defineModule({ id: "authorization", version: "0.1.0", kind: "platform", dependencies: ["identity", "kernel", "tenancy"], provides: ["security.authorization"], requires: ["identity.context", "tenancy.policy"] });
 function buildAuthorizationContext(base, assignments, memberships, options = {}) {
   const requestedRole = options.requestedRole; const requestedOrganizationId = options.requestedOrganizationId; const fallback = base.role === "ADMIN" ? null : base.role;
   const allRoles = uniqueValues(assignments.map((item) => item.role).concat(assignments.length || !fallback ? [] : [fallback]));

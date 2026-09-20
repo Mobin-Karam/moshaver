@@ -85,6 +85,9 @@ Do not run a root `npm install` expecting unified workspace dependencies. Do not
 ## Backend architecture direction
 
 The reusable backend initiative is **CMB — Composable Modular Backend Architecture** (tracking epic #21).
+Before changing CMB packages or backend composition, read
+`docs/architecture/cmb-reference-and-release.md` and run the compatibility and
+architecture gates documented there.
 
 When changing backend architecture:
 
