@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "algorithm": "sha256",
   "scope": "tracked code/config excluding docs and generated/build output",
-  "fileCount": 963,
-  "digest": "c98d718e517128f5700ea668f3c7c530803dc0ff41042a15a4a97f88677d504e",
+  "fileCount": 972,
+  "digest": "70106c6ba97d0dff87dd41a63f3c9b0b93e494cd724061fcb5d0ea65791c069d",
   "files": [
     {
       "path": ".gitbr/project.json",
@@ -3070,6 +3070,34 @@
       "sha256": "45fecc8b0f91a41e9ed09b711f9a1b3eebbfdbe8307eaad29c3b3c4a4664562e"
     },
     {
+      "path": "apps/cmb-reference/package-lock.json",
+      "sha256": "b611c0cc58ef6ae4933d53c31f462f7451a13faba09a71ba54d7ef35e14c8a72"
+    },
+    {
+      "path": "apps/cmb-reference/package.json",
+      "sha256": "2085395782f304ea6c4ff6311eed41a918c7a2782e9f9d64a0ab3eac9c19ffb0"
+    },
+    {
+      "path": "apps/cmb-reference/src/app.js",
+      "sha256": "f68a782688704139f034b8b11ed22c11ab4d6b21f9f026c3215f9a699503a56a"
+    },
+    {
+      "path": "apps/cmb-reference/src/config.js",
+      "sha256": "b9ee8db738407d091da1cb3421f50f21ce4ba89c3bba91306456ce8f7aa2e12f"
+    },
+    {
+      "path": "apps/cmb-reference/src/main.js",
+      "sha256": "2afa77126ea07bd35361e0a85f70a5ad81f2ab886fdb22853e264a0064b25b6a"
+    },
+    {
+      "path": "apps/cmb-reference/src/store.js",
+      "sha256": "3e470ec6ca916e18d8d431dfef22f1546f22d8374702980078a27fea3bcaa185"
+    },
+    {
+      "path": "apps/cmb-reference/tests/app.test.js",
+      "sha256": "55a0ed2960927adfa4f9bb9ff0490d13c158fbbc9cb279fbb486ee2a1af22838"
+    },
+    {
       "path": "apps/student/package-lock.json",
       "sha256": "1a3d9b6972e3bd8e554b29700d2e0b07e04ea04d59c4c8b8415ea50929c20bfb"
     },
@@ -3511,7 +3539,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "38e80c70899dd4f0fe53f73bf2ad31ed6d3d900b911a5facbb22616e4f53af8b"
+      "sha256": "6fda7851a4db15083f8d17610a4c5c1ad006eb975c21ac6ed241fe8315eb167f"
     },
     {
       "path": "packages/api-contract/package.json",
@@ -3651,15 +3679,15 @@
     },
     {
       "path": "packages/cmb/kernel/src/index.d.ts",
-      "sha256": "c832057798499db930284ddb399db93c34038e6b90b277015988e45b28400dab"
+      "sha256": "37122f2c80637a24467c6a90896bc1d0914c59863e7dc591f4910b6ff34cc980"
     },
     {
       "path": "packages/cmb/kernel/src/index.js",
-      "sha256": "de8d30e14137dd3ea68f23cf55548e5c9a199dc881d90a3b4915b31808e6c379"
+      "sha256": "fb10ecf88650ae40e3fce40cdb993f9cc6013ca87f14d126aab1cc25622f6fee"
     },
     {
       "path": "packages/cmb/kernel/tests/kernel.test.js",
-      "sha256": "a3596eecee9ed400aea4547c2cb67359e35470be7a44d0bcb4eb2df3e40ebfee"
+      "sha256": "ac7e72482496aa352c86f8c250ee91d63381c647db2d1b3dd346d07036bb47e9"
     },
     {
       "path": "packages/cmb/notifications/package-lock.json",
@@ -3830,6 +3858,14 @@
       "sha256": "6ec42a4ac940711dca098f51b93385e553ff1e7f3c9c37e28e0e96862c3a08e4"
     },
     {
+      "path": "tooling/generators/create-cmb-app.mjs",
+      "sha256": "b901b5c40d71ef8d4092a7de297be89210eb3fff60017f802857d2ef46d2a6d5"
+    },
+    {
+      "path": "tooling/generators/create-cmb-app.test.mjs",
+      "sha256": "18ff86b9df286c01407eea86b48a55a5a93bb365e589264f8f8fb748cd20e143"
+    },
+    {
       "path": "tooling/generators/create-cmb-package.mjs",
       "sha256": "b04501cc4806c9e7f331a32f7b39a52557cdc75f9fe05ffaea217af6ce54fc44"
     },
@@ -3851,7 +3887,7 @@
     },
     {
       "path": "tooling/workspace/projects.json",
-      "sha256": "0f6ae8027d0c43573fe59c8daa4da59caf37b85bf94207f06fe0d1b1a2aace70"
+      "sha256": "69bea472d93fb7fbc26eb5ab52c4a029b6a1fb2f76748c776e853525726f0673"
     },
     {
       "path": "tooling/workspace/run.mjs",

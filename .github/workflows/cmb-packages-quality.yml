@@ -2,10 +2,10 @@ name: CMB Packages Quality
 
 on:
   pull_request:
-    paths: ['packages/cmb/**', 'apps/api/**', 'tooling/architecture/**', 'tooling/workspace/**', '.github/workflows/cmb-packages-quality.yml']
+    paths: ['packages/cmb/**', 'apps/cmb-reference/**', 'apps/api/**', 'tooling/architecture/**', 'tooling/generators/**', 'tooling/workspace/**', '.github/workflows/cmb-packages-quality.yml']
   push:
     branches: [develop, main]
-    paths: ['packages/cmb/**', 'apps/api/**', 'tooling/architecture/**', 'tooling/workspace/**', '.github/workflows/cmb-packages-quality.yml']
+    paths: ['packages/cmb/**', 'apps/cmb-reference/**', 'apps/api/**', 'tooling/architecture/**', 'tooling/generators/**', 'tooling/workspace/**', '.github/workflows/cmb-packages-quality.yml']
 
 permissions:
   contents: read
@@ -32,3 +32,10 @@ jobs:
           npm run workspace:check
           npm run architecture:check
           npm run contracts:check
+      - name: Test the non-education reference service
+        working-directory: apps/cmb-reference
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm test
+      - name: Smoke-test the application generator
+        run: npm run test:generators

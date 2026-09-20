@@ -41,6 +41,7 @@ Current behavior belongs in `architecture/`, `components/`, or `operations/`. Un
 - [Current project/package consumers](./architecture/inventory/project-consumers.md)
 - [Target monorepo layout](./architecture/target-monorepo-layout.md)
 - [Dependency boundaries](./architecture/dependency-boundaries.md)
+- [CMB reference and release policy](./architecture/cmb-reference-and-release.md)
 - [Repository architecture migration](./architecture/repository-architecture-migration.md)
 - [ADR 0001 — grouped product monorepo](./architecture/adr/0001-grouped-product-monorepo.md)
 - [ADR 0002 — modular monolith with CMB](./architecture/adr/0002-modular-monolith-cmb.md)

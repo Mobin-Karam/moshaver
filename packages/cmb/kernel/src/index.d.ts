@@ -8,6 +8,23 @@ export type CmbModuleDescriptor = Readonly<{
   dependencies: readonly string[];
 }>;
 
+export type CmbModuleRegistration<TContext = unknown> = Readonly<{
+  descriptor: CmbModuleDescriptor;
+  start?: (context: TContext) => void | Promise<void>;
+  stop?: (context: TContext) => void | Promise<void>;
+}>;
+
+export const KERNEL_MODULE: CmbModuleDescriptor;
+
+export class CmbModuleRegistry<TContext = unknown> {
+  constructor(registrations?: Iterable<CmbModuleDescriptor | CmbModuleRegistration<TContext>>);
+  register(registration: CmbModuleDescriptor | CmbModuleRegistration<TContext>): this;
+  resolve(enabledIds?: Iterable<string>): readonly CmbModuleRegistration<TContext>[];
+  metadata(enabledIds?: Iterable<string>): readonly CmbModuleDescriptor[];
+  start(context?: TContext, enabledIds?: Iterable<string>): Promise<readonly CmbModuleDescriptor[]>;
+  stop(context?: TContext): Promise<void>;
+}
+
 export function defineModule(input: {
   id: string;
   version: string;

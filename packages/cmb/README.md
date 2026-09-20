@@ -12,7 +12,7 @@ Rules:
 
 Current Phase-3 packages:
 
-- `kernel` — module descriptors/tokens;
+- `kernel` — module descriptors/tokens plus dependency and lifecycle registry;
 - `health` — generic liveness/readiness probes;
 - `realtime` — generic in-memory user event hub;
 - `identity` — identity normalization and capability projection;
@@ -23,3 +23,6 @@ Current Phase-3 packages:
 - `notifications` — notification cursor, paging, and public-state mechanics.
 - `activity` — presence heartbeat and activity paging mechanics;
 - `data-transfer` — generic secure import normalization mechanics.
+
+See the executable, non-education [`apps/cmb-reference`](../../apps/cmb-reference)
+service and the [compatibility/release policy](../../docs/architecture/cmb-reference-and-release.md).

@@ -123,6 +123,16 @@
       "verifyTasks": ["test"]
     },
     {
+      "id": "cmb-reference",
+      "packageName": "cmb-reference-service",
+      "path": "apps/cmb-reference",
+      "kind": "reference-application",
+      "dependsOn": ["cmb-health", "cmb-kernel"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
       "id": "backend-v2",
       "packageName": "moshaver-backend-v2",
       "path": "apps/api",

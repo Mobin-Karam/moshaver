@@ -1,0 +1,17 @@
+{
+  "name": "cmb-reference-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "@moshaver/cmb-health": "file:../../packages/cmb/health",
+    "@moshaver/cmb-kernel": "file:../../packages/cmb/kernel"
+  },
+  "engines": {
+    "node": ">=22.13.0 <23"
+  }
+}

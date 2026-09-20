@@ -8,6 +8,7 @@ on:
       - 'apps/student/**'
       - 'student-core/**'
       - 'packages/**'
+      - 'tooling/generators/**'
       - 'docker-compose.yml'
       - '.github/workflows/deployment-readiness.yml'
   push:
@@ -18,6 +19,7 @@ on:
       - 'apps/student/**'
       - 'student-core/**'
       - 'packages/**'
+      - 'tooling/generators/**'
       - 'docker-compose.yml'
       - '.github/workflows/deployment-readiness.yml'
   workflow_dispatch:
