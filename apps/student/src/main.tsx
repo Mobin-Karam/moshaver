@@ -10,6 +10,7 @@ import { pullChanges, SyncWorker } from '@moshaver/student-core';
 import { registerWebUpdateAdapter } from './pwa/web-update-adapter';
 import { registerNotificationClickHandler } from './services/notification-service';
 import { StudentAppShell } from './components/layout/StudentAppShell';
+import { RouteScrollRestoration } from './components/layout/RouteScrollRestoration';
 import { LoadingState } from './components/ui';
 import { LoginPage } from './features/auth/LoginPage';
 import './styles.css';
@@ -120,6 +121,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <RouteScrollRestoration />
       <div className="min-h-screen bg-paper text-ink" dir="rtl">
         {!online ? <div className="bg-red-700 px-4 py-2 text-center text-sm text-white" role="status">اتصال اینترنت قطع است؛ تغییرات روی دستگاه ذخیره می‌شوند.</div> : null}
         {online && reconnected ? <div className="bg-mint px-4 py-2 text-center text-sm text-white" role="status">اتصال اینترنت برقرار شد.</div> : null}

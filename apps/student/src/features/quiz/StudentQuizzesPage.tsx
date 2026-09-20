@@ -100,7 +100,16 @@ export function StudentQuizzesPage() {
         Object.fromEntries(
           next.savedAnswers
             .filter((item) => item.selectedOption)
-            .map((item) => [item.questionId, item.selectedOption!]),
+            .map((item) => {
+              const question = next.quiz.questions.find(
+                (candidate) => candidate.id === item.questionId,
+              );
+              return [
+                item.questionId,
+                answerKey(question?.options || [], item.selectedOption),
+              ];
+            })
+            .filter(([, value]) => value),
         ),
       );
       setIndex(0);
@@ -421,7 +430,8 @@ function QuizRunner({
         <fieldset>
           <legend className="sr-only">یک گزینه را انتخاب کن</legend>
           {question.options.map((option, optionIndex) => {
-            const active = answers[question.id] === option;
+            const key = optionKey(optionIndex);
+            const active = answers[question.id] === key;
             return (
               <label
                 key={`${question.id}-${optionIndex}`}
@@ -430,9 +440,9 @@ function QuizRunner({
                 <input
                   type="radio"
                   name={question.id}
-                  value={option}
+                  value={key}
                   checked={active}
-                  onChange={() => onAnswer(question.id, option)}
+                  onChange={() => onAnswer(question.id, key)}
                 />
                 <span className="quiz-option-key">
                   {(optionIndex + 1).toLocaleString('fa-IR')}
@@ -593,7 +603,7 @@ function QuizResultPanel({
             <span>
               {item.isCorrect
                 ? 'پاسخت درست بود'
-                : `پاسخ درست: ${item.correctOption}`}
+                : `پاسخ درست: ${optionLabel(item.correctOption)}`}
             </span>
             {item.explanation ? <p>{item.explanation}</p> : null}
           </article>
@@ -608,4 +618,19 @@ function QuizResultPanel({
 
 function formatTime(seconds: number) {
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+function optionKey(index: number) {
+  return ['a', 'b', 'c', 'd'][index] || '';
+}
+
+function answerKey(options: string[], answer?: string | null) {
+  const normalized = (answer || '').trim().toLowerCase();
+  if (['a', 'b', 'c', 'd'].includes(normalized)) return normalized;
+  return optionKey(options.indexOf(answer || ''));
+}
+
+function optionLabel(value?: string | null) {
+  const index = ['a', 'b', 'c', 'd'].indexOf(value || '');
+  return index >= 0 ? `گزینه ${(index + 1).toLocaleString('fa-IR')}` : 'بدون پاسخ';
 }

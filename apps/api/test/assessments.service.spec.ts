@@ -128,3 +128,76 @@ describe("AssessmentsService student quiz isolation", () => {
     expect((failure as ApiException).getStatus()).toBe(404);
   });
 });
+
+describe("AssessmentsService quiz answer compatibility", () => {
+  function submissionService(correctAnswer: string) {
+    const question = { id: "question-1", options: ["الف", "ب", "ج", "د"], correctAnswer, explanation: "" };
+    const run = {
+      id: "run-1",
+      startedAt: new Date(),
+      submittedAt: null,
+      answers: [],
+      quiz: { id: "quiz-1", durationMinutes: 10, questions: [question] },
+    };
+    const attempts = repo({ findOne: jest.fn(async () => run) });
+    const manager = {
+      save: jest.fn(async (_entity: unknown, value: unknown) => value),
+      findOne: jest.fn(async () => null),
+      create: jest.fn((_entity: unknown, value: unknown) => value),
+    };
+    const result = new AssessmentsService(
+      repo() as any, repo() as any, repo() as any, repo() as any, repo() as any,
+      repo() as any, repo() as any, attempts as any,
+      repo({ findOneOrFail: jest.fn(async () => ({ id: "student-1" })) }) as any,
+      repo() as any, {} as any,
+      { transaction: jest.fn(async (work) => work(manager)) } as any,
+    );
+    return { result, run };
+  }
+
+  it.each([
+    ["a", "a"],
+    ["الف", "a"],
+  ])("scores canonical and legacy correct answers (%s)", async (correctAnswer, selectedOption) => {
+    const { result } = submissionService(correctAnswer);
+
+    const submitted = await result.submitQuiz("user-1", "quiz-1", {
+      runId: "run-1",
+      answers: [{ questionId: "question-1", selectedOption }],
+    });
+
+    expect(submitted).toEqual(expect.objectContaining({ correct: 1, wrong: 0, percent: 100 }));
+    expect(submitted.review).toEqual([
+      expect.objectContaining({ selectedOption: "a", correctOption: "a", isCorrect: true }),
+    ]);
+  });
+
+  it("never awards a point when a legacy question has an invalid answer key", async () => {
+    const { result } = submissionService("unknown");
+
+    const submitted = await result.submitQuiz("user-1", "quiz-1", {
+      runId: "run-1",
+      answers: [{ questionId: "question-1", selectedOption: "unknown" }],
+    });
+
+    expect(submitted).toEqual(expect.objectContaining({ correct: 0, wrong: 1, percent: 0 }));
+  });
+
+  it("accepts a canonical key when an admin writes a quiz question and stores the option value", async () => {
+    const questions = repo();
+    const quizzes = repo({ findOne: jest.fn(async () => ({ id: "quiz-1", organization: { id: "org-1" } })) });
+    const result = new AssessmentsService(
+      repo() as any, repo() as any, repo() as any, repo() as any, repo() as any,
+      quizzes as any, questions as any, repo() as any, repo() as any, repo() as any,
+      { canAccessOrganization: jest.fn(() => true) } as any, {} as any,
+    );
+
+    await result.addQuizQuestion(
+      { roles: [], capabilities: ["quiz_questions.manage"], organizationIds: ["org-1"], membershipIds: [] } as any,
+      "quiz-1",
+      { text: "پاسخ؟", options: ["الف", "ب", "ج", "د"], correctAnswer: "b" },
+    );
+
+    expect(questions.save).toHaveBeenCalledWith(expect.objectContaining({ correctAnswer: "ب" }));
+  });
+});

@@ -50,8 +50,8 @@ describe('StudentQuizzesPage', () => {
         review: [
           {
             questionId: 'question-1',
-            selectedOption: '۴',
-            correctOption: '۴',
+            selectedOption: 'b',
+            correctOption: 'b',
             explanation: 'جمع ساده',
             isCorrect: true,
           },
@@ -109,9 +109,23 @@ describe('StudentQuizzesPage', () => {
       '/quizzes/quiz-1/attempts',
       {
         runId: 'run-1',
-        answers: [{ questionId: 'question-1', selectedOption: '۴' }],
+        answers: [{ questionId: 'question-1', selectedOption: 'b' }],
       },
     );
+  });
+
+  it('normalizes a saved legacy answer value to its stable option key', async () => {
+    vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce([{ id: 'quiz-1', title: 'مرور', durationMinutes: 5, questionCount: 1 }] as never)
+      .mockResolvedValueOnce({
+        runId: 'run-1', remainingSeconds: 300, savedAnswers: [{ questionId: 'q-1', selectedOption: 'ب' }],
+        quiz: { id: 'quiz-1', title: 'مرور', durationMinutes: 5, questions: [{ id: 'q-1', text: 'پاسخ؟', options: ['الف', 'ب', 'ج', 'د'] }] },
+      } as never);
+    const user = userEvent.setup();
+    render(<MemoryRouter><StudentQuizzesPage /></MemoryRouter>);
+    await user.click(await screen.findByRole('button', { name: 'مشاهده و شروع' }));
+    await user.click(screen.getByRole('button', { name: 'آماده‌ام؛ شروع کنیم' }));
+    expect(screen.getByRole('radio', { name: /ب$/ })).toBeChecked();
   });
 
   it('lets the student review unanswered questions without submitting', async () => {
