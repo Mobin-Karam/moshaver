@@ -13,26 +13,35 @@ import { Conversation } from "../../database/entities/conversation.entity";
 import { ConversationMember } from "../../database/entities/conversation-member.entity";
 import { ConversationType } from "../../database/entities/conversation.entity";
 import { AssignStudentOnboardingDto, StudentSignupDto } from "./onboarding.dto";
+import { EducationCatalogService } from "../education-catalog/education-catalog.service";
+import { isValidIranianNationalCode, normalizeNationalCode } from "./national-code";
 
 @Injectable()
 export class OnboardingService {
-  constructor(private dataSource: DataSource) {}
+  constructor(private dataSource: DataSource, private catalog: EducationCatalogService) {}
 
   async signup(dto: StudentSignupDto) {
-    return this.dataSource.transaction(async (manager) => {
-      const username = dto.username.trim().toLowerCase();
-      if (await manager.findOne(User, { where: { username } })) throw new ApiException(409, "USERNAME_EXISTS", "این نام کاربری قبلاً استفاده شده است.");
+    const nationalCode = normalizeNationalCode(dto.nationalCode);
+    if (!isValidIranianNationalCode(nationalCode)) throw new ApiException(422, "INVALID_NATIONAL_CODE", "کد ملی معتبر نیست.");
+    const education = this.catalog.validateSelection(dto.grade, dto.educationTypeId, dto.trackId);
+    try { return await this.dataSource.transaction(async (manager) => {
+      const username = nationalCode;
+      if (await manager.findOne(Student, { where: { nationalCode } })) throw new ApiException(409, "NATIONAL_CODE_EXISTS", "برای این کد ملی قبلاً حساب ساخته شده است.");
+      if (await manager.findOne(User, { where: { username } })) throw new ApiException(409, "NATIONAL_CODE_EXISTS", "برای این کد ملی قبلاً حساب ساخته شده است.");
       const user = await manager.save(User, manager.create(User, { username, passwordHash: await bcrypt.hash(dto.password, 12), role: UserRole.STUDENT, status: UserStatus.ACTIVE }));
-      const student = await manager.save(Student, manager.create(Student, { user, name: dto.name.trim(), grade: dto.grade.trim(), major: dto.major.trim(), targetUniversity: "", targetField: "", targetRank: "", dailyCapacity: "", accountStatus: "active", onboardingStatus: "PENDING_ASSIGNMENT" }));
+      const student = await manager.save(Student, manager.create(Student, { user, name: dto.name.trim(), nationalCode, gradeId: education.gradeId, grade: education.gradeLabel, educationTypeId: education.educationTypeId, trackId: education.trackId, major: education.trackLabel, targetUniversity: "", targetField: "", targetRank: "", dailyCapacity: "", accountStatus: "active", onboardingStatus: "PENDING_ASSIGNMENT" }));
       const role = await manager.findOneByOrFail(Role, { code: "STUDENT" });
       await manager.save(UserRoleAssignment, manager.create(UserRoleAssignment, { user, role, membership: null }));
-      return { id: student.id, username, onboardingStatus: student.onboardingStatus };
-    });
+      return { id: student.id, username, nationalCode, grade: student.grade, major: student.major, onboardingStatus: student.onboardingStatus };
+    }); } catch (error) {
+      if (String((error as { message?: string })?.message || "").includes("students.nationalCode")) throw new ApiException(409, "NATIONAL_CODE_EXISTS", "برای این کد ملی قبلاً حساب ساخته شده است.");
+      throw error;
+    }
   }
 
   async pending() {
     const rows = await this.dataSource.getRepository(Student).find({ where: { onboardingStatus: "PENDING_ASSIGNMENT" }, relations: { user: true }, order: { createdAt: "ASC" } });
-    return rows.map((student) => ({ id: student.id, name: student.name, grade: student.grade, major: student.major, username: student.user?.username, createdAt: student.createdAt }));
+    return rows.map((student) => ({ id: student.id, name: student.name, nationalCode: student.nationalCode, grade: student.grade, major: student.major, username: student.user?.username, createdAt: student.createdAt }));
   }
 
   async assign(studentId: string, dto: AssignStudentOnboardingDto) {

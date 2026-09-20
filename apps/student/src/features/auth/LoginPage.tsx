@@ -1,8 +1,10 @@
 import { Eye, EyeOff, GraduationCap, LoaderCircle, LockKeyhole, LogIn, ShieldCheck, UserRound, WifiOff } from 'lucide-react';
 import { useEffect, useId, useState, type FormEvent } from 'react';
 import { useStudentStore } from '../../services/student-store';
+import { SignupForm } from './SignupForm';
 
 export function LoginPage() {
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -63,7 +65,11 @@ export function LoginPage() {
         </ul>
       </section>
 
-      <form className="student-login__card" onSubmit={submit} aria-busy={isLoading} noValidate>
+      <div className="student-login__account-tabs" role="tablist" aria-label="ورود یا ساخت حساب">
+        <button type="button" role="tab" aria-selected={mode === 'login'} onClick={() => setMode('login')}>ورود</button>
+        <button type="button" role="tab" aria-selected={mode === 'signup'} onClick={() => setMode('signup')}>ساخت حساب</button>
+      </div>
+      {mode === 'signup' ? <SignupForm onLogin={() => setMode('login')} /> : <form className="student-login__card" onSubmit={submit} aria-busy={isLoading} noValidate>
         <header>
           <span><LogIn aria-hidden="true" /></span>
           <div>
@@ -128,7 +134,7 @@ export function LoginPage() {
           <span>{isLoading ? 'در حال بررسی حساب…' : 'ورود امن'}</span>
         </button>
         <small>اگر اطلاعات ورود را ندارید، با مدیر مرکز یا مشاور خود تماس بگیرید.</small>
-      </form>
+      </form>}
     </main>
   );
 }

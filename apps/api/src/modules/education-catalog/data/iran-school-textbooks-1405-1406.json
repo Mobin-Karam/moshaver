@@ -1,0 +1,3810 @@
+{
+  "dataset": {
+    "name": "Iran School Textbooks",
+    "school_year": "1405-1406",
+    "calendar": "Solar Hijri",
+    "country": "Iran",
+    "language": [
+      "fa",
+      "en"
+    ],
+    "generated_for": "platform catalog",
+    "record_count": 212,
+    "scope_note": "Contains every textbook title listed in the preceding Grades 1-12 catalog, plus current verified shared vocational titles and selected verified technical titles. The national Fanni-Herfei/Kar-Danesh catalog contains many additional رشته-specific competency books; those should be synchronized from chap.sch.ir before labeling this dataset as a complete national vocational catalog.",
+    "official_catalog": "https://chap.sch.ir/",
+    "ordering_portal": "https://irtextbook.ir/"
+  },
+  "taxonomy": {
+    "levels": [
+      {
+        "id": "elementary",
+        "fa": "دوره ابتدایی",
+        "grades": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      {
+        "id": "lower_secondary",
+        "fa": "دوره اول متوسطه",
+        "grades": [
+          7,
+          8,
+          9
+        ]
+      },
+      {
+        "id": "upper_secondary",
+        "fa": "دوره دوم متوسطه",
+        "grades": [
+          10,
+          11,
+          12
+        ]
+      }
+    ],
+    "upper_secondary_branches": [
+      {
+        "id": "theoretical",
+        "fa": "نظری",
+        "tracks": [
+          "ریاضی و فیزیک",
+          "علوم تجربی",
+          "ادبیات و علوم انسانی",
+          "علوم و معارف اسلامی"
+        ]
+      },
+      {
+        "id": "technical_vocational",
+        "fa": "فنی و حرفه‌ای",
+        "groups": [
+          "صنعت",
+          "خدمات",
+          "کشاورزی",
+          "هنر"
+        ]
+      },
+      {
+        "id": "kar_danesh",
+        "fa": "کاردانش",
+        "groups": [
+          "صنعت",
+          "خدمات",
+          "کشاورزی",
+          "هنر"
+        ]
+      }
+    ],
+    "categories": [
+      "آزمایشگاه",
+      "آمادگی دفاعی",
+      "احکام",
+      "اخلاق حرفه‌ای",
+      "ادبیات تخصصی",
+      "استان‌شناسی",
+      "اقتصاد",
+      "تاریخ",
+      "تعمیر و نگهداری",
+      "تفکر و سبک زندگی",
+      "تفکر و پژوهش",
+      "جامعه‌شناسی",
+      "جغرافیا",
+      "دانش فنی",
+      "دین و زندگی",
+      "رایانه",
+      "رسانه",
+      "روان‌شناسی",
+      "ریاضی",
+      "زبان انگلیسی",
+      "زمین‌شناسی",
+      "زیست‌شناسی",
+      "ساخت و تولید",
+      "سبک زندگی",
+      "سلامت",
+      "شیمی",
+      "عربی",
+      "علوم",
+      "علوم اجتماعی",
+      "فارسی و ادبیات",
+      "فرهنگ",
+      "فرهنگ و هنر",
+      "فلسفه",
+      "فناوری",
+      "فناوری و مهارت",
+      "فیزیک",
+      "قرآن و معارف",
+      "محیط زیست",
+      "مطالعات اجتماعی",
+      "معارف اسلامی",
+      "منطق",
+      "مهارت‌های شغلی",
+      "مکاترونیک",
+      "نقشه‌کشی",
+      "همراه هنرجو",
+      "هوش مصنوعی",
+      "کارآفرینی"
+    ]
+  },
+  "books": [
+    {
+      "id": "ir-01-persian-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 1,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "فارسی ۱",
+      "title_en": "Persian 1",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-01-persian-writing-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 1,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "نگارش فارسی ۱",
+      "title_en": "Persian Writing 1",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-01-mathematics-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 1,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی ۱",
+      "title_en": "Mathematics 1",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-01-experimental-sciences-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 1,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "علوم",
+      "title_fa": "علوم تجربی ۱",
+      "title_en": "Experimental Sciences 1",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-01-quran-education-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 1,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "قرآن و معارف",
+      "title_fa": "آموزش قرآن ۱",
+      "title_en": "Quran Education 1",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-02-persian-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 2,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "فارسی ۲",
+      "title_en": "Persian 2",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-02-persian-writing-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 2,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "نگارش فارسی ۲",
+      "title_en": "Persian Writing 2",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-02-mathematics-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 2,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی ۲",
+      "title_en": "Mathematics 2",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-02-experimental-sciences-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 2,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "علوم",
+      "title_fa": "علوم تجربی ۲",
+      "title_en": "Experimental Sciences 2",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-02-quran-education-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 2,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "قرآن و معارف",
+      "title_fa": "آموزش قرآن ۲",
+      "title_en": "Quran Education 2",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-02-gifts-from-heaven-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 2,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "دین و زندگی",
+      "title_fa": "هدیه‌های آسمان ۲",
+      "title_en": "Gifts from Heaven 2",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-03-persian-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 3,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "فارسی ۳",
+      "title_en": "Persian 3",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-03-persian-writing-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 3,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "نگارش فارسی ۳",
+      "title_en": "Persian Writing 3",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-03-mathematics-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 3,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی ۳",
+      "title_en": "Mathematics 3",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-03-experimental-sciences-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 3,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "علوم",
+      "title_fa": "علوم تجربی ۳",
+      "title_en": "Experimental Sciences 3",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-03-social-studies-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 3,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "مطالعات اجتماعی",
+      "title_fa": "مطالعات اجتماعی ۳",
+      "title_en": "Social Studies 3",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-03-quran-education-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 3,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "قرآن و معارف",
+      "title_fa": "آموزش قرآن ۳",
+      "title_en": "Quran Education 3",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-03-gifts-from-heaven-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 3,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "دین و زندگی",
+      "title_fa": "هدیه‌های آسمان ۳",
+      "title_en": "Gifts from Heaven 3",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-04-persian-4",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 4,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "فارسی ۴",
+      "title_en": "Persian 4",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-04-persian-writing-4",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 4,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "نگارش فارسی ۴",
+      "title_en": "Persian Writing 4",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-04-mathematics-4",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 4,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی ۴",
+      "title_en": "Mathematics 4",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-04-experimental-sciences-4",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 4,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "علوم",
+      "title_fa": "علوم تجربی ۴",
+      "title_en": "Experimental Sciences 4",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-04-social-studies-4",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 4,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "مطالعات اجتماعی",
+      "title_fa": "مطالعات اجتماعی ۴",
+      "title_en": "Social Studies 4",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-04-quran-education-4",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 4,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "قرآن و معارف",
+      "title_fa": "آموزش قرآن ۴",
+      "title_en": "Quran Education 4",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-04-gifts-from-heaven-4",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 4,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "دین و زندگی",
+      "title_fa": "هدیه‌های آسمان ۴",
+      "title_en": "Gifts from Heaven 4",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-05-persian-5",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 5,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "فارسی ۵",
+      "title_en": "Persian 5",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-05-persian-writing-5",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 5,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "نگارش فارسی ۵",
+      "title_en": "Persian Writing 5",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-05-mathematics-5",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 5,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی ۵",
+      "title_en": "Mathematics 5",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-05-experimental-sciences-5",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 5,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "علوم",
+      "title_fa": "علوم تجربی ۵",
+      "title_en": "Experimental Sciences 5",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-05-social-studies-5",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 5,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "مطالعات اجتماعی",
+      "title_fa": "مطالعات اجتماعی ۵",
+      "title_en": "Social Studies 5",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-05-quran-education-5",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 5,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "قرآن و معارف",
+      "title_fa": "آموزش قرآن ۵",
+      "title_en": "Quran Education 5",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-05-gifts-from-heaven-5",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 5,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "دین و زندگی",
+      "title_fa": "هدیه‌های آسمان ۵",
+      "title_en": "Gifts from Heaven 5",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-06-persian-6",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 6,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "فارسی ۶",
+      "title_en": "Persian 6",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-06-persian-writing-6",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 6,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "نگارش فارسی ۶",
+      "title_en": "Persian Writing 6",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-06-mathematics-6",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 6,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی ۶",
+      "title_en": "Mathematics 6",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-06-experimental-sciences-6",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 6,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "علوم",
+      "title_fa": "علوم تجربی ۶",
+      "title_en": "Experimental Sciences 6",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-06-social-studies-6",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 6,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "مطالعات اجتماعی",
+      "title_fa": "مطالعات اجتماعی ۶",
+      "title_en": "Social Studies 6",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-06-quran-education-6",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 6,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "قرآن و معارف",
+      "title_fa": "آموزش قرآن ۶",
+      "title_en": "Quran Education 6",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-06-gifts-from-heaven-6",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 6,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "دین و زندگی",
+      "title_fa": "هدیه‌های آسمان ۶",
+      "title_en": "Gifts from Heaven 6",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-06-work-and-technology-6",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 6,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فناوری و مهارت",
+      "title_fa": "کار و فناوری ۶",
+      "title_en": "Work and Technology 6",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-06-thinking-and-research-6",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 6,
+      "level": "دوره ابتدایی",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "تفکر و پژوهش",
+      "title_fa": "تفکر و پژوهش ۶",
+      "title_en": "Thinking and Research 6",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-persian-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "فارسی 7",
+      "title_en": "Persian 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-writing-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "نگارش 7",
+      "title_en": "Writing 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-arabic-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "عربی",
+      "title_fa": "عربی 7",
+      "title_en": "Arabic 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-english-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "زبان انگلیسی",
+      "title_fa": "انگلیسی 7",
+      "title_en": "English 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-english-workbook-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "زبان انگلیسی",
+      "title_fa": "کتاب کار انگلیسی 7",
+      "title_en": "English Workbook 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-mathematics-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی 7",
+      "title_en": "Mathematics 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-experimental-sciences-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "علوم",
+      "title_fa": "علوم تجربی 7",
+      "title_en": "Experimental Sciences 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-social-studies-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "مطالعات اجتماعی",
+      "title_fa": "مطالعات اجتماعی 7",
+      "title_en": "Social Studies 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-quran-education-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "قرآن و معارف",
+      "title_fa": "آموزش قرآن 7",
+      "title_en": "Quran Education 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-messages-from-heaven-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "دین و زندگی",
+      "title_fa": "پیام‌های آسمان 7",
+      "title_en": "Messages from Heaven 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-work-and-technology-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فناوری و مهارت",
+      "title_fa": "کار و فناوری 7",
+      "title_en": "Work and Technology 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-culture-and-art-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فرهنگ و هنر",
+      "title_fa": "فرهنگ و هنر 7",
+      "title_en": "Culture and Art 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-07-thinking-and-lifestyle-7",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 7,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "تفکر و سبک زندگی",
+      "title_fa": "تفکر و سبک زندگی 7",
+      "title_en": "Thinking and Lifestyle 7",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-persian-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "فارسی 8",
+      "title_en": "Persian 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-writing-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "نگارش 8",
+      "title_en": "Writing 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-arabic-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "عربی",
+      "title_fa": "عربی 8",
+      "title_en": "Arabic 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-english-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "زبان انگلیسی",
+      "title_fa": "انگلیسی 8",
+      "title_en": "English 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-english-workbook-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "زبان انگلیسی",
+      "title_fa": "کتاب کار انگلیسی 8",
+      "title_en": "English Workbook 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-mathematics-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی 8",
+      "title_en": "Mathematics 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-experimental-sciences-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "علوم",
+      "title_fa": "علوم تجربی 8",
+      "title_en": "Experimental Sciences 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-social-studies-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "مطالعات اجتماعی",
+      "title_fa": "مطالعات اجتماعی 8",
+      "title_en": "Social Studies 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-quran-education-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "قرآن و معارف",
+      "title_fa": "آموزش قرآن 8",
+      "title_en": "Quran Education 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-messages-from-heaven-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "دین و زندگی",
+      "title_fa": "پیام‌های آسمان 8",
+      "title_en": "Messages from Heaven 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-work-and-technology-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فناوری و مهارت",
+      "title_fa": "کار و فناوری 8",
+      "title_en": "Work and Technology 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-culture-and-art-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فرهنگ و هنر",
+      "title_fa": "فرهنگ و هنر 8",
+      "title_en": "Culture and Art 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-08-thinking-and-lifestyle-8",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 8,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "تفکر و سبک زندگی",
+      "title_fa": "تفکر و سبک زندگی 8",
+      "title_en": "Thinking and Lifestyle 8",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-persian-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "فارسی 9",
+      "title_en": "Persian 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-writing-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فارسی و ادبیات",
+      "title_fa": "نگارش 9",
+      "title_en": "Writing 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-arabic-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "عربی",
+      "title_fa": "عربی 9",
+      "title_en": "Arabic 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-english-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "زبان انگلیسی",
+      "title_fa": "انگلیسی 9",
+      "title_en": "English 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-english-workbook-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "زبان انگلیسی",
+      "title_fa": "کتاب کار انگلیسی 9",
+      "title_en": "English Workbook 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-mathematics-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی 9",
+      "title_en": "Mathematics 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-experimental-sciences-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "علوم",
+      "title_fa": "علوم تجربی 9",
+      "title_en": "Experimental Sciences 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-social-studies-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "مطالعات اجتماعی",
+      "title_fa": "مطالعات اجتماعی 9",
+      "title_en": "Social Studies 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-quran-education-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "قرآن و معارف",
+      "title_fa": "آموزش قرآن 9",
+      "title_en": "Quran Education 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-messages-from-heaven-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "دین و زندگی",
+      "title_fa": "پیام‌های آسمان 9",
+      "title_en": "Messages from Heaven 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-work-and-technology-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فناوری و مهارت",
+      "title_fa": "کار و فناوری 9",
+      "title_en": "Work and Technology 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-culture-and-art-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "فرهنگ و هنر",
+      "title_fa": "فرهنگ و هنر 9",
+      "title_en": "Culture and Art 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-09-defense-readiness-9",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 9,
+      "level": "دوره اول متوسطه",
+      "branch": "عمومی",
+      "track": "عمومی",
+      "category": "آمادگی دفاعی",
+      "title_fa": "آمادگی دفاعی ۹",
+      "title_en": "Defense Readiness 9",
+      "textbook_code": null,
+      "applies_to": [
+        "all"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-persian-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "فارسی و ادبیات",
+      "title_fa": "فارسی ۱",
+      "title_en": "Persian 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-writing-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "فارسی و ادبیات",
+      "title_fa": "نگارش ۱",
+      "title_en": "Writing 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-english-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "زبان انگلیسی",
+      "title_fa": "انگلیسی ۱",
+      "title_en": "English 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-english-workbook-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "زبان انگلیسی",
+      "title_fa": "کتاب کار انگلیسی ۱",
+      "title_en": "English Workbook 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-religion-and-life-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "دین و زندگی",
+      "title_fa": "دین و زندگی ۱",
+      "title_en": "Religion and Life 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-geography-of-iran",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "جغرافیا",
+      "title_fa": "جغرافیای ایران",
+      "title_en": "Geography of Iran",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-thinking-and-media-literacy",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "رسانه",
+      "title_fa": "تفکر و سواد رسانه‌ای",
+      "title_en": "Thinking and Media Literacy",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-defense-readiness",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "آمادگی دفاعی",
+      "title_fa": "آمادگی دفاعی",
+      "title_en": "Defense Readiness",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-entrepreneurship-and-production-workshop",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "کارآفرینی",
+      "title_fa": "کارگاه کارآفرینی و تولید",
+      "title_en": "Entrepreneurship and Production Workshop",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-mathematics-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "ریاضی",
+      "title_fa": "ریاضی ۱",
+      "title_en": "Mathematics 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-geometry-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "ریاضی",
+      "title_fa": "هندسه ۱",
+      "title_en": "Geometry 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-physics-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "فیزیک",
+      "title_fa": "فیزیک ۱",
+      "title_en": "Physics 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-chemistry-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "شیمی",
+      "title_fa": "شیمی ۱",
+      "title_en": "Chemistry 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-experimental-sciences-laboratory-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "آزمایشگاه",
+      "title_fa": "آزمایشگاه علوم تجربی ۱",
+      "title_en": "Experimental Sciences Laboratory 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-arabic-language-of-the-quran-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "عربی",
+      "title_fa": "عربی، زبان قرآن ۱",
+      "title_en": "Arabic, Language of the Quran 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-biology-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "زیست‌شناسی",
+      "title_fa": "زیست‌شناسی ۱",
+      "title_en": "Biology 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-chemistry-1-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "شیمی",
+      "title_fa": "شیمی ۱",
+      "title_en": "Chemistry 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-physics-1-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "فیزیک",
+      "title_fa": "فیزیک ۱",
+      "title_en": "Physics 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-mathematics-1-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی ۱",
+      "title_en": "Mathematics 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-experimental-sciences-laboratory-1-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "آزمایشگاه",
+      "title_fa": "آزمایشگاه علوم تجربی ۱",
+      "title_en": "Experimental Sciences Laboratory 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-arabic-language-of-the-quran-1-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "عربی",
+      "title_fa": "عربی، زبان قرآن ۱",
+      "title_en": "Arabic, Language of the Quran 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-literary-sciences-and-techniques-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "ادبیات تخصصی",
+      "title_fa": "علوم و فنون ادبی ۱",
+      "title_en": "Literary Sciences and Techniques 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-mathematics-and-statistics-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی و آمار ۱",
+      "title_en": "Mathematics and Statistics 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-history-1-ancient-iran-and-world",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "تاریخ",
+      "title_fa": "تاریخ ۱: ایران و جهان باستان",
+      "title_en": "History 1: Ancient Iran and World",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-sociology-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "جامعه‌شناسی",
+      "title_fa": "جامعه‌شناسی ۱",
+      "title_en": "Sociology 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-economics",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "اقتصاد",
+      "title_fa": "اقتصاد",
+      "title_en": "Economics",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-logic",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "منطق",
+      "title_fa": "منطق",
+      "title_en": "Logic",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-arabic-1-for-humanities",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "عربی",
+      "title_fa": "عربی، زبان قرآن ۱ (علوم و معارف انسانی)",
+      "title_en": "Arabic 1 for Humanities",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-literary-sciences-and-techniques-1-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "ادبیات تخصصی",
+      "title_fa": "علوم و فنون ادبی ۱",
+      "title_en": "Literary Sciences and Techniques 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-mathematics-and-statistics-1-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی و آمار ۱",
+      "title_en": "Mathematics and Statistics 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-sociology-1-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "جامعه‌شناسی",
+      "title_fa": "جامعه‌شناسی ۱",
+      "title_en": "Sociology 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-economics-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "اقتصاد",
+      "title_fa": "اقتصاد",
+      "title_en": "Economics",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-logic-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "منطق",
+      "title_fa": "منطق",
+      "title_en": "Logic",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-principles-and-beliefs-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "معارف اسلامی",
+      "title_fa": "اصول و عقاید ۱",
+      "title_en": "Principles and Beliefs 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-islamic-rulings-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "احکام",
+      "title_fa": "احکام ۱",
+      "title_en": "Islamic Rulings 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-specialized-arabic-for-islamic-studies-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "عربی",
+      "title_fa": "عربی تخصصی معارف ۱",
+      "title_en": "Specialized Arabic for Islamic Studies 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-islamic-history-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "تاریخ",
+      "title_fa": "تاریخ اسلام ۱",
+      "title_en": "Islamic History 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-quranic-sciences-and-studies-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "قرآن و معارف",
+      "title_fa": "علوم و معارف قرآنی ۱",
+      "title_en": "Quranic Sciences and Studies 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-persian-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "فارسی و ادبیات",
+      "title_fa": "فارسی ۲",
+      "title_en": "Persian 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-writing-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "فارسی و ادبیات",
+      "title_fa": "نگارش ۲",
+      "title_en": "Writing 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-english-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "زبان انگلیسی",
+      "title_fa": "انگلیسی ۲",
+      "title_en": "English 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-english-workbook-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "زبان انگلیسی",
+      "title_fa": "کتاب کار انگلیسی ۲",
+      "title_en": "English Workbook 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-religion-and-life-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "دین و زندگی",
+      "title_fa": "دین و زندگی ۲",
+      "title_en": "Religion and Life 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-human-and-environment",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "محیط زیست",
+      "title_fa": "انسان و محیط زیست",
+      "title_en": "Human and Environment",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-calculus-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "ریاضی",
+      "title_fa": "حسابان ۱",
+      "title_en": "Calculus 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-geometry-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "ریاضی",
+      "title_fa": "هندسه ۲",
+      "title_en": "Geometry 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-statistics-and-probability",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "ریاضی",
+      "title_fa": "آمار و احتمال",
+      "title_en": "Statistics and Probability",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-physics-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "فیزیک",
+      "title_fa": "فیزیک ۲",
+      "title_en": "Physics 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-chemistry-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "شیمی",
+      "title_fa": "شیمی ۲",
+      "title_en": "Chemistry 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-experimental-sciences-laboratory-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "آزمایشگاه",
+      "title_fa": "آزمایشگاه علوم تجربی ۲",
+      "title_en": "Experimental Sciences Laboratory 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-geology",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "زمین‌شناسی",
+      "title_fa": "زمین‌شناسی",
+      "title_en": "Geology",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-arabic-language-of-the-quran-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "عربی",
+      "title_fa": "عربی، زبان قرآن ۲",
+      "title_en": "Arabic, Language of the Quran 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-contemporary-history-of-iran",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "تاریخ",
+      "title_fa": "تاریخ معاصر ایران",
+      "title_en": "Contemporary History of Iran",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-biology-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "زیست‌شناسی",
+      "title_fa": "زیست‌شناسی ۲",
+      "title_en": "Biology 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-chemistry-2-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "شیمی",
+      "title_fa": "شیمی ۲",
+      "title_en": "Chemistry 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-physics-2-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "فیزیک",
+      "title_fa": "فیزیک ۲",
+      "title_en": "Physics 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-mathematics-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی ۲",
+      "title_en": "Mathematics 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-geology-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "زمین‌شناسی",
+      "title_fa": "زمین‌شناسی",
+      "title_en": "Geology",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-experimental-sciences-laboratory-2-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "آزمایشگاه",
+      "title_fa": "آزمایشگاه علوم تجربی ۲",
+      "title_en": "Experimental Sciences Laboratory 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-arabic-language-of-the-quran-2-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "عربی",
+      "title_fa": "عربی، زبان قرآن ۲",
+      "title_en": "Arabic, Language of the Quran 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-contemporary-history-of-iran-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "تاریخ",
+      "title_fa": "تاریخ معاصر ایران",
+      "title_en": "Contemporary History of Iran",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-mathematics-and-statistics-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی و آمار ۲",
+      "title_en": "Mathematics and Statistics 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-literary-sciences-and-techniques-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "ادبیات تخصصی",
+      "title_fa": "علوم و فنون ادبی ۲",
+      "title_en": "Literary Sciences and Techniques 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-sociology-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "جامعه‌شناسی",
+      "title_fa": "جامعه‌شناسی ۲",
+      "title_en": "Sociology 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-psychology",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "روان‌شناسی",
+      "title_fa": "روان‌شناسی",
+      "title_en": "Psychology",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-philosophy-1",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "فلسفه",
+      "title_fa": "فلسفه ۱",
+      "title_en": "Philosophy 1",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-history-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "تاریخ",
+      "title_fa": "تاریخ ۲",
+      "title_en": "History 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-geography-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "جغرافیا",
+      "title_fa": "جغرافیا ۲",
+      "title_en": "Geography 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-arabic-2-for-humanities",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "عربی",
+      "title_fa": "عربی، زبان قرآن ۲ (علوم و معارف انسانی)",
+      "title_en": "Arabic 2 for Humanities",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-mathematics-and-statistics-2-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی و آمار ۲",
+      "title_en": "Mathematics and Statistics 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-literary-sciences-and-techniques-2-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "ادبیات تخصصی",
+      "title_fa": "علوم و فنون ادبی ۲",
+      "title_en": "Literary Sciences and Techniques 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-sociology-2-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "جامعه‌شناسی",
+      "title_fa": "جامعه‌شناسی ۲",
+      "title_en": "Sociology 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-philosophy-1-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "فلسفه",
+      "title_fa": "فلسفه ۱",
+      "title_en": "Philosophy 1",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-principles-and-beliefs-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "معارف اسلامی",
+      "title_fa": "اصول و عقاید ۲",
+      "title_en": "Principles and Beliefs 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-islamic-rulings-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "احکام",
+      "title_fa": "احکام ۲",
+      "title_en": "Islamic Rulings 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-specialized-arabic-for-islamic-studies-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "عربی",
+      "title_fa": "عربی تخصصی معارف ۲",
+      "title_en": "Specialized Arabic for Islamic Studies 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-islamic-history-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "تاریخ",
+      "title_fa": "تاریخ اسلام ۲",
+      "title_en": "Islamic History 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-quranic-sciences-and-studies-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "قرآن و معارف",
+      "title_fa": "علوم و معارف قرآنی ۲",
+      "title_en": "Quranic Sciences and Studies 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-persian-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "فارسی و ادبیات",
+      "title_fa": "فارسی ۳",
+      "title_en": "Persian 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-writing-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "فارسی و ادبیات",
+      "title_fa": "نگارش ۳",
+      "title_en": "Writing 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-english-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "زبان انگلیسی",
+      "title_fa": "انگلیسی ۳",
+      "title_en": "English 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-health-and-hygiene",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "سلامت",
+      "title_fa": "سلامت و بهداشت",
+      "title_en": "Health and Hygiene",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-family-management-and-lifestyle",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "مشترک",
+      "category": "سبک زندگی",
+      "title_fa": "مدیریت خانواده و سبک زندگی",
+      "title_en": "Family Management and Lifestyle",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک",
+        "علوم تجربی",
+        "ادبیات و علوم انسانی",
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-calculus-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "ریاضی",
+      "title_fa": "حسابان ۲",
+      "title_en": "Calculus 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-geometry-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "ریاضی",
+      "title_fa": "هندسه ۳",
+      "title_en": "Geometry 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-discrete-mathematics",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "ریاضی",
+      "title_fa": "ریاضیات گسسته",
+      "title_en": "Discrete Mathematics",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-physics-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "فیزیک",
+      "title_fa": "فیزیک ۳",
+      "title_en": "Physics 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-chemistry-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "شیمی",
+      "title_fa": "شیمی ۳",
+      "title_en": "Chemistry 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-arabic-language-of-the-quran-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "عربی",
+      "title_fa": "عربی، زبان قرآن ۳",
+      "title_en": "Arabic, Language of the Quran 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-religion-and-life-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "دین و زندگی",
+      "title_fa": "دین و زندگی ۳",
+      "title_en": "Religion and Life 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-social-identity",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ریاضی و فیزیک",
+      "category": "علوم اجتماعی",
+      "title_fa": "هویت اجتماعی",
+      "title_en": "Social Identity",
+      "textbook_code": null,
+      "applies_to": [
+        "ریاضی و فیزیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-biology-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "زیست‌شناسی",
+      "title_fa": "زیست‌شناسی ۳",
+      "title_en": "Biology 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-chemistry-3-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "شیمی",
+      "title_fa": "شیمی ۳",
+      "title_en": "Chemistry 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-physics-3-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "فیزیک",
+      "title_fa": "فیزیک ۳",
+      "title_en": "Physics 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-mathematics-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی ۳",
+      "title_en": "Mathematics 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-arabic-language-of-the-quran-3-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "عربی",
+      "title_fa": "عربی، زبان قرآن ۳",
+      "title_en": "Arabic, Language of the Quran 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-religion-and-life-3-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "دین و زندگی",
+      "title_fa": "دین و زندگی ۳",
+      "title_en": "Religion and Life 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-social-identity-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم تجربی",
+      "category": "علوم اجتماعی",
+      "title_fa": "هویت اجتماعی",
+      "title_en": "Social Identity",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم تجربی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-mathematics-and-statistics-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی و آمار ۳",
+      "title_en": "Mathematics and Statistics 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-literary-sciences-and-techniques-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "ادبیات تخصصی",
+      "title_fa": "علوم و فنون ادبی ۳",
+      "title_en": "Literary Sciences and Techniques 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-philosophy-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "فلسفه",
+      "title_fa": "فلسفه ۲",
+      "title_en": "Philosophy 2",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-sociology-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "جامعه‌شناسی",
+      "title_fa": "جامعه‌شناسی ۳",
+      "title_en": "Sociology 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-history-3-contemporary-iran-and-world",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "تاریخ",
+      "title_fa": "تاریخ ۳: ایران و جهان معاصر",
+      "title_en": "History 3: Contemporary Iran and World",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-geography-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "جغرافیا",
+      "title_fa": "جغرافیا ۳",
+      "title_en": "Geography 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-cultural-analysis",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "فرهنگ",
+      "title_fa": "تحلیل فرهنگی",
+      "title_en": "Cultural Analysis",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-arabic-3-for-humanities",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "عربی",
+      "title_fa": "عربی، زبان قرآن ۳ (علوم و معارف انسانی)",
+      "title_en": "Arabic 3 for Humanities",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-religion-and-life-3-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "ادبیات و علوم انسانی",
+      "category": "دین و زندگی",
+      "title_fa": "دین و زندگی ۳",
+      "title_en": "Religion and Life 3",
+      "textbook_code": null,
+      "applies_to": [
+        "ادبیات و علوم انسانی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-mathematics-and-statistics-3-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "ریاضی",
+      "title_fa": "ریاضی و آمار ۳",
+      "title_en": "Mathematics and Statistics 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-literary-sciences-and-techniques-3-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "ادبیات تخصصی",
+      "title_fa": "علوم و فنون ادبی ۳",
+      "title_en": "Literary Sciences and Techniques 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-philosophy-2-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "فلسفه",
+      "title_fa": "فلسفه ۲",
+      "title_en": "Philosophy 2",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-sociology-3-2",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "جامعه‌شناسی",
+      "title_fa": "جامعه‌شناسی ۳",
+      "title_en": "Sociology 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-principles-and-beliefs-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "معارف اسلامی",
+      "title_fa": "اصول و عقاید ۳",
+      "title_en": "Principles and Beliefs 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-islamic-rulings-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "احکام",
+      "title_fa": "احکام ۳",
+      "title_en": "Islamic Rulings 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-specialized-arabic-for-islamic-studies-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "عربی",
+      "title_fa": "عربی تخصصی معارف ۳",
+      "title_en": "Specialized Arabic for Islamic Studies 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-islamic-history-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "تاریخ",
+      "title_fa": "تاریخ اسلام ۳",
+      "title_en": "Islamic History 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-quranic-sciences-and-studies-3",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "نظری",
+      "track": "علوم و معارف اسلامی",
+      "category": "قرآن و معارف",
+      "title_fa": "علوم و معارف قرآنی ۳",
+      "title_en": "Quranic Sciences and Studies 3",
+      "textbook_code": null,
+      "applies_to": [
+        "علوم و معارف اسلامی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-workplace-requirements",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای / کاردانش",
+      "track": "مشترک",
+      "category": "مهارت‌های شغلی",
+      "title_fa": "الزامات محیط کار",
+      "title_en": "Workplace Requirements",
+      "textbook_code": "210136",
+      "applies_to": [
+        "فنی و حرفه‌ای",
+        "کاردانش"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-artificial-intelligence",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای / کاردانش",
+      "track": "مشترک",
+      "category": "هوش مصنوعی",
+      "title_fa": "هوش مصنوعی",
+      "title_en": "Artificial Intelligence",
+      "textbook_code": "210159",
+      "applies_to": [
+        "فنی و حرفه‌ای",
+        "کاردانش"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-application-of-emerging-technologies",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای / کاردانش",
+      "track": "مشترک",
+      "category": "فناوری",
+      "title_fa": "کاربرد فناوری‌های نوین",
+      "title_en": "Application of Emerging Technologies",
+      "textbook_code": "211136",
+      "applies_to": [
+        "فنی و حرفه‌ای",
+        "کاردانش"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-innovation-and-entrepreneurship-workshop",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای / کاردانش",
+      "track": "مشترک",
+      "category": "کارآفرینی",
+      "title_fa": "کارگاه نوآوری و کارآفرینی",
+      "title_en": "Innovation and Entrepreneurship Workshop",
+      "textbook_code": "211138",
+      "applies_to": [
+        "فنی و حرفه‌ای",
+        "کاردانش"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-professional-ethics",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای / کاردانش",
+      "track": "مشترک",
+      "category": "اخلاق حرفه‌ای",
+      "title_fa": "اخلاق حرفه‌ای",
+      "title_en": "Professional Ethics",
+      "textbook_code": "212112",
+      "applies_to": [
+        "فنی و حرفه‌ای",
+        "کاردانش"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-basic-technical-knowledge-computer-network-and-software",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای",
+      "track": "شبکه و نرم‌افزار رایانه",
+      "category": "دانش فنی",
+      "title_fa": "دانش فنی پایه - شبکه و نرم‌افزار رایانه",
+      "title_en": "Basic Technical Knowledge - Computer Network and Software",
+      "textbook_code": "210287",
+      "applies_to": [
+        "شبکه و نرم‌افزار رایانه"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-student-companion-computer-network-and-software",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای",
+      "track": "شبکه و نرم‌افزار رایانه",
+      "category": "همراه هنرجو",
+      "title_fa": "همراه هنرجو - شبکه و نرم‌افزار رایانه",
+      "title_en": "Student Companion - Computer Network and Software",
+      "textbook_code": "210289",
+      "applies_to": [
+        "شبکه و نرم‌افزار رایانه",
+        "برنامه‌نویسی بازی‌های رایانه‌ای",
+        "برنامه‌نویسی پایگاه داده",
+        "تولید و توسعه‌دهنده پایگاه‌های اینترنتی",
+        "عیب‌یابی و مونتاژ سیستم‌های رایانه‌ای",
+        "تصویرسازی و جلوه‌های ویژه رایانه‌ای"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-computer-content-production",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای",
+      "track": "شبکه و نرم‌افزار رایانه",
+      "category": "رایانه",
+      "title_fa": "تولید محتوای رایانه‌ای",
+      "title_en": "Computer Content Production",
+      "textbook_code": "211290",
+      "applies_to": [
+        "شبکه و نرم‌افزار رایانه"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-website-designer",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای",
+      "track": "شبکه و نرم‌افزار رایانه",
+      "category": "رایانه",
+      "title_fa": "طراح سایت",
+      "title_en": "Website Designer",
+      "textbook_code": "211291",
+      "applies_to": [
+        "شبکه و نرم‌افزار رایانه"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-computer-aided-technical-drawing",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای",
+      "track": "الکتروتکنیک / الکترونیک",
+      "category": "نقشه‌کشی",
+      "title_fa": "نقشه‌کشی فنی رایانه‌ای",
+      "title_en": "Computer-Aided Technical Drawing",
+      "textbook_code": "210201",
+      "applies_to": [
+        "الکتروتکنیک",
+        "الکترونیک و مخابرات دریایی",
+        "الکترونیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-manufacturing-parts-with-hand-tools",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای",
+      "track": "ماشین ابزار",
+      "category": "ساخت و تولید",
+      "title_fa": "ساخت قطعات به کمک ابزارهای دستی",
+      "title_en": "Manufacturing Parts with Hand Tools",
+      "textbook_code": null,
+      "applies_to": [
+        "ماشین ابزار"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-installation-and-commissioning-of-mechatronic-products",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای",
+      "track": "مکاترونیک",
+      "category": "مکاترونیک",
+      "title_fa": "نصب و راه‌اندازی مصنوعات مکاترونیکی",
+      "title_en": "Installation and Commissioning of Mechatronic Products",
+      "textbook_code": null,
+      "applies_to": [
+        "مکاترونیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-manufacturing-mechatronic-equipment",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای",
+      "track": "مکاترونیک",
+      "category": "مکاترونیک",
+      "title_fa": "ساخت تجهیزات مکاترونیکی",
+      "title_en": "Manufacturing Mechatronic Equipment",
+      "textbook_code": null,
+      "applies_to": [
+        "مکاترونیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-11-maintenance-of-hydraulic-and-pneumatic-systems",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 11,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای",
+      "track": "مکاترونیک",
+      "category": "تعمیر و نگهداری",
+      "title_fa": "نگهداری و تعمیر سیستم‌های هیدرولیک و پنوماتیک",
+      "title_en": "Maintenance of Hydraulic and Pneumatic Systems",
+      "textbook_code": null,
+      "applies_to": [
+        "مکاترونیک"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-12-specialized-technical-knowledge-physical-education",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 12,
+      "level": "دوره دوم متوسطه",
+      "branch": "فنی و حرفه‌ای",
+      "track": "تربیت بدنی",
+      "category": "دانش فنی",
+      "title_fa": "دانش فنی تخصصی - تربیت بدنی",
+      "title_en": "Specialized Technical Knowledge - Physical Education",
+      "textbook_code": null,
+      "applies_to": [
+        "تربیت بدنی"
+      ],
+      "notes": null
+    },
+    {
+      "id": "ir-10-provincial-studies",
+      "country": "IR",
+      "school_year": "1405-1406",
+      "grade": 10,
+      "level": "دوره دوم متوسطه",
+      "branch": "مشترک",
+      "track": "استانی",
+      "category": "استان‌شناسی",
+      "title_fa": "استان‌شناسی",
+      "title_en": "Provincial Studies",
+      "textbook_code": null,
+      "applies_to": [
+        "all_grade_10"
+      ],
+      "notes": "عنوان کتاب بر اساس استان محل تحصیل تغییر می‌کند؛ برای هر استان رکورد نسخه/کد مستقل در پایگاه رسمی وجود دارد."
+    }
+  ]
+}

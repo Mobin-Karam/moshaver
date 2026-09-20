@@ -1,6 +1,6 @@
 import os from "node:os";
 import path from "node:path";
-import { requireSafeDemoDatabase } from "../src/database/seeds/demo-guard";
+import { requireSafeDemoDatabase, requireSafePlatformDatabase } from "../src/database/seeds/demo-guard";
 
 describe("demo database guard", () => {
   const originalEnv = { ...process.env };
@@ -39,5 +39,14 @@ describe("demo database guard", () => {
     process.env.DATABASE_PATH = "/var/lib/moshaver/product-demo.sqlite";
 
     expect(requireSafeDemoDatabase("seed")).toBe("/var/lib/moshaver/product-demo.sqlite");
+  });
+
+  it("allows the exact local platform database only with explicit opt-in", () => {
+    process.env.NODE_ENV = "development";
+    process.env.ALLOW_PLATFORM_RESET = "true";
+    delete process.env.DATABASE_PATH;
+    expect(requireSafePlatformDatabase("reset")).toBe(path.resolve(process.cwd(), "data", "moshaver-v2.sqlite"));
+    process.env.DATABASE_PATH = "/var/lib/moshaver/moshaver-v2.sqlite";
+    expect(() => requireSafePlatformDatabase("reset")).toThrow("outside the API development database");
   });
 });

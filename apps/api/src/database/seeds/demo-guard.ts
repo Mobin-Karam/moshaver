@@ -14,3 +14,13 @@ export function requireSafeDemoDatabase(action: "seed" | "reset") {
   }
   return database;
 }
+
+export function requireSafePlatformDatabase(action: "seed" | "reset") {
+  const allow = action === "seed" ? process.env.ALLOW_PLATFORM_SEED : process.env.ALLOW_PLATFORM_RESET;
+  if (process.env.NODE_ENV === "production" || allow !== "true") throw new Error(`Refusing platform ${action}: explicit development opt-in is required.`);
+  const database = path.resolve(process.env.DATABASE_PATH || path.resolve(process.cwd(), "data", "moshaver-v2.sqlite"));
+  const expected = path.resolve(process.cwd(), "data", "moshaver-v2.sqlite");
+  const inTemp = database.startsWith(`${path.resolve(os.tmpdir())}${path.sep}`);
+  if (database !== expected && !inTemp) throw new Error("Refusing platform reset outside the API development database or system temporary directory.");
+  return database;
+}

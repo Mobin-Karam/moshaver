@@ -16,7 +16,7 @@ From `apps/api/`:
 DATABASE_PATH=./data/moshaver-product-demo.sqlite npm run seed:demo
 ```
 
-The seed runs migrations, preserves the security-matrix fixtures, and upserts the product records. Running it again should not duplicate the natural-keyed demo records.
+The seed runs migrations and upserts the product records. It is independent of the larger security-matrix/E2E seed, so the product database remains limited to the three organizations documented below. Running it again should not duplicate the natural-keyed demo records.
 
 To remove the named demo records and rebuild them:
 
@@ -24,13 +24,22 @@ To remove the named demo records and rebuild them:
 DATABASE_PATH=./data/moshaver-product-demo.sqlite npm run seed:reset-demo
 ```
 
+To intentionally replace the normal local platform database (`apps/api/data/moshaver-v2.sqlite`) with this complete seed, use the separately guarded command:
+
+```bash
+npm run seed:reset-platform
+```
+
+That command deletes only the exact local platform SQLite file and its WAL/SHM sidecars. It refuses production mode and other non-temporary paths.
+
 To change the shared demo password, set `DEMO_PASSWORD` for both creation and subsequent refreshes. The development-only default is `Moshaver-demo-2026!`.
 
 ## Included scenarios
 
-- Three organizations: two active tenants and one inactive organization.
-- Twenty `demo.*` accounts spanning platform admin, organization admin, advisor, teacher, mentor, content manager, guardian, student, a multi-role member, a disabled account, and an inactive-organization member.
-- Five students: a rich primary profile, a nearly empty/new profile, a weak-performance profile, and two cross-organization isolation profiles.
+- Exactly three active organizations.
+- Thirty accounts spanning platform admin, organization admin, advisor, teacher, mentor, content manager, guardian, student, a multi-role member, a disabled account, and an inactive membership.
+- Six students distributed across all three organizations, each with a unique valid national code and canonical grade/type/track selection.
+- The supplied 1405-1406 Iran education taxonomy and all 212 supplied textbook records. Admin users with `subjects.read` can inspect the books and download both unchanged source JSON datasets.
 - Active, pending, rejected, and revoked user relationships.
 - Subjects, assignments, plans, tasks, an active study session, daily reports, learning items, a recovery request, a task issue, and an advisor recommendation.
 - Draft, upcoming, completed, active/resumable, retry-request, and tenant-isolated exams with question metadata, assignments, attempts, mistakes, syllabus progress, and a quiz.
@@ -57,7 +66,7 @@ All usernames below use the configured shared demo password.
 | Disabled account | `demo.disabled` |
 | Inactive-organization member | `demo.suspended.member` |
 
-The existing `e2e.*` accounts are security fixtures and remain available after this seed.
+Security-matrix `e2e.*` accounts belong to `npm run seed:e2e` and are intentionally not added by this product seed.
 
 ## Verification
 

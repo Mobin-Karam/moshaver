@@ -1,11 +1,14 @@
-import { IsIn, IsOptional, IsString, IsUUID, Matches, MaxLength, MinLength, ValidateIf } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min, MinLength, ValidateIf } from "class-validator";
+import { normalizeNationalCode } from "./national-code";
 
 export class StudentSignupDto {
-  @IsString() @MinLength(3) @MaxLength(120) @Matches(/^[a-zA-Z0-9._-]+$/) username!: string;
+  @Transform(({ value }) => normalizeNationalCode(String(value ?? ""))) @IsString() @Matches(/^\d{10}$/) nationalCode!: string;
   @IsString() @MinLength(12) @MaxLength(300) password!: string;
   @IsString() @MinLength(2) @MaxLength(160) name!: string;
-  @IsString() @MaxLength(80) grade!: string;
-  @IsString() @MaxLength(80) major!: string;
+  @Type(() => Number) @IsInt() @Min(1) @Max(12) grade!: number;
+  @IsString() @MaxLength(40) educationTypeId!: string;
+  @IsOptional() @IsString() @MaxLength(80) trackId?: string;
 }
 export class AssignStudentOnboardingDto {
   @IsOptional() @IsIn(["AUTO", "MANUAL"]) mode?: "AUTO" | "MANUAL";

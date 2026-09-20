@@ -25,8 +25,8 @@ import { TaskType } from "../entities/task.entity";
 import { StudySessionStatus } from "../entities/study-session.entity";
 import { RelationshipStatus, RelationshipType } from "../entities/user-relationship.entity";
 import { UserRole, UserStatus } from "../entities/user.entity";
-import { requireSafeDemoDatabase } from "./demo-guard";
-import { seedSecurityMatrix } from "./security-matrix";
+import { requireSafeDemoDatabase, requireSafePlatformDatabase } from "./demo-guard";
+import { seedEducationCatalog } from "../../modules/education-catalog/education-catalog.service";
 
 const password = process.env.DEMO_PASSWORD || "Moshaver-demo-2026!";
 const now = new Date();
@@ -34,10 +34,9 @@ const day = (offset: number) => new Date(now.getTime() + offset * 86_400_000).to
 const at = (offset: number, hour: number) => new Date(`${day(offset)}T${String(hour).padStart(2, "0")}:00:00+03:30`);
 
 export async function seedProductDemo() {
-  const database = requireSafeDemoDatabase("seed");
-  process.env.ALLOW_E2E_SEED = "true";
-  await seedSecurityMatrix();
+  const database = process.env.ALLOW_PLATFORM_SEED === "true" ? requireSafePlatformDatabase("seed") : requireSafeDemoDatabase("seed");
   await dataSource.initialize();
+  await dataSource.runMigrations();
   try {
     const summary = await dataSource.transaction(async (manager) => seed(manager));
     console.log(JSON.stringify({ database, password, ...summary }, null, 2));
@@ -50,32 +49,43 @@ async function seed(manager: EntityManager) {
   const hash = await bcrypt.hash(password, 12);
   const orgA = await organization(manager, "آکادمی راه روشن", OrganizationType.ACADEMY, OrganizationStatus.ACTIVE);
   const orgB = await organization(manager, "دبیرستان دانش فردا", OrganizationType.SCHOOL, OrganizationStatus.ACTIVE);
-  const orgSuspended = await organization(manager, "مرکز آزمایشی غیرفعال", OrganizationType.COUNSELING_CENTER, OrganizationStatus.INACTIVE);
+  const orgC = await organization(manager, "مرکز مشاوره مسیر رشد", OrganizationType.COUNSELING_CENTER, OrganizationStatus.ACTIVE);
+  const textbookCount = await seedEducationCatalog(manager);
 
   const platform = await user(manager, "demo.platform", "مدیر", "سامانه", UserRole.PLATFORM_ADMIN, hash);
   await role(manager, platform, "PLATFORM_ADMIN", null);
   const orgAdminA = await scopedUser(manager, orgA, "demo.orgadmin.a", "مدیر", "راه روشن", UserRole.ORGANIZATION_ADMIN, "ORGANIZATION_ADMIN", hash);
   await scopedUser(manager, orgB, "demo.orgadmin.b", "مدیر", "دانش فردا", UserRole.ORGANIZATION_ADMIN, "ORGANIZATION_ADMIN", hash);
+  await scopedUser(manager, orgC, "demo.orgadmin.c", "مدیر", "مسیر رشد", UserRole.ORGANIZATION_ADMIN, "ORGANIZATION_ADMIN", hash);
   const advisorA = await scopedUser(manager, orgA, "demo.advisor.a", "نگار", "احمدی", UserRole.ADVISOR, "ADVISOR", hash);
-  await scopedUser(manager, orgB, "demo.advisor.b", "سارا", "کاظمی", UserRole.ADVISOR, "ADVISOR", hash);
+  const advisorB = await scopedUser(manager, orgB, "demo.advisor.b", "سارا", "کاظمی", UserRole.ADVISOR, "ADVISOR", hash);
+  const advisorC = await scopedUser(manager, orgC, "demo.advisor.c", "بهاره", "رستمی", UserRole.ADVISOR, "ADVISOR", hash);
   const mathTeacher = await scopedUser(manager, orgA, "demo.teacher.math.a", "رضا", "نیک‌فر", UserRole.TEACHER, "TEACHER", hash);
   const physicsTeacher = await scopedUser(manager, orgA, "demo.teacher.physics.a", "مریم", "توکلی", UserRole.TEACHER, "TEACHER", hash);
   const teacherB = await scopedUser(manager, orgB, "demo.teacher.b", "علی", "دانش", UserRole.TEACHER, "TEACHER", hash);
+  await scopedUser(manager, orgC, "demo.teacher.c", "ناهید", "امین", UserRole.TEACHER, "TEACHER", hash);
   const mentor = await scopedUser(manager, orgA, "demo.mentor.a", "الهام", "رستگار", UserRole.MENTOR, "MENTOR", hash);
+  await scopedUser(manager, orgB, "demo.mentor.b", "امیر", "نوری", UserRole.MENTOR, "MENTOR", hash);
+  await scopedUser(manager, orgC, "demo.mentor.c", "ترانه", "صالحی", UserRole.MENTOR, "MENTOR", hash);
   const content = await scopedUser(manager, orgA, "demo.content.a", "مدیر", "محتوا", UserRole.CONTENT_MANAGER, "CONTENT_MANAGER", hash);
+  await scopedUser(manager, orgB, "demo.content.b", "کارشناس", "محتوا", UserRole.CONTENT_MANAGER, "CONTENT_MANAGER", hash);
+  await scopedUser(manager, orgC, "demo.content.c", "کارشناس", "آموزش", UserRole.CONTENT_MANAGER, "CONTENT_MANAGER", hash);
   const guardian1 = await scopedUser(manager, orgA, "demo.guardian.a1", "محمد", "رضایی", UserRole.GUARDIAN, "GUARDIAN", hash);
   const guardian2 = await scopedUser(manager, orgA, "demo.guardian.a2", "لیلا", "رضایی", UserRole.GUARDIAN, "GUARDIAN", hash);
   const multi = await scopedUser(manager, orgA, "demo.multi.a", "کیوان", "مرادی", UserRole.ADVISOR, "ADVISOR", hash);
   await role(manager, multi, "TEACHER", await membership(manager, multi, orgA));
   const disabled = await user(manager, "demo.disabled", "کاربر", "غیرفعال", UserRole.STUDENT, hash, UserStatus.DISABLED);
-  const suspended = await scopedUser(manager, orgSuspended, "demo.suspended.member", "عضو", "تعلیقی", UserRole.ADVISOR, "ADVISOR", hash, MembershipStatus.INACTIVE);
+  const suspended = await scopedUser(manager, orgC, "demo.suspended.member", "عضو", "تعلیقی", UserRole.ADVISOR, "ADVISOR", hash, MembershipStatus.INACTIVE);
   void disabled; void suspended;
 
-  const studentA1 = await studentUser(manager, orgA, "demo.student.a1", "آرمان رضایی", hash, "دوازدهم", "تجربی");
-  const studentA2 = await studentUser(manager, orgA, "demo.student.a2", "هستی کریمی", hash, "یازدهم", "ریاضی");
-  const studentA3 = await studentUser(manager, orgA, "demo.student.a3", "پارسا محمدی", hash, "دوازدهم", "ریاضی");
-  const studentB1 = await studentUser(manager, orgB, "demo.student.b1", "نرگس اکبری", hash, "دوازدهم", "تجربی");
-  const studentB2 = await studentUser(manager, orgB, "demo.student.b2", "سام یوسفی", hash, "دهم", "انسانی");
+  const studentA1 = await studentUser(manager, orgA, "demo.student.a1", "آرمان رضایی", hash, 12, "پایه دوازدهم", "experimental_sciences", "علوم تجربی", "9000000017");
+  const studentA2 = await studentUser(manager, orgA, "demo.student.a2", "هستی کریمی", hash, 11, "پایه یازدهم", "math_physics", "ریاضی و فیزیک", "9000000025");
+  const studentA3 = await studentUser(manager, orgA, "demo.student.a3", "پارسا محمدی", hash, 12, "پایه دوازدهم", "math_physics", "ریاضی و فیزیک", "9000000033");
+  const studentB1 = await studentUser(manager, orgB, "demo.student.b1", "نرگس اکبری", hash, 12, "پایه دوازدهم", "experimental_sciences", "علوم تجربی", "9000000041");
+  const studentB2 = await studentUser(manager, orgB, "demo.student.b2", "سام یوسفی", hash, 10, "پایه دهم", "humanities", "ادبیات و علوم انسانی", "9000000051");
+  const studentC1 = await studentUser(manager, orgC, "demo.student.c1", "یگانه شریفی", hash, 9, "پایه نهم", "general", "عمومی", "9000000068");
+  const guardianB = await scopedUser(manager, orgB, "demo.guardian.b1", "مهدی", "اکبری", UserRole.GUARDIAN, "GUARDIAN", hash);
+  const guardianC = await scopedUser(manager, orgC, "demo.guardian.c1", "نیلوفر", "شریفی", UserRole.GUARDIAN, "GUARDIAN", hash);
 
   await relationship(manager, guardian1, studentA1, orgA, RelationshipType.GUARDIAN_OF, RelationshipStatus.ACTIVE);
   await relationship(manager, guardian2, studentA1, orgA, RelationshipType.GUARDIAN_OF, RelationshipStatus.ACTIVE);
@@ -86,6 +96,10 @@ async function seed(manager: EntityManager) {
   await relationship(manager, mentor, studentA1, orgA, RelationshipType.MENTOR_OF, RelationshipStatus.ACTIVE);
   await relationship(manager, mathTeacher, studentA1, orgA, RelationshipType.TEACHER_OF, RelationshipStatus.ACTIVE);
   await relationship(manager, physicsTeacher, studentA3, orgA, RelationshipType.TEACHER_OF, RelationshipStatus.REVOKED);
+  await relationship(manager, guardianB, studentB1, orgB, RelationshipType.GUARDIAN_OF, RelationshipStatus.ACTIVE);
+  await relationship(manager, guardianC, studentC1, orgC, RelationshipType.GUARDIAN_OF, RelationshipStatus.ACTIVE);
+  await relationship(manager, advisorB, studentB1, orgB, RelationshipType.ADVISOR_OF, RelationshipStatus.ACTIVE);
+  await relationship(manager, advisorC, studentC1, orgC, RelationshipType.ADVISOR_OF, RelationshipStatus.ACTIVE);
 
   const math = await subject(manager, orgA, "demo-math", "ریاضی");
   const physics = await subject(manager, orgA, "demo-physics", "فیزیک");
@@ -148,7 +162,7 @@ async function seed(manager: EntityManager) {
   await notification(manager, orgAdminA, orgA, "SYSTEM_UPDATE", "نسخه نمایشی آماده است", "داده‌های نقش‌ها و گردش‌های اصلی برای بازبینی آماده‌اند.", false);
   await singleton(manager, ActivityEvent, { student: { id: studentA1.id }, type: "DEMO_PLAN_OPENED", resourceId: planRows[0].id }, { student: studentA1, type: "DEMO_PLAN_OPENED", resourceType: "plan", resourceId: planRows[0].id, data: { source: "product-demo" } });
 
-  return { organizations: 3, demoAccounts: 20, students: 5, exams: 6, plans: planRows.length + 1, passwordNote: "Override with DEMO_PASSWORD" };
+  return { organizations: 3, students: 6, textbooks: textbookCount, exams: 6, plans: planRows.length + 1, passwordNote: "Override with DEMO_PASSWORD" };
 }
 
 async function organization(m: EntityManager, name: string, type: OrganizationType, status: OrganizationStatus) { const r=m.getRepository(Organization); let x=await r.findOne({where:{name}}); if(!x)x=r.create({name,type,status}); else Object.assign(x,{type,status}); return r.save(x); }
@@ -156,7 +170,7 @@ async function user(m: EntityManager, username:string, firstName:string,lastName
 async function membership(m:EntityManager,u:User,o:Organization,status=MembershipStatus.ACTIVE){const r=m.getRepository(OrganizationMembership);let x=await r.findOne({where:{user:{id:u.id},organization:{id:o.id}}});if(!x)x=r.create({user:u,organization:o,status});else x.status=status;return r.save(x);}
 async function role(m:EntityManager,u:User,code:string,scope:OrganizationMembership|null){const roleRow=await m.getRepository(Role).findOneByOrFail({code});const r=m.getRepository(UserRoleAssignment);let x=await r.findOne({where:{user:{id:u.id},role:{id:roleRow.id},...(scope?{membership:{id:scope.id}}:{})}});return x||r.save(r.create({user:u,role:roleRow,membership:scope}));}
 async function scopedUser(m:EntityManager,o:Organization,username:string,first:string,last:string,legacy:UserRole,code:string,hash:string,status=MembershipStatus.ACTIVE){const u=await user(m,username,first,last,legacy,hash);const mem=await membership(m,u,o,status);await role(m,u,code,mem);return u;}
-async function studentUser(m:EntityManager,o:Organization,username:string,name:string,hash:string,grade:string,major:string){const u=await scopedUser(m,o,username,name.split(" ")[0],name.split(" ").slice(1).join(" "),UserRole.STUDENT,"STUDENT",hash);const r=m.getRepository(Student);let s=await r.findOne({where:{user:{id:u.id}},relations:{user:true}});if(!s)s=r.create({user:u,name,grade,major,targetUniversity:"دانشگاه تهران",targetField:major==="تجربی"?"پزشکی":"مهندسی کامپیوتر",targetRank:"زیر ۱۰۰۰",dailyCapacity:"۶ ساعت",accountStatus:"active"});else Object.assign(s,{user:u,name,grade,major});return r.save(s);}
+async function studentUser(m:EntityManager,o:Organization,username:string,name:string,hash:string,gradeId:number,grade:string,trackId:string,major:string,nationalCode:string){const u=await scopedUser(m,o,username,name.split(" ")[0],name.split(" ").slice(1).join(" "),UserRole.STUDENT,"STUDENT",hash);const r=m.getRepository(Student);let s=await r.findOne({where:{user:{id:u.id}},relations:{user:true}});const educationTypeId=gradeId<10?"general":"theoretical";if(!s)s=r.create({user:u,name,nationalCode,gradeId,grade,educationTypeId,trackId,major,targetUniversity:"دانشگاه تهران",targetField:trackId==="experimental_sciences"?"پزشکی":"مهندسی کامپیوتر",targetRank:"زیر ۱۰۰۰",dailyCapacity:"۶ ساعت",accountStatus:"active"});else Object.assign(s,{user:u,name,nationalCode,gradeId,grade,educationTypeId,trackId,major});return r.save(s);}
 async function relationship(m:EntityManager,u:User,s:Student,o:Organization,type:RelationshipType,status:RelationshipStatus){const r=m.getRepository(UserRelationship);let x=await r.findOne({where:{fromUser:{id:u.id},toStudent:{id:s.id},organization:{id:o.id},type}});if(!x)x=r.create({fromUser:u,toStudent:s,organization:o,type,status,acceptedAt:status===RelationshipStatus.ACTIVE?now:null,revokedAt:status===RelationshipStatus.REVOKED?now:null});else x.status=status;return r.save(x);}
 async function subject(m:EntityManager,o:Organization,code:string,name:string){const r=m.getRepository(Subject);let x=await r.findOne({where:{organization:{id:o.id},code}});return x||r.save(r.create({organization:o,code,name,active:true}));}
 async function teacherSubject(m:EntityManager,u:User,s:Subject,o:Organization){return singleton(m,TeacherSubjectAssignment,{teacher:{id:u.id},subject:{id:s.id},organization:{id:o.id}},{teacher:u,subject:s,organization:o});}

@@ -8,6 +8,7 @@ import {
   RotateCcw,
   Save,
   Search,
+  Download,
   Users,
 } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
@@ -23,11 +24,18 @@ import {
   createSubject,
   getStudentSubjects,
   getSubjects,
+  getEducationBooks,
+  getEducationDatasets,
   setSubjectActive,
   updateStudentSubject,
   updateSubject,
 } from "../api/subjects.api";
-import type { StudentSubject, Subject, SubjectsMode as Mode } from "../model/subject.types";
+import type {
+  EducationBook,
+  StudentSubject,
+  Subject,
+  SubjectsMode as Mode,
+} from "../model/subject.types";
 import { TeacherAssignments } from "../components/TeacherAssignments";
 
 export function SubjectsPage() {
@@ -38,7 +46,11 @@ export function SubjectsPage() {
     modal = useModal(),
     [params, setParams] = useSearchParams();
   const [mode, setMode] = useState<Mode>(
-      params.get("mode") !== "catalog" && canReadStudentSubjects ? "student" : "catalog",
+      params.get("mode") === "books"
+        ? "books"
+        : params.get("mode") !== "catalog" && canReadStudentSubjects
+          ? "student"
+          : "catalog",
     ),
     [search, setSearch] = useState(params.get("q") || "");
   const deferredSearch = useDeferredValue(search);
@@ -49,6 +61,11 @@ export function SubjectsPage() {
   const subjects = useQuery({
     queryKey: ["subjects", { includeArchived: canArchive }],
     queryFn: () => getSubjects(canArchive),
+  });
+  const books = useQuery({
+    queryKey: ["education-books"],
+    enabled: mode === "books",
+    queryFn: getEducationBooks,
   });
   const assigned = useQuery({
     queryKey: ["student-subjects", students.studentId],
@@ -111,7 +128,16 @@ export function SubjectsPage() {
       ),
     [assigned.data, deferredSearch],
   );
-  const rows = mode === "catalog" ? catalogRows : studentRows;
+  const bookRows = useMemo(
+    () =>
+      (books.data || []).filter((row) =>
+        normalizePersianText(
+          `${row.titleFa} ${row.titleEn} ${row.category} ${row.track} ${row.grade}`,
+        ).includes(normalizePersianText(deferredSearch)),
+      ),
+    [books.data, deferredSearch],
+  );
+  const rows = mode === "catalog" ? catalogRows : mode === "books" ? bookRows : studentRows;
   const summary = {
     total: assigned.data?.length || 0,
     enabled: (assigned.data || []).filter((row) => row.enabled).length,
@@ -182,7 +208,18 @@ export function SubjectsPage() {
       content: <TeacherAssignments subjectId={subject.id} organizationId={organization.id} />,
     });
   }
-  const activeQuery = mode === "catalog" ? subjects : assigned;
+  const activeQuery = mode === "catalog" ? subjects : mode === "books" ? books : assigned;
+  async function downloadDatasets() {
+    const data = await getEducationDatasets();
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "iran-education-catalog-1405-1406.json";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
   return (
     <div className="grid gap-4">
       <Card className="sticky top-16 z-10 p-3 shadow-sm">
@@ -208,6 +245,15 @@ export function SubjectsPage() {
             >
               فهرست سراسری
             </button>
+            <button
+              className={`rounded px-3 py-2 text-xs font-bold ${mode === "books" ? "bg-white text-brand shadow-sm" : "text-slate-500"}`}
+              onClick={() => {
+                setMode("books");
+                updateUrl({ mode: "books" });
+              }}
+            >
+              کتاب‌های ۱۴۰۵–۱۴۰۶
+            </button>
           </div>
           {mode === "student" ? (
             <div className="min-w-56 flex-1 md:max-w-xs">
@@ -220,9 +266,14 @@ export function SubjectsPage() {
           ) : (
             <div className="flex-1" />
           )}
-          {canCreate ? (
+          {mode === "catalog" && canCreate ? (
             <Button onClick={openCreate}>
               <BookPlus size={16} /> درس جدید
+            </Button>
+          ) : null}
+          {mode === "books" ? (
+            <Button variant="soft" onClick={() => void downloadDatasets()}>
+              <Download size={16} /> دریافت JSON اصلی
             </Button>
           ) : null}
         </div>
@@ -295,24 +346,44 @@ export function SubjectsPage() {
                     }
                   />
                 ))
-              : studentRows.map((row) => (
-                  <StudentSubjectEditor
-                    key={`${students.studentId}-${row.subject.id}`}
-                    initial={row}
-                    onSave={(value) => updateStudent.mutate(value)}
-                    saving={
-                      updateStudent.isPending &&
-                      updateStudent.variables?.subject.id === row.subject.id
-                    }
-                    editable={canManageStudentSubjects}
-                  />
-                ))}
+              : mode === "books"
+                ? bookRows.map((row) => <EducationBookRow key={row.id} book={row} />)
+                : studentRows.map((row) => (
+                    <StudentSubjectEditor
+                      key={`${students.studentId}-${row.subject.id}`}
+                      initial={row}
+                      onSave={(value) => updateStudent.mutate(value)}
+                      saving={
+                        updateStudent.isPending &&
+                        updateStudent.variables?.subject.id === row.subject.id
+                      }
+                      editable={canManageStudentSubjects}
+                    />
+                  ))}
           </div>
         ) : (
           <EmptyState title={search ? "درسی با این جستجو پیدا نشد." : "درسی ثبت نشده است."} />
         )}
       </Card>
     </div>
+  );
+}
+
+function EducationBookRow({ book }: { book: EducationBook }) {
+  return (
+    <article className="flex flex-wrap items-center gap-3 rounded-lg border p-3">
+      <span className="grid size-10 place-items-center rounded-full bg-amber-50 text-amber-700">
+        <BookOpen size={18} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <strong>{book.titleFa}</strong>
+        <p className="text-xs text-slate-500">
+          {book.category} · {book.level} · {book.track}
+        </p>
+      </div>
+      <Badge tone="blue">پایه {fa(book.grade)}</Badge>
+      {book.textbookCode ? <Badge tone="neutral">{book.textbookCode}</Badge> : null}
+    </article>
   );
 }
 
