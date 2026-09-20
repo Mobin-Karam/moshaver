@@ -46,6 +46,30 @@ const context = await request("GET", "/me/context");
 if (!context.roles.includes("STUDENT")) throw new Error("student context missing");
 const student = await request("GET", "/students/me");
 const platform = await loginAs("e2e.platform");
+const organizationId = context.activeOrganization?.id || context.memberships?.[0]?.organization?.id;
+if (!organizationId) throw new Error("student context missing active organization");
+const quiz = await requestAs(platform, "POST", "/quizzes", {
+  title: `Student quiz journey ${Date.now()}`,
+  subject: "E2E",
+  durationMinutes: 10,
+  active: true,
+  organizationId,
+});
+await requestAs(platform, "POST", `/quizzes/${quiz.id}/questions`, {
+  text: "2 + 2?",
+  options: ["3", "4", "5", "6"],
+  correctAnswer: "4",
+  explanation: "4",
+  sortOrder: 1,
+});
+const studentQuizzes = await request("GET", "/student/quizzes");
+assert(studentQuizzes.some((item) => item.id === quiz.id && item.questionCount === 1), "student discovers active organization quiz", studentQuizzes);
+const quizRun = await request("POST", `/quizzes/${quiz.id}/start`, {});
+const quizResult = await request("POST", `/quizzes/${quiz.id}/attempts`, {
+  runId: quizRun.runId,
+  answers: [{ questionId: quizRun.quiz.questions[0].id, selectedOption: "4" }],
+});
+assert(quizResult.percent === 100 && quizResult.correct === 1, "student quiz submission is scored and reviewable", quizResult);
 const exam = await requestAs(platform, "POST", "/exams", { title: `Student journey ${Date.now()}`, subject: "E2E", durationMinutes: 10, attemptLimit: 1, questions: [{ question: "2 + 2?", options: ["3", "4", "5", "6"], correctOption: "b", explanation: "4" }] });
 await requestAs(platform, "POST", `/exams/${exam.id}/assignments`, { studentIds: [student.id] });
 const draftExams = await request("GET", "/student/exams");
