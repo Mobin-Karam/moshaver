@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "scope": "tracked code/config excluding docs and generated/build output",
   "fileCount": 999,
-  "digest": "219ef47a40fd7461d442d6a606fcd9256c23bc0869062d503fdd0a790ebd9ccd",
+  "digest": "f9fb1d65f0ac6f34e1b2d455622db08bff0970fb3dfb53cd4252a5faf1e8f3a8",
   "files": [
     {
       "path": ".gitbr/project.json",
@@ -1015,7 +1015,7 @@
     },
     {
       "path": "apps/admin/src/features/notifications/api-error.test.ts",
-      "sha256": "2e10b30467c587ad1d41fc7e170cf8242e1647e99c873aece17db8ea940e354b"
+      "sha256": "64c987b5e1a733745c9657cac9b807d18ae17b56215e6cdc80fc7c1ba55772e9"
     },
     {
       "path": "apps/admin/src/features/notifications/api/notifications.api.ts",
@@ -3599,7 +3599,7 @@
     },
     {
       "path": "packages/api-contract/src/index.ts",
-      "sha256": "224e7037d7c3a9f6431d5be4194b3dbe25399805b84733cc99143a5422424e6b"
+      "sha256": "b8a6825cb81db769e16b52405f16be5ee9c0545249d58d555f8b491f22f94c6a"
     },
     {
       "path": "packages/cmb/activity/package-lock.json",
