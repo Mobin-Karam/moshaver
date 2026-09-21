@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "algorithm": "sha256",
   "scope": "tracked code/config excluding docs and generated/build output",
-  "fileCount": 988,
-  "digest": "4109b80e9772d86d510d1efc9ce009caf04fb65b2255f4a8b78b65961a91421e",
+  "fileCount": 990,
+  "digest": "23a8d6a94265ff947b14a87cb759a15f39ff247549ca7224a69aa3e6a03e40ad",
   "files": [
     {
       "path": ".gitbr/project.json",
@@ -2487,7 +2487,7 @@
     },
     {
       "path": "apps/api/src/modules/chat/chat.module.ts",
-      "sha256": "e42e011a0558e390af63dfbeb9574e298205be7e1fd08dc13a1fc04f5bd35296"
+      "sha256": "d1a69cf5b1c8326e8b102efb25b39a0787decce749a85ebf35e3503c56bff53d"
     },
     {
       "path": "apps/api/src/modules/chat/chat.service.ts",
@@ -2559,7 +2559,7 @@
     },
     {
       "path": "apps/api/src/modules/exams/exams.module.ts",
-      "sha256": "18abfe4ba52587321428e0e767113c46b3f8486d01dcc5da7cde3eeca2f98a74"
+      "sha256": "3ce62cc56301ed06b71013deb053fff8d0e668816d495459a47a7a3849049391"
     },
     {
       "path": "apps/api/src/modules/exams/exams.service.ts",
@@ -2575,7 +2575,7 @@
     },
     {
       "path": "apps/api/src/modules/guardian/guardian.module.ts",
-      "sha256": "b6dc774fe2b905cb3998845d7254f18cf2c58ec54ca5386a31e09eb2093a3cf9"
+      "sha256": "1a129a964fa1643128c8df3fdb876205604c2aa1875eda36fdbebf85f7541d74"
     },
     {
       "path": "apps/api/src/modules/guardian/guardian.service.ts",
@@ -2647,7 +2647,7 @@
     },
     {
       "path": "apps/api/src/modules/notifications/notifications.module.ts",
-      "sha256": "f2981fffc58657dcfddb3a74883089f6e658a64a359f8efc3e274bf2b21ee309"
+      "sha256": "35cdb236135771ed594a9b3a9ea81bdc7f8e116bda0fd04453b3442d73726976"
     },
     {
       "path": "apps/api/src/modules/notifications/notifications.service.ts",
@@ -3131,7 +3131,7 @@
     },
     {
       "path": "apps/student/src-tauri/capabilities/default.json",
-      "sha256": "479efe5948d23c418876e03be8f9398058a22245d3a5ba74a2a2a59b9488d15c"
+      "sha256": "2e2f3669261b090ef78c1a6a055072a5998e17e42ce974f8006497c59c25fc9e"
     },
     {
       "path": "apps/student/src-tauri/gen/android/app/build.gradle.kts",
@@ -3219,7 +3219,7 @@
     },
     {
       "path": "apps/student/src/components/layout/ActivityIsland.tsx",
-      "sha256": "ee74f523d8553e48967dfb141e4723236bf9698eba850909c4bacea30e97ed6f"
+      "sha256": "a79e104d751d0ace23c47a9d40313f20b307851ee656abcc51d4f8e6382caa2b"
     },
     {
       "path": "apps/student/src/components/layout/RouteScrollRestoration.test.tsx",
@@ -3271,7 +3271,7 @@
     },
     {
       "path": "apps/student/src/features/chat/ChatPage.tsx",
-      "sha256": "c22ed755b8702bf640d23201cc368be54d7e2e0856512d27947e18f7b3e6b019"
+      "sha256": "d257d771bfb7b5bc833c3a5d10d9c9ebcb3bc4f5142ea52728533f1a146d44d7"
     },
     {
       "path": "apps/student/src/features/exam/ExamPage.tsx",
@@ -3359,7 +3359,7 @@
     },
     {
       "path": "apps/student/src/features/more/MorePage.tsx",
-      "sha256": "d452be54ccf71f5ffcce51e287b94c7a1cfe65861d3bfe6e499b80a028aaf024"
+      "sha256": "b73d98267624bcc2b96c42f5d94b9a287e32a2af70e996a7bef1c40139c0d51f"
     },
     {
       "path": "apps/student/src/features/more/MoreRouterPage.test.tsx",
@@ -3442,8 +3442,12 @@
       "sha256": "52145096385f27e9511ad9e1b3f78468f0be764a8c76d1315b6f748767d397fa"
     },
     {
+      "path": "apps/student/src/pwa/web-update-adapter.test.ts",
+      "sha256": "568e6f7acfb2286254b1875603beaf5c08fddf1d1eeb32053851650320bdaa70"
+    },
+    {
       "path": "apps/student/src/pwa/web-update-adapter.ts",
-      "sha256": "2fa3dc5dec129bb967ce91c6c83393838030d69b09b745b5a6d56a89b8172fac"
+      "sha256": "42162281b8202c8268e11ba4b7c136f073a3c3becd5834a2503176ddcc23ace4"
     },
     {
       "path": "apps/student/src/services/api-client.test.ts",
@@ -3920,6 +3924,10 @@
     {
       "path": "tooling/contracts/check-api-contract.mjs",
       "sha256": "6ec42a4ac940711dca098f51b93385e553ff1e7f3c9c37e28e0e96862c3a08e4"
+    },
+    {
+      "path": "tooling/deployment/verify-student-production.mjs",
+      "sha256": "477cbd861991aa5aaef78705b73853a405b82ed8fa6757d8a3fc8f620e5c4294"
     },
     {
       "path": "tooling/generators/create-cmb-app.mjs",

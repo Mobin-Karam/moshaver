@@ -18,14 +18,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22.13.1'
-      - name: Install and test every CMB package
+      - name: Install every CMB package
         shell: bash
         run: |
           set -euo pipefail
           for dir in packages/cmb/*; do
             test -f "$dir/package.json" || continue
             echo "==> $dir"
-            (cd "$dir" && npm ci --ignore-scripts --no-audit --no-fund && npm test)
+            (cd "$dir" && npm ci --ignore-scripts --no-audit --no-fund)
+          done
+      - name: Test every CMB package
+        shell: bash
+        run: |
+          set -euo pipefail
+          for dir in packages/cmb/*; do
+            test -f "$dir/package.json" || continue
+            echo "==> $dir"
+            (cd "$dir" && npm test)
           done
       - name: Enforce workspace and package boundaries
         run: |

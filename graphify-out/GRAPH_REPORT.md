@@ -1,552 +1,543 @@
-# Graph Report - moshaver  (2026-09-20)
+# Graph Report - moshaver-graph-pr-gtvvcY  (2026-09-21)
 
 ## Corpus Check
 - cluster-only mode — file stats not available
 
 ## Summary
-- 7838 nodes · 18156 edges · 586 communities (350 shown, 183 thin omitted)
+- 7842 nodes · 18185 edges · 577 communities (332 shown, 192 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 723 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7af1c38f`
+- Built from commit: `d23af902`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- entities/index.ts
-- admin/gitbr.sh
-- gitbr.sh
-- useLocale
-- @nestjs/common
-- ApiException
-- pages/ExamsPage.tsx
-- StudentsService
-- HeaderClock.tsx
-- Task
-- RequireCapabilities
-- sync.service.ts
-- utils.ts
-- NotificationsService
-- ExamsService
-- relaxation-player.ts
-- ui.tsx
-- Student
-- pages/LearningPage.tsx
-- ApiClient
-- StudySessionsService
-- notify
-- student/src/main.tsx
-- jfkd.md
-- ok
-- AssessmentsService
-- pages/LivePage.tsx
-- domain.ts
-- api/package.json
-- CurrentUser
-- AdminLayout.tsx
-- pages/QuizzesPage.tsx
-- AuthenticatedUser
-- class-validator
-- AccessPage.tsx
-- @tanstack/react-query
-- .requireCapability
-- LearningResourcesService
-- users.controller.ts
-- MoreRouterPage.tsx
-- pages/ReportsPage.tsx
-- student-store.ts
-- useAuth
-- UserContext
-- pages/SubjectsPage.tsx
-- infrastructure/src/index.js
-- api.ts
-- ExamPage.tsx
-- docs/README.md
-- check-boundaries.mjs
-- OrganizationsService
-- app.js
-- StudentController
-- Repository architecture migration plan
-- .canAccessStudent
-- ReportsService
-- router.tsx
-- dependencies
-- admin/package.json
-- run.mjs
-- StudySessions1724140200000
-- AssessmentsController
-- moshaver-version-update.md
-- infrastructure/src/index.d.ts
-- CmbRuntimeService
-- PlansService
-- ExamRunner.tsx
-- ChatPage
-- notification-service.ts
-- scripts
-- MessageList.tsx
-- pages/PlannerPage.tsx
-- TauriSQLiteProvider
-- StudentState
-- PlanPage.tsx
-- Complete v1 endpoint inventory
-- admin/src/main.tsx
-- RelaxationService
-- StudentList.tsx
-- StaffPlansController
-- types.ts
-- pages/ChatPage.tsx
-- ImportExportService
-- check-api-contract.mjs
-- devDependencies
-- planner-model.ts
-- data-transfer-xlsx.ts
-- Quiz
-- seed
-- MistakesService
-- Moshaver v1.4 Architecture Audit
-- AdminAccountMenu.tsx
-- migrate-v1-to-v2.mjs
-- AuthController
-- InMemorySessionStore
-- education-catalog.service.ts
-- students.api.ts
-- StudentsPage
-- Student App v2 Implementation Plan
-- sync/index.ts
-- audit-parity.mjs
-- chat.api.ts
-- AuditLog
-- onboarding.controller.ts
-- ActivityService
-- ExamPreflight.tsx
-- StudentQuizzesPage.tsx
-- src-tauri/tauri.conf.json
-- Student App v1.4 to v2 Migration Audit
-- notifications/src/index.js
-- compilerOptions
-- Student App v1 Backup Analysis
-- kernel.test.js
-- compilerOptions
-- scripts
-- PushController
-- compilerOptions
-- devDependencies
-- authorization/package.json
-- persistence.test.js
-- providers/index.ts
-- dependencies
-- pages/StudentsPage.tsx
-- LearningResource
-- StudentDailyRelaxation
-- OrganizationsController
-- auth/package.json
-- InMemorySessionStore
-- infrastructure/package.json
-- chat.types.ts
-- components/index.ts
-- SystemController
-- SystemService
-- LearningItemsPanel
-- @moshaver/cmb-kernel
-- tenancy.test.js
-- chat-ui-storage.ts
-- PlannerMenus.tsx
-- student/package.json
-- student-core/package.json
-- definitions
-- definitions
-- definitions
-- definitions
-- Backend v2 dependency map
-- Backend v2 module inventory
-- authorization.test.js
-- Moshaver AI Engineering Guide
-- scripts
-- admin/public/sw.js
-- audit-release.mjs
-- PlannerCanvas.tsx
-- ResourcesPage.tsx
-- ExamResult.tsx
-- api-contract/src/index.ts
-- activity/package.json
-- health/package.json
-- identity/package.json
-- notifications/package.json
-- persistence/package.json
-- realtime/package.json
-- system/package.json
-- tenancy/package.json
-- dashboard.api.ts
-- date-picker.tsx
-- devDependencies
-- GuardianController
-- .upload
-- health.test.js
-- notifications/src/index.d.ts
-- InMemoryRealtimeHub
-- student-core/src/index.ts
-- src/planner/index.ts
-- compilerOptions
-- .assign
-- SignupForm.tsx
-- RustPlugin.kt
-- compilerOptions
-- Student App v2 Gap Analysis Against Legacy
-- activity/src/index.js
-- data-transfer/src/index.js
-- kernel/package.json
-- Vazirmatn Changelog
-- Vazirmatn Font فونت وزیرمتن
-- soft-confirmation-button.tsx
-- RolePermission
-- dependencies
-- dependencies
-- scripts
-- Phase 3 — CMB foundation and W1 extraction
-- Workspace foundation — Phase 2
-- Student App V2 Konkur Exams Audit
-- CmbModuleRegistry
-- persistence/src/index.d.ts
-- AuthProvider
-- StorageProvider
-- MessageComposer.tsx
-- guardian.api.ts
-- todayIso
-- onboarding-journey-e2e.mjs
-- security-matrix-e2e.mjs
-- student-journey-e2e.mjs
-- DashboardService
-- OnboardingService
-- StudentSignupDto
-- permissions
-- webviews
-- permissions
-- webviews
-- permissions
-- webviews
-- permissions
-- webviews
-- Phase 3 — CMB platform W2
-- Repository architecture
-- Developer handbook
-- Moshaver documentation
-- validate_project.py
-- identity.test.js
-- chat-helpers.ts
-- PlannerForms.tsx
-- StudentEditor.tsx
-- useStudents.ts
-- compilerOptions
-- demo-guard.ts
-- seedSecurityMatrix
-- EducationCatalogController
-- ExamAnswerDto
-- properties
-- properties
-- properties
-- properties
-- Moshaver architecture
-- ADR 0001: Grouped product monorepo
-- ADR 0003 — API contract authority and versioning
-- Completion report
-- main
-- system.test.js
-- SyncWorker
-- create-cmb-package.mjs
-- fingerprint.mjs
-- Moshaver API v2 migration final report
-- EducationBook
-- CreateDailyReportDto
-- CapabilityRemote
-- CapabilityRemote
-- CapabilityRemote
-- CapabilityRemote
-- Student Core Architecture
-- Moshaver Version Roadmap
-- Engineering rules
-- Recommended repository settings
-- CmbHealthService
-- InMemoryRealtimeHub
-- TenancyPolicy
-- validate-api-manifest.mjs
-- create-cmb-app.mjs
-- popover.tsx
-- Students module — UI/UX workspace upgrade
-- ChatMessageType
-- onboarding.dto.ts
-- Graphify in Moshaver
-- Tauri Student App Architecture
-- Moshaver Admin v2
-- Moshaver v2 initial analysis
-- Backend changelog
-- Moshaver | مشاور v1.3.3 — Authentication & Synchronization Fix
-- Backend v2 Discovery
-- Student and Family exam experience audit
-- Maintenance guide
-- Moshaver JSON Import Guide — schemaVersion 2
-- Student V2 Audio and Chat Audit
-- 2. Expand development/demo seed into a realistic product seed
-- api-contract/package.json
-- Security v2 release audit
-- check-cmb-packages.mjs
-- create-product-package.mjs
-- Workspace foundation
-- Graphify-first repository discovery
-- Admin layout – UI/UX stabilization pass
-- features/chat/index.ts
-- nest-cli.json
-- 1724140700000-IdentityAuthorization.ts
-- default.json
-- ADR 0002: Modular monolith backend with CMB boundaries
-- Current project/package consumers
-- Moshaver v2 system map
-- Backend v2 HTTP API
-- Project Detection
-- Backend v2 product demo seed
-- Feature and bug playbook
-- Moshaver v2 repository runbook
-- Moshaver | مشاور — Changelog
-- v1.4 to v2 migration verification
-- Universal AI Engineering Toolkit v3
-- Agent usage
-- PULL_REQUEST_TEMPLATE.md
-- 2. Platform Admin workspace
-- Student / Family app
-- check-compatibility.mjs
-- Admin v1.6 to v2 migration audit
-- .prettierrc.json
-- TestResizeObserver
-- admin/vite.config.ts
-- Admin v2 API compatibility
-- 1724140100000-PlanningFields.ts
-- 1724142500000-AssessmentRoleCapabilities.ts
-- 1724142700000-StaffLearningCapabilities.ts
-- EncouragementDto
-- MainActivity
-- gradlew
-- AI repository operating system
-- Phase 3 — CMB mechanism split W4
-- Phase 3 — CMB platform W3
-- Admin v2 Communication workspace
-- Moshaver Backend v2
-- Admin v2 to API v2 gap plan
-- Admin v2 Web Push verification
-- Moshaver UI/UX Direction
-- Q: also fix this issues that when in this mode در حال بازیابی نشست ... and not finding it give user options to do any things else after some tries redirect it to another page or to login pages and fix the proxy and redirect logic of admin v2 app
-- Q: when i do task complete in student app is work but when i start the timer of that task and then i puase it and then click on complete task is not sending to server for any click for comlete task is show the send is not ok and bad errors
-- 4. Exam home
-- authorization/src/index.d.ts
-- descriptor-0.1.0.json
-- Agent integration
-- @playwright/test
-- Chat UI/UX Upgrade
-- Planner audit
-- app.config.ts
-- InitialV2Schema1724140000000
-- ExamAttemptAnswers1724140300000
-- TaskFeedback1724140300000
-- ChatMessageReadState1724140400000
-- SyncMutations1724140400000
-- NotificationCreatedAt1724140500000
-- AdminStudentLearning1724140600000
-- SecurityFoundation1724140800000
-- Subjects1724140900000
-- ExamAssignments1724141000000
-- AssessmentParity1724141100000
-- WebPush1724141300000
-- ConversationChat1724141400000
-- GuardianWorkflow1724141500000
-- ReportsAnalytics1724141700000
-- SystemOperations1724141900000
-- SyncMetadata1724142000000
-- ReportsPersistence1724142100000
-- RoleContextHardening1724142200000
-- StaffPlannerCapabilities1724142300000
-- ExamPublishing1724142400000
-- ConversationManagement1724142600000
-- TaskIssueModeration1724142800000
-- TeacherSubjectAssignments1724142900000
-- SubjectReadCapabilities1724143000000
-- StudentSelfSignup1724143300000
-- SignupThrottle1724143400000
-- PlatformAdminChat1724143500000
-- RotatingRefreshSessions1724143600000
-- RelaxationMusic1724143700000
-- TaskCompletionFeedback1724143800000
-- KonkurExamDomain1724143900000
-- ChatReactionConfiguration1724144000000
-- GuardianChatPrivacy1724144100000
-- ChatUserProfiles1724144200000
-- OrganizationManagedChat1724144300000
-- StudentGuardianSelection1724144400000
-- ChatTaskLinks1724144500000
-- StaffTaskIssueStatus
-- tsconfig.build.json
-- Capability
-- description
-- local
-- Capability
-- description
-- local
-- Capability
-- description
-- local
-- Capability
-- description
-- local
-- Backend v2 Architecture
-- Backend v2 test snapshot
-- Admin v2 bundle performance report
-- Admin v2 endpoint and UX audit
-- Admin v2 role experience audit
-- Migration from the previous package
-- Repository management
-- persian-tools.md
-- Repository generators
-- Admin v2 release report
-- admin/tsconfig.json
-- capabilities.ts
-- Number
-- PermissionEntry
-- Number
-- PermissionEntry
-- Number
-- PermissionEntry
-- Number
-- PermissionEntry
-- student/tsconfig.json
-- Changelog
-- Phase 6 — Frontend modularization
-- detect-project.sh
-- session-start.sh
-- validate-project.sh
-- Security Policy
-- Api Contract Validation Skill
-- Architecture Analysis Skill
-- Code Review Skill
-- Database Analysis Skill
-- Debugging Skill
-- Dependency Analysis Skill
-- Documentation Generation Skill
-- Feature Implementation Skill
-- Git Workflow Skill
-- Migration Planning Skill
-- Performance Analysis Skill
-- Refactoring Skill
-- Release Management Skill
-- Repository Discovery Skill
-- Security Analysis Skill
-- Test Generation Skill
-- 15. Results workspace
-- 1. Product modes
-- 6. Exam modes
-- graphify
-- API contract
-- AGENT.md
-- src/ARCHITECTURE.md
-- PLANNER_COMPONENT_REFACTOR.md
-- PLANNER_REFACTOR_NEXT_PHASE.md
-- PLANNER_REFACTOR_V3.md
-- student/public/sw.js
-- CLAUDE.md
-- GEMINI.md
-- architecture-auditor.agent.md
-- backend-engineer.agent.md
-- code-reviewer.agent.md
-- database-engineer.agent.md
-- debugger.agent.md
-- devops-engineer.agent.md
-- documentation-engineer.agent.md
-- frontend-engineer.agent.md
-- implementer.agent.md
-- mobile-engineer.agent.md
-- orchestrator.agent.md
-- performance-engineer.agent.md
-- planner.agent.md
-- release-engineer.agent.md
-- researcher.agent.md
-- security-auditor.agent.md
-- test-engineer.agent.md
-- Moshaver v1.4 Modernization and Refactoring Task
-- templates/README.md
-- copilot-instructions.md
-- backend.instructions.md
-- cmb-backend.instructions.md
-- database.instructions.md
-- documentation.instructions.md
-- dotnet.instructions.md
-- engineering.instructions.md
-- frontend.instructions.md
-- go.instructions.md
-- graphify.instructions.md
-- infrastructure.instructions.md
-- java-kotlin.instructions.md
-- javascript-typescript.instructions.md
-- python.instructions.md
-- rust.instructions.md
-- security.instructions.md
-- testing.instructions.md
-- moshaver-cmb-module.prompt.md
-- moshaver-graph-impact.prompt.md
-- moshaver-release-readiness.prompt.md
-- moshaver-repository-audit.prompt.md
-- 13. Deliverables
-- 34. Verification and delivery
-- Deliver
-- cmb/README.md
-- RequireCapabilities
-- Roles
-- RequireCapabilities
-- Roles
-- RequireCapabilities
-- Roles
-- RequireCapabilities
-- RequireCapabilities
-- Roles
-- RequireCapabilities
-- RequireCapabilities
-- RequireCapabilities
-- RequireCapabilities
-- Roles
-- RequireCapabilities
-- RequireCapabilities
-- RequireCapabilities
-- RequireCapabilities
-- Roles
-- RequireCapabilities
-- Roles
-- RequireCapabilities
-- Roles
-- Roles
-- RequireCapabilities
-- Roles
-- RequireCapabilities
-- Roles
-- RequireCapabilities
-- Bundle
-- Boolean
-- String
-- String
-- ACTIVITY_MODULE
-- DEFAULT_PRESENCE_STATES
-- AUTH_MODULE
-- AUTHORIZATION_MODULE
-- DATA_TRANSFER_MODULE
-- DEFAULT_FORBIDDEN_FIELDS
-- HEALTH_MODULE
-- IDENTITY_MODULE
-- INFRASTRUCTURE_MODULE
-- CMB_MODULE_KINDS
-- KERNEL_MODULE
-- NOTIFICATIONS_MODULE
-- MIGRATION_ID
-- PERSISTENCE_MODULE
-- REALTIME_MODULE
-- APP_VERSION_PATTERN
-- SYSTEM_MODULE
-- TENANCY_MODULE
-- moshaver-student
+- Community 0
+- Community 1
+- Community 2
+- Community 3
+- Community 4
+- Community 5
+- Community 6
+- Community 7
+- Community 8
+- Community 9
+- Community 10
+- Community 11
+- Community 12
+- Community 13
+- Community 14
+- Community 15
+- Community 16
+- Community 17
+- Community 18
+- Community 19
+- Community 20
+- Community 21
+- Community 22
+- Community 23
+- Community 24
+- Community 25
+- Community 26
+- Community 27
+- Community 28
+- Community 29
+- Community 30
+- Community 31
+- Community 32
+- Community 33
+- Community 34
+- Community 35
+- Community 36
+- Community 37
+- Community 38
+- Community 39
+- Community 40
+- Community 41
+- Community 42
+- Community 43
+- Community 44
+- Community 45
+- Community 46
+- Community 47
+- Community 48
+- Community 49
+- Community 50
+- Community 51
+- Community 52
+- Community 53
+- Community 54
+- Community 55
+- Community 56
+- Community 57
+- Community 58
+- Community 59
+- Community 60
+- Community 61
+- Community 62
+- Community 63
+- Community 64
+- Community 65
+- Community 66
+- Community 67
+- Community 68
+- Community 69
+- Community 70
+- Community 71
+- Community 72
+- Community 73
+- Community 74
+- Community 75
+- Community 76
+- Community 77
+- Community 78
+- Community 79
+- Community 80
+- Community 81
+- Community 82
+- Community 83
+- Community 84
+- Community 85
+- Community 86
+- Community 87
+- Community 88
+- Community 89
+- Community 90
+- Community 91
+- Community 92
+- Community 93
+- Community 94
+- Community 95
+- Community 96
+- Community 97
+- Community 98
+- Community 99
+- Community 100
+- Community 101
+- Community 102
+- Community 103
+- Community 104
+- Community 105
+- Community 106
+- Community 107
+- Community 108
+- Community 109
+- Community 110
+- Community 111
+- Community 112
+- Community 113
+- Community 114
+- Community 115
+- Community 116
+- Community 117
+- Community 118
+- Community 119
+- Community 120
+- Community 121
+- Community 122
+- Community 123
+- Community 124
+- Community 125
+- Community 126
+- Community 127
+- Community 128
+- Community 129
+- Community 130
+- Community 131
+- Community 132
+- Community 133
+- Community 134
+- Community 135
+- Community 136
+- Community 137
+- Community 138
+- Community 139
+- Community 140
+- Community 141
+- Community 142
+- Community 143
+- Community 144
+- Community 145
+- Community 146
+- Community 147
+- Community 148
+- Community 149
+- Community 150
+- Community 151
+- Community 152
+- Community 153
+- Community 154
+- Community 155
+- Community 156
+- Community 157
+- Community 158
+- Community 159
+- Community 160
+- Community 161
+- Community 162
+- Community 163
+- Community 164
+- Community 165
+- Community 166
+- Community 167
+- Community 168
+- Community 169
+- Community 170
+- Community 171
+- Community 172
+- Community 173
+- Community 174
+- Community 175
+- Community 176
+- Community 177
+- Community 178
+- Community 179
+- Community 180
+- Community 181
+- Community 182
+- Community 183
+- Community 184
+- Community 185
+- Community 186
+- Community 187
+- Community 188
+- Community 189
+- Community 190
+- Community 191
+- Community 192
+- Community 193
+- Community 194
+- Community 195
+- Community 196
+- Community 197
+- Community 198
+- Community 199
+- Community 200
+- Community 201
+- Community 202
+- Community 203
+- Community 204
+- Community 205
+- Community 206
+- Community 207
+- Community 208
+- Community 209
+- Community 210
+- Community 211
+- Community 212
+- Community 213
+- Community 214
+- Community 215
+- Community 216
+- Community 217
+- Community 218
+- Community 219
+- Community 220
+- Community 221
+- Community 222
+- Community 223
+- Community 224
+- Community 225
+- Community 226
+- Community 227
+- Community 228
+- Community 229
+- Community 230
+- Community 231
+- Community 232
+- Community 233
+- Community 234
+- Community 235
+- Community 236
+- Community 237
+- Community 238
+- Community 239
+- Community 240
+- Community 241
+- Community 242
+- Community 243
+- Community 244
+- Community 245
+- Community 246
+- Community 247
+- Community 248
+- Community 249
+- Community 250
+- Community 251
+- Community 252
+- Community 253
+- Community 254
+- Community 255
+- Community 256
+- Community 257
+- Community 258
+- Community 259
+- Community 260
+- Community 261
+- Community 262
+- Community 263
+- Community 264
+- Community 265
+- Community 266
+- Community 267
+- Community 268
+- Community 269
+- Community 270
+- Community 271
+- Community 272
+- Community 273
+- Community 274
+- Community 275
+- Community 276
+- Community 277
+- Community 278
+- Community 279
+- Community 280
+- Community 281
+- Community 282
+- Community 283
+- Community 284
+- Community 285
+- Community 286
+- Community 287
+- Community 288
+- Community 289
+- Community 290
+- Community 291
+- Community 292
+- Community 293
+- Community 294
+- Community 295
+- Community 296
+- Community 297
+- Community 298
+- Community 299
+- Community 300
+- Community 301
+- Community 302
+- Community 303
+- Community 304
+- Community 305
+- Community 306
+- Community 307
+- Community 308
+- Community 309
+- Community 310
+- Community 311
+- Community 312
+- Community 313
+- Community 314
+- Community 315
+- Community 316
+- Community 317
+- Community 318
+- Community 319
+- Community 320
+- Community 321
+- Community 322
+- Community 323
+- Community 324
+- Community 325
+- Community 326
+- Community 327
+- Community 328
+- Community 329
+- Community 330
+- Community 331
+- Community 332
+- Community 333
+- Community 334
+- Community 335
+- Community 336
+- Community 337
+- Community 338
+- Community 339
+- Community 340
+- Community 341
+- Community 342
+- Community 343
+- Community 344
+- Community 345
+- Community 346
+- Community 347
+- Community 348
+- Community 349
+- Community 350
+- Community 351
+- Community 352
+- Community 353
+- Community 354
+- Community 355
+- Community 356
+- Community 357
+- Community 358
+- Community 359
+- Community 360
+- Community 361
+- Community 362
+- Community 363
+- Community 364
+- Community 365
+- Community 366
+- Community 367
+- Community 368
+- Community 369
+- Community 370
+- Community 371
+- Community 372
+- Community 373
+- Community 374
+- Community 375
+- Community 376
+- Community 377
+- Community 378
+- Community 379
+- Community 380
+- Community 381
+- Community 382
+- Community 383
+- Community 384
+- Community 385
+- Community 386
+- Community 387
+- Community 388
+- Community 389
+- Community 391
+- Community 392
+- Community 393
+- Community 394
+- Community 395
+- Community 396
+- Community 397
+- Community 398
+- Community 399
+- Community 400
+- Community 401
+- Community 402
+- Community 403
+- Community 404
+- Community 405
+- Community 406
+- Community 407
+- Community 408
+- Community 409
+- Community 410
+- Community 411
+- Community 412
+- Community 413
+- Community 414
+- Community 415
+- Community 416
+- Community 417
+- Community 418
+- Community 419
+- Community 420
+- Community 421
+- Community 429
+- Community 430
+- Community 431
+- Community 436
+- Community 440
+- Community 441
+- Community 442
+- Community 443
+- Community 444
+- Community 445
+- Community 446
+- Community 447
+- Community 448
+- Community 449
+- Community 450
+- Community 451
+- Community 452
+- Community 453
+- Community 454
+- Community 455
+- Community 456
+- Community 457
+- Community 458
+- Community 459
+- Community 462
+- Community 463
+- Community 464
+- Community 465
+- Community 466
+- Community 467
+- Community 468
+- Community 469
+- Community 470
+- Community 471
+- Community 472
+- Community 473
+- Community 474
+- Community 475
+- Community 476
+- Community 477
+- Community 478
+- Community 479
+- Community 480
+- Community 481
+- Community 482
+- Community 483
+- Community 484
+- Community 485
+- Community 486
+- Community 487
+- Community 493
+- Community 494
+- Community 495
+- Community 496
+- Community 497
+- Community 498
+- Community 499
+- Community 500
+- Community 501
+- Community 502
+- Community 503
+- Community 504
+- Community 505
+- Community 506
+- Community 507
+- Community 508
+- Community 509
+- Community 510
+- Community 511
+- Community 512
+- Community 513
+- Community 514
+- Community 515
+- Community 516
+- Community 517
+- Community 518
+- Community 519
+- Community 520
+- Community 521
+- Community 524
+- Community 527
+- Community 528
+- Community 529
+- Community 552
+- Community 554
+- Community 555
+- Community 556
+- Community 557
+- Community 559
+- Community 560
+- Community 561
+- Community 563
+- Community 564
+- Community 565
+- Community 566
+- Community 567
+- Community 568
+- Community 569
+- Community 570
+- Community 572
+- Community 573
+- Community 574
+- Community 575
 
 ## God Nodes (most connected - your core abstractions)
 1. `AuthenticatedUser` - 399 edges
@@ -555,233 +546,217 @@
 4. `ApiException` - 226 edges
 5. `RequireCapabilities()` - 206 edges
 6. `typeorm` - 147 edges
-7. `Student` - 128 edges
+7. `Student` - 129 edges
 8. `@nestjs/common` - 115 edges
-9. `User` - 108 edges
+9. `User` - 110 edges
 10. `Button` - 83 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `MonthPicker()` --calls--> `cn()`  [EXTRACTED]
-  apps/admin/src/shared/ui/date-picker.tsx → apps/admin/src/shared/lib/utils.ts
+- `selectConversation()` --indirect_call--> `text()`  [INFERRED]
+  apps/admin/src/features/chat/pages/ChatPage.tsx → apps/admin/src/shared/lib/data-transfer-xlsx.ts
 - `StudentAvatar()` --calls--> `cn()`  [EXTRACTED]
   apps/admin/src/shared/ui/StudentPicker.tsx → apps/admin/src/shared/lib/utils.ts
-- `confirmDelete()` --calls--> `notify()`  [EXTRACTED]
-  apps/admin/src/features/learning/pages/LearningPage.tsx → apps/admin/src/shared/ui/notifications.tsx
-- `jumpToMessage()` --calls--> `notify()`  [EXTRACTED]
-  apps/admin/src/features/chat/pages/ChatPage.tsx → apps/admin/src/shared/ui/notifications.tsx
+- `MonthPicker()` --calls--> `cn()`  [EXTRACTED]
+  apps/admin/src/shared/ui/date-picker.tsx → apps/admin/src/shared/lib/utils.ts
 - `confirmRemove()` --calls--> `notify()`  [EXTRACTED]
+  apps/admin/src/features/exams/pages/ExamsPage.tsx → apps/admin/src/shared/ui/notifications.tsx
+- `handleToggle()` --calls--> `notify()`  [EXTRACTED]
   apps/admin/src/features/exams/pages/ExamsPage.tsx → apps/admin/src/shared/ui/notifications.tsx
 
 ## Import Cycles
 - None detected.
 
-## Communities (586 total, 183 thin omitted)
+## Communities (577 total, 192 thin omitted)
 
-### Community 0 - "entities/index.ts"
+### Community 0 - "Community 0"
 Cohesion: 0.03
-Nodes (156): dir, ChatConfiguration, Column, Entity, PrimaryColumn, UpdateDateColumn, ChatMessage, Column (+148 more)
+Nodes (103): fetchConversationPage(), fetchMessages(), normalizeChatMessage(), normalizeMessagePage(), WireChatMessage, chatKeys, EditPreview(), MessageComposer() (+95 more)
 
-### Community 1 - "admin/gitbr.sh"
+### Community 1 - "Community 1"
+Cohesion: 0.04
+Nodes (85): dir, DailyReport, Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn (+77 more)
+
+### Community 2 - "Community 2"
+Cohesion: 0.03
+Nodes (110): Encouragement, Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, ExamAssignment (+102 more)
+
+### Community 3 - "Community 3"
+Cohesion: 0.02
+Nodes (76): ROLES_KEY, HttpExceptionFilter, AuthSessionGuard, Injectable, CapabilitiesGuard, Injectable, CsrfGuard, mutating (+68 more)
+
+### Community 4 - "Community 4"
+Cohesion: 0.03
+Nodes (110): ChatConfiguration, Column, Entity, PrimaryColumn, UpdateDateColumn, ChatMessage, ChatMessageType, EXAM (+102 more)
+
+### Community 5 - "Community 5"
 Cohesion: 0.08
 Nodes (101): ahead_behind(), app_header(), branch_commit_suggestion(), branches_menu(), choose_base_branch(), choose_branch_type(), choose_commit_hash(), choose_issue() (+93 more)
 
-### Community 2 - "gitbr.sh"
+### Community 6 - "Community 6"
 Cohesion: 0.08
 Nodes (101): ahead_behind(), app_header(), branch_commit_suggestion(), branches_menu(), choose_base_branch(), choose_branch_type(), choose_commit_hash(), choose_issue() (+93 more)
 
-### Community 3 - "useLocale"
+### Community 7 - "Community 7"
+Cohesion: 0.04
+Nodes (76): DevBackendSwitcher(), labelFor(), options, AdminAccountMenu(), ProtectedRoute(), checkBackendHealth(), getAccountContext(), getCurrentUser() (+68 more)
+
+### Community 8 - "Community 8"
 Cohesion: 0.05
-Nodes (76): deletePushSubscription(), getAdvisorInbox(), getNotificationsPage(), getPushConfig(), getPushStatusRemote(), markAllNotificationsRead(), markNotificationRead(), registerPushSubscription() (+68 more)
+Nodes (77): deletePushSubscription(), getAdvisorInbox(), getNotificationsPage(), getPushConfig(), getPushStatusRemote(), markAllNotificationsRead(), markNotificationRead(), registerPushSubscription() (+69 more)
 
-### Community 4 - "@nestjs/common"
-Cohesion: 0.04
-Nodes (70): HttpExceptionFilter, LoggingInterceptor, Injectable, dataSourceOptions, Mistake, Column, Entity, Index (+62 more)
-
-### Community 5 - "ApiException"
+### Community 9 - "Community 9"
 Cohesion: 0.03
-Nodes (49): ROLES_KEY, ApiException, AuthSessionGuard, Injectable, CapabilitiesGuard, Injectable, CsrfGuard, mutating (+41 more)
+Nodes (70): EducationBook, Column, Entity, Index, PrimaryColumn, OrganizationStatus, ACTIVE, ARCHIVED (+62 more)
 
-### Community 6 - "pages/ExamsPage.tsx"
-Cohesion: 0.06
-Nodes (64): EducationMetric, educationMetrics(), localDay(), subjectDistribution(), actions, EducationOverviewPage(), addExamSyllabus(), assignExam() (+56 more)
-
-### Community 7 - "StudentsService"
+### Community 10 - "Community 10"
 Cohesion: 0.04
-Nodes (29): LearningItem, Column, CreateDateColumn, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn (+21 more)
+Nodes (70): OnboardingPage, allRoles, errorText(), nameOf(), OrganizationsPage(), organizationTypes, statusLabels, UsersPage() (+62 more)
 
-### Community 8 - "HeaderClock.tsx"
+### Community 11 - "Community 11"
 Cohesion: 0.07
 Nodes (69): AlarmPanel(), DAYS, ClockOverview(), HeaderClock(), SessionStats(), StopwatchPanel(), PRESETS, TimerPanel() (+61 more)
 
-### Community 9 - "Task"
-Cohesion: 0.03
-Nodes (70): ImportHistory, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Plan, PlanStatus (+62 more)
-
-### Community 10 - "RequireCapabilities"
+### Community 12 - "Community 12"
 Cohesion: 0.07
-Nodes (14): RequireCapabilities(), ChatController, Body, Controller, Delete, Get, Param, Patch (+6 more)
+Nodes (41): chatApi, icons, Metric, AttemptHistoryList(), AttemptReview(), ExamCard(), ExamForm(), Metric() (+33 more)
 
-### Community 11 - "sync.service.ts"
+### Community 13 - "Community 13"
+Cohesion: 0.07
+Nodes (33): RequireCapabilities(), AssessmentsController, Body, Controller, Delete, Get, Param, Patch (+25 more)
+
+### Community 14 - "Community 14"
+Cohesion: 0.08
+Nodes (13): AuthenticatedUser, ChatController, Body, Controller, Delete, Get, Param, Patch (+5 more)
+
+### Community 15 - "Community 15"
 Cohesion: 0.04
-Nodes (70): ExamAssignment, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, ExamAttempt, Column (+62 more)
+Nodes (39): LoginPage(), ExamPage(), fa(), formatDate(), GuardianInsightsPage(), GuardianProgress, GuardianReport, Mistake (+31 more)
 
-### Community 12 - "utils.ts"
-Cohesion: 0.04
-Nodes (62): auth, notifications, DashboardPage, AttentionInbox(), Filter, reasonIcons, severityTone(), DashboardFollowUpCard() (+54 more)
-
-### Community 13 - "NotificationsService"
+### Community 16 - "Community 16"
 Cohesion: 0.04
 Nodes (44): Notification, NotificationType, EXAM_REMINDER, MESSAGE, MOTIVATION, PLAN_UPDATE, WARNING, Column (+36 more)
 
-### Community 14 - "ExamsService"
-Cohesion: 0.06
-Nodes (19): AssignExamDto, CreateExamDto, IsArray, IsBoolean, IsDateString, IsIn, IsNumber, IsOptional (+11 more)
-
-### Community 15 - "relaxation-player.ts"
-Cohesion: 0.04
-Nodes (23): AudioBackend, AudioBackendState, AudioTrack, getAudioBackend(), HtmlAudioBackend, initial, PlaybackState, FakeAudio (+15 more)
-
-### Community 16 - "ui.tsx"
-Cohesion: 0.08
-Nodes (31): DemoAccountPicker(), demoAccounts, demoPassword, LoginFormValues, loginSchema, chatApi, fa(), GuardianPage() (+23 more)
-
-### Community 17 - "Student"
-Cohesion: 0.04
-Nodes (60): ActivityEvent, Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, DailyReport (+52 more)
-
-### Community 18 - "pages/LearningPage.tsx"
-Cohesion: 0.07
-Nodes (42): LearningPage, createLearningItem(), deleteLearningItem(), getLearningReviewHistory(), getStudentLearning(), learningPayload(), reviewLearningItem(), values (+34 more)
-
-### Community 19 - "ApiClient"
-Cohesion: 0.06
-Nodes (31): fa(), formatDate(), GuardianInsightsPage(), GuardianProgress, GuardianReport, Mistake, MistakeNotebook(), reasons (+23 more)
-
-### Community 20 - "StudySessionsService"
+### Community 17 - "Community 17"
 Cohesion: 0.05
-Nodes (33): StudySessionsService, Injectable, SyncChangeDto, IsIn, IsOptional, IsString, MaxLength, SyncService (+25 more)
+Nodes (58): AppProviders(), message(), queryClient, router, SettingsPage, ChatHeader(), jumpToMessage(), changePassword() (+50 more)
 
-### Community 21 - "notify"
+### Community 18 - "Community 18"
+Cohesion: 0.07
+Nodes (52): EducationOverviewPage, EducationMetric, educationMetrics(), localDay(), subjectDistribution(), actions, EducationOverviewPage(), addExamSyllabus() (+44 more)
+
+### Community 19 - "Community 19"
+Cohesion: 0.08
+Nodes (61): createPlan(), deletePlan(), deletePlannerTask(), duplicatePlan(), getPlanForDate(), getPlannerExams(), getPlans(), movePlannerTask() (+53 more)
+
+### Community 20 - "Community 20"
+Cohesion: 0.08
+Nodes (24): Roles(), ok(), Body, Post, Put, SubmitExamDto, IsArray, Type (+16 more)
+
+### Community 21 - "Community 21"
 Cohesion: 0.06
-Nodes (47): listRecoveryRequests(), moderateRecoveryRequest(), ScopedRecoveryRequest, FollowUpPage(), NotificationSettingsContent(), action(), RecoveryRequest, AppVersion (+39 more)
+Nodes (57): adminBreadcrumbs(), adminDestination(), adminNavigation, educationCapabilities, educationNavigation, flatAdminNavigation, mainAdminNavigation, mainNavigationForCapabilities() (+49 more)
 
-### Community 22 - "student/src/main.tsx"
+### Community 22 - "Community 22"
 Cohesion: 0.06
-Nodes (43): RouteScrollRestoration(), StudentAppShell(), Theme, DateMarker(), ExamCard(), minutes(), NotificationCard(), ProgressCard() (+35 more)
+Nodes (31): ImportExportController, Body, Controller, Get, Post, Query, ImportExportService, Injectable (+23 more)
 
-### Community 23 - "jfkd.md"
+### Community 23 - "Community 23"
+Cohesion: 0.04
+Nodes (22): AudioBackend, AudioBackendState, AudioTrack, getAudioBackend(), HtmlAudioBackend, initial, PlaybackState, FakeAudio (+14 more)
+
+### Community 24 - "Community 24"
+Cohesion: 0.08
+Nodes (40): createLearningItem(), deleteLearningItem(), getLearningReviewHistory(), getStudentLearning(), learningPayload(), reviewLearningItem(), values, updateLearningItem() (+32 more)
+
+### Community 25 - "Community 25"
+Cohesion: 0.08
+Nodes (35): CAPABILITIES_KEY, AssignExamDto, CreateExamDto, CreateQuestionDto, IsArray, IsBoolean, IsDateString, IsIn (+27 more)
+
+### Community 26 - "Community 26"
 Cohesion: 0.03
 Nodes (62): 10. Add reusable CRUD UX patterns, 10. Answer persistence, 10. Redesign exam administration, 11. Autosave, 11. Exam creation wizard, 11. Forms, 12. Connectivity, 12. Question bank redesign (+54 more)
 
-### Community 24 - "ok"
-Cohesion: 0.11
-Nodes (19): Roles(), ok(), Body, Post, Put, CreateQuestionDto, SubmitExamDto, IsArray (+11 more)
+### Community 27 - "Community 27"
+Cohesion: 0.09
+Nodes (16): CurrentUser, Delete, Get, Param, Get, Query, StudentAdministrationController, Body (+8 more)
 
-### Community 25 - "AssessmentsService"
+### Community 28 - "Community 28"
+Cohesion: 0.10
+Nodes (38): freshness(), getLiveStudentsSnapshot(), liveState(), normalizeLiveSnapshot(), WireLiveStudent, CompactSkeleton(), LiveControls(), LiveHeader() (+30 more)
+
+### Community 29 - "Community 29"
+Cohesion: 0.05
+Nodes (50): LearningItem, LearningStatus, ARCHIVED, DONE, PENDING, Column, CreateDateColumn, Entity (+42 more)
+
+### Community 30 - "Community 30"
 Cohesion: 0.07
-Nodes (32): SyllabusProgressStatus, MASTERED, READ, REVIEW, TESTED, UNREAD, AssessmentsService, Injectable (+24 more)
+Nodes (12): ApiException, RecommendationStatus, ACCEPTED, DISMISSED, PROPOSED, REJECTED, Get, Headers (+4 more)
 
-### Community 26 - "pages/LivePage.tsx"
-Cohesion: 0.11
-Nodes (37): freshness(), getLiveStudentsSnapshot(), liveState(), normalizeLiveSnapshot(), WireLiveStudent, CompactSkeleton(), LiveControls(), LiveHeader() (+29 more)
+### Community 31 - "Community 31"
+Cohesion: 0.07
+Nodes (37): PortalAccess, PortalMode, RouteScrollRestoration(), StudentAppShell(), Theme, DateMarker(), ExamCard(), minutes() (+29 more)
 
-### Community 27 - "domain.ts"
-Cohesion: 0.06
-Nodes (35): ConversationList(), conversationLabel(), ConversationListItem(), studentAffiliation(), ConversationSkeleton(), CreateDirectButton(), CreateGroupButton(), CreateGroupForm() (+27 more)
-
-### Community 28 - "api/package.json"
-Cohesion: 0.04
-Nodes (47): description, engines, node, @moshaver/cmb-infrastructure, @moshaver/cmb-persistence, main, name, overrides (+39 more)
-
-### Community 29 - "CurrentUser"
+### Community 32 - "Community 32"
 Cohesion: 0.08
-Nodes (23): CurrentUser, Delete, Get, Param, Get, Headers, Get, Query (+15 more)
+Nodes (5): ExamsService, nullableDate(), Injectable, GuardianService, Injectable
 
-### Community 30 - "AdminLayout.tsx"
-Cohesion: 0.09
-Nodes (41): adminBreadcrumbs(), adminDestination(), adminNavigation, educationCapabilities, educationNavigation, flatAdminNavigation, mainAdminNavigation, mainNavigationForCapabilities() (+33 more)
-
-### Community 31 - "pages/QuizzesPage.tsx"
-Cohesion: 0.10
-Nodes (36): createExamQuestion(), deleteExamQuestion(), getExamQuestions(), getQuestionBankExams(), draft, updateQuestion(), QuestionEditor(), QuestionsList() (+28 more)
-
-### Community 32 - "AuthenticatedUser"
-Cohesion: 0.10
-Nodes (18): AuthenticatedUser, NotificationsController, Controller, Get, Param, Put, Query, RelationshipsController (+10 more)
-
-### Community 33 - "class-validator"
-Cohesion: 0.06
-Nodes (34): LearningStatus, ARCHIVED, DONE, PENDING, CreateLearningItemDto, IsEnum, IsOptional, IsString (+26 more)
-
-### Community 34 - "AccessPage.tsx"
-Cohesion: 0.09
-Nodes (37): allRoles, errorText(), nameOf(), OrganizationsPage(), organizationTypes, statusLabels, UsersPage(), acceptRelationship() (+29 more)
-
-### Community 35 - "@tanstack/react-query"
+### Community 33 - "Community 33"
 Cohesion: 0.07
-Nodes (29): message(), queryClient, SettingsPage, SendMessageInput, changePassword(), getSessions(), revokeSession(), ApiConnectionCard() (+21 more)
+Nodes (39): DashboardPage, AttentionSignal, getAdminAttention(), getAdminDashboard(), normalizeAttentionStudent(), signalLabels, V2AttentionStudent, AttentionInbox() (+31 more)
 
-### Community 36 - ".requireCapability"
+### Community 34 - "Community 34"
 Cohesion: 0.10
-Nodes (23): ArchiveSubjectDto, AssignTeacherSubjectDto, CreateSubjectDto, IsBoolean, IsInt, IsOptional, IsString, IsUUID (+15 more)
+Nodes (35): createExamQuestion(), deleteExamQuestion(), getExamQuestions(), getQuestionBankExams(), draft, updateQuestion(), QuestionEditor(), QuestionsList() (+27 more)
 
-### Community 37 - "LearningResourcesService"
+### Community 35 - "Community 35"
+Cohesion: 0.05
+Nodes (43): ActivityEvent, Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, StudentPresence (+35 more)
+
+### Community 36 - "Community 36"
 Cohesion: 0.07
 Nodes (23): LearningResourcesController, Body, Controller, Delete, Get, Param, Patch, Post (+15 more)
 
-### Community 38 - "users.controller.ts"
+### Community 37 - "Community 37"
 Cohesion: 0.10
 Nodes (22): CreateUserDto, SetRolesDto, ArrayUnique, IsArray, IsOptional, IsString, IsUUID, Length (+14 more)
 
-### Community 39 - "MoreRouterPage.tsx"
-Cohesion: 0.06
-Nodes (28): activityIcon(), ActivityIsland(), ActivityKind, CompactActivity, formatTime(), plannedSeconds(), formatAudioTime(), NightReportForm() (+20 more)
+### Community 38 - "Community 38"
+Cohesion: 0.07
+Nodes (27): can, CapabilityRoute(), ChatPage, ExamsPage, FollowUpPage, GuardianPage, LearningPage, LivePage (+19 more)
 
-### Community 40 - "pages/ReportsPage.tsx"
-Cohesion: 0.09
-Nodes (33): ReportsPage, PortalOrganization, PortalUser, StudentAssignmentForm(), AssignmentInput, assignStudent(), listAdvisors(), listOnboardingOrganizations() (+25 more)
-
-### Community 41 - "student-store.ts"
-Cohesion: 0.06
-Nodes (34): PortalAccess, PortalMode, MoreRouterPage(), resetRelaxationPlayer(), AuthSession, AuthStatus, BackendAccountContext, BackendDashboard (+26 more)
-
-### Community 42 - "useAuth"
-Cohesion: 0.11
-Nodes (29): ProtectedRoute(), checkBackendHealth(), getAccountContext(), getCurrentUser(), loginRequest(), logoutRequest(), Probe(), AuthContext (+21 more)
-
-### Community 43 - "UserContext"
-Cohesion: 0.14
-Nodes (10): CAPABILITIES_KEY, UserContext, UpdateExamDto, RelaxationAdminController, RelaxationStudentController, Controller, Get, Put (+2 more)
-
-### Community 44 - "pages/SubjectsPage.tsx"
+### Community 39 - "Community 39"
 Cohesion: 0.10
-Nodes (23): assignSubjectTeacher(), createSubject(), getEducationBooks(), getEducationDatasets(), getStudentSubjects(), getSubjects(), getSubjectTeachers(), setSubjectActive() (+15 more)
+Nodes (29): CommandPalette(), usePlannerNavigation(), usePlannerState(), isValidIsoDate(), safeIsoDate(), getReports(), ReportRow, Meter() (+21 more)
 
-### Community 45 - "infrastructure/src/index.js"
+### Community 40 - "Community 40"
+Cohesion: 0.08
+Nodes (22): TaskType, CUSTOM, EXAM, REST, REVIEW, STUDY, TEST, ImportPlanDto (+14 more)
+
+### Community 41 - "Community 41"
+Cohesion: 0.10
+Nodes (11): RelationshipsController, Body, Controller, Delete, Get, Param, Patch, Post (+3 more)
+
+### Community 42 - "Community 42"
 Cohesion: 0.06
 Nodes (14): CmbAdapterRegistry, crypto, { defineModule }, INFRASTRUCTURE_MODULE, InlineJobQueue, InMemoryEventBus, InMemoryKeyValueCache, InMemoryObjectStorage (+6 more)
 
-### Community 46 - "api.ts"
-Cohesion: 0.11
-Nodes (25): DevBackendSwitcher(), labelFor(), options, api, ApiEnvelope, ApiError, authenticatedBinaryFetch(), AuthFailureListener (+17 more)
-
-### Community 47 - "ExamPage.tsx"
+### Community 43 - "Community 43"
 Cohesion: 0.10
 Nodes (19): ExamCenter(), ExamRow(), Filter, formatDate(), Props, ResultTrend(), Stat(), toPersian() (+11 more)
 
-### Community 48 - "docs/README.md"
+### Community 44 - "Community 44"
+Cohesion: 0.09
+Nodes (29): addDays(), calendarGrid(), filterLabel(), filterOptions, FilterValue, formatElapsed(), matches(), parts() (+21 more)
+
+### Community 45 - "Community 45"
 Cohesion: 0.10
 Nodes (13): Admin v2 capability matrix, Current release boundaries, Architecture inventory, Current inventory, Evidence policy, Admin v2 test snapshot, API Compatibility Report, Admin v2 Migration Guide (+5 more)
 
-### Community 49 - "check-boundaries.mjs"
+### Community 46 - "Community 46"
 Cohesion: 0.06
 Nodes (29): auditOnly, backendCrossModuleEdges, backendDeepImports, backendFileGraph, backendModule(), baselineCycles, baselineDeep, baselinePath (+21 more)
 
-### Community 50 - "OrganizationsService"
-Cohesion: 0.10
-Nodes (22): OrganizationType, ACADEMY, COUNSELING_CENTER, OTHER, PRIVATE_PRACTICE, SCHOOL, ensureOrganizationChat(), leaveOrganizationChat() (+14 more)
-
-### Community 51 - "app.js"
+### Community 47 - "Community 47"
 Cohesion: 0.07
 Nodes (29): accessTokenFrom(), { AUTH_MODULE, InMemorySessionStore }, {
   AUTHORIZATION_MODULE,
@@ -795,1222 +770,1161 @@ Nodes (29): accessTokenFrom(), { AUTH_MODULE, InMemorySessionStore }, {
   defineMigration,
 }, { CmbModuleRegistry, defineModule }, createApp() (+21 more)
 
-### Community 52 - "StudentController"
-Cohesion: 0.10
-Nodes (15): ReviewLearningItemDto, IsNumber, Max, Min, StudentController, StudentParityController, StudentsController, Body (+7 more)
+### Community 48 - "Community 48"
+Cohesion: 0.06
+Nodes (32): description, engines, node, zod, main, name, overrides, fastify (+24 more)
 
-### Community 53 - "Repository architecture migration plan"
+### Community 49 - "Community 49"
+Cohesion: 0.06
+Nodes (30): resetRelaxationPlayer(), AuthSession, AuthStatus, BackendAccountContext, BackendDashboard, BackendExam, BackendPlan, BackendStudent (+22 more)
+
+### Community 50 - "Community 50"
+Cohesion: 0.12
+Nodes (20): SubjectsPage, assignSubjectTeacher(), createSubject(), getEducationBooks(), getEducationDatasets(), getStudentSubjects(), getSubjects(), getSubjectTeachers() (+12 more)
+
+### Community 51 - "Community 51"
 Cohesion: 0.06
 Nodes (31): Allowed matrix, API ownership, Circular dependency policy, Cross-module communication, Database ownership, Dependency boundaries, Frontend dependency rule, Graph enforcement (+23 more)
 
-### Community 54 - ".canAccessStudent"
-Cohesion: 0.09
-Nodes (14): RecommendationStatus, ACCEPTED, DISMISSED, PROPOSED, REJECTED, AnalyticsController, Body, Controller (+6 more)
+### Community 52 - "Community 52"
+Cohesion: 0.11
+Nodes (11): StudentController, StudentParityController, StudentsController, Body, Controller, Delete, Get, Param (+3 more)
 
-### Community 55 - "ReportsService"
-Cohesion: 0.09
-Nodes (19): RecoveryRequestStatus, DISMISSED, PENDING, RESOLVED, CreateRecoveryRequestDto, IsDateString, IsOptional, IsString (+11 more)
-
-### Community 56 - "router.tsx"
-Cohesion: 0.08
-Nodes (19): can, CapabilityRoute(), ChatPage, EducationOverviewPage, ExamsPage, FollowUpPage, GuardianPage, LivePage (+11 more)
-
-### Community 57 - "dependencies"
+### Community 53 - "Community 53"
 Cohesion: 0.06
 Nodes (34): dependencies, bcryptjs, better-sqlite3, class-transformer, class-validator, @fastify/cookie, @fastify/cors, @fastify/helmet (+26 more)
 
-### Community 58 - "admin/package.json"
-Cohesion: 0.06
-Nodes (31): name, overrides, uuid, private, type, version, autoprefixer, axe-core (+23 more)
+### Community 54 - "Community 54"
+Cohesion: 0.07
+Nodes (8): submit(), formatDate(), MorePage(), SettingsPage(), syncLabel(), App(), syncStatusLabel(), StudentState
 
-### Community 59 - "run.mjs"
+### Community 55 - "Community 55"
 Cohesion: 0.10
 Nodes (29): errors, ids, packages, paths, declaredDependencies(), dependencyClosure(), graphPath, here (+21 more)
 
-### Community 60 - "StudySessions1724140200000"
-Cohesion: 0.05
-Nodes (8): StudySessions1724140200000, UserNotifications1724141200000, PresenceActivity1724141600000, ImportExport1724141800000, StudentExamExperience1724143100000, LearningResources1724143200000, StudentQuizCapability1724144600000, EducationCatalogAndNationalCode1724144700000
+### Community 56 - "Community 56"
+Cohesion: 0.14
+Nodes (10): OrganizationsController, Body, Controller, Delete, Get, Param, Patch, Post (+2 more)
 
-### Community 61 - "AssessmentsController"
-Cohesion: 0.16
-Nodes (9): AssessmentsController, Body, Controller, Delete, Get, Param, Patch, Post (+1 more)
+### Community 57 - "Community 57"
+Cohesion: 0.10
+Nodes (17): RelaxationAdminController, Body, Controller, Get, Param, Patch, Post, SaveRelaxationTrackDto (+9 more)
 
-### Community 62 - "moshaver-version-update.md"
+### Community 58 - "Community 58"
 Cohesion: 0.06
 Nodes (31): Current project structure, Desired implementation order, Existing verified state, Final constraint, Legacy project-specific example (inactive), Main objective, Phase 0 — Inspect before editing, Phase 10 — Low-end Android performance (+23 more)
 
-### Community 63 - "infrastructure/src/index.d.ts"
+### Community 59 - "Community 59"
 Cohesion: 0.06
 Nodes (9): CmbAdapter, CmbAdapterRegistry, InlineJobQueue, InMemoryEventBus, InMemoryKeyValueCache, InMemoryObjectStorage, NoopDeliveryProvider, RandomIdGenerator (+1 more)
 
-### Community 64 - "CmbRuntimeService"
+### Community 60 - "Community 60"
+Cohesion: 0.06
+Nodes (26): @moshaver/cmb-infrastructure, @moshaver/cmb-persistence, dependencies, @moshaver/cmb-auth, @moshaver/cmb-authorization, @moshaver/cmb-health, @moshaver/cmb-identity, @moshaver/cmb-infrastructure (+18 more)
+
+### Community 61 - "Community 61"
 Cohesion: 0.10
 Nodes (13): HealthController, Controller, Get, HealthModule, Module, HealthService, Injectable, CmbRuntimeModule (+5 more)
 
-### Community 65 - "PlansService"
-Cohesion: 0.12
-Nodes (15): ImportPlanDto, ImportTaskDto, IsArray, IsBoolean, IsDateString, IsOptional, IsString, Type (+7 more)
-
-### Community 66 - "ExamRunner.tsx"
+### Community 62 - "Community 62"
 Cohesion: 0.11
 Nodes (18): exam, ExamRunner(), formatSeconds(), Props, QuestionSheet(), SectionTabs(), stateIcon(), stateLabel() (+10 more)
 
-### Community 67 - "ChatPage"
+### Community 63 - "Community 63"
+Cohesion: 0.11
+Nodes (21): auth, notifications, RoleDashboard(), LocationSettings(), calendarGrid(), calendarParts(), DatePicker(), selectDate() (+13 more)
+
+### Community 64 - "Community 64"
 Cohesion: 0.11
 Nodes (25): Bubble(), ChatMessage, ChatPage(), closeConversation(), jumpToBottom(), loadConversations(), loadOlder(), markChatRead() (+17 more)
 
-### Community 68 - "notification-service.ts"
+### Community 65 - "Community 65"
 Cohesion: 0.14
 Nodes (27): categories, PushSettings(), disable(), enable(), load(), preference(), test(), readableError() (+19 more)
 
-### Community 69 - "scripts"
+### Community 66 - "Community 66"
 Cohesion: 0.07
 Nodes (29): description, engines, node, moshaver, installModel, workspaceGraph, name, private (+21 more)
 
-### Community 70 - "MessageList.tsx"
-Cohesion: 0.11
-Nodes (17): ConversationSidebar(), DateSeparator(), EmojiReactionPicker(), fallback, MessageContextMenu(), MessageAction, MessageBody(), MessageBubble() (+9 more)
+### Community 67 - "Community 67"
+Cohesion: 0.07
+Nodes (27): jsdom, lucide-react, postcss, react, @testing-library/jest-dom, vite, vitest, zod (+19 more)
 
-### Community 71 - "pages/PlannerPage.tsx"
-Cohesion: 0.16
-Nodes (24): createPlan(), deletePlan(), deletePlannerTask(), duplicatePlan(), getPlanForDate(), getPlannerExams(), getPlans(), movePlannerTask() (+16 more)
+### Community 68 - "Community 68"
+Cohesion: 0.10
+Nodes (23): EducationBookRow(), Metric(), fa(), ConflictPolicy, Count(), DataTransferWorkspace(), confirmCommit(), loadFile() (+15 more)
 
-### Community 72 - "TauriSQLiteProvider"
+### Community 69 - "Community 69"
 Cohesion: 0.09
 Nodes (6): initializeSync(), initializeStudentSchema(), TauriSQLiteProvider, SQLiteSyncProvider, WebSyncProvider, @tauri-apps/plugin-sql
 
-### Community 73 - "StudentState"
-Cohesion: 0.09
-Nodes (6): submit(), formatDate(), MorePage(), App(), syncStatusLabel(), StudentState
+### Community 70 - "Community 70"
+Cohesion: 0.08
+Nodes (21): QuizAttempt, Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn, Quiz, Column (+13 more)
 
-### Community 74 - "PlanPage.tsx"
-Cohesion: 0.12
-Nodes (20): addDays(), calendarGrid(), filterLabel(), filterOptions, FilterValue, formatElapsed(), matches(), parts() (+12 more)
-
-### Community 75 - "Complete v1 endpoint inventory"
+### Community 71 - "Community 71"
 Cohesion: 0.07
 Nodes (28): Admin/students/plans/import (34), Administration, presence and dashboard (11), API v1 vs API v2 audit, Capability parity matrix, Chat, notifications, reports, mistakes, realtime and sync (21), Complete v1 endpoint inventory, Complete v2 endpoint inventory, Direct and group chat (28) (+20 more)
 
-### Community 76 - "admin/src/main.tsx"
-Cohesion: 0.14
-Nodes (14): AppProviders(), router, API_WORK_CONTEXT_EVENT, AppErrorBoundary, AppErrorDetails, AppErrorKind, classifyAppError(), errorMessage() (+6 more)
+### Community 72 - "Community 72"
+Cohesion: 0.08
+Nodes (25): autoprefixer, axe-core, react-dom, react-router-dom, tailwindcss, @testing-library/react, @testing-library/user-event, @types/react (+17 more)
 
-### Community 77 - "RelaxationService"
-Cohesion: 0.12
-Nodes (14): Body, Param, Patch, Post, SaveRelaxationTrackDto, IsBoolean, IsOptional, IsString (+6 more)
-
-### Community 78 - "StudentList.tsx"
+### Community 73 - "Community 73"
 Cohesion: 0.21
 Nodes (19): formatStudentLastSeen(), getMissingStudentProfileFields(), getStudentProfileCompleteness(), getStudentStatus(), getStudentUsername(), StudentDetailTab, StudentProfileFilter, StudentSort (+11 more)
 
-### Community 79 - "StaffPlansController"
-Cohesion: 0.16
-Nodes (9): StaffPlansController, Body, Controller, Delete, Get, Param, Patch, Post (+1 more)
-
-### Community 80 - "types.ts"
+### Community 74 - "Community 74"
 Cohesion: 0.09
 Nodes (17): QuestionState, AnswerSaveState, AttemptAnswer, ExamDelivery, ExamMode, ExamNavigationMode, ExamResultPolicy, ExamSection (+9 more)
 
-### Community 81 - "pages/ChatPage.tsx"
-Cohesion: 0.15
-Nodes (20): useChatSelectionParams(), useConversation(), useMessageActions(), useMessages(), draftKey(), isNearBottom(), persistDraft(), readDraft() (+12 more)
+### Community 75 - "Community 75"
+Cohesion: 0.17
+Nodes (22): addExams(), addGuide(), addPlans(), createTransferWorkbook(), downloadBlob(), downloadTransferWorkbook(), examHeaders, examplePayload() (+14 more)
 
-### Community 82 - "ImportExportService"
-Cohesion: 0.14
-Nodes (8): ImportExportController, Body, Controller, Get, Post, Query, ImportExportService, Injectable
-
-### Community 83 - "check-api-contract.mjs"
+### Community 76 - "Community 76"
 Cohesion: 0.08
 Nodes (21): backendCapabilities, backendSrc, baseMatch, capabilityActions, capabilityPrefixes, contract, contractCapabilities, contractPath (+13 more)
 
-### Community 84 - "devDependencies"
+### Community 77 - "Community 77"
 Cohesion: 0.08
 Nodes (24): devDependencies, autoprefixer, axe-core, eslint, @eslint/js, eslint-plugin-react-hooks, eslint-plugin-react-refresh, jsdom (+16 more)
 
-### Community 85 - "planner-model.ts"
-Cohesion: 0.23
-Nodes (20): addDateDays(), calendarMonthRange(), calendarParts(), comparePlanTasks(), filterPlans(), iso(), normalizeTaskDraft(), normalizeTime() (+12 more)
-
-### Community 86 - "data-transfer-xlsx.ts"
-Cohesion: 0.18
-Nodes (22): addExams(), addGuide(), addPlans(), createTransferWorkbook(), downloadBlob(), downloadTransferWorkbook(), examHeaders, examplePayload() (+14 more)
-
-### Community 87 - "Quiz"
-Cohesion: 0.10
-Nodes (21): QuizAttempt, Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn, Quiz, Column (+13 more)
-
-### Community 88 - "seed"
+### Community 78 - "Community 78"
 Cohesion: 0.14
 Nodes (24): activeAttempt(), at(), completedAttempt(), conversationMember(), day(), directConversation(), exam(), groupConversation() (+16 more)
 
-### Community 89 - "MistakesService"
+### Community 79 - "Community 79"
+Cohesion: 0.14
+Nodes (9): AnalyticsController, Body, Controller, Get, Param, Patch, Post, AnalyticsService (+1 more)
+
+### Community 80 - "Community 80"
 Cohesion: 0.15
 Nodes (10): MistakesController, StaffMistakesController, Body, Controller, Get, Param, Patch, Query (+2 more)
 
-### Community 90 - "Moshaver v1.4 Architecture Audit"
+### Community 81 - "Community 81"
 Cohesion: 0.08
 Nodes (23): Backend, Data Model, Deployment Review, Executive Summary, Final Assessment, Findings, Frontends, Key Strengths (+15 more)
 
-### Community 91 - "AdminAccountMenu.tsx"
-Cohesion: 0.15
-Nodes (18): AdminAccountMenu(), roleLabel(), roleLabels, rolePortalTitle(), rolePortalTitles, applyTheme(), initializeTheme(), isThemePreference() (+10 more)
+### Community 82 - "Community 82"
+Cohesion: 0.17
+Nodes (11): AppErrorBoundary, AppErrorDetails, AppErrorKind, classifyAppError(), errorMessage(), errorStatus(), ErrorFallback(), ErrorReport (+3 more)
 
-### Community 92 - "migrate-v1-to-v2.mjs"
+### Community 83 - "Community 83"
 Cohesion: 0.11
 Nodes (21): admins, argv, checks, counts, deterministicId(), hasTable(), insert(), migrate (+13 more)
 
-### Community 93 - "AuthController"
-Cohesion: 0.13
-Nodes (14): AuthController, Body, Controller, Post, Req, ChangePasswordDto, IsString, MaxLength (+6 more)
+### Community 84 - "Community 84"
+Cohesion: 0.11
+Nodes (15): CreateDailyReportDto, IsDateString, IsInt, IsOptional, IsString, Max, MaxLength, Min (+7 more)
 
-### Community 94 - "InMemorySessionStore"
+### Community 85 - "Community 85"
 Cohesion: 0.11
 Nodes (9): AUTH_MODULE, crypto, { defineModule }, InMemorySessionStore, { normalizeUsername }, SessionCredentialService, assert, { AUTH_MODULE, SessionCredentialService, InMemorySessionStore } (+1 more)
 
-### Community 95 - "education-catalog.service.ts"
-Cohesion: 0.13
-Nodes (15): EducationCatalogModule, Module, EducationCatalogService, seedEducationCatalog(), taxonomy, textbooks, Injectable, CatalogLabel (+7 more)
+### Community 86 - "Community 86"
+Cohesion: 0.11
+Nodes (19): AppRelease, Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, AppVersion, Column (+11 more)
 
-### Community 96 - "students.api.ts"
+### Community 87 - "Community 87"
+Cohesion: 0.13
+Nodes (12): RecoveryRequestStatus, DISMISSED, PENDING, RESOLVED, ReportsController, Body, Controller, Get (+4 more)
+
+### Community 88 - "Community 88"
+Cohesion: 0.21
+Nodes (9): StaffPlansController, Body, Controller, Delete, Get, Param, Patch, Post (+1 more)
+
+### Community 89 - "Community 89"
+Cohesion: 0.12
+Nodes (15): activityIcon(), ActivityIsland(), ActivityKind, CompactActivity, formatTime(), plannedSeconds(), formatAudioTime(), NightReportForm() (+7 more)
+
+### Community 90 - "Community 90"
+Cohesion: 0.14
+Nodes (12): CanvasProps, CompactTask(), DayColumn(), drop(), PlannerCanvas(), VirtualList(), addMinutes(), dateRange() (+4 more)
+
+### Community 91 - "Community 91"
 Cohesion: 0.12
 Nodes (20): archiveStudent(), createStudent(), createStudentRecommendation(), getStudentAnalytics(), getStudentAttempts(), getStudentLearning(), getStudentMistakes(), getStudentOverview() (+12 more)
 
-### Community 97 - "StudentsPage"
+### Community 92 - "Community 92"
 Cohesion: 0.13
 Nodes (13): emptyStudentForm(), studentToForm(), dateValue(), normalizedUsername(), numberParam(), readableError(), sameForm(), StudentsPage() (+5 more)
 
-### Community 98 - "Student App v2 Implementation Plan"
+### Community 93 - "Community 93"
 Cohesion: 0.10
 Nodes (17): Migration Steps, Moshaver Backend v1 to v2 Migration, New Entities, Old Database, PostgreSQL Path, Rollback Plan, Strategy, Current Backend-v2 Reality (+9 more)
 
-### Community 99 - "sync/index.ts"
+### Community 94 - "Community 94"
 Cohesion: 0.14
 Nodes (12): NetworkProvider, SyncProvider, conflictPolicyForPath(), createQueueId(), enqueueMutation(), pullChanges(), pushChanges(), syncMutationType() (+4 more)
 
-### Community 100 - "audit-parity.mjs"
+### Community 95 - "Community 95"
 Cohesion: 0.12
 Nodes (15): adminFiles, adminRoot, adminSource, apiRoot, backend, decorator(), decorators(), dynamicConsumers (+7 more)
 
-### Community 101 - "chat.api.ts"
-Cohesion: 0.18
-Nodes (12): fetchMessages(), normalizeChatMessage(), normalizeMessagePage(), WireChatMessage, chatKeys, MessageAction, ChatUser, GroupMember (+4 more)
+### Community 96 - "Community 96"
+Cohesion: 0.13
+Nodes (17): Permission, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn, Role, Column (+9 more)
 
-### Community 102 - "AuditLog"
-Cohesion: 0.10
-Nodes (19): AppRelease, Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, AppVersion, Column (+11 more)
-
-### Community 103 - "onboarding.controller.ts"
-Cohesion: 0.16
-Nodes (11): SignupThrottle, Column, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn, OnboardingModule, Module (+3 more)
-
-### Community 104 - "ActivityService"
+### Community 97 - "Community 97"
 Cohesion: 0.17
 Nodes (7): ActivityController, Controller, Get, Param, Query, ActivityService, Injectable
 
-### Community 105 - "ExamPreflight.tsx"
+### Community 98 - "Community 98"
 Cohesion: 0.15
 Nodes (13): ExamPreflight(), formatCountdown(), startBlockReason(), exam, testStorage(), ExamPreparationPanel(), requestRetry(), updateProgress() (+5 more)
 
-### Community 106 - "StudentQuizzesPage.tsx"
+### Community 99 - "Community 99"
 Cohesion: 0.14
 Nodes (15): answerKey(), formatTime(), optionKey(), optionLabel(), QuizQuestion, QuizResult, QuizResultPanel(), QuizReview() (+7 more)
 
-### Community 107 - "src-tauri/tauri.conf.json"
+### Community 100 - "Community 100"
 Cohesion: 0.10
 Nodes (19): minSdkVersion, app, security, windows, build, beforeBuildCommand, beforeDevCommand, devUrl (+11 more)
 
-### Community 108 - "Student App v1.4 to v2 Migration Audit"
+### Community 101 - "Community 101"
 Cohesion: 0.10
 Nodes (20): 1. Purpose and Locations, 2. Relationships and Data Flow, 3. Feature Parity Audit, 4. Verified Target Backend Reality, 5. Migration Method, 6. Data Migration Rules, 7. Release Gates, 8. Rollback (+12 more)
 
-### Community 109 - "notifications/src/index.js"
+### Community 102 - "Community 102"
 Cohesion: 0.14
 Nodes (12): decodeCursor(), { defineModule }, encodeCursor(), InMemoryNotificationRepository, InvalidCursorError, normalizePageLimit(), NOTIFICATIONS_MODULE, NotificationService (+4 more)
 
-### Community 110 - "compilerOptions"
+### Community 103 - "Community 103"
+Cohesion: 0.16
+Nodes (18): OrganizationType, ACADEMY, COUNSELING_CENTER, OTHER, PRIVATE_PRACTICE, SCHOOL, AddMemberDto, CreateOrganizationDto (+10 more)
+
+### Community 104 - "Community 104"
 Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, allowSyntheticDefaultImports, esModuleInterop, forceConsistentCasingInFileNames, isolatedModules, jsx, lib (+10 more)
 
-### Community 111 - "Student App v1 Backup Analysis"
+### Community 105 - "Community 105"
 Cohesion: 0.11
 Nodes (18): API Dependency Map, Authentication Flow, Backup Contents, Chat Implementation, Components, Dependencies Inventory, Exam Flow, Framework (+10 more)
 
-### Community 112 - "kernel.test.js"
+### Community 106 - "Community 106"
 Cohesion: 0.16
 Nodes (11): CMB_MODULE_KINDS, CmbModuleRegistry, createToken(), defineModule(), EMPTY, KERNEL_MODULE, assert, { CmbModuleRegistry, createToken, defineModule } (+3 more)
 
-### Community 113 - "compilerOptions"
+### Community 107 - "Community 107"
+Cohesion: 0.17
+Nodes (13): PlannerMoreMenu(), TriggerProps, ViewportPopover(), ViewportPopoverProps, Filter, hasAttention(), readRecentIds(), StudentAvatar() (+5 more)
+
+### Community 108 - "Community 108"
 Cohesion: 0.11
 Nodes (17): compilerOptions, allowJs, allowSyntheticDefaultImports, esModuleInterop, forceConsistentCasingInFileNames, isolatedModules, jsx, lib (+9 more)
 
-### Community 114 - "scripts"
+### Community 109 - "Community 109"
 Cohesion: 0.11
 Nodes (18): scripts, build, dev, lint, migrate:v1, migration:revert, migration:run, seed (+10 more)
 
-### Community 115 - "PushController"
+### Community 110 - "Community 110"
 Cohesion: 0.14
-Nodes (9): PushController, Body, Controller, Delete, Get, Headers, Post, Put (+1 more)
+Nodes (9): CreateTaskCommentDto, IsString, Length, CreateTaskIssueDto, IsOptional, IsString, Length, TasksService (+1 more)
 
-### Community 116 - "compilerOptions"
+### Community 111 - "Community 111"
 Cohesion: 0.11
 Nodes (17): compilerOptions, allowSyntheticDefaultImports, baseUrl, declaration, emitDecoratorMetadata, esModuleInterop, experimentalDecorators, forceConsistentCasingInFileNames (+9 more)
 
-### Community 117 - "devDependencies"
+### Community 112 - "Community 112"
 Cohesion: 0.11
 Nodes (18): devDependencies, autoprefixer, axe-core, jsdom, playwright, postcss, tailwindcss, @tauri-apps/cli (+10 more)
 
-### Community 118 - "authorization/package.json"
+### Community 113 - "Community 113"
 Cohesion: 0.11
 Nodes (16): dependencies, @moshaver/cmb-identity, @moshaver/cmb-kernel, @moshaver/cmb-tenancy, engines, node, exports, main (+8 more)
 
-### Community 119 - "persistence.test.js"
+### Community 114 - "Community 114"
 Cohesion: 0.15
 Nodes (9): CmbMigrationRegistry, defineMigration(), { defineModule }, PERSISTENCE_MODULE, UnitOfWork, assert, { CmbMigrationRegistry, UnitOfWork, defineMigration }, migration() (+1 more)
 
-### Community 120 - "providers/index.ts"
+### Community 115 - "Community 115"
 Cohesion: 0.11
 Nodes (6): ClockProvider, NetworkRequestOptions, NotificationProvider, RealtimeHandlers, RealtimeProvider, SyncQueueItem
 
-### Community 121 - "dependencies"
+### Community 116 - "Community 116"
 Cohesion: 0.12
 Nodes (17): dependencies, clsx, exceljs, framer-motion, goey-toast, @hookform/resolvers, lucide-react, @moshaver/api-contract (+9 more)
 
-### Community 122 - "pages/StudentsPage.tsx"
+### Community 117 - "Community 117"
 Cohesion: 0.15
 Nodes (12): StudentStatusFilter, destinations, StudentAdminAccess(), icons, InsightValue, StudentInsights(), items, StudentOverviewStats() (+4 more)
 
-### Community 123 - "LearningResource"
+### Community 118 - "Community 118"
 Cohesion: 0.12
 Nodes (16): LearningResourceAssignment, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, Unique, LearningResource (+8 more)
 
-### Community 124 - "StudentDailyRelaxation"
+### Community 119 - "Community 119"
 Cohesion: 0.12
 Nodes (16): RelaxationTrack, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn, StudentDailyRelaxation (+8 more)
 
-### Community 125 - "OrganizationsController"
-Cohesion: 0.22
-Nodes (8): OrganizationsController, Body, Controller, Delete, Get, Param, Patch, Post
+### Community 120 - "Community 120"
+Cohesion: 0.18
+Nodes (10): AuthController, Body, Controller, Post, Req, LoginDto, IsString, MaxLength (+2 more)
 
-### Community 126 - "auth/package.json"
+### Community 121 - "Community 121"
+Cohesion: 0.17
+Nodes (9): SyncChangeDto, IsIn, IsOptional, IsString, MaxLength, SyncService, Injectable, IsISO8601 (+1 more)
+
+### Community 122 - "Community 122"
 Cohesion: 0.12
 Nodes (15): dependencies, @moshaver/cmb-identity, @moshaver/cmb-kernel, engines, node, exports, main, name (+7 more)
 
-### Community 127 - "InMemorySessionStore"
+### Community 123 - "Community 123"
 Cohesion: 0.12
 Nodes (4): CmbSession, InMemorySessionStore, SessionCredentials, SessionCredentialService
 
-### Community 128 - "infrastructure/package.json"
+### Community 124 - "Community 124"
 Cohesion: 0.12
 Nodes (15): @moshaver/cmb-health, dependencies, @moshaver/cmb-health, @moshaver/cmb-kernel, engines, node, exports, main (+7 more)
 
-### Community 129 - "chat.types.ts"
-Cohesion: 0.17
-Nodes (12): fetchConversationPage(), ConversationSearch(), filters, ConversationToolbar(), sorts, initialCursor, useConversations(), CombinedConversationPage (+4 more)
+### Community 125 - "Community 125"
+Cohesion: 0.12
+Nodes (15): @moshaver/api-contract, typescript, dependencies, @moshaver/api-contract, devDependencies, typescript, main, name (+7 more)
 
-### Community 130 - "components/index.ts"
+### Community 126 - "Community 126"
 Cohesion: 0.15
-Nodes (4): PlannerContent(), PlannerHeader(), PlannerOverview(), PlannerToolbar()
+Nodes (15): RelationshipStatus, ACTIVE, PENDING, REJECTED, REVOKED, RelationshipType, ADVISOR_OF, GUARDIAN_OF (+7 more)
 
-### Community 131 - "SystemController"
+### Community 127 - "Community 127"
+Cohesion: 0.16
+Nodes (9): PushController, Body, Controller, Delete, Get, Headers, Post, Put (+1 more)
+
+### Community 128 - "Community 128"
 Cohesion: 0.21
 Nodes (7): SystemController, Body, Controller, Get, Param, Post, Put
 
-### Community 133 - "LearningItemsPanel"
+### Community 130 - "Community 130"
 Cohesion: 0.19
 Nodes (11): formatDate(), LearningItem, LearningItemsPanel(), create(), load(), remove(), review(), update() (+3 more)
 
-### Community 134 - "@moshaver/cmb-kernel"
+### Community 131 - "Community 131"
 Cohesion: 0.12
 Nodes (14): dependencies, @moshaver/cmb-kernel, engines, node, exports, main, name, private (+6 more)
 
-### Community 135 - "tenancy.test.js"
+### Community 132 - "Community 132"
 Cohesion: 0.17
 Nodes (9): { defineModule }, TENANCY_MODULE, TenancyPolicy, assert, platform, policy, scoped, { TENANCY_MODULE, TenancyPolicy } (+1 more)
 
-### Community 136 - "chat-ui-storage.ts"
-Cohesion: 0.27
-Nodes (12): defaultQuickReplies, QuickReplies(), add(), remove(), useConversationFavorites(), fallbackQuickReplies, readFavoriteConversationIds(), readJson() (+4 more)
-
-### Community 137 - "PlannerMenus.tsx"
-Cohesion: 0.21
-Nodes (8): PlannerFilterPopover(), FilterMenu(), ViewSwitch(), filterLabel(), PlannerMode, TaskFilter, Plan, PlanTask
-
-### Community 138 - "student/package.json"
-Cohesion: 0.13
-Nodes (14): @types/node, name, private, type, version, jsdom, playwright, postcss (+6 more)
-
-### Community 139 - "student-core/package.json"
-Cohesion: 0.13
-Nodes (14): typescript, dependencies, @moshaver/api-contract, devDependencies, typescript, main, name, private (+6 more)
-
-### Community 140 - "definitions"
+### Community 134 - "Community 134"
 Cohesion: 0.13
 Nodes (14): anyOf, anyOf, description, definitions, Application, Target, Value, description (+6 more)
 
-### Community 141 - "definitions"
+### Community 135 - "Community 135"
 Cohesion: 0.13
 Nodes (14): anyOf, anyOf, description, definitions, Application, Target, Value, description (+6 more)
 
-### Community 142 - "definitions"
+### Community 136 - "Community 136"
 Cohesion: 0.13
 Nodes (14): anyOf, anyOf, description, definitions, Application, Target, Value, description (+6 more)
 
-### Community 143 - "definitions"
+### Community 137 - "Community 137"
 Cohesion: 0.13
 Nodes (14): anyOf, anyOf, description, definitions, Application, Target, Value, description (+6 more)
 
-### Community 144 - "Backend v2 dependency map"
+### Community 138 - "Community 138"
 Cohesion: 0.13
 Nodes (14): Authorization — highest explicit fan-in, Backend v2 dependency map, Dashboard, Desired dependency evolution, Direct registered-module edges, Graphify validation checklist, Hidden coupling not visible in Nest module metadata, High-coupling nodes (+6 more)
 
-### Community 145 - "Backend v2 module inventory"
+### Community 139 - "Community 139"
 Cohesion: 0.13
 Nodes (15): Backend v2 module inventory, Classification vocabulary, Dormant module directories, Extraction readiness rules, Extraction waves, Key Phase-1 findings, Non-module backend areas, Product modules intentionally left in the API/product layer (+7 more)
 
-### Community 146 - "authorization.test.js"
+### Community 140 - "Community 140"
 Cohesion: 0.16
 Nodes (13): AUTHORIZATION_MODULE, buildAuthorizationContext(), canAccessOrganization(), { defineModule }, hasCapability(), { TenancyPolicy }, { uniqueValues }, assert (+5 more)
 
-### Community 147 - "Moshaver AI Engineering Guide"
+### Community 141 - "Community 141"
 Cohesion: 0.14
 Nodes (13): Admin, Backend, Backend architecture direction, Engineering rules, First actions, Graphify-first discovery, Moshaver AI Engineering Guide, Repository (+5 more)
 
-### Community 148 - "scripts"
+### Community 142 - "Community 142"
 Cohesion: 0.14
 Nodes (14): scripts, audit:parity, audit:release, build, dev, format, format:check, lint (+6 more)
 
-### Community 149 - "admin/public/sw.js"
+### Community 143 - "Community 143"
 Cohesion: 0.24
 Nodes (11): adminUrl(), handleAssetRequest(), handleNavigationRequest(), handleNotificationClick(), handlePushEvent(), isCacheableResponse(), normalizePath(), putRuntimeCache() (+3 more)
 
-### Community 150 - "audit-release.mjs"
+### Community 144 - "Community 144"
 Cohesion: 0.15
 Nodes (11): assets, auditProductionDependencies(), blockers, generatedAt, reportPath, repository, requiredDocs, results (+3 more)
 
-### Community 151 - "PlannerCanvas.tsx"
-Cohesion: 0.24
-Nodes (12): CanvasProps, CompactTask(), DayColumn(), drop(), PlannerCanvas(), VirtualList(), addMinutes(), dateRange() (+4 more)
+### Community 145 - "Community 145"
+Cohesion: 0.20
+Nodes (10): FinishStudySessionDto, IsInt, IsOptional, IsString, Max, MaxLength, Min, StartStudySessionDto (+2 more)
 
-### Community 152 - "ResourcesPage.tsx"
-Cohesion: 0.29
-Nodes (9): createResource(), deleteResource(), LearningResource, listResources(), listResourceStudents(), ResourceInput, updateResource(), empty (+1 more)
-
-### Community 153 - "ExamResult.tsx"
+### Community 146 - "Community 146"
 Cohesion: 0.22
 Nodes (12): ExamResult(), ExamResultData, formatDate(), Metric(), MistakeReason(), optionLabel(), reasons, Review() (+4 more)
 
-### Community 154 - "api-contract/src/index.ts"
+### Community 147 - "Community 147"
 Cohesion: 0.14
 Nodes (13): AccountContextContract, API_BASE_PATH, API_VERSION, ApiEnvelope, ApiErrorContract, ApiSuccess, CAPABILITIES, Capability (+5 more)
 
-### Community 155 - "activity/package.json"
+### Community 148 - "Community 148"
 Cohesion: 0.14
 Nodes (13): dependencies, @moshaver/cmb-kernel, engines, node, exports, main, name, private (+5 more)
 
-### Community 156 - "health/package.json"
+### Community 149 - "Community 149"
 Cohesion: 0.14
 Nodes (13): dependencies, @moshaver/cmb-kernel, engines, node, exports, main, name, private (+5 more)
 
-### Community 157 - "identity/package.json"
+### Community 150 - "Community 150"
 Cohesion: 0.14
 Nodes (13): dependencies, @moshaver/cmb-kernel, engines, node, exports, main, name, private (+5 more)
 
-### Community 158 - "notifications/package.json"
+### Community 151 - "Community 151"
 Cohesion: 0.14
 Nodes (13): dependencies, @moshaver/cmb-kernel, engines, node, exports, main, name, private (+5 more)
 
-### Community 159 - "persistence/package.json"
+### Community 152 - "Community 152"
 Cohesion: 0.14
 Nodes (13): dependencies, @moshaver/cmb-kernel, engines, node, exports, main, name, private (+5 more)
 
-### Community 160 - "realtime/package.json"
+### Community 153 - "Community 153"
 Cohesion: 0.14
 Nodes (13): dependencies, @moshaver/cmb-kernel, engines, node, exports, main, name, private (+5 more)
 
-### Community 161 - "system/package.json"
+### Community 154 - "Community 154"
 Cohesion: 0.14
 Nodes (13): dependencies, @moshaver/cmb-kernel, engines, node, exports, main, name, private (+5 more)
 
-### Community 162 - "tenancy/package.json"
+### Community 155 - "Community 155"
 Cohesion: 0.14
 Nodes (13): dependencies, @moshaver/cmb-kernel, engines, node, exports, main, name, private (+5 more)
 
-### Community 163 - "dashboard.api.ts"
-Cohesion: 0.27
-Nodes (8): AttentionSignal, getAdminAttention(), getAdminDashboard(), normalizeAttentionStudent(), signalLabels, V2AttentionStudent, useDashboardData(), DashboardPage()
-
-### Community 164 - "date-picker.tsx"
-Cohesion: 0.35
-Nodes (12): openDuplicate(), addDays(), calendarGrid(), calendarParts(), DatePicker(), selectDate(), DatePickerProps, findMonth() (+4 more)
-
-### Community 165 - "devDependencies"
+### Community 156 - "Community 156"
 Cohesion: 0.15
 Nodes (13): devDependencies, jest, @nestjs/cli, @nestjs/testing, ts-jest, ts-node, tsx, typeorm-ts-node-commonjs (+5 more)
 
-### Community 166 - "GuardianController"
+### Community 157 - "Community 157"
 Cohesion: 0.28
 Nodes (6): GuardianController, Body, Controller, Get, Param, Post
 
-### Community 167 - ".upload"
-Cohesion: 0.15
-Nodes (10): IsArray, Type, ValidateNested, UploadSyncDto, SyncController, Body, Controller, Get (+2 more)
-
-### Community 168 - "health.test.js"
+### Community 158 - "Community 158"
 Cohesion: 0.21
 Nodes (7): CmbHealthService, { defineModule }, HEALTH_MODULE, ReadinessError, assert, { CmbHealthService, HEALTH_MODULE, ReadinessError }, test
 
-### Community 169 - "notifications/src/index.d.ts"
+### Community 159 - "Community 159"
 Cohesion: 0.17
 Nodes (5): InMemoryNotificationRepository, InvalidCursorError, NotificationProvider, NotificationRepository, NotificationService
 
-### Community 170 - "InMemoryRealtimeHub"
+### Community 160 - "Community 160"
 Cohesion: 0.19
 Nodes (6): { defineModule }, InMemoryRealtimeHub, REALTIME_MODULE, assert, { InMemoryRealtimeHub, REALTIME_MODULE }, test
 
-### Community 172 - "src/planner/index.ts"
+### Community 162 - "Community 162"
 Cohesion: 0.22
 Nodes (8): parseTime(), planMetrics(), plannedMinutes(), createTaskCompletionPayload(), ActiveStudySession, StudentTask, TaskCompletionStatus, TaskRuntimeStatus
 
-### Community 173 - "compilerOptions"
+### Community 163 - "Community 163"
 Cohesion: 0.15
 Nodes (12): compilerOptions, declaration, exactOptionalPropertyTypes, module, moduleResolution, noUncheckedIndexedAccess, outDir, rootDir (+4 more)
 
-### Community 174 - ".assign"
+### Community 164 - "Community 164"
 Cohesion: 0.20
-Nodes (7): OnboardingController, Body, Controller, Get, Param, Post, Req
+Nodes (10): ExamAnswerDto, ExamHeartbeatDto, IsBoolean, IsDateString, IsIn, IsInt, IsOptional, IsString (+2 more)
 
-### Community 175 - "SignupForm.tsx"
+### Community 165 - "Community 165"
+Cohesion: 0.29
+Nodes (6): StudySessionsController, Body, Controller, Get, Param, Post
+
+### Community 166 - "Community 166"
 Cohesion: 0.21
 Nodes (9): Book, Grade, Label, normalizeDigits(), SignupForm(), submit(), SignupOptions, Structure (+1 more)
 
-### Community 176 - "RustPlugin.kt"
+### Community 167 - "Community 167"
 Cohesion: 0.26
 Nodes (7): BuildTask, Config, RustPlugin, DefaultTask, File, Plugin, Project
 
-### Community 177 - "compilerOptions"
+### Community 168 - "Community 168"
 Cohesion: 0.17
 Nodes (11): compilerOptions, allowSyntheticDefaultImports, lib, module, moduleResolution, noEmit, skipLibCheck, strict (+3 more)
 
-### Community 178 - "Student App v2 Gap Analysis Against Legacy"
+### Community 169 - "Community 169"
 Cohesion: 0.17
 Nodes (12): API Wiring Gap, Core Extraction Gap, Current Replacement Risk, Highest-Risk Missing Flows, Legacy Feature Inventory vs v2, Offline and Native Gap, Recommended Implementation Order, Screencast-Derived Parity Checklist (+4 more)
 
-### Community 179 - "activity/src/index.js"
+### Community 170 - "Community 170"
 Cohesion: 0.23
 Nodes (10): ACTIVITY_MODULE, clampActivityLimit(), DEFAULT_PRESENCE_STATES, { defineModule }, normalizePresenceState(), projectPresence(), shouldPersistPresence(), assert (+2 more)
 
-### Community 180 - "data-transfer/src/index.js"
+### Community 171 - "Community 171"
 Cohesion: 0.23
 Nodes (10): containsForbiddenFields(), DATA_TRANSFER_MODULE, DEFAULT_FORBIDDEN_FIELDS, { defineModule }, nonNegativeNumber(), positiveNumber(), summarizeCollections(), assert (+2 more)
 
-### Community 181 - "kernel/package.json"
+### Community 172 - "Community 172"
 Cohesion: 0.17
 Nodes (11): engines, node, exports, main, name, private, scripts, test (+3 more)
 
-### Community 182 - "Vazirmatn Changelog"
+### Community 173 - "Community 173"
 Cohesion: 0.18
 Nodes (10): 32.0.0, 32.1, 32.101, 32.102, 33.000, 33.001, 33.002, 33.003 (+2 more)
 
-### Community 183 - "Vazirmatn Font فونت وزیرمتن"
+### Community 174 - "Community 174"
 Cohesion: 0.18
 Nodes (10): Arch Linux ([AUR](https://aur.archlinux.org/packages/vazirmatn-fonts)), Authors, Build, CDN, Download, Install, License, [npm](https://www.npmjs.com/package/vazirmatn) (+2 more)
 
-### Community 184 - "soft-confirmation-button.tsx"
+### Community 175 - "Community 175"
 Cohesion: 0.27
 Nodes (10): formatSeconds(), Props, SoftConfirmButton(), cancel(), complete(), startHolding(), stopTimer(), State (+2 more)
 
-### Community 185 - "RolePermission"
-Cohesion: 0.18
-Nodes (11): Permission, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn, RolePermission, Entity (+3 more)
-
-### Community 186 - "dependencies"
-Cohesion: 0.18
-Nodes (11): dependencies, @moshaver/cmb-auth, @moshaver/cmb-authorization, @moshaver/cmb-health, @moshaver/cmb-identity, @moshaver/cmb-infrastructure, @moshaver/cmb-kernel, @moshaver/cmb-notifications (+3 more)
-
-### Community 187 - "dependencies"
+### Community 176 - "Community 176"
 Cohesion: 0.18
 Nodes (11): dependencies, lucide-react, @moshaver/student-core, react, react-dom, react-router-dom, @tauri-apps/api, @tauri-apps/plugin-notification (+3 more)
 
-### Community 188 - "scripts"
+### Community 177 - "Community 177"
 Cohesion: 0.18
 Nodes (11): scripts, android:build, android:init, build, dev, preview, tauri, tauri:build (+3 more)
 
-### Community 189 - "Phase 3 — CMB foundation and W1 extraction"
+### Community 178 - "Community 178"
 Cohesion: 0.18
 Nodes (10): API contract authority, Compatibility guarantees, Extracted packages, `@moshaver/cmb-health`, `@moshaver/cmb-kernel`, `@moshaver/cmb-realtime`, Package/install model, Phase 3 — CMB foundation and W1 extraction (+2 more)
 
-### Community 190 - "Workspace foundation — Phase 2"
+### Community 179 - "Community 179"
 Cohesion: 0.18
 Nodes (10): Current project graph, Decision, Install authority, Phase 2 exit criteria, Repository commands, Rollback, TypeScript project-reference decision, Validation model (+2 more)
 
-### Community 191 - "Student App V2 Konkur Exams Audit"
+### Community 180 - "Community 180"
 Cohesion: 0.18
 Nodes (10): Already Reusable, API V2 Changes Required, Backend, Broken or Inconsistent, Current Student Exams Architecture, Database Changes Required, Delivery Plan, Frontend (+2 more)
 
-### Community 192 - "CmbModuleRegistry"
+### Community 181 - "Community 181"
 Cohesion: 0.18
 Nodes (4): CmbModuleDescriptor, CmbModuleKind, CmbModuleRegistration, CmbModuleRegistry
 
-### Community 193 - "persistence/src/index.d.ts"
+### Community 182 - "Community 182"
 Cohesion: 0.18
 Nodes (3): CmbMigration, CmbMigrationRegistry, UnitOfWork
 
-### Community 194 - "AuthProvider"
+### Community 183 - "Community 183"
 Cohesion: 0.20
 Nodes (5): assertStudentUser(), restoreStudentSession(), StudentUser, AuthProvider, ApiError
 
-### Community 196 - "MessageComposer.tsx"
-Cohesion: 0.31
-Nodes (6): EditPreview(), MessageComposer(), keyDown(), submit(), ReplyPreview(), ChatMessage
-
-### Community 197 - "guardian.api.ts"
-Cohesion: 0.20
-Nodes (9): guardianApi, GuardianDashboard, GuardianExam, GuardianProgress, GuardianReport, GuardianResource, GuardianSchedule, GuardianStudent (+1 more)
-
-### Community 198 - "todayIso"
-Cohesion: 0.29
-Nodes (7): CommandPalette(), usePlannerNavigation(), usePlannerState(), isValidIsoDate(), safeIsoDate(), todayIso(), DateTimePicker()
-
-### Community 199 - "onboarding-journey-e2e.mjs"
+### Community 185 - "Community 185"
 Cohesion: 0.29
 Nodes (9): advisorA, advisorB, assert(), base, login(), orgA, raw(), request() (+1 more)
 
-### Community 200 - "security-matrix-e2e.mjs"
+### Community 186 - "Community 186"
 Cohesion: 0.22
 Nodes (8): advisorRelationship, assert(), base, login(), orgA, orgB, studentA, studentB
 
-### Community 201 - "student-journey-e2e.mjs"
+### Community 187 - "Community 187"
 Cohesion: 0.20
 Nodes (4): base, guardianMock, session, today
 
-### Community 202 - "DashboardService"
+### Community 188 - "Community 188"
 Cohesion: 0.27
 Nodes (4): DashboardController, Controller, DashboardService, Injectable
 
-### Community 203 - "OnboardingService"
+### Community 189 - "Community 189"
 Cohesion: 0.22
-Nodes (7): AssignStudentOnboardingDto, IsIn, IsOptional, IsUUID, OnboardingService, Injectable, ValidateIf
+Nodes (6): NotificationsController, Controller, Get, Param, Put, Query
 
-### Community 204 - "StudentSignupDto"
+### Community 190 - "Community 190"
 Cohesion: 0.20
-Nodes (10): StudentSignupDto, IsInt, IsString, Max, MaxLength, Min, MinLength, Type (+2 more)
+Nodes (9): StaffTaskIssueStatus, DISMISSED, OPEN, RESOLVED, IsEnum, IsOptional, IsString, MaxLength (+1 more)
 
-### Community 205 - "permissions"
-Cohesion: 0.20
-Nodes (10): $ref, description, items, type, uniqueItems, description, items, type (+2 more)
+### Community 191 - "Community 191"
+Cohesion: 0.36
+Nodes (6): TasksController, Body, Controller, Get, Param, Post
 
-### Community 206 - "webviews"
-Cohesion: 0.20
-Nodes (10): type, webviews, windows, items, description, items, type, description (+2 more)
-
-### Community 207 - "permissions"
+### Community 192 - "Community 192"
 Cohesion: 0.20
 Nodes (10): $ref, description, items, type, uniqueItems, description, items, type (+2 more)
 
-### Community 208 - "webviews"
+### Community 193 - "Community 193"
 Cohesion: 0.20
 Nodes (10): type, webviews, windows, items, description, items, type, description (+2 more)
 
-### Community 209 - "permissions"
+### Community 194 - "Community 194"
 Cohesion: 0.20
 Nodes (10): $ref, description, items, type, uniqueItems, description, items, type (+2 more)
 
-### Community 210 - "webviews"
+### Community 195 - "Community 195"
 Cohesion: 0.20
 Nodes (10): type, webviews, windows, items, description, items, type, description (+2 more)
 
-### Community 211 - "permissions"
+### Community 196 - "Community 196"
 Cohesion: 0.20
 Nodes (10): $ref, description, items, type, uniqueItems, description, items, type (+2 more)
 
-### Community 212 - "webviews"
+### Community 197 - "Community 197"
 Cohesion: 0.20
 Nodes (10): type, webviews, windows, items, description, items, type, description (+2 more)
 
-### Community 213 - "Phase 3 — CMB platform W2"
+### Community 198 - "Community 198"
+Cohesion: 0.20
+Nodes (10): $ref, description, items, type, uniqueItems, description, items, type (+2 more)
+
+### Community 199 - "Community 199"
+Cohesion: 0.20
+Nodes (10): type, webviews, windows, items, description, items, type, description (+2 more)
+
+### Community 200 - "Community 200"
 Cohesion: 0.20
 Nodes (9): Compatibility boundary, Dependency shape, Extracted boundaries, `@moshaver/cmb-identity`, `@moshaver/cmb-system`, `@moshaver/cmb-tenancy`, Next wave, Phase 3 — CMB platform W2 (+1 more)
 
-### Community 214 - "Repository architecture"
+### Community 201 - "Community 201"
 Cohesion: 0.20
 Nodes (9): Architecture style, Backend: modular monolith first, Core design rules, Current-to-target mapping, Recommended ownership zones, Repository architecture, Repository: grouped product monorepo, Technology-tooling direction (+1 more)
 
-### Community 215 - "Developer handbook"
+### Community 202 - "Community 202"
 Cohesion: 0.20
 Nodes (10): Admin v2, Architecture rules, Backend v2, Complete a change, Definition of done, Developer handbook, Find the owning code, Identify the active product line (+2 more)
 
-### Community 216 - "Moshaver documentation"
+### Community 203 - "Community 203"
 Cohesion: 0.20
 Nodes (10): Architecture, Components and APIs, Directory contract, Historical evidence, Maintenance rules, Migration work, Moshaver documentation, Operations (+2 more)
 
-### Community 217 - "validate_project.py"
+### Community 204 - "Community 204"
 Cohesion: 0.44
 Nodes (9): deps_available(), files(), have(), ignored(), main(), nearest_pm(), node_validate(), run() (+1 more)
 
-### Community 218 - "identity.test.js"
+### Community 205 - "Community 205"
 Cohesion: 0.31
 Nodes (8): { defineModule }, IDENTITY_MODULE, normalizeUsername(), projectCapabilities(), uniqueValues(), assert, { IDENTITY_MODULE, normalizeUsername, projectCapabilities, uniqueValues }, test
 
-### Community 219 - "chat-helpers.ts"
-Cohesion: 0.53
-Nodes (6): chatSearchMatch(), conversationActivity(), mergeMessagePages(), sortConversations(), MessagePage, canUseMessageAction()
-
-### Community 220 - "PlannerForms.tsx"
+### Community 206 - "Community 206"
 Cohesion: 0.31
-Nodes (7): DateAction(), PlanForm(), TaskDrawer(), TaskForm(), errorMessage(), PlanDraft, TaskDraft
+Nodes (4): PlannerContent(), PlannerHeader(), PlannerOverview(), PlannerToolbar()
 
-### Community 221 - "StudentEditor.tsx"
+### Community 207 - "Community 207"
 Cohesion: 0.28
 Nodes (6): formCompleteness(), StudentEditor(), StudentEditorFeedback, StudentEditorMode, countData(), StudentForm
 
-### Community 222 - "useStudents.ts"
-Cohesion: 0.31
-Nodes (5): getApiWorkContextKey(), loadAllStudents(), STUDENT_SELECTION_EVENT, StudentsPage, useStudents()
-
-### Community 223 - "compilerOptions"
+### Community 208 - "Community 208"
 Cohesion: 0.22
 Nodes (8): compilerOptions, allowSyntheticDefaultImports, composite, module, moduleResolution, skipLibCheck, strict, include
 
-### Community 224 - "demo-guard.ts"
+### Community 209 - "Community 209"
+Cohesion: 0.31
+Nodes (8): RetryRequestStatus, APPROVED, PENDING, REJECTED, quizService(), repo(), service(), submissionService()
+
+### Community 210 - "Community 210"
 Cohesion: 0.42
 Nodes (5): requireSafeDemoDatabase(), requireSafePlatformDatabase(), seedProductDemo(), resetPlatform(), resetProductDemo()
 
-### Community 225 - "seedSecurityMatrix"
+### Community 211 - "Community 211"
 Cohesion: 0.25
 Nodes (3): seedSecurityMatrix(), ensureMembershipAndRole(), ensureRole()
 
-### Community 226 - "EducationCatalogController"
-Cohesion: 0.28
-Nodes (4): EducationCatalogController, Controller, Get, Query
-
-### Community 227 - "ExamAnswerDto"
-Cohesion: 0.25
-Nodes (9): ExamAnswerDto, ExamHeartbeatDto, IsBoolean, IsDateString, IsIn, IsInt, IsOptional, IsString (+1 more)
-
-### Community 228 - "properties"
+### Community 212 - "Community 212"
 Cohesion: 0.22
 Nodes (9): properties, Identifier, description, oneOf, type, identifier, remote, anyOf (+1 more)
 
-### Community 229 - "properties"
+### Community 213 - "Community 213"
 Cohesion: 0.22
 Nodes (9): properties, Identifier, description, oneOf, type, identifier, remote, anyOf (+1 more)
 
-### Community 230 - "properties"
+### Community 214 - "Community 214"
 Cohesion: 0.22
 Nodes (9): properties, Identifier, description, oneOf, type, identifier, remote, anyOf (+1 more)
 
-### Community 231 - "properties"
+### Community 215 - "Community 215"
 Cohesion: 0.22
 Nodes (9): properties, Identifier, description, oneOf, type, identifier, remote, anyOf (+1 more)
 
-### Community 232 - "Moshaver architecture"
+### Community 216 - "Community 216"
 Cohesion: 0.22
 Nodes (9): Architecture documents, Backend style, Change rule, Current Phase-1 classification, Current physical layout, Frontend boundaries, Moshaver architecture, Target logical model (+1 more)
 
-### Community 233 - "ADR 0001: Grouped product monorepo"
+### Community 217 - "Community 217"
 Cohesion: 0.22
 Nodes (8): ADR 0001: Grouped product monorepo, Alternatives considered, Consequences, Context, Decision, Keep all projects at repository root forever, Put every project under one flat `packages/` directory, Split into many repositories
 
-### Community 234 - "ADR 0003 — API contract authority and versioning"
+### Community 218 - "Community 218"
 Cohesion: 0.22
 Nodes (8): ADR 0003 — API contract authority and versioning, Backend responsibility, Change rules, CMB contracts, Consequences, Context, Decision, Versioning policy
 
-### Community 235 - "Completion report"
+### Community 219 - "Community 219"
 Cohesion: 0.22
 Nodes (9): API contract changes, Completion report, Database changes, Files changed, Manual validation, Remaining risks, Security impact, Summary (+1 more)
 
-### Community 236 - "main"
+### Community 220 - "Community 220"
 Cohesion: 0.44
 Nodes (8): classify(), load_config(), main(), package_info(), rel(), run(), text_detect(), Path
 
-### Community 237 - "system.test.js"
+### Community 221 - "Community 221"
 Cohesion: 0.31
 Nodes (7): { defineModule }, isValidAppVersion(), projectAuditRecord(), SYSTEM_MODULE, assert, { SYSTEM_MODULE, isValidAppVersion, projectAuditRecord }, test
 
-### Community 239 - "create-cmb-package.mjs"
+### Community 223 - "Community 223"
 Cohesion: 0.22
 Nodes (8): dependencies, directory, files, [id, kind = "platform", dependencyList = "kernel"], localDependencies, manifest, root, validKinds
 
-### Community 240 - "fingerprint.mjs"
+### Community 224 - "Community 224"
 Cohesion: 0.25
 Nodes (8): calculate(), checkArg, CODE_EXTS, current, EXCLUDED_SEGMENTS, root, trackedFiles(), writeArg
 
-### Community 241 - "Moshaver API v2 migration final report"
+### Community 225 - "Community 225"
 Cohesion: 0.22
 Nodes (8): Data migration rehearsal, Decision, Delivered architecture, Future database evolution, Honest limits, Moshaver API v2 migration final report, Production cutover and rollback gate, Verification evidence
 
-### Community 242 - "EducationBook"
-Cohesion: 0.25
-Nodes (6): EducationBook, Column, Entity, Index, PrimaryColumn, InjectRepository
+### Community 226 - "Community 226"
+Cohesion: 0.32
+Nodes (6): API_WORK_CONTEXT_EVENT, getApiWorkContextKey(), loadAllStudents(), STUDENT_SELECTION_EVENT, StudentsPage, useStudents()
 
-### Community 243 - "CreateDailyReportDto"
+### Community 227 - "Community 227"
 Cohesion: 0.25
-Nodes (8): CreateDailyReportDto, IsDateString, IsInt, IsOptional, IsString, Max, MaxLength, Min
+Nodes (8): CompleteTaskDto, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min
 
-### Community 244 - "CapabilityRemote"
-Cohesion: 0.25
-Nodes (8): description, properties, required, type, CapabilityRemote, urls, description, type
-
-### Community 245 - "CapabilityRemote"
+### Community 228 - "Community 228"
 Cohesion: 0.25
 Nodes (8): description, properties, required, type, CapabilityRemote, urls, description, type
 
-### Community 246 - "CapabilityRemote"
+### Community 229 - "Community 229"
 Cohesion: 0.25
 Nodes (8): description, properties, required, type, CapabilityRemote, urls, description, type
 
-### Community 247 - "CapabilityRemote"
+### Community 230 - "Community 230"
 Cohesion: 0.25
 Nodes (8): description, properties, required, type, CapabilityRemote, urls, description, type
 
-### Community 248 - "Student Core Architecture"
+### Community 231 - "Community 231"
+Cohesion: 0.25
+Nodes (8): description, properties, required, type, CapabilityRemote, urls, description, type
+
+### Community 232 - "Community 232"
 Cohesion: 0.25
 Nodes (7): Adapter Strategy, Current v1 Logic Covered, Migration Rule, Package Layout, Provider Interfaces, Purpose, Student Core Architecture
 
-### Community 249 - "Moshaver Version Roadmap"
+### Community 233 - "Community 233"
 Cohesion: 0.25
 Nodes (7): Moshaver Version Roadmap, v1.4.0 — Admin Control & Exam Delivery — built, v1.4.x — Stability only, v1.5.0 — Advisor Intelligence, v1.6.0 — Multi-student workflow, v1.7.0 — SaaS foundation, v2.0.0 — Scale-driven platform migration
 
-### Community 250 - "Engineering rules"
+### Community 234 - "Community 234"
 Cohesion: 0.25
 Nodes (8): API contracts, Avoid unnecessary dependencies, Database safety, Engineering rules, Keep changes narrow, Preserve behavior first, Reuse existing conventions, Security
 
-### Community 251 - "Recommended repository settings"
+### Community 235 - "Community 235"
 Cohesion: 0.25
 Nodes (7): AI / Graphify policy, Branch model, Merge policy, Recommended protection, Recommended repository settings, Release policy, Required quality surfaces
 
-### Community 252 - "CmbHealthService"
+### Community 236 - "Community 236"
 Cohesion: 0.25
 Nodes (3): CmbHealthService, ReadinessError, ReadinessProbe
 
-### Community 253 - "InMemoryRealtimeHub"
+### Community 237 - "Community 237"
 Cohesion: 0.25
 Nodes (3): InMemoryRealtimeHub, RealtimeEvent, RealtimeListener
 
-### Community 255 - "validate-api-manifest.mjs"
+### Community 239 - "Community 239"
 Cohesion: 0.25
 Nodes (7): errors, file, integrations, manifest, required, seen, statuses
 
-### Community 256 - "create-cmb-app.mjs"
+### Community 240 - "Community 240"
 Cohesion: 0.29
 Nodes (5): createCmbApp(), referenceRoot, repoRoot, exec, repoRoot
 
-### Community 257 - "popover.tsx"
-Cohesion: 0.38
-Nodes (4): PlannerMoreMenu(), TriggerProps, ViewportPopover(), ViewportPopoverProps
-
-### Community 258 - "Students module — UI/UX workspace upgrade"
+### Community 241 - "Community 241"
 Cohesion: 0.29
 Nodes (6): Directory improvements, Light / dark mode, Request behavior, Student detail improvements, Students module — UI/UX workspace upgrade, Workspace architecture
 
-### Community 259 - "ChatMessageType"
+### Community 242 - "Community 242"
 Cohesion: 0.29
-Nodes (7): ChatMessageType, EXAM, MOTIVATION, PLAN, TASK, TEXT, WARNING
+Nodes (6): IsArray, Type, ValidateNested, UploadSyncDto, Body, Post
 
-### Community 261 - "Graphify in Moshaver"
+### Community 243 - "Community 243"
 Cohesion: 0.29
 Nodes (6): Agent workflow, Freshness, Graphify in Moshaver, Local setup, MCP, Purpose
 
-### Community 262 - "Tauri Student App Architecture"
+### Community 244 - "Community 244"
 Cohesion: 0.29
 Nodes (7): Low Android Rules, Native Storage, Platforms, Project, Runtime Boundaries, Stack, Tauri Student App Architecture
 
-### Community 263 - "Moshaver Admin v2"
+### Community 245 - "Community 245"
 Cohesion: 0.29
 Nodes (7): Administration workspace conventions, API, Build, Communication workspace, Development, Migration, Moshaver Admin v2
 
-### Community 264 - "Moshaver v2 initial analysis"
+### Community 246 - "Community 246"
 Cohesion: 0.29
 Nodes (7): Broken Or Weak Flows, Current Features, Current Problems, Migration Risks, Missing Features, Moshaver v2 initial analysis, Priority Plan
 
-### Community 265 - "Backend changelog"
+### Community 247 - "Community 247"
 Cohesion: 0.29
 Nodes (6): 1.3.0, 1.3.1, 1.3.3, 1.4.0, 1.4.1, Backend changelog
 
-### Community 266 - "Moshaver | مشاور v1.3.3 — Authentication & Synchronization Fix"
+### Community 248 - "Community 248"
 Cohesion: 0.29
 Nodes (6): Admin, Bugs reproduced from the supplied recordings, Expected regression sequence, Moshaver | مشاور v1.3.3 — Authentication & Synchronization Fix, Student, v1.3.3 behavior
 
-### Community 267 - "Backend v2 Discovery"
+### Community 249 - "Community 249"
 Cohesion: 0.29
 Nodes (6): Backend v2 Discovery, Breaking Change Report, Current API Map, Current Database Schema Map, Current Frontend Dependencies, Migration Risks
 
-### Community 268 - "Student and Family exam experience audit"
+### Community 250 - "Community 250"
 Cohesion: 0.29
 Nodes (6): Architecture direction, Baseline at audit start, Delivery matrix, Release boundaries, Student and Family exam experience audit, Verification evidence
 
-### Community 269 - "Maintenance guide"
+### Community 251 - "Community 251"
 Cohesion: 0.29
 Nodes (7): Database maintenance, Dependency updates, Incident triage, Maintenance guide, Performance and security, Recovery and debt, Routine schedule
 
-### Community 270 - "Moshaver JSON Import Guide — schemaVersion 2"
+### Community 252 - "Community 252"
 Cohesion: 0.29
 Nodes (6): Full schema example, Moshaver JSON Import Guide — schemaVersion 2, Preview and commit guarantees, Timed exam behavior, v1.4.1 — Link an exam directly into the daily plan, v1.4.2 — پیام انگیزشی روزانه
 
-### Community 271 - "Student V2 Audio and Chat Audit"
+### Community 253 - "Community 253"
 Cohesion: 0.29
 Nodes (6): Audio today, Backend and Admin audio today, Chat today, Required implementation order, Reusable architecture, Student V2 Audio and Chat Audit
 
-### Community 272 - "2. Expand development/demo seed into a realistic product seed"
+### Community 254 - "Community 254"
 Cohesion: 0.29
 Nodes (7): 2. Expand development/demo seed into a realistic product seed, Academic data, Accounts, Communication data, Exam data, Organizations, Relationships
 
-### Community 273 - "api-contract/package.json"
+### Community 255 - "Community 255"
 Cohesion: 0.29
 Nodes (6): exports, name, private, type, types, version
 
-### Community 274 - "Security v2 release audit"
+### Community 256 - "Community 256"
 Cohesion: 0.29
 Nodes (6): Boundaries proven, Findings fixed in this audit, Release-blocking result, Reproducible verification, Residual operational risk, Security v2 release audit
 
-### Community 275 - "check-cmb-packages.mjs"
+### Community 257 - "Community 257"
 Cohesion: 0.29
 Nodes (5): cmbProjects, errors, graph, require, root
 
-### Community 276 - "create-product-package.mjs"
+### Community 258 - "Community 258"
 Cohesion: 0.29
 Nodes (6): dependencies, directory, files, [id, dependencyList = ""], manifest, root
 
-### Community 277 - "Workspace foundation"
+### Community 259 - "Community 259"
 Cohesion: 0.29
 Nodes (6): Adding a project, Authority, Bootstrap semantics, Commands, Non-goals, Workspace foundation
 
-### Community 278 - "Graphify-first repository discovery"
+### Community 260 - "Community 260"
 Cohesion: 0.33
 Nodes (5): Graphify-first repository discovery, Moshaver-specific use, Policy, Setup, Useful queries
 
-### Community 279 - "Admin layout – UI/UX stabilization pass"
+### Community 261 - "Community 261"
 Cohesion: 0.33
 Nodes (5): Admin layout – UI/UX stabilization pass, Files, Fixed in this pass, Global navigation shortcut, Responsive behavior
 
-### Community 281 - "nest-cli.json"
+### Community 263 - "Community 263"
 Cohesion: 0.33
 Nodes (5): collection, compilerOptions, deleteOutDir, plugins, sourceRoot
 
-### Community 282 - "1724140700000-IdentityAuthorization.ts"
+### Community 264 - "Community 264"
+Cohesion: 0.33
+Nodes (6): SyllabusProgressStatus, MASTERED, READ, REVIEW, TESTED, UNREAD
+
+### Community 265 - "Community 265"
 Cohesion: 0.33
 Nodes (3): IdentityAuthorization1724140700000, roleCapabilities, roles
 
-### Community 283 - "default.json"
+### Community 266 - "Community 266"
 Cohesion: 0.33
 Nodes (5): description, identifier, permissions, $schema, windows
 
-### Community 284 - "ADR 0002: Modular monolith backend with CMB boundaries"
+### Community 267 - "Community 267"
 Cohesion: 0.33
 Nodes (5): ADR 0002: Modular monolith backend with CMB boundaries, Consequences, Context, Decision, Service extraction trigger
 
-### Community 285 - "Current project/package consumers"
+### Community 268 - "Community 268"
 Cohesion: 0.33
 Nodes (6): Consequence: API contract ownership gap, Current project/package consumers, Phase-2 implication, Student boundary, Verified package dependencies, Workspace-level dependency graph
 
-### Community 286 - "Moshaver v2 system map"
+### Community 269 - "Community 269"
 Cohesion: 0.33
 Nodes (6): Archived v1.4 line, Continue reading, Moshaver v2 system map, Runtime relationships, Security and data boundaries, Source ownership
 
-### Community 287 - "Backend v2 HTTP API"
+### Community 270 - "Community 270"
 Cohesion: 0.33
 Nodes (6): Adding or changing an endpoint, Authentication example, Backend v2 HTTP API, Current route families, Discovery, Protocol contract
 
-### Community 288 - "Project Detection"
+### Community 271 - "Community 271"
 Cohesion: 0.33
 Nodes (5): Database and Infrastructure, Detected Applications, Git State, Project Detection, Repository
 
-### Community 289 - "Backend v2 product demo seed"
+### Community 272 - "Community 272"
 Cohesion: 0.33
 Nodes (6): Backend v2 product demo seed, Create or refresh the demo, Included scenarios, Safety boundary, Useful accounts, Verification
 
-### Community 290 - "Feature and bug playbook"
+### Community 273 - "Community 273"
 Cohesion: 0.33
 Nodes (6): Admin directory convention, Bug workflow, Feature and bug playbook, Feature workflow, Review checklist, UI checklist
 
-### Community 291 - "Moshaver v2 repository runbook"
+### Community 274 - "Community 274"
 Cohesion: 0.33
 Nodes (6): Access the v1.4 archive, Data and deployment safety, Moshaver v2 repository runbook, Package development, Run the stack, Verification matrix
 
-### Community 292 - "Moshaver | مشاور — Changelog"
+### Community 275 - "Community 275"
 Cohesion: 0.33
 Nodes (5): 1.3.3 — Auth & Sync Stabilization, 1.4.0 — Admin Control, JSON v2 & Timed Exams, 1.4.1 — Inline Exam in Daily Plan, Moshaver | مشاور — Changelog, Unreleased — Admin v2 operations and contributor documentation
 
-### Community 293 - "v1.4 to v2 migration verification"
+### Community 276 - "Community 276"
 Cohesion: 0.33
 Nodes (5): Admin portal representative accounts, Integrity gate, Migrated student account, Operational cutover, v1.4 to v2 migration verification
 
-### Community 294 - "Universal AI Engineering Toolkit v3"
+### Community 277 - "Community 277"
 Cohesion: 0.33
 Nodes (5): Configuration, Start, Universal AI Engineering Toolkit v3, Upgrade note, What it provides
 
-### Community 295 - "Agent usage"
+### Community 278 - "Community 278"
 Cohesion: 0.33
 Nodes (6): Agent usage, Backend Engineer, Database Architect, Database Engineer, Frontend Engineer, Mobile Engineer
 
-### Community 296 - "PULL_REQUEST_TEMPLATE.md"
+### Community 279 - "Community 279"
 Cohesion: 0.33
 Nodes (5): Checklist, Risk / rollout, Summary, Type of change, Validation
 
-### Community 297 - "2. Platform Admin workspace"
+### Community 280 - "Community 280"
 Cohesion: 0.33
 Nodes (6): 2. Platform Admin workspace, Content, Organizations, Students, System, Users
 
-### Community 298 - "Student / Family app"
+### Community 281 - "Community 281"
 Cohesion: 0.33
 Nodes (6): 4. Define the product boundaries between Admin v2 and Student app, Admin v2, Guardian mode, Optional observer/read-only mode, Student / Family app, Student mode
 
-### Community 299 - "check-compatibility.mjs"
+### Community 282 - "Community 282"
 Cohesion: 0.33
 Nodes (5): errors, packages, policy, root, workspace
 
-### Community 300 - "Admin v1.6 to v2 migration audit"
+### Community 283 - "Community 283"
 Cohesion: 0.40
 Nodes (4): Admin v1.6 to v2 migration audit, Authentication evidence, Planner and exams evidence, Retirement gate
 
-### Community 301 - ".prettierrc.json"
+### Community 284 - "Community 284"
 Cohesion: 0.40
 Nodes (4): printWidth, semi, singleQuote, trailingComma
 
-### Community 304 - "Admin v2 API compatibility"
+### Community 286 - "Community 286"
 Cohesion: 0.40
 Nodes (4): Admin v2 API compatibility, Admin v2 compatibility coverage, Contract, Release boundaries
 
-### Community 308 - "EncouragementDto"
+### Community 290 - "Community 290"
+Cohesion: 0.40
+Nodes (4): ChangePasswordDto, IsString, MaxLength, MinLength
+
+### Community 291 - "Community 291"
 Cohesion: 0.40
 Nodes (5): EncouragementDto, IsIn, IsOptional, IsString, MaxLength
 
-### Community 309 - "MainActivity"
+### Community 292 - "Community 292"
 Cohesion: 0.50
 Nodes (3): MainActivity, Bundle, TauriActivity
 
-### Community 310 - "gradlew"
+### Community 293 - "Community 293"
 Cohesion: 0.70
 Nodes (4): gradlew script, die(), save(), warn()
 
-### Community 311 - "AI repository operating system"
+### Community 294 - "Community 294"
 Cohesion: 0.40
 Nodes (4): AI repository operating system, Layers, Maintenance, Rule against duplicate truth
 
-### Community 312 - "Phase 3 — CMB mechanism split W4"
+### Community 295 - "Community 295"
 Cohesion: 0.40
 Nodes (4): Extracted packages, Phase 3 — CMB mechanism split W4, Product behavior retained, Status
 
-### Community 313 - "Phase 3 — CMB platform W3"
+### Community 296 - "Community 296"
 Cohesion: 0.40
 Nodes (4): Extracted packages, Phase 3 — CMB platform W3, Product adapters retained, Status
 
-### Community 314 - "Admin v2 Communication workspace"
+### Community 297 - "Community 297"
 Cohesion: 0.40
 Nodes (5): Admin v2 Communication workspace, Canonical routes, Realtime behavior, Runtime contracts, UI states
 
-### Community 315 - "Moshaver Backend v2"
+### Community 298 - "Community 298"
 Cohesion: 0.40
 Nodes (5): Admin v2 role demo accounts, Development, Moshaver Backend v2, Production Notes, Stack
 
-### Community 316 - "Admin v2 to API v2 gap plan"
+### Community 299 - "Community 299"
 Cohesion: 0.40
 Nodes (4): Admin v2 to API v2 gap plan, Build order, Current gap matrix, Validation rules
 
-### Community 317 - "Admin v2 Web Push verification"
+### Community 300 - "Community 300"
 Cohesion: 0.40
 Nodes (4): Admin v2 Web Push verification, Automated contract, Current result, Production-like browser checklist
 
-### Community 318 - "Moshaver UI/UX Direction"
+### Community 301 - "Community 301"
 Cohesion: 0.40
 Nodes (4): Admin principle, Interaction rules, Moshaver UI/UX Direction, Student principle
 
-### Community 319 - "Q: also fix this issues that when in this mode در حال بازیابی نشست ... and not finding it give user options to do any things else after some tries redirect it to another page or to login pages and fix the proxy and redirect logic of admin v2 app"
-Cohesion: 0.40
-Nodes (4): Answer, Outcome, Q: also fix this issues that when in this mode در حال بازیابی نشست ... and not finding it give user options to do any things else after some tries redirect it to another page or to login pages and fix the proxy and redirect logic of admin v2 app, Source Nodes
-
-### Community 320 - "Q: when i do task complete in student app is work but when i start the timer of that task and then i puase it and then click on complete task is not sending to server for any click for comlete task is show the send is not ok and bad errors"
-Cohesion: 0.40
-Nodes (4): Answer, Outcome, Q: when i do task complete in student app is work but when i start the timer of that task and then i puase it and then click on complete task is not sending to server for any click for comlete task is show the send is not ok and bad errors, Source Nodes
-
-### Community 321 - "4. Exam home"
+### Community 302 - "Community 302"
 Cohesion: 0.40
 Nodes (5): 4. Exam home, اکنون, نتایج, نیازمند اقدام, پیش رو
 
-### Community 322 - "authorization/src/index.d.ts"
+### Community 303 - "Community 303"
 Cohesion: 0.40
 Nodes (4): AuthorizationAssignment, AuthorizationBase, AuthorizationContext, AuthorizationMembership
 
-### Community 323 - "descriptor-0.1.0.json"
+### Community 304 - "Community 304"
 Cohesion: 0.40
 Nodes (4): dependencies, id, kind, version
 
-### Community 324 - "Agent integration"
+### Community 305 - "Community 305"
 Cohesion: 0.50
 Nodes (3): Agent integration, Canonical instructions, Graphify
 
-### Community 326 - "Chat UI/UX Upgrade"
+### Community 307 - "Community 307"
 Cohesion: 0.50
 Nodes (3): Added, Chat UI/UX Upgrade, No backend changes
 
-### Community 327 - "Planner audit"
+### Community 308 - "Community 308"
 Cohesion: 0.50
 Nodes (3): Bugs fixed/recommended, Planner audit, Suggested structure
 
-### Community 367 - "StaffTaskIssueStatus"
-Cohesion: 0.50
-Nodes (4): StaffTaskIssueStatus, DISMISSED, OPEN, RESOLVED
-
-### Community 368 - "tsconfig.build.json"
+### Community 356 - "Community 356"
 Cohesion: 0.50
 Nodes (3): exclude, extends, ./tsconfig.json
 
-### Community 369 - "Capability"
+### Community 357 - "Community 357"
+Cohesion: 1.00
+Nodes (4): GuardianSelectionPage(), cancel(), loadSelection(), request()
+
+### Community 358 - "Community 358"
 Cohesion: 0.50
 Nodes (4): description, required, type, Capability
 
-### Community 370 - "description"
+### Community 359 - "Community 359"
 Cohesion: 0.50
 Nodes (4): default, description, type, description
 
-### Community 371 - "local"
+### Community 360 - "Community 360"
 Cohesion: 0.50
 Nodes (4): default, description, type, local
 
-### Community 372 - "Capability"
+### Community 361 - "Community 361"
 Cohesion: 0.50
 Nodes (4): description, required, type, Capability
 
-### Community 373 - "description"
+### Community 362 - "Community 362"
 Cohesion: 0.50
 Nodes (4): default, description, type, description
 
-### Community 374 - "local"
+### Community 363 - "Community 363"
 Cohesion: 0.50
 Nodes (4): default, description, type, local
 
-### Community 375 - "Capability"
+### Community 364 - "Community 364"
 Cohesion: 0.50
 Nodes (4): description, required, type, Capability
 
-### Community 376 - "description"
+### Community 365 - "Community 365"
 Cohesion: 0.50
 Nodes (4): default, description, type, description
 
-### Community 377 - "local"
+### Community 366 - "Community 366"
 Cohesion: 0.50
 Nodes (4): default, description, type, local
 
-### Community 378 - "Capability"
+### Community 367 - "Community 367"
 Cohesion: 0.50
 Nodes (4): description, required, type, Capability
 
-### Community 379 - "description"
+### Community 368 - "Community 368"
 Cohesion: 0.50
 Nodes (4): default, description, type, description
 
-### Community 380 - "local"
+### Community 369 - "Community 369"
 Cohesion: 0.50
 Nodes (4): default, description, type, local
 
-### Community 381 - "Backend v2 Architecture"
+### Community 370 - "Community 370"
 Cohesion: 0.50
 Nodes (4): Backend v2 Architecture, Layers, Migration Boundary, Modules
 
-### Community 382 - "Backend v2 test snapshot"
+### Community 371 - "Community 371"
 Cohesion: 0.50
 Nodes (3): Backend v2 test snapshot, Checks Run, Pending
 
-### Community 383 - "Admin v2 bundle performance report"
+### Community 372 - "Community 372"
 Cohesion: 0.50
 Nodes (3): Admin v2 bundle performance report, Result, Verification
 
-### Community 384 - "Admin v2 endpoint and UX audit"
+### Community 373 - "Community 373"
 Cohesion: 0.50
 Nodes (4): Admin v2 endpoint and UX audit, Findings and delivered fixes, UX acceptance, Verification record
 
-### Community 385 - "Admin v2 role experience audit"
+### Community 374 - "Community 374"
 Cohesion: 0.50
 Nodes (4): Admin v2 role experience audit, Current verification, Role coverage, UX corrections
 
-### Community 386 - "Migration from the previous package"
+### Community 375 - "Community 375"
 Cohesion: 0.50
 Nodes (3): Changed, Migration from the previous package, Removed assumptions
 
-### Community 387 - "Repository management"
+### Community 376 - "Community 376"
 Cohesion: 0.50
 Nodes (3): Labels, Repository management, Working model
 
-### Community 388 - "persian-tools.md"
+### Community 377 - "Community 377"
 Cohesion: 0.50
 Nodes (3): npm, pnpm, yarn
 
-### Community 389 - "Repository generators"
+### Community 378 - "Community 378"
 Cohesion: 0.50
 Nodes (3): CMB package, Product package, Repository generators
 
-### Community 393 - "Number"
+### Community 382 - "Community 382"
 Cohesion: 0.67
 Nodes (3): Number, anyOf, description
 
-### Community 394 - "PermissionEntry"
+### Community 383 - "Community 383"
 Cohesion: 0.67
 Nodes (3): PermissionEntry, anyOf, description
 
-### Community 395 - "Number"
+### Community 384 - "Community 384"
 Cohesion: 0.67
 Nodes (3): Number, anyOf, description
 
-### Community 396 - "PermissionEntry"
+### Community 385 - "Community 385"
 Cohesion: 0.67
 Nodes (3): PermissionEntry, anyOf, description
 
-### Community 397 - "Number"
+### Community 386 - "Community 386"
 Cohesion: 0.67
 Nodes (3): Number, anyOf, description
 
-### Community 398 - "PermissionEntry"
+### Community 387 - "Community 387"
 Cohesion: 0.67
 Nodes (3): PermissionEntry, anyOf, description
 
-### Community 399 - "Number"
+### Community 388 - "Community 388"
 Cohesion: 0.67
 Nodes (3): Number, anyOf, description
 
-### Community 400 - "PermissionEntry"
+### Community 389 - "Community 389"
 Cohesion: 0.67
 Nodes (3): PermissionEntry, anyOf, description
 
-### Community 404 - "Phase 6 — Frontend modularization"
+### Community 393 - "Community 393"
 Cohesion: 0.67
 Nodes (3): Admin app target, Phase 6 — Frontend modularization, Student app target
 
-### Community 425 - "15. Results workspace"
+### Community 414 - "Community 414"
 Cohesion: 0.67
 Nodes (3): 15. Results workspace, Exam-level analytics, Student result
 
-### Community 426 - "1. Product modes"
+### Community 415 - "Community 415"
 Cohesion: 0.67
 Nodes (3): 1. Product modes, Guardian, Student
 
-### Community 427 - "6. Exam modes"
+### Community 416 - "Community 416"
 Cohesion: 0.67
 Nodes (3): 6. Exam modes, Konkur-style mock exam, Standard school exam
 
 ## Knowledge Gaps
-- **2059 isolated node(s):** `StudentChatProfile`, `WireChatMessage`, `ProgressStatus`, `RetryRequest`, `SyllabusItem` (+2054 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3530 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **183 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
-
-## Work-memory lessons
-
-**Known dead ends** — questions that led nowhere; don't re-derive.
-- "also fix this issues that when in this mode در حال بازیابی نشست ... and not finding it give user options to do any things else after some tries redirect it to another page or to login pages and fix the proxy and redirect logic of admin v2 app" -> `restoreSession()`, `proxy()`, `login()`
+- **2054 isolated node(s):** `WireChatMessage`, `MessageAction`, `SendMessageInput`, `Role`, `WorkContext` (+2049 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3529 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **192 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `@tanstack/react-query` connect `@tanstack/react-query` to `chat.types.ts`, `useLocale`, `pages/ExamsPage.tsx`, `utils.ts`, `ui.tsx`, `pages/LearningPage.tsx`, `notify`, `ResourcesPage.tsx`, `pages/LivePage.tsx`, `domain.ts`, `pages/QuizzesPage.tsx`, `AccessPage.tsx`, `dashboard.api.ts`, `pages/ReportsPage.tsx`, `pages/SubjectsPage.tsx`, `admin/package.json`, `MessageList.tsx`, `pages/PlannerPage.tsx`, `pages/ChatPage.tsx`, `chat-helpers.ts`, `useStudents.ts`, `chat.api.ts`, `pages/StudentsPage.tsx`?**
+- **Why does `@tanstack/react-query` connect `Community 0` to `Community 7`, `Community 8`, `Community 10`, `Community 12`, `Community 17`, `Community 18`, `Community 19`, `Community 24`, `Community 28`, `Community 33`, `Community 34`, `Community 38`, `Community 39`, `Community 50`, `Community 63`, `Community 67`, `Community 68`, `Community 226`, `Community 117`?**
   _High betweenness centrality (0.195) - this node is a cross-community bridge._
-- **Why does `typescript` connect `student-core/package.json` to `admin/package.json`, `api/package.json`, `student/package.json`?**
-  _High betweenness centrality (0.100) - this node is a cross-community bridge._
-- **Why does `@types/node` connect `student/package.json` to `admin/package.json`, `api/package.json`?**
-  _High betweenness centrality (0.099) - this node is a cross-community bridge._
+- **Why does `typescript` connect `Community 125` to `Community 48`, `Community 72`, `Community 67`?**
+  _High betweenness centrality (0.122) - this node is a cross-community bridge._
+- **Why does `@types/node` connect `Community 72` to `Community 48`, `Community 67`?**
+  _High betweenness centrality (0.121) - this node is a cross-community bridge._
 - **Are the 232 inferred relationships involving `ok()` (e.g. with `.attention()` and `.heartbeat()`) actually correct?**
   _`ok()` has 232 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `StudentChatProfile`, `WireChatMessage`, `ProgressStatus` to the rest of the system?**
-  _2059 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `entities/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.02716800695500978 - nodes in this community are weakly interconnected._
-- **Should `admin/gitbr.sh` be split into smaller, more focused modules?**
-  _Cohesion score 0.08489062726350861 - nodes in this community are weakly interconnected._
+- **What connects `WireChatMessage`, `MessageAction`, `SendMessageInput` to the rest of the system?**
+  _2054 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Community 0` be split into smaller, more focused modules?**
+  _Cohesion score 0.03165947133227297 - nodes in this community are weakly interconnected._
+- **Should `Community 1` be split into smaller, more focused modules?**
+  _Cohesion score 0.04273730684326711 - nodes in this community are weakly interconnected._

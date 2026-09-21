@@ -43,6 +43,17 @@ No seed command belongs in production startup. TypeORM runs committed migrations
 5. Smoke-test login, `/api/v2/me/context`, Student signup, Admin JSON catalog download, and one authenticated mutation with CSRF.
 6. Confirm logs contain no migration, database, CORS, or cookie errors.
 
+Verify the public Student hostname is attached to the v2 Student service—not the
+legacy v1 application—and that its API path is a real JSON proxy:
+
+```bash
+node tooling/deployment/verify-student-production.mjs https://student.example.com
+```
+
+This check rejects a legacy or wrong web artifact, SPA HTML returned from an API
+URL, broken direct-route fallback, malformed OpenAPI output, and a cacheable
+service worker. A root-page HTTP 200 by itself is not deployment evidence.
+
 Rollback means restoring the previous images. If a migration is not backward-compatible, restore the matching pre-release disk snapshot as a coordinated maintenance operation; never run a demo reset or seed against the production disk.
 
 ## Local production-topology check

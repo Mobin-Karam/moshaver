@@ -1,7 +1,7 @@
 # Graphify generation metadata
 
 - Graphify: graphify 0.9.59
-- Source baseline commit: 7af1c38f plus the CMB completion and deployment-audit working tree
+- Source baseline commit: d23af902 plus the Student production-container audit working tree
 - Mode: code-only incremental rebuild; HTML skipped automatically above the 5,000-node safety limit
-- Purpose: keep architecture evidence current with PaaS release readiness, CMB lifecycle, adapters, persistence, and the non-education reference service
+- Purpose: keep architecture evidence current with PaaS release readiness, Student production routing, and service-worker lifecycle behavior
 - Freshness: enforced by graphify-out/code-fingerprint.json

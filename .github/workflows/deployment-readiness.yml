@@ -67,7 +67,6 @@ jobs:
           docker compose up --detach --wait --wait-timeout 120
           curl --fail --silent http://127.0.0.1:4000/health >/dev/null
           curl --fail --silent http://127.0.0.1:4000/ready >/dev/null
-          curl --fail --silent http://127.0.0.1:8080/ >/dev/null
+          node tooling/deployment/verify-student-production.mjs http://127.0.0.1:8080
           curl --fail --silent http://127.0.0.1:8081/ >/dev/null
-          curl --fail --silent http://127.0.0.1:8080/api/v2/openapi.json >/dev/null
           curl --fail --silent http://127.0.0.1:8081/api/v2/openapi.json >/dev/null
