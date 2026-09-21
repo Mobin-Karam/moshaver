@@ -65,7 +65,8 @@ describe('Student login page', () => {
     render(<LoginPage />);
     fireEvent.click(screen.getByRole('tab', { name: 'ساخت حساب' }));
     await screen.findByText('سال تحصیلی 1405-1406');
-    fireEvent.change(screen.getByLabelText('نام و نام خانوادگی'), { target: { value: 'دانش آموز نمونه' } });
+    fireEvent.change(screen.getByLabelText('نام'), { target: { value: 'دانش آموز' } });
+    fireEvent.change(screen.getByLabelText('نام خانوادگی'), { target: { value: 'نمونه' } });
     fireEvent.change(screen.getByLabelText('کد ملی'), { target: { value: '۹۰۰۰۰۰۰۰۱۷' } });
     fireEvent.change(screen.getByLabelText('پایه'), { target: { value: '12' } });
     fireEvent.change(screen.getByLabelText('نوع آموزش'), { target: { value: 'theoretical' } });
@@ -74,6 +75,22 @@ describe('Student login page', () => {
     fireEvent.change(screen.getByLabelText('تکرار رمز عبور'), { target: { value: 'Student-pass-2026!' } });
     fireEvent.click(screen.getByRole('button', { name: 'ساخت حساب' }));
     expect(await screen.findByText('حساب ساخته شد')).toBeInTheDocument();
-    expect(request).toHaveBeenLastCalledWith('POST', '/onboarding/student-signup', expect.objectContaining({ nationalCode: '9000000017', grade: 12, educationTypeId: 'theoretical', trackId: 'experimental_sciences' }), { skipSyncQueue: true });
+    expect(request).toHaveBeenLastCalledWith('POST', '/onboarding/student-signup', expect.objectContaining({ name: 'دانش آموز نمونه', nationalCode: '9000000017', grade: 12, educationTypeId: 'theoretical', trackId: 'experimental_sciences' }), { skipSyncQueue: true });
+  });
+
+  it('converts Persian national-code digits immediately and requires English keyboard characters for passwords', async () => {
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce({ schoolYear: '1405-1406', grades: [], educationTypes: [], theoreticalTracks: [], vocationalFields: [], gradeStructure: [] } as never);
+    render(<LoginPage />);
+    fireEvent.click(screen.getByRole('tab', { name: 'ساخت حساب' }));
+    await screen.findByText('سال تحصیلی 1405-1406');
+
+    fireEvent.change(screen.getByLabelText('کد ملی'), { target: { value: '۹۰۰۰۰۰۰۰۱۷' } });
+    expect(screen.getByLabelText('کد ملی')).toHaveValue('9000000017');
+    fireEvent.change(screen.getByLabelText('رمز عبور جدید'), { target: { value: 'رمزعبور-۲۰۲۶!' } });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('زبان صفحه‌کلید را به انگلیسی تغییر دهید');
+    expect(screen.getByRole('button', { name: 'ساخت حساب' })).toBeDisabled();
+    expect(request).toHaveBeenCalledTimes(1);
   });
 });

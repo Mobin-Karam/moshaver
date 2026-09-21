@@ -1,20 +1,19 @@
-import { Eye, EyeOff, GraduationCap, LoaderCircle, LockKeyhole, LogIn, ShieldCheck, UserRound, WifiOff } from 'lucide-react';
+import { GraduationCap, LoaderCircle, LockKeyhole, LogIn, ShieldCheck, UserRound, WifiOff } from 'lucide-react';
 import { useEffect, useId, useState, type FormEvent } from 'react';
 import { useStudentStore } from '../../services/student-store';
+import { PasswordInput } from './PasswordInput';
 import { SignupForm } from './SignupForm';
 
 export function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
   const [online, setOnline] = useState(() => navigator.onLine);
   const login = useStudentStore((state) => state.login);
   const loadStatus = useStudentStore((state) => state.loadStatus);
   const apiError = useStudentStore((state) => state.error);
   const usernameId = useId();
-  const passwordId = useId();
   const errorId = useId();
   const isLoading = loadStatus === 'loading';
   const error = validationError || apiError;
@@ -104,28 +103,7 @@ export function LoginPage() {
           />
         </div>
 
-        <label htmlFor={passwordId}>رمز عبور</label>
-        <div className="student-login__field">
-          <LockKeyhole aria-hidden="true" />
-          <input
-            id={passwordId}
-            dir="ltr"
-            type={showPassword ? 'text' : 'password'}
-            autoComplete="current-password"
-            maxLength={300}
-            value={password}
-            disabled={isLoading}
-            aria-invalid={Boolean(error)}
-            aria-describedby={error ? errorId : undefined}
-            onChange={(event) => {
-              setPassword(event.target.value);
-              if (validationError) setValidationError('');
-            }}
-          />
-          <button type="button" disabled={isLoading} onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'پنهان کردن رمز عبور' : 'نمایش رمز عبور'}>
-            {showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
-          </button>
-        </div>
+        <PasswordInput label="رمز عبور" value={password} autoComplete="current-password" disabled={isLoading} invalid={Boolean(error)} describedBy={error ? errorId : undefined} onChange={(value) => { setPassword(value); if (validationError) setValidationError(''); }} />
 
         {error ? <p id={errorId} className="student-login__error" role="alert">{error}</p> : null}
 

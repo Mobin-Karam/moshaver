@@ -3,5 +3,10 @@
   "identifier": "default",
   "description": "Default desktop and mobile app permissions",
   "windows": ["main"],
-  "permissions": ["core:default", "notification:default", "opener:default", "sql:default"]
+  "permissions": [
+    "core:default",
+    "notification:default",
+    "opener:default",
+    "sql:default"
+  ]
 }
