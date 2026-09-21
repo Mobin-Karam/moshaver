@@ -34,6 +34,8 @@ export const updatePlan = (id: string, body: Partial<PlanDraft>) =>
 export const deletePlan = (id: string) => api.delete(`/plans/${id}`);
 export const duplicatePlan = (id: string, planDate: string) =>
   api.post(`/plans/${id}/duplicate`, { planDate });
+export const sharePlan = (id: string, targetStudentId: string, date?: string) =>
+  api.post<Plan>(`/education-sharing/plans/${id}`, { targetStudentId, date });
 export const savePlannerTask = (planId: string, task: TaskDraft & { id?: string }) =>
   task.id
     ? api.patch<Plan>(`/tasks/${task.id}`, normalizeTaskDraft(task))

@@ -19,6 +19,8 @@
     "seed:demo": "npm run build && NODE_ENV=development ALLOW_DEMO_SEED=true node dist/database/seeds/product-demo.js",
     "seed:reset-demo": "npm run build && NODE_ENV=development ALLOW_DEMO_RESET=true node dist/database/seeds/reset-product-demo.js && NODE_ENV=development ALLOW_DEMO_SEED=true node dist/database/seeds/product-demo.js",
     "seed:reset-platform": "npm run build && NODE_ENV=development ALLOW_PLATFORM_RESET=true node dist/database/seeds/reset-platform.js && NODE_ENV=development ALLOW_PLATFORM_SEED=true node dist/database/seeds/product-demo.js",
+    "seed:private-org:dev": "npm run build && NODE_ENV=development node dist/database/seeds/private-organization.js",
+    "seed:private-org:production": "npm run build && NODE_ENV=production node dist/database/seeds/private-organization.js",
     "test:e2e:security": "node scripts/security-matrix-e2e.mjs",
     "test:e2e:student": "node scripts/student-journey-e2e.mjs",
     "test:e2e:onboarding": "node scripts/onboarding-journey-e2e.mjs"

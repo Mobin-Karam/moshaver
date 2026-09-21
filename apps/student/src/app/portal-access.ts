@@ -12,6 +12,7 @@ export interface PortalAccess {
   canUpdateLearning: boolean;
   canReviewLearning: boolean;
   canReadResources: boolean;
+  canShareEducation: boolean;
   canUseQuizzes: boolean;
   canReadSubjects: boolean;
   canReadGuardianStudents: boolean;
@@ -41,6 +42,7 @@ export function portalAccess(roles: readonly string[], capabilities: readonly st
     canUpdateLearning: student && has('learning.update'),
     canReviewLearning: student && has('learning.review'),
     canReadResources: has('learning_resources.read'),
+    canShareEducation: student && has('education.share'),
     canUseQuizzes: student && has('student.quizzes.read'),
     canReadSubjects: has('studentSubjects.read'),
     canReadGuardianStudents: guardian,

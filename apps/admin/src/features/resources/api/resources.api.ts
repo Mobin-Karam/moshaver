@@ -26,3 +26,5 @@ export const updateResource = (id: string, body: ResourceInput) =>
   api.patch<LearningResource>(`/learning-resources/${encodeURIComponent(id)}`, body);
 export const deleteResource = (id: string) =>
   api.delete(`/learning-resources/${encodeURIComponent(id)}`);
+export const shareResource = (id: string, targetStudentId: string) =>
+  api.post(`/education-sharing/learning-resources/${encodeURIComponent(id)}`, { targetStudentId });

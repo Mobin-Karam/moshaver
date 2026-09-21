@@ -134,6 +134,7 @@ const studentRoutes = new Set([
   "DELETE /learning/items/:id",
   "POST /learning/items/:id/review",
   "GET /learning/items/:id/reviews",
+  "GET /education-sharing/peers",
 ]);
 const excluded = (endpoint) =>
   endpoint.roles.includes("STUDENT") ||

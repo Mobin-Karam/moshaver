@@ -7,10 +7,11 @@ import {
   ChevronsUpDown,
   Plus,
   Search,
+  Share2,
   X,
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import type { Plan, PlanTask } from "../../../shared/types/domain";
+import type { Plan, PlanTask, Student } from "../../../shared/types/domain";
 import { useStudentSelection } from "../../../shared/hooks/useStudentSelection";
 import { addDays, fa, todayIso } from "../../../shared/lib/utils";
 import { StudentPicker } from "../../../shared/ui/StudentPicker";
@@ -31,6 +32,7 @@ import {
   movePlannerTask,
   publishPlanRange,
   savePlannerTask,
+  sharePlan,
   updatePlan,
 } from "../api/planner.api";
 import { PlannerCanvas } from "../components/PlannerCanvas";
@@ -68,6 +70,7 @@ import { useAuth } from "../../auth";
 export function PlannerPage() {
   const auth = useAuth();
   const canManage = auth.can("plans.create") || auth.can("plans.update");
+  const canShare = auth.can("education.share");
   const students = useStudentSelection(),
     modal = useModal(),
     qc = useQueryClient(),
@@ -184,6 +187,18 @@ export function PlannerPage() {
     mutationFn: ({ id, planDate }: { id: string; planDate: string }) => duplicatePlan(id, planDate),
     onSuccess: refresh,
   });
+  const share = useMutation({
+    mutationFn: ({
+      id,
+      targetStudentId,
+      targetDate,
+    }: {
+      id: string;
+      targetStudentId: string;
+      targetDate: string;
+    }) => sharePlan(id, targetStudentId, targetDate),
+    onSuccess: () => notify("برنامه با موفقیت برای دانش‌آموز مقصد کپی شد.", "success"),
+  });
   const saveTask = useMutation({
     mutationFn: ({ planId, task }: { planId: string; task: TaskDraft & { id?: string } }) =>
       savePlannerTask(planId, task),
@@ -299,6 +314,30 @@ export function PlannerPage() {
               setDate(planDate);
               modal.close();
             })
+          }
+        />
+      ),
+    });
+  }
+  async function openShare() {
+    const source =
+      plans.data?.find((plan) => plan.planDate === date) ||
+      (await getPlanForDate(students.studentId, date));
+    if (!source) {
+      notify("برای این روز برنامه‌ای برای اشتراک‌گذاری وجود ندارد.", "error");
+      return;
+    }
+    modal.open({
+      title: "اشتراک برنامه با دانش‌آموز",
+      content: (
+        <SharePlanForm
+          sourceStudentId={students.studentId}
+          students={students.students}
+          initialDate={date}
+          busy={share.isPending}
+          onCancel={modal.close}
+          onSubmit={(targetStudentId, targetDate) =>
+            share.mutateAsync({ id: source.id, targetStudentId, targetDate }).then(modal.close)
           }
         />
       ),
@@ -486,6 +525,17 @@ export function PlannerPage() {
               }}
             />
           ) : null}
+          {canShare ? (
+            <Button
+              className="h-9"
+              variant="soft"
+              disabled={!students.studentId}
+              onClick={() => void openShare()}
+            >
+              <Share2 size={16} />
+              اشتراک برنامه
+            </Button>
+          ) : null}
         </div>
         {filter !== "all" ? (
           <div className="mt-2 flex items-center gap-2">
@@ -654,5 +704,67 @@ export function PlannerPage() {
         />
       ) : null}
     </div>
+  );
+}
+
+function SharePlanForm({
+  sourceStudentId,
+  students,
+  initialDate,
+  busy,
+  onCancel,
+  onSubmit,
+}: {
+  sourceStudentId: string;
+  students: Student[];
+  initialDate: string;
+  busy: boolean;
+  onCancel(): void;
+  onSubmit(targetStudentId: string, date: string): Promise<unknown>;
+}) {
+  const choices = students.filter((student) => student.id !== sourceStudentId);
+  const [targetStudentId, setTargetStudentId] = useState(choices[0]?.id || "");
+  const [targetDate, setTargetDate] = useState(initialDate);
+  return (
+    <form
+      className="grid gap-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void onSubmit(targetStudentId, targetDate);
+      }}
+    >
+      <label className="grid gap-2 text-sm font-bold">
+        دانش‌آموز مقصد
+        <select
+          className="h-11 rounded-lg border border-slate-200 bg-white px-3 dark:border-slate-700 dark:bg-slate-900"
+          required
+          value={targetStudentId}
+          onChange={(event) => setTargetStudentId(event.target.value)}
+        >
+          {choices.map((student) => (
+            <option key={student.id} value={student.id}>
+              {student.name} · {student.grade || student.major || "بدون پایه"}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="grid gap-2 text-sm font-bold">
+        تاریخ برنامه مقصد
+        <DatePicker value={targetDate} onChange={setTargetDate} />
+      </label>
+      {!choices.length ? (
+        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+          دانش‌آموز دیگری در محدوده نقش فعال شما وجود ندارد.
+        </p>
+      ) : null}
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="ghost" onClick={onCancel}>
+          انصراف
+        </Button>
+        <Button type="submit" disabled={busy || !targetStudentId}>
+          {busy ? "در حال اشتراک…" : "اشتراک برنامه"}
+        </Button>
+      </div>
+    </form>
   );
 }
