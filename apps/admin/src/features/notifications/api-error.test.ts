@@ -34,7 +34,8 @@ describe("notification api errors", () => {
   });
 
   it("only retries transient failures twice", () => {
-    for (const status of [400, 401, 403, 404]) expect(shouldRetryNotificationRequest(0, { status })).toBe(false);
+    for (const status of [400, 401, 403, 404])
+      expect(shouldRetryNotificationRequest(0, { status })).toBe(false);
     expect(shouldRetryNotificationRequest(0, { status: 500 })).toBe(true);
     expect(shouldRetryNotificationRequest(2, { status: 500 })).toBe(false);
   });
