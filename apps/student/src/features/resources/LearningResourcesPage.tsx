@@ -1,9 +1,10 @@
-import { ArrowUpLeft, ExternalLink, Link2, Video } from 'lucide-react';
+import { ArrowUpLeft, ExternalLink, Link2, Share2, Video } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../../services/api-client';
 import { useStudentStore } from '../../services/student-store';
 import { EmptyState, ErrorState, LoadingState } from '../../components/ui';
+import { EducationShareDialog } from '../sharing/EducationShareDialog';
 
 type LearningResource = {
   id: string;
@@ -20,6 +21,7 @@ export function LearningResourcesPage() {
   const [resources, setResources] = useState<LearningResource[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [revision, setRevision] = useState(0);
+  const [shareResource, setShareResource] = useState<LearningResource | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -55,8 +57,9 @@ export function LearningResourcesPage() {
     {status === 'ready' && resources.length ? <div className="resource-library__grid">{resources.map((resource) => <article key={resource.id} className="resource-card">
       <span className="resource-card__icon">{resourceIcon(resource.type)}</span>
       <div><small>{resourceLabel(resource.type)}</small><h2>{resource.title}</h2>{resource.description ? <p>{resource.description}</p> : null}</div>
-      <a href={resource.url} target="_blank" rel="noreferrer"><ExternalLink aria-hidden="true" />باز کردن منبع</a>
+      <div className="resource-card__actions"><a href={resource.url} target="_blank" rel="noreferrer"><ExternalLink aria-hidden="true" />باز کردن منبع</a>{access?.canShareEducation ? <button type="button" onClick={() => setShareResource(resource)}><Share2 aria-hidden="true" />اشتراک</button> : null}</div>
     </article>)}</div> : null}
+    {shareResource ? <EducationShareDialog endpoint={`/education-sharing/learning-resources/${encodeURIComponent(shareResource.id)}`} title={`اشتراک ${shareResource.title}`} onClose={() => setShareResource(null)} /> : null}
   </section>;
 }
 

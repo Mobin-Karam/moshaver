@@ -1,7 +1,7 @@
 const base = (process.env.E2E_API_URL || "http://127.0.0.1:4000/api/v2").replace(/\/$/, "");
 const seedPassword = process.env.E2E_PASSWORD || "Moshaver-e2e-2026!";
 const signupPassword = "Student-signup-2026!";
-const signupUsername = `signup.${Date.now()}`;
+const signupUsername = "9000000106";
 
 function assert(condition, name, evidence) {
   if (!condition) throw new Error(`${name}: ${JSON.stringify(evidence)}`);
@@ -33,11 +33,11 @@ async function request(method, path, options) {
   return result.payload.data;
 }
 
-const signupBody = { username: signupUsername, password: signupPassword, name: "دانش‌آموز ثبت‌نامی", grade: "دوازدهم", major: "تجربی" };
+const signupBody = { nationalCode: signupUsername, password: signupPassword, name: "دانش‌آموز ثبت‌نامی", grade: 12, educationTypeId: "theoretical", trackId: "experimental_sciences" };
 const signup = await raw("POST", "/onboarding/student-signup", { body: signupBody });
 assert(signup.status === 201 && signup.payload?.data?.onboardingStatus === "PENDING_ASSIGNMENT", "student self-signup enters pending assignment", signup);
 const duplicate = await raw("POST", "/onboarding/student-signup", { body: signupBody });
-assert(duplicate.status === 409 && duplicate.payload?.error?.code === "USERNAME_EXISTS", "duplicate signup is rejected", duplicate);
+assert(duplicate.status === 409 && duplicate.payload?.error?.code === "NATIONAL_CODE_EXISTS", "duplicate national code signup is rejected", duplicate);
 
 const studentSession = await login(signupUsername, signupPassword);
 const studentContext = await request("GET", "/me/context", { session: studentSession, role: "STUDENT" });

@@ -41,6 +41,7 @@ Current behavior belongs in `architecture/`, `components/`, or `operations/`. Un
 - [Current project/package consumers](./architecture/inventory/project-consumers.md)
 - [Target monorepo layout](./architecture/target-monorepo-layout.md)
 - [Dependency boundaries](./architecture/dependency-boundaries.md)
+- [CMB reference and release policy](./architecture/cmb-reference-and-release.md)
 - [Repository architecture migration](./architecture/repository-architecture-migration.md)
 - [ADR 0001 — grouped product monorepo](./architecture/adr/0001-grouped-product-monorepo.md)
 - [ADR 0002 — modular monolith with CMB](./architecture/adr/0002-modular-monolith-cmb.md)
@@ -70,6 +71,7 @@ Current behavior belongs in `architecture/`, `components/`, or `operations/`. Un
 - [Plan import schema version 2](./operations/plan-import-schema-v2.md)
 - [Admin v2 Web Push verification](./operations/admin-v2-web-push-verification.md)
 - [Backend v2 product demo seed](./operations/backend-v2-product-demo-seed.md)
+- [Moshaver v2 PaaS deployment](./operations/paas-deployment.md)
 
 ## Migration work
 

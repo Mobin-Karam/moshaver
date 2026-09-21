@@ -1,0 +1,549 @@
+{
+  "dataset": {
+    "name": "Iran School Grades, Types and Categories",
+    "school_year": "1405-1406",
+    "country": "Iran",
+    "language": "fa",
+    "purpose": "Platform taxonomy for grades, school levels, branches, tracks and subject categories"
+  },
+  "grades": [
+    {
+      "id": 1,
+      "fa": "پایه اول",
+      "en": "Grade 1",
+      "level_id": "elementary"
+    },
+    {
+      "id": 2,
+      "fa": "پایه دوم",
+      "en": "Grade 2",
+      "level_id": "elementary"
+    },
+    {
+      "id": 3,
+      "fa": "پایه سوم",
+      "en": "Grade 3",
+      "level_id": "elementary"
+    },
+    {
+      "id": 4,
+      "fa": "پایه چهارم",
+      "en": "Grade 4",
+      "level_id": "elementary"
+    },
+    {
+      "id": 5,
+      "fa": "پایه پنجم",
+      "en": "Grade 5",
+      "level_id": "elementary"
+    },
+    {
+      "id": 6,
+      "fa": "پایه ششم",
+      "en": "Grade 6",
+      "level_id": "elementary"
+    },
+    {
+      "id": 7,
+      "fa": "پایه هفتم",
+      "en": "Grade 7",
+      "level_id": "lower_secondary"
+    },
+    {
+      "id": 8,
+      "fa": "پایه هشتم",
+      "en": "Grade 8",
+      "level_id": "lower_secondary"
+    },
+    {
+      "id": 9,
+      "fa": "پایه نهم",
+      "en": "Grade 9",
+      "level_id": "lower_secondary"
+    },
+    {
+      "id": 10,
+      "fa": "پایه دهم",
+      "en": "Grade 10",
+      "level_id": "upper_secondary"
+    },
+    {
+      "id": 11,
+      "fa": "پایه یازدهم",
+      "en": "Grade 11",
+      "level_id": "upper_secondary"
+    },
+    {
+      "id": 12,
+      "fa": "پایه دوازدهم",
+      "en": "Grade 12",
+      "level_id": "upper_secondary"
+    }
+  ],
+  "levels": [
+    {
+      "id": "elementary",
+      "fa": "دوره ابتدایی",
+      "en": "Elementary",
+      "grades": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "lower_secondary",
+      "fa": "دوره اول متوسطه",
+      "en": "Lower Secondary",
+      "grades": [
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "id": "upper_secondary",
+      "fa": "دوره دوم متوسطه",
+      "en": "Upper Secondary",
+      "grades": [
+        10,
+        11,
+        12
+      ]
+    }
+  ],
+  "education_types": [
+    {
+      "id": "general",
+      "fa": "آموزش عمومی",
+      "en": "General Education",
+      "levels": [
+        "elementary",
+        "lower_secondary"
+      ]
+    },
+    {
+      "id": "theoretical",
+      "fa": "شاخه نظری",
+      "en": "Theoretical",
+      "levels": [
+        "upper_secondary"
+      ]
+    },
+    {
+      "id": "technical_vocational",
+      "fa": "فنی و حرفه‌ای",
+      "en": "Technical and Vocational",
+      "levels": [
+        "upper_secondary"
+      ]
+    },
+    {
+      "id": "kar_danesh",
+      "fa": "کاردانش",
+      "en": "Kar-Danesh",
+      "levels": [
+        "upper_secondary"
+      ]
+    }
+  ],
+  "theoretical_tracks": [
+    {
+      "id": "math_physics",
+      "fa": "ریاضی و فیزیک",
+      "en": "Mathematics and Physics"
+    },
+    {
+      "id": "experimental_sciences",
+      "fa": "علوم تجربی",
+      "en": "Experimental Sciences"
+    },
+    {
+      "id": "humanities",
+      "fa": "ادبیات و علوم انسانی",
+      "en": "Humanities"
+    },
+    {
+      "id": "islamic_sciences",
+      "fa": "علوم و معارف اسلامی",
+      "en": "Islamic Sciences and Studies"
+    }
+  ],
+  "vocational_groups": [
+    {
+      "id": "industry",
+      "fa": "صنعت",
+      "en": "Industry"
+    },
+    {
+      "id": "services",
+      "fa": "خدمات",
+      "en": "Services"
+    },
+    {
+      "id": "agriculture",
+      "fa": "کشاورزی",
+      "en": "Agriculture"
+    },
+    {
+      "id": "art",
+      "fa": "هنر",
+      "en": "Art"
+    }
+  ],
+  "common_vocational_fields": [
+    {
+      "id": "computer_network_software",
+      "fa": "شبکه و نرم‌افزار رایانه",
+      "group_id": "industry"
+    },
+    {
+      "id": "electronics",
+      "fa": "الکترونیک",
+      "group_id": "industry"
+    },
+    {
+      "id": "electrotechnics",
+      "fa": "الکتروتکنیک",
+      "group_id": "industry"
+    },
+    {
+      "id": "automotive_mechanics",
+      "fa": "مکانیک خودرو",
+      "group_id": "industry"
+    },
+    {
+      "id": "machine_tools",
+      "fa": "ماشین ابزار",
+      "group_id": "industry"
+    },
+    {
+      "id": "mechatronics",
+      "fa": "مکاترونیک",
+      "group_id": "industry"
+    },
+    {
+      "id": "construction",
+      "fa": "ساختمان",
+      "group_id": "industry"
+    },
+    {
+      "id": "architecture",
+      "fa": "معماری",
+      "group_id": "art"
+    },
+    {
+      "id": "graphic_design",
+      "fa": "گرافیک",
+      "group_id": "art"
+    },
+    {
+      "id": "accounting",
+      "fa": "حسابداری",
+      "group_id": "services"
+    },
+    {
+      "id": "physical_education",
+      "fa": "تربیت بدنی",
+      "group_id": "services"
+    },
+    {
+      "id": "fashion_design",
+      "fa": "طراحی و دوخت",
+      "group_id": "art"
+    },
+    {
+      "id": "food_industries",
+      "fa": "صنایع غذایی",
+      "group_id": "agriculture"
+    },
+    {
+      "id": "chemical_industries",
+      "fa": "صنایع شیمیایی",
+      "group_id": "industry"
+    }
+  ],
+  "subject_categories": [
+    {
+      "id": "persian",
+      "fa": "فارسی و ادبیات",
+      "en": "Persian and Literature"
+    },
+    {
+      "id": "writing",
+      "fa": "نگارش",
+      "en": "Writing"
+    },
+    {
+      "id": "mathematics",
+      "fa": "ریاضی",
+      "en": "Mathematics"
+    },
+    {
+      "id": "science",
+      "fa": "علوم",
+      "en": "Science"
+    },
+    {
+      "id": "physics",
+      "fa": "فیزیک",
+      "en": "Physics"
+    },
+    {
+      "id": "chemistry",
+      "fa": "شیمی",
+      "en": "Chemistry"
+    },
+    {
+      "id": "biology",
+      "fa": "زیست‌شناسی",
+      "en": "Biology"
+    },
+    {
+      "id": "geology",
+      "fa": "زمین‌شناسی",
+      "en": "Geology"
+    },
+    {
+      "id": "laboratory",
+      "fa": "آزمایشگاه",
+      "en": "Laboratory"
+    },
+    {
+      "id": "quran",
+      "fa": "قرآن و معارف",
+      "en": "Quran and Islamic Studies"
+    },
+    {
+      "id": "religion",
+      "fa": "دین و زندگی",
+      "en": "Religion and Life"
+    },
+    {
+      "id": "arabic",
+      "fa": "عربی",
+      "en": "Arabic"
+    },
+    {
+      "id": "english",
+      "fa": "زبان انگلیسی",
+      "en": "English"
+    },
+    {
+      "id": "social_studies",
+      "fa": "مطالعات اجتماعی",
+      "en": "Social Studies"
+    },
+    {
+      "id": "history",
+      "fa": "تاریخ",
+      "en": "History"
+    },
+    {
+      "id": "geography",
+      "fa": "جغرافیا",
+      "en": "Geography"
+    },
+    {
+      "id": "sociology",
+      "fa": "جامعه‌شناسی",
+      "en": "Sociology"
+    },
+    {
+      "id": "philosophy",
+      "fa": "فلسفه",
+      "en": "Philosophy"
+    },
+    {
+      "id": "logic",
+      "fa": "منطق",
+      "en": "Logic"
+    },
+    {
+      "id": "economics",
+      "fa": "اقتصاد",
+      "en": "Economics"
+    },
+    {
+      "id": "psychology",
+      "fa": "روان‌شناسی",
+      "en": "Psychology"
+    },
+    {
+      "id": "literary_sciences",
+      "fa": "علوم و فنون ادبی",
+      "en": "Literary Sciences and Techniques"
+    },
+    {
+      "id": "technology",
+      "fa": "کار و فناوری",
+      "en": "Work and Technology"
+    },
+    {
+      "id": "art_culture",
+      "fa": "فرهنگ و هنر",
+      "en": "Culture and Art"
+    },
+    {
+      "id": "thinking_research",
+      "fa": "تفکر و پژوهش",
+      "en": "Thinking and Research"
+    },
+    {
+      "id": "thinking_lifestyle",
+      "fa": "تفکر و سبک زندگی",
+      "en": "Thinking and Lifestyle"
+    },
+    {
+      "id": "media_literacy",
+      "fa": "تفکر و سواد رسانه‌ای",
+      "en": "Thinking and Media Literacy"
+    },
+    {
+      "id": "defense_readiness",
+      "fa": "آمادگی دفاعی",
+      "en": "Defense Readiness"
+    },
+    {
+      "id": "entrepreneurship",
+      "fa": "کارآفرینی",
+      "en": "Entrepreneurship"
+    },
+    {
+      "id": "environment",
+      "fa": "محیط زیست",
+      "en": "Environment"
+    },
+    {
+      "id": "health",
+      "fa": "سلامت و بهداشت",
+      "en": "Health and Hygiene"
+    },
+    {
+      "id": "family_lifestyle",
+      "fa": "مدیریت خانواده و سبک زندگی",
+      "en": "Family Management and Lifestyle"
+    },
+    {
+      "id": "social_identity",
+      "fa": "هویت اجتماعی",
+      "en": "Social Identity"
+    },
+    {
+      "id": "islamic_beliefs",
+      "fa": "اصول و عقاید",
+      "en": "Islamic Principles and Beliefs"
+    },
+    {
+      "id": "islamic_rulings",
+      "fa": "احکام",
+      "en": "Islamic Rulings"
+    },
+    {
+      "id": "quranic_sciences",
+      "fa": "علوم و معارف قرآنی",
+      "en": "Quranic Sciences"
+    },
+    {
+      "id": "islamic_history",
+      "fa": "تاریخ اسلام",
+      "en": "Islamic History"
+    },
+    {
+      "id": "technical_knowledge",
+      "fa": "دانش فنی",
+      "en": "Technical Knowledge"
+    },
+    {
+      "id": "vocational_skill",
+      "fa": "مهارت‌های شغلی",
+      "en": "Vocational Skills"
+    },
+    {
+      "id": "professional_ethics",
+      "fa": "اخلاق حرفه‌ای",
+      "en": "Professional Ethics"
+    },
+    {
+      "id": "artificial_intelligence",
+      "fa": "هوش مصنوعی",
+      "en": "Artificial Intelligence"
+    },
+    {
+      "id": "new_technologies",
+      "fa": "فناوری‌های نوین",
+      "en": "Emerging Technologies"
+    },
+    {
+      "id": "computer",
+      "fa": "رایانه",
+      "en": "Computer"
+    },
+    {
+      "id": "technical_drawing",
+      "fa": "نقشه‌کشی",
+      "en": "Technical Drawing"
+    },
+    {
+      "id": "production",
+      "fa": "ساخت و تولید",
+      "en": "Manufacturing"
+    },
+    {
+      "id": "maintenance",
+      "fa": "تعمیر و نگهداری",
+      "en": "Maintenance"
+    },
+    {
+      "id": "provincial_studies",
+      "fa": "استان‌شناسی",
+      "en": "Provincial Studies"
+    }
+  ],
+  "grade_structure": [
+    {
+      "grades": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "level_id": "elementary",
+      "education_type_ids": [
+        "general"
+      ],
+      "track_required": false
+    },
+    {
+      "grades": [
+        7,
+        8,
+        9
+      ],
+      "level_id": "lower_secondary",
+      "education_type_ids": [
+        "general"
+      ],
+      "track_required": false
+    },
+    {
+      "grades": [
+        10,
+        11,
+        12
+      ],
+      "level_id": "upper_secondary",
+      "education_type_ids": [
+        "theoretical",
+        "technical_vocational",
+        "kar_danesh"
+      ],
+      "track_required": true
+    }
+  ]
+}

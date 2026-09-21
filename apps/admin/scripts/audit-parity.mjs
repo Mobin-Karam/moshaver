@@ -134,6 +134,7 @@ const studentRoutes = new Set([
   "DELETE /learning/items/:id",
   "POST /learning/items/:id/review",
   "GET /learning/items/:id/reviews",
+  "GET /education-sharing/peers",
 ]);
 const excluded = (endpoint) =>
   endpoint.roles.includes("STUDENT") ||
@@ -145,6 +146,7 @@ const excluded = (endpoint) =>
   endpoint.path.startsWith("/admin/") ||
   endpoint.path === "/onboarding/student-signup" ||
   endpoint.path.startsWith("/public/") ||
+  endpoint.path === "/education-catalog/signup-options" ||
   `${endpoint.method} ${endpoint.path}` === "PUT /chat/conversations/:id/mute" ||
   `${endpoint.method} ${endpoint.path}` === "PUT /chat/groups/:id/owner";
 const equivalentWorkflowRoutes = new Set([

@@ -1,5 +1,16 @@
 # Repository generators
 
+## CMB application
+
+```bash
+npm run generate:cmb-app -- --target=apps/example-service --name=example-service
+cd apps/example-service && npm install && npm test
+```
+
+The generator refuses to overwrite an existing target and creates a domain-neutral
+service with health/readiness endpoints, module metadata, configuration validation,
+generic roles, and an injected persistence port.
+
 ## CMB package
 
 ```bash

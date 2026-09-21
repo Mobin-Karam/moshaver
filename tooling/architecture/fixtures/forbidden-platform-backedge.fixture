@@ -1,0 +1,2 @@
+const studentDomain = require("apps/api/src/modules/students");
+module.exports = studentDomain;

@@ -13,4 +13,19 @@ export type StudentSubject = {
   weeklyTargetMinutes: number;
 };
 
-export type SubjectsMode = "student" | "catalog";
+export type SubjectsMode = "student" | "catalog" | "books";
+
+export type EducationBook = {
+  id: string;
+  schoolYear: string;
+  grade: number;
+  level: string;
+  branch: string;
+  track: string;
+  category: string;
+  titleFa: string;
+  titleEn: string;
+  textbookCode?: string | null;
+  appliesTo: string[];
+  notes?: string | null;
+};

@@ -1,5 +1,5 @@
 import { api } from "../../../shared/api/api";
-import type { StudentSubject, Subject } from "../model/subject.types";
+import type { EducationBook, StudentSubject, Subject } from "../model/subject.types";
 
 export const getSubjects = (includeArchived = false) => {
   if (includeArchived) return api.get<Subject[]>("/subjects?includeArchived=true");
@@ -19,6 +19,9 @@ export const updateStudentSubject = (studentId: string, setting: StudentSubject)
     displayName: setting.displayName,
     weeklyTargetMinutes: setting.weeklyTargetMinutes,
   });
+export const getEducationBooks = () => api.get<EducationBook[]>("/education-catalog/books");
+export const getEducationDatasets = () =>
+  api.get<Record<string, unknown>>("/education-catalog/datasets");
 export type TeacherAssignment = {
   id: string;
   teacher: { id: string; username: string; firstName?: string; lastName?: string };

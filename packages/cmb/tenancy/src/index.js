@@ -1,6 +1,6 @@
 "use strict";
 const { defineModule } = require("@moshaver/cmb-kernel");
-const TENANCY_MODULE = defineModule({ id: "tenancy", version: "0.1.0", kind: "platform", dependencies: ["kernel"] });
+const TENANCY_MODULE = defineModule({ id: "tenancy", version: "0.1.0", kind: "platform", dependencies: ["kernel"], provides: ["tenancy.policy"] });
 class TenancyPolicy {
   constructor(options = {}) { this.platformRole = String(options.platformRole ?? "PLATFORM_ADMIN"); }
   isPlatformActor(actor) { return Array.from(actor?.roles ?? []).includes(this.platformRole); }

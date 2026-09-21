@@ -33,6 +33,26 @@
       "verifyTasks": ["test"]
     },
     {
+      "id": "cmb-persistence",
+      "packageName": "@moshaver/cmb-persistence",
+      "path": "packages/cmb/persistence",
+      "kind": "cmb-foundation",
+      "dependsOn": ["cmb-kernel"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
+      "id": "cmb-infrastructure",
+      "packageName": "@moshaver/cmb-infrastructure",
+      "path": "packages/cmb/infrastructure",
+      "kind": "cmb-adapter",
+      "dependsOn": ["cmb-health", "cmb-kernel"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
       "id": "cmb-realtime",
       "packageName": "@moshaver/cmb-realtime",
       "path": "packages/cmb/realtime",
@@ -123,11 +143,21 @@
       "verifyTasks": ["test"]
     },
     {
+      "id": "cmb-reference",
+      "packageName": "cmb-reference-service",
+      "path": "apps/cmb-reference",
+      "kind": "reference-application",
+      "dependsOn": ["cmb-auth", "cmb-authorization", "cmb-health", "cmb-identity", "cmb-infrastructure", "cmb-kernel", "cmb-notifications", "cmb-persistence", "cmb-realtime", "cmb-tenancy"],
+      "install": true,
+      "bootstrapBuild": false,
+      "verifyTasks": ["test"]
+    },
+    {
       "id": "backend-v2",
       "packageName": "moshaver-backend-v2",
       "path": "apps/api",
       "kind": "application",
-      "dependsOn": ["cmb-health", "cmb-realtime", "cmb-identity", "cmb-tenancy", "cmb-system", "cmb-auth", "cmb-authorization", "cmb-notifications", "cmb-activity", "cmb-data-transfer"],
+      "dependsOn": ["cmb-health", "cmb-realtime", "cmb-identity", "cmb-infrastructure", "cmb-kernel", "cmb-persistence", "cmb-tenancy", "cmb-system", "cmb-auth", "cmb-authorization", "cmb-notifications", "cmb-activity", "cmb-data-transfer"],
       "install": true,
       "bootstrapBuild": false,
       "verifyTasks": ["lint", "test", "build"]

@@ -50,6 +50,7 @@ export const CAPABILITIES = [
   "learning.review",
   "learning_resources.read",
   "learning_resources.manage",
+  "education.share",
   "plans.read",
   "plans.create",
   "plans.update",

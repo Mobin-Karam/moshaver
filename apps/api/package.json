@@ -18,6 +18,9 @@
     "seed:roles": "npm run build && NODE_ENV=development ALLOW_E2E_SEED=true node dist/database/seeds/security-matrix.js",
     "seed:demo": "npm run build && NODE_ENV=development ALLOW_DEMO_SEED=true node dist/database/seeds/product-demo.js",
     "seed:reset-demo": "npm run build && NODE_ENV=development ALLOW_DEMO_RESET=true node dist/database/seeds/reset-product-demo.js && NODE_ENV=development ALLOW_DEMO_SEED=true node dist/database/seeds/product-demo.js",
+    "seed:reset-platform": "npm run build && NODE_ENV=development ALLOW_PLATFORM_RESET=true node dist/database/seeds/reset-platform.js && NODE_ENV=development ALLOW_PLATFORM_SEED=true node dist/database/seeds/product-demo.js",
+    "seed:private-org:dev": "npm run build && NODE_ENV=development node dist/database/seeds/private-organization.js",
+    "seed:private-org:production": "npm run build && NODE_ENV=production node dist/database/seeds/private-organization.js",
     "test:e2e:security": "node scripts/security-matrix-e2e.mjs",
     "test:e2e:student": "node scripts/student-journey-e2e.mjs",
     "test:e2e:onboarding": "node scripts/onboarding-journey-e2e.mjs"
@@ -32,8 +35,11 @@
     "@moshaver/cmb-activity": "file:../../packages/cmb/activity",
     "@moshaver/cmb-authorization": "file:../../packages/cmb/authorization",
     "@moshaver/cmb-identity": "file:../../packages/cmb/identity",
+    "@moshaver/cmb-infrastructure": "file:../../packages/cmb/infrastructure",
+    "@moshaver/cmb-kernel": "file:../../packages/cmb/kernel",
     "@moshaver/cmb-realtime": "file:../../packages/cmb/realtime",
     "@moshaver/cmb-notifications": "file:../../packages/cmb/notifications",
+    "@moshaver/cmb-persistence": "file:../../packages/cmb/persistence",
     "@moshaver/cmb-system": "file:../../packages/cmb/system",
     "@moshaver/cmb-data-transfer": "file:../../packages/cmb/data-transfer",
     "@moshaver/cmb-tenancy": "file:../../packages/cmb/tenancy",
@@ -67,6 +73,9 @@
     "tsx": "^4.19.2",
     "typeorm-ts-node-commonjs": "^0.3.20",
     "typescript": "^5.7.2"
+  },
+  "overrides": {
+    "fastify": "5.12.1"
   },
   "engines": {
     "node": ">=22.5.0 <23"

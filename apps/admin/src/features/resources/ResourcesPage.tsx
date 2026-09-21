@@ -7,6 +7,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Share2,
   Trash2,
   UsersRound,
   X,
@@ -20,6 +21,7 @@ import {
   listResources,
   listResourceStudents,
   ResourceInput,
+  shareResource,
   updateResource,
 } from "./api/resources.api";
 
@@ -43,6 +45,7 @@ export function ResourcesPage() {
   const [editing, setEditing] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [shareTargets, setShareTargets] = useState<Record<string, string>>({});
   const save = useMutation({
     mutationFn: () => (editing ? updateResource(editing, form) : createResource(form)),
     onSuccess: () => {
@@ -57,6 +60,11 @@ export function ResourcesPage() {
       setConfirmDelete(null);
       void qc.invalidateQueries({ queryKey: ["learning-resources"] });
     },
+  });
+  const share = useMutation({
+    mutationFn: ({ id, targetStudentId }: { id: string; targetStudentId: string }) =>
+      shareResource(id, targetStudentId),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["learning-resources"] }),
   });
   const filtered = useMemo(
     () =>
@@ -326,6 +334,39 @@ export function ResourcesPage() {
                   حذف
                 </Button>
               )}
+            </div>
+            <div className="mt-3 flex flex-col gap-2 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60 sm:flex-row">
+              <select
+                className="h-10 min-w-0 flex-1 rounded-lg border bg-white px-3 text-sm dark:bg-slate-900"
+                aria-label={`دانش‌آموز مقصد برای ${item.title}`}
+                value={shareTargets[item.id] || ""}
+                onChange={(event) =>
+                  setShareTargets((value) => ({ ...value, [item.id]: event.target.value }))
+                }
+              >
+                <option value="">انتخاب دانش‌آموز برای اشتراک</option>
+                {(students.data || [])
+                  .filter(
+                    (student) =>
+                      !item.assignments.some((assignment) => assignment.student.id === student.id),
+                  )
+                  .map((student) => (
+                    <option key={student.id} value={student.id}>
+                      {student.name} · {student.grade || student.major || "بدون پایه"}
+                    </option>
+                  ))}
+              </select>
+              <Button
+                variant="soft"
+                disabled={!shareTargets[item.id]}
+                loading={share.isPending && share.variables?.id === item.id}
+                onClick={() =>
+                  share.mutate({ id: item.id, targetStudentId: shareTargets[item.id] })
+                }
+              >
+                <Share2 size={16} />
+                اشتراک
+              </Button>
             </div>
           </Card>
         ))}

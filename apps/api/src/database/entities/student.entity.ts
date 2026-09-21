@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "./user.entity";
 import { Plan } from "./plan.entity";
 import { ExamAttempt } from "./exam-attempt.entity";
@@ -17,6 +17,19 @@ export class Student {
 
   @Column({ length: 160 })
   name!: string;
+
+  @Index({ unique: true })
+  @Column({ type: "varchar", length: 10, nullable: true })
+  nationalCode?: string | null;
+
+  @Column({ type: "integer", nullable: true })
+  gradeId?: number | null;
+
+  @Column({ length: 40, default: "general" })
+  educationTypeId!: string;
+
+  @Column({ length: 80, default: "general" })
+  trackId!: string;
 
   @Column({ default: "" })
   grade!: string;

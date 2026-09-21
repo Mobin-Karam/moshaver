@@ -3,6 +3,8 @@ const isTauri = '__TAURI_INTERNALS__' in window;
 export function registerWebUpdateAdapter() {
   if (isTauri || !('serviceWorker' in navigator)) return;
 
+  const controlledAtStartup = Boolean(navigator.serviceWorker.controller);
+
   void navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((registration) => {
     let updatePrompted = false;
     const promptForUpdate = (worker: ServiceWorker | null) => {
@@ -32,7 +34,9 @@ export function registerWebUpdateAdapter() {
     // Service workers are progressive enhancement for the web build.
   });
 
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    window.location.reload();
-  }, { once: true });
+  if (controlledAtStartup) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    }, { once: true });
+  }
 }

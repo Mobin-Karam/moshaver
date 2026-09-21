@@ -7,6 +7,9 @@ const HEALTH_MODULE = defineModule({
   version: "0.1.0",
   kind: "foundation",
   dependencies: ["kernel"],
+  provides: ["health.service"],
+  health: ["liveness", "readiness"],
+  configuration: { serviceName: "required", probes: "optional" },
 });
 
 class ReadinessError extends Error {

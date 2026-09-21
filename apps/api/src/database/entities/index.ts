@@ -55,3 +55,4 @@ export { LearningResource } from "./learning-resource.entity";
 export { LearningResourceAssignment } from "./learning-resource-assignment.entity";
 export { RelaxationTrack } from "./relaxation-track.entity";
 export { StudentDailyRelaxation } from "./student-daily-relaxation.entity";
+export { EducationBook } from "./education-book.entity";

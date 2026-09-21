@@ -33,6 +33,8 @@ import { LearningResourcesModule } from "./modules/learning-resources/learning-r
 import { OnboardingModule } from "./modules/onboarding/onboarding.module";
 import { RelaxationModule } from "./modules/relaxation/relaxation.module";
 import { CmbPlatformModule } from "./platform/cmb-platform.module";
+import { EducationCatalogModule } from "./modules/education-catalog/education-catalog.module";
+import { EducationSharingModule } from "./modules/education-sharing/education-sharing.module";
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { CmbPlatformModule } from "./platform/cmb-platform.module";
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
     CmbPlatformModule,
+    EducationCatalogModule,
+    EducationSharingModule,
     RelationshipsModule,
     SubjectsModule,
     AssessmentsModule,

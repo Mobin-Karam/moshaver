@@ -1,5 +1,6 @@
 import {
   Bell,
+  BookOpen,
   BookOpenCheck,
   ChevronLeft,
   ChevronRight,
@@ -41,6 +42,7 @@ import { PasswordChangeForm } from "./PasswordChangeForm";
 import { PushSettings } from "./PushSettings";
 import { StudentInsightsPage } from "./StudentInsightsPage";
 import { MistakeNotebook } from "./MistakeNotebook";
+import { StudentTextbooksPage } from "./StudentTextbooksPage";
 
 export type StudentTheme = "light" | "dark" | "system";
 
@@ -60,12 +62,39 @@ export function MoreRouterPage({
       </MoreSection>
     );
   if (section === "reports") return <ReportsPage />;
-  if (section === "insights") return <MoreSection title="روند و پیشنهادها" subtitle="تحلیل عملکرد و تصمیم درباره پیشنهادهای مشاور"><StudentInsightsPage /></MoreSection>;
-  if (section === "mistakes") return <MoreSection title="دفترچه اشتباهات" subtitle="دلیل خطاها و وضعیت مرور"><MistakeNotebook /></MoreSection>;
+  if (section === "insights")
+    return (
+      <MoreSection
+        title="روند و پیشنهادها"
+        subtitle="تحلیل عملکرد و تصمیم درباره پیشنهادهای مشاور"
+      >
+        <StudentInsightsPage />
+      </MoreSection>
+    );
+  if (section === "mistakes")
+    return (
+      <MoreSection title="دفترچه اشتباهات" subtitle="دلیل خطاها و وضعیت مرور">
+        <MistakeNotebook />
+      </MoreSection>
+    );
   if (section === "profile") return <ProfilePage />;
+  if (section === "books")
+    return (
+      <MoreSection
+        title="کتاب‌های درسی من"
+        subtitle="انتخاب خودکار بر پایه، نوع آموزش و رشته"
+      >
+        <StudentTextbooksPage />
+      </MoreSection>
+    );
   if (section === "chat-profile") return <ChatProfilePage />;
   if (section === "guardian") return <GuardianSelectionPage />;
-  if (section === "family") return <MoreSection title="همراهی خانواده" subtitle="پیشرفت، گزارش‌ها و دلگرمی"><GuardianInsightsPage /></MoreSection>;
+  if (section === "family")
+    return (
+      <MoreSection title="همراهی خانواده" subtitle="پیشرفت، گزارش‌ها و دلگرمی">
+        <GuardianInsightsPage />
+      </MoreSection>
+    );
   if (section === "settings")
     return <SettingsPage theme={theme} onThemeChange={onThemeChange} />;
   return <Navigate to="/more" replace />;
@@ -101,7 +130,24 @@ function MoreHub() {
         </section>
       ) : null}
       <MoreGroup title="یادگیری">
-        {access?.mode === "guardian" ? <MoreRow to="/more/family" icon={<UsersRound />} title="همراهی خانواده" subtitle="پیشرفت، گزارش‌ها و ارسال دلگرمی" tone="amber" /> : null}
+        {access?.mode === "student" ? (
+          <MoreRow
+            to="/more/books"
+            icon={<BookOpen />}
+            title="کتاب‌های درسی من"
+            subtitle="کتاب‌های متناسب با پایه و رشته حساب شما"
+            tone="blue"
+          />
+        ) : null}
+        {access?.mode === "guardian" ? (
+          <MoreRow
+            to="/more/family"
+            icon={<UsersRound />}
+            title="همراهی خانواده"
+            subtitle="پیشرفت، گزارش‌ها و ارسال دلگرمی"
+            tone="amber"
+          />
+        ) : null}
         {access?.mode === "student" ? (
           <MoreRow
             to="/more/insights"
@@ -120,27 +166,41 @@ function MoreHub() {
             tone="purple"
           />
         ) : null}
-        {access?.canReadLearning ? <MoreRow
-          to="/learning"
-          icon={<BookOpenCheck />}
-          title="پیشرفت و مرور"
-          subtitle="گزارش یادگیری و مرورهای ثبت‌شده"
-        /> : null}
-        {access?.canReadResources ? <MoreRow
-          to="/resources"
-          icon={<LibraryBig />}
-          title="منابع آموزشی"
-          subtitle="ویدئوها و پیوندهای منتشرشده برای شما"
-          tone="blue"
-        /> : null}
-        {access?.canUseQuizzes ? <MoreRow
-          to="/quizzes"
-          icon={<ListChecks />}
-          title="آزمونک‌ها"
-          subtitle="تمرین کوتاه، نتیجه فوری و مرور پاسخ‌ها"
-          tone="purple"
-        /> : null}
-        {access?.mode === "student" ? <MoreRow to="/more/mistakes" icon={<NotebookTabs />} title="دفترچه اشتباهات" subtitle="دسته‌بندی خطاها و ثبت مرور" tone="amber" /> : null}
+        {access?.canReadLearning ? (
+          <MoreRow
+            to="/learning"
+            icon={<BookOpenCheck />}
+            title="پیشرفت و مرور"
+            subtitle="گزارش یادگیری و مرورهای ثبت‌شده"
+          />
+        ) : null}
+        {access?.canReadResources ? (
+          <MoreRow
+            to="/resources"
+            icon={<LibraryBig />}
+            title="منابع آموزشی"
+            subtitle="ویدئوها و پیوندهای منتشرشده برای شما"
+            tone="blue"
+          />
+        ) : null}
+        {access?.canUseQuizzes ? (
+          <MoreRow
+            to="/quizzes"
+            icon={<ListChecks />}
+            title="آزمونک‌ها"
+            subtitle="تمرین کوتاه، نتیجه فوری و مرور پاسخ‌ها"
+            tone="purple"
+          />
+        ) : null}
+        {access?.mode === "student" ? (
+          <MoreRow
+            to="/more/mistakes"
+            icon={<NotebookTabs />}
+            title="دفترچه اشتباهات"
+            subtitle="دسته‌بندی خطاها و ثبت مرور"
+            tone="amber"
+          />
+        ) : null}
         {access?.mode === "student" ? (
           <MoreRow
             to="/more/reports"
@@ -174,13 +234,15 @@ function MoreHub() {
             tone="amber"
           />
         ) : null}
-        {access?.canUseChat ? <MoreRow
-          to="/more/chat-profile"
-          icon={<MessageCircle />}
-          title="پروفایل گفتگو"
-          subtitle="نام نمایشی، شناسه و درباره من"
-          tone="blue"
-        /> : null}
+        {access?.canUseChat ? (
+          <MoreRow
+            to="/more/chat-profile"
+            icon={<MessageCircle />}
+            title="پروفایل گفتگو"
+            subtitle="نام نمایشی، شناسه و درباره من"
+            tone="blue"
+          />
+        ) : null}
         <MoreRow
           to="/more/settings"
           icon={<Settings />}
@@ -243,7 +305,14 @@ function ReportsPage() {
             <small>خواب، مطالعه و حال‌وهوای امروز</small>
           </span>
         </header>
-        <NightReportForm draft={draft} onSave={saveDraft} onSubmit={async (value) => { await submit(value); setHistoryRevision((current) => current + 1); }} />
+        <NightReportForm
+          draft={draft}
+          onSave={saveDraft}
+          onSubmit={async (value) => {
+            await submit(value);
+            setHistoryRevision((current) => current + 1);
+          }}
+        />
       </div>
       <div className="more-settings-group">
         <header>
@@ -256,7 +325,10 @@ function ReportsPage() {
         <RecoveryRequestForm
           draft={recovery}
           onSave={saveRecovery}
-          onSubmit={async (value) => { await submitRecovery(value); setHistoryRevision((current) => current + 1); }}
+          onSubmit={async (value) => {
+            await submitRecovery(value);
+            setHistoryRevision((current) => current + 1);
+          }}
         />
       </div>
       <ReportsHistory revision={historyRevision} />
@@ -294,62 +366,210 @@ function ProfilePage() {
               .join("، ") || "درسی ثبت نشده است."
           }
         />
-        {subjects.some((item) => item.enabled && item.weeklyTargetMinutes) ? <InfoRow
-          title="هدف هفتگی درس‌ها"
-          value={subjects.filter((item) => item.enabled && item.weeklyTargetMinutes).map((item) => `${item.displayName || item.subject.name}: ${(item.weeklyTargetMinutes || 0).toLocaleString("fa-IR")} دقیقه`).join(" · ")}
-        /> : null}
-        {access?.mode === "student" ? <InfoRow
-          title="ارتباط‌های فعال"
-          value={
-            relationships
-              .filter((item) => item.status === "ACTIVE")
+        {subjects.some((item) => item.enabled && item.weeklyTargetMinutes) ? (
+          <InfoRow
+            title="هدف هفتگی درس‌ها"
+            value={subjects
+              .filter((item) => item.enabled && item.weeklyTargetMinutes)
               .map(
                 (item) =>
-                  [item.fromUser?.firstName, item.fromUser?.lastName]
-                    .filter(Boolean)
-                    .join(" ") ||
-                  item.fromUser?.username ||
-                  "کاربر",
+                  `${item.displayName || item.subject.name}: ${(item.weeklyTargetMinutes || 0).toLocaleString("fa-IR")} دقیقه`,
               )
-              .join("، ") || "ارتباط فعالی ثبت نشده است."
-          }
-        /> : null}
-        {access?.mode === "student" ? <InfoRow
-          title="دفترچه اشتباهات"
-          value={
-            mistakes.length
-              ? `${mistakes.length.toLocaleString("fa-IR")} مورد نیازمند مرور`
-              : "موردی ثبت نشده است."
-          }
-        /> : null}
+              .join(" · ")}
+          />
+        ) : null}
+        {access?.mode === "student" ? (
+          <InfoRow
+            title="ارتباط‌های فعال"
+            value={
+              relationships
+                .filter((item) => item.status === "ACTIVE")
+                .map(
+                  (item) =>
+                    [item.fromUser?.firstName, item.fromUser?.lastName]
+                      .filter(Boolean)
+                      .join(" ") ||
+                    item.fromUser?.username ||
+                    "کاربر",
+                )
+                .join("، ") || "ارتباط فعالی ثبت نشده است."
+            }
+          />
+        ) : null}
+        {access?.mode === "student" ? (
+          <InfoRow
+            title="دفترچه اشتباهات"
+            value={
+              mistakes.length
+                ? `${mistakes.length.toLocaleString("fa-IR")} مورد نیازمند مرور`
+                : "موردی ثبت نشده است."
+            }
+          />
+        ) : null}
       </MoreGroup>
     </MoreSection>
   );
 }
 
-type ChatProfile = { id: string; username: string; displayName: string; bio: string; avatarUrl: string; usernameChange?: { count: number; allowed: boolean; nextAllowedAt?: string | null } };
+type ChatProfile = {
+  id: string;
+  username: string;
+  displayName: string;
+  bio: string;
+  avatarUrl: string;
+  usernameChange?: {
+    count: number;
+    allowed: boolean;
+    nextAllowedAt?: string | null;
+  };
+};
 function ChatProfilePage() {
   const [profile, setProfile] = useState<ChatProfile | null>(null);
-  const [draft, setDraft] = useState({ displayName: "", username: "", bio: "", avatarUrl: "" });
-  const [status, setStatus] = useState<"loading" | "ready" | "saving" | "error">("loading");
-  useEffect(() => { void apiClient.request<ChatProfile>("GET", "/chat/profile").then((value) => { setProfile(value); setDraft({ displayName: value.displayName, username: value.username, bio: value.bio, avatarUrl: value.avatarUrl }); setStatus("ready"); }).catch(() => setStatus("error")); }, []);
+  const [draft, setDraft] = useState({
+    displayName: "",
+    username: "",
+    bio: "",
+    avatarUrl: "",
+  });
+  const [status, setStatus] = useState<
+    "loading" | "ready" | "saving" | "error"
+  >("loading");
+  useEffect(() => {
+    void apiClient
+      .request<ChatProfile>("GET", "/chat/profile")
+      .then((value) => {
+        setProfile(value);
+        setDraft({
+          displayName: value.displayName,
+          username: value.username,
+          bio: value.bio,
+          avatarUrl: value.avatarUrl,
+        });
+        setStatus("ready");
+      })
+      .catch(() => setStatus("error"));
+  }, []);
   async function save() {
     setStatus("saving");
-    try { const value = await apiClient.request<ChatProfile, typeof draft>("PATCH", "/chat/profile", draft); setProfile(value); setDraft({ displayName: value.displayName, username: value.username, bio: value.bio, avatarUrl: value.avatarUrl }); setStatus("ready"); }
-    catch { setStatus("error"); }
+    try {
+      const value = await apiClient.request<ChatProfile, typeof draft>(
+        "PATCH",
+        "/chat/profile",
+        draft,
+      );
+      setProfile(value);
+      setDraft({
+        displayName: value.displayName,
+        username: value.username,
+        bio: value.bio,
+        avatarUrl: value.avatarUrl,
+      });
+      setStatus("ready");
+    } catch {
+      setStatus("error");
+    }
   }
-  return <MoreSection title="پروفایل گفتگو" subtitle="هویت شما در پیام‌ها و گروه‌ها">
-    {status === "loading" ? <p className="settings-empty">در حال دریافت پروفایل...</p> : null}
-    {profile ? <form className="chat-profile-form" onSubmit={(event) => { event.preventDefault(); void save(); }}>
-      <div className="chat-profile-form__avatar">{draft.avatarUrl ? <img src={draft.avatarUrl} alt="تصویر پروفایل" /> : (draft.displayName || draft.username || "ک").slice(0, 1)}</div>
-      <label>نام نمایشی<input value={draft.displayName} maxLength={100} onChange={(event) => setDraft((value) => ({ ...value, displayName: event.target.value }))} /></label>
-      <label>نام کاربری<span className="chat-profile-form__username"><b>@</b><input aria-label="نام کاربری" dir="ltr" value={draft.username} maxLength={32} onChange={(event) => setDraft((value) => ({ ...value, username: event.target.value.toLowerCase() }))} /></span><small>{profile.usernameChange?.allowed ? "امکان تغییر نام کاربری فعال است." : profile.usernameChange?.nextAllowedAt ? `تغییر بعدی از ${new Intl.DateTimeFormat("fa-IR").format(new Date(profile.usernameChange.nextAllowedAt))}` : "نام کاربری یکتا است."}</small></label>
-      <label>درباره من<textarea rows={3} value={draft.bio} maxLength={500} onChange={(event) => setDraft((value) => ({ ...value, bio: event.target.value }))} /></label>
-      <label>نشانی تصویر پروفایل<input dir="ltr" inputMode="url" placeholder="https://..." value={draft.avatarUrl} maxLength={1200} onChange={(event) => setDraft((value) => ({ ...value, avatarUrl: event.target.value }))} /></label>
-      {status === "error" ? <p role="alert">دریافت یا ذخیره پروفایل ناموفق بود. دوباره تلاش کنید.</p> : null}
-      <button type="submit" disabled={status === "saving"}>{status === "saving" ? "در حال ذخیره" : "ذخیره پروفایل"}</button>
-    </form> : status === "error" ? <button className="settings-logout" onClick={() => location.reload()}>تلاش دوباره</button> : null}
-  </MoreSection>;
+  return (
+    <MoreSection title="پروفایل گفتگو" subtitle="هویت شما در پیام‌ها و گروه‌ها">
+      {status === "loading" ? (
+        <p className="settings-empty">در حال دریافت پروفایل...</p>
+      ) : null}
+      {profile ? (
+        <form
+          className="chat-profile-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void save();
+          }}
+        >
+          <div className="chat-profile-form__avatar">
+            {draft.avatarUrl ? (
+              <img src={draft.avatarUrl} alt="تصویر پروفایل" />
+            ) : (
+              (draft.displayName || draft.username || "ک").slice(0, 1)
+            )}
+          </div>
+          <label>
+            نام نمایشی
+            <input
+              value={draft.displayName}
+              maxLength={100}
+              onChange={(event) =>
+                setDraft((value) => ({
+                  ...value,
+                  displayName: event.target.value,
+                }))
+              }
+            />
+          </label>
+          <label>
+            نام کاربری
+            <span className="chat-profile-form__username">
+              <b>@</b>
+              <input
+                aria-label="نام کاربری"
+                dir="ltr"
+                value={draft.username}
+                maxLength={32}
+                onChange={(event) =>
+                  setDraft((value) => ({
+                    ...value,
+                    username: event.target.value.toLowerCase(),
+                  }))
+                }
+              />
+            </span>
+            <small>
+              {profile.usernameChange?.allowed
+                ? "امکان تغییر نام کاربری فعال است."
+                : profile.usernameChange?.nextAllowedAt
+                  ? `تغییر بعدی از ${new Intl.DateTimeFormat("fa-IR").format(new Date(profile.usernameChange.nextAllowedAt))}`
+                  : "نام کاربری یکتا است."}
+            </small>
+          </label>
+          <label>
+            درباره من
+            <textarea
+              rows={3}
+              value={draft.bio}
+              maxLength={500}
+              onChange={(event) =>
+                setDraft((value) => ({ ...value, bio: event.target.value }))
+              }
+            />
+          </label>
+          <label>
+            نشانی تصویر پروفایل
+            <input
+              dir="ltr"
+              inputMode="url"
+              placeholder="https://..."
+              value={draft.avatarUrl}
+              maxLength={1200}
+              onChange={(event) =>
+                setDraft((value) => ({
+                  ...value,
+                  avatarUrl: event.target.value,
+                }))
+              }
+            />
+          </label>
+          {status === "error" ? (
+            <p role="alert">
+              دریافت یا ذخیره پروفایل ناموفق بود. دوباره تلاش کنید.
+            </p>
+          ) : null}
+          <button type="submit" disabled={status === "saving"}>
+            {status === "saving" ? "در حال ذخیره" : "ذخیره پروفایل"}
+          </button>
+        </form>
+      ) : status === "error" ? (
+        <button className="settings-logout" onClick={() => location.reload()}>
+          تلاش دوباره
+        </button>
+      ) : null}
+    </MoreSection>
+  );
 }
 
 type GuardianRelationship = {
@@ -492,11 +712,13 @@ function GuardianSelectionPage() {
 
       {selection && !selection.change.allowed ? (
         <p className="guardian-cooldown" role="status">
-          برای امنیت حساب، تغییر بعدی از {selection.change.nextAllowedAt
+          برای امنیت حساب، تغییر بعدی از{" "}
+          {selection.change.nextAllowedAt
             ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "long" }).format(
                 new Date(selection.change.nextAllowedAt),
               )
-            : "پایان دوره محدودیت"} امکان‌پذیر است.
+            : "پایان دوره محدودیت"}{" "}
+          امکان‌پذیر است.
         </p>
       ) : (
         <section className="guardian-picker-card">
@@ -526,9 +748,7 @@ function GuardianSelectionPage() {
                   type="button"
                   disabled={
                     busyId === candidate.id ||
-                    current?.some(
-                      (item) => item.fromUser.id === candidate.id,
-                    )
+                    current?.some((item) => item.fromUser.id === candidate.id)
                   }
                   onClick={() => void request(candidate)}
                 >
@@ -544,7 +764,11 @@ function GuardianSelectionPage() {
           </div>
         </section>
       )}
-      {error ? <p className="guardian-selection-error" role="alert">{error}</p> : null}
+      {error ? (
+        <p className="guardian-selection-error" role="alert">
+          {error}
+        </p>
+      ) : null}
     </MoreSection>
   );
 }
@@ -569,19 +793,27 @@ function SettingsPage({
   useEffect(() => {
     void loadSessions();
     if (access?.mode === "student") {
-      void apiClient.request<{ guardianReadOnly: boolean }>("GET", "/student/chat-privacy")
+      void apiClient
+        .request<{ guardianReadOnly: boolean }>("GET", "/student/chat-privacy")
         .then((value) => setGuardianReadOnly(value.guardianReadOnly))
         .catch(() => undefined);
     }
   }, [access?.mode, loadSessions]);
   async function updateGuardianPrivacy(value: boolean) {
     const previous = guardianReadOnly;
-    setGuardianReadOnly(value); setPrivacySaving(true);
+    setGuardianReadOnly(value);
+    setPrivacySaving(true);
     try {
-      const saved = await apiClient.request<{ guardianReadOnly: boolean }, { guardianReadOnly: boolean }>("PATCH", "/student/chat-privacy", { guardianReadOnly: value });
+      const saved = await apiClient.request<
+        { guardianReadOnly: boolean },
+        { guardianReadOnly: boolean }
+      >("PATCH", "/student/chat-privacy", { guardianReadOnly: value });
       setGuardianReadOnly(saved.guardianReadOnly);
-    } catch { setGuardianReadOnly(previous); }
-    finally { setPrivacySaving(false); }
+    } catch {
+      setGuardianReadOnly(previous);
+    } finally {
+      setPrivacySaving(false);
+    }
   }
   return (
     <MoreSection title="تنظیمات" subtitle="ظاهر و رفتار برنامه">
@@ -624,18 +856,27 @@ function SettingsPage({
       >
         <PushSettings />
       </SettingsGroup>
-      {access?.mode === "student" ? <SettingsGroup
-        title="حریم خصوصی گفتگو"
-        subtitle="کنترل مشاهده گفتگو توسط سرپرست"
-        icon={<MessageCircle />}
-      >
-        <SettingToggle
-          label={privacySaving ? "در حال ذخیره دسترسی سرپرست" : "نمایش فقط‌خواندنی گفتگوها به سرپرست"}
-          checked={guardianReadOnly}
-          onChange={(value) => void updateGuardianPrivacy(value)}
-        />
-        <p className="settings-empty">سرپرست فقط در صورت فعال‌سازی شما و وجود ارتباط تأییدشده می‌تواند گفتگوها را ببیند؛ امکان ارسال، ویرایش، حذف یا واکنش ندارد.</p>
-      </SettingsGroup> : null}
+      {access?.mode === "student" ? (
+        <SettingsGroup
+          title="حریم خصوصی گفتگو"
+          subtitle="کنترل مشاهده گفتگو توسط سرپرست"
+          icon={<MessageCircle />}
+        >
+          <SettingToggle
+            label={
+              privacySaving
+                ? "در حال ذخیره دسترسی سرپرست"
+                : "نمایش فقط‌خواندنی گفتگوها به سرپرست"
+            }
+            checked={guardianReadOnly}
+            onChange={(value) => void updateGuardianPrivacy(value)}
+          />
+          <p className="settings-empty">
+            سرپرست فقط در صورت فعال‌سازی شما و وجود ارتباط تأییدشده می‌تواند
+            گفتگوها را ببیند؛ امکان ارسال، ویرایش، حذف یا واکنش ندارد.
+          </p>
+        </SettingsGroup>
+      ) : null}
       <SettingsGroup
         title="داده و پخش صوت"
         subtitle="کنترل مصرف اینترنت"

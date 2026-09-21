@@ -18,6 +18,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22.13.1'
+      - name: Install reusable package dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          for dir in packages/cmb/*; do
+            test -f "$dir/package.json" || continue
+            (cd "$dir" && npm ci --ignore-scripts --no-audit --no-fund)
+          done
       - name: Validate workspace graph
         run: node tooling/workspace/check.mjs
       - name: Enforce architecture boundaries

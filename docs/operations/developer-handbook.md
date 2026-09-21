@@ -1,5 +1,18 @@
 # Developer handbook
 
+## API compatibility and deprecation
+
+`packages/api-contract` owns stable consumer-facing `/api/v2` shapes. Controllers
+are transport adapters over public services/use cases; product logic must remain
+callable without an HTTP request. Client-visible failures use the `ApiError` envelope
+and stable machine-readable codes; human messages are not branching contracts.
+
+A compatible change may add optional response fields or new routes. Removing or
+renaming a route/field, tightening accepted input, or changing semantics requires a
+new API version or a documented deprecation period with replacement, consumer
+migration, removal release, and contract tests. Admin and Student consumers must be
+updated and verified before the old contract is removed.
+
 This is the starting point for humans extending or maintaining Moshaver. It applies to the repository inspected on 2026-09-08. Read the [system map](../architecture/system-map.md) before changing code and use the [repository runbook](./repository-runbook.md) for commands.
 
 ## Identify the active product line

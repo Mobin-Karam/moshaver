@@ -7,8 +7,10 @@ This runbook covers the active v2-only `main` and `develop` branches as inspecte
 From the repository root:
 
 ```bash
-docker compose up --build
+COOKIE_SECURE=0 COOKIE_SAMESITE=lax docker compose up --build
 ```
+
+The cookie override is only for the HTTP local development topology. Public PaaS deployments must use the [PaaS deployment runbook](./paas-deployment.md), HTTPS, and secure cookies.
 
 - Backend health: `http://localhost:4000/health`
 - Student v2: `http://localhost:8080`
@@ -68,5 +70,6 @@ Run legacy instructions from that worktree. Never mix its `/api/v1` clients, SQL
 - Configure exact browser origins, secure cookies, persistent storage, and real secrets for public deployment.
 - Never commit `.env` files, credentials, tokens, or database files.
 - Root `docker-compose.yml` is the canonical v2 topology; validate environment-specific deployment configuration before release.
+- Production startup runs migrations but never development/demo seeds.
 
 Use the [feature and bug playbook](./feature-and-bug-playbook.md) for implementation and the [maintenance guide](./maintenance-guide.md) for recurring and incident work.
