@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "scope": "tracked code/config excluding docs and generated/build output",
   "fileCount": 999,
-  "digest": "f9fb1d65f0ac6f34e1b2d455622db08bff0970fb3dfb53cd4252a5faf1e8f3a8",
+  "digest": "e25bf3864cd9c3a4837809805588d92d18469c96ed9f906a21a329daae65fc70",
   "files": [
     {
       "path": ".gitbr/project.json",
@@ -2375,7 +2375,7 @@
     },
     {
       "path": "apps/api/src/database/seeds/private-organization.ts",
-      "sha256": "7ddd936381cda08738c2e66515f004158b306b8610fc9404536e39b27d5aff3f"
+      "sha256": "a55607211a48a022136922ceec89018e36121315d70bf8556ecc1f9728a92c68"
     },
     {
       "path": "apps/api/src/database/seeds/product-demo.ts",
@@ -3067,7 +3067,7 @@
     },
     {
       "path": "apps/api/test/private-organization-seed.spec.ts",
-      "sha256": "2b6b014d3a607ef98b1c2263e7c7df7bc9351b885d70f0244e0f729072aad315"
+      "sha256": "be8ddc716c790d7cfa21b523f8f2494eec057bd6f549717780f1d5e0a7d84bcc"
     },
     {
       "path": "apps/api/test/realtime.service.spec.ts",
