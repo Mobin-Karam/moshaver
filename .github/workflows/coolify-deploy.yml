@@ -21,7 +21,7 @@ jobs:
     env:
       CORS_ORIGINS: https://student.example.test,https://admin.example.test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate Coolify Compose topology
         run: docker compose -f docker-compose.coolify.yml config --quiet
 
